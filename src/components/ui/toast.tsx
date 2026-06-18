@@ -1,21 +1,21 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { CheckCircle, AlertCircle, Info, X } from "lucide-react";
 
 export interface ToastProps {
   title: string;
   description?: string;
-  variant?: 'default' | 'success' | 'warning' | 'destructive' | 'info';
+  variant?: "default" | "success" | "warning" | "destructive" | "info";
   duration?: number;
   onClose?: () => void;
 }
 
-export interface ToastOptions extends Omit<ToastProps, 'onClose'> {}
+export interface ToastOptions extends Omit<ToastProps, "onClose"> {}
 
 const ToastContainer: React.FC<ToastProps> = ({
   title,
   description,
-  variant = 'default',
+  variant = "default",
   duration = 5000,
   onClose,
 }) => {
@@ -34,31 +34,31 @@ const ToastContainer: React.FC<ToastProps> = ({
 
   const getVariantStyles = () => {
     switch (variant) {
-      case 'success':
-        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-      case 'warning':
-        return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
-      case 'destructive':
-        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-      case 'info':
-        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+      case "success":
+        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+      case "warning":
+        return "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800";
+      case "destructive":
+        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+      case "info":
+        return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
       default:
-        return 'bg-white dark:bg-dark-150 border-gray-200 dark:border-gray-700';
+        return "bg-white dark:bg-dark-150 border-zinc-200 dark:border-zinc-700";
     }
   };
 
   const getIcon = () => {
     switch (variant) {
-      case 'success':
+      case "success":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'warning':
+      case "warning":
         return <AlertCircle className="h-5 w-5 text-amber-500" />;
-      case 'destructive':
+      case "destructive":
         return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case 'info':
+      case "info":
         return <Info className="h-5 w-5 text-blue-500" />;
       default:
-        return <Info className="h-5 w-5 text-gray-500 dark:text-white" />;
+        return <Info className="h-5 w-5 text-zinc-500 dark:text-white" />;
     }
   };
 
@@ -67,7 +67,7 @@ const ToastContainer: React.FC<ToastProps> = ({
       className={`
         fixed top-4 right-4 z-50 max-w-sm
         transform transition-all duration-300 ease-in-out
-        ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}
+        ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}
         ${getVariantStyles()}
         border rounded-lg shadow-md p-4
       `}
@@ -76,14 +76,18 @@ const ToastContainer: React.FC<ToastProps> = ({
       <div className="flex items-start">
         <div className="flex-shrink-0 mr-3 mt-0.5">{getIcon()}</div>
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{title}</h3>
+          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {title}
+          </h3>
           {description && (
-            <div className="mt-1 text-sm text-gray-700 dark:text-white">{description}</div>
+            <div className="mt-1 text-sm text-zinc-700 dark:text-white">
+              {description}
+            </div>
           )}
         </div>
         <button
           type="button"
-          className="ml-4 inline-flex flex-shrink-0 text-gray-400 hover:text-gray-500 focus:outline-none"
+          className="ml-4 inline-flex flex-shrink-0 text-zinc-400 hover:text-zinc-500 focus:outline-none"
           onClick={() => {
             setIsVisible(false);
             setTimeout(() => {
@@ -102,8 +106,8 @@ let toastContainer: HTMLDivElement | null = null;
 
 const createToastContainer = () => {
   if (!toastContainer) {
-    toastContainer = document.createElement('div');
-    toastContainer.id = 'toast-container';
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
     document.body.appendChild(toastContainer);
   }
   return toastContainer;
@@ -112,30 +116,25 @@ const createToastContainer = () => {
 export const toast = (options: ToastOptions) => {
   const container = createToastContainer();
   const toastId = `toast-${Date.now()}`;
-  
-  const toastElement = document.createElement('div');
+
+  const toastElement = document.createElement("div");
   toastElement.id = toastId;
   container.appendChild(toastElement);
-  
+
   const root = createRoot(toastElement);
-  
+
   const onClose = () => {
     root.unmount();
     if (toastElement.parentNode) {
       toastElement.parentNode.removeChild(toastElement);
     }
   };
-  
-  root.render(
-    <ToastContainer
-      {...options}
-      onClose={onClose}
-    />
-  );
-  
+
+  root.render(<ToastContainer {...options} onClose={onClose} />);
+
   return {
-    close: onClose
+    close: onClose,
   };
 };
 
-export default toast; 
+export default toast;

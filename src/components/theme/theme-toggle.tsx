@@ -1,33 +1,30 @@
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "./theme-provider"
-import { Button } from "./ui/Button"
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "./theme-provider";
+import { Button } from "./ui/Button";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
     // If current theme is system, switch to light
     if (theme === "system") {
-      setTheme("light")
-    } 
+      setTheme("light");
+    }
     // If current theme is light, switch to dark
     else if (theme === "light") {
-      setTheme("dark")
+      setTheme("dark");
     }
     // If current theme is dark, switch to light
     else {
-      setTheme("light")
+      setTheme("light");
     }
-  }
+  };
 
   return (
-    <div 
-      className="flex items-center cursor-pointer"
-      onClick={toggleTheme}
-    >
-      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-gray-400 dark:text-[#f26722]" />
-      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-gray-400 dark:text-[#f26722]" />
-      <span className="ml-3 text-sm text-gray-700 dark:text-white">
+    <div className="flex items-center cursor-pointer" onClick={toggleTheme}>
+      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-zinc-400 dark:text-[#f26722]" />
+      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-zinc-400 dark:text-[#f26722]" />
+      <span className="ml-3 text-sm text-zinc-700 dark:text-white">
         {theme === "light" ? "Enable Dark Mode" : "Enable Light Mode"}
       </span>
     </div>
@@ -63,5 +60,5 @@ export function ThemeToggle() {
       </DropdownMenuContent>
     </DropdownMenu>
     */
-  )
-} 
+  );
+}

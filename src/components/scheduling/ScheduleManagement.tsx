@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/AuthContext';
-import { schedulingService } from '@/lib/services/schedulingService';
-import { 
-  TechnicianAvailability, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { schedulingService } from "@/lib/services/schedulingService";
+import {
+  TechnicianAvailability,
   TechnicianException,
   PortalType,
-  AvailableTechnician
-} from '@/lib/types/scheduling';
-import { Button } from '@/components/ui/Button';
-import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import Select, { SelectOption } from '@/components/ui/Select';
-import { TechnicianCalendar } from './TechnicianCalendar';
-import { Clock, Save, Plus, XCircle, Calendar } from 'lucide-react';
-import dayjs from 'dayjs';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+  AvailableTechnician,
+} from "@/lib/types/scheduling";
+import { Button } from "@/components/ui/Button";
+import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import Select, { SelectOption } from "@/components/ui/Select";
+import { TechnicianCalendar } from "./TechnicianCalendar";
+import { Clock, Save, Plus, XCircle, Calendar } from "lucide-react";
+import dayjs from "dayjs";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // Interfaces
 interface ScheduleManagementProps {
@@ -41,18 +41,21 @@ interface ExceptionForm {
 
 // Day of week options
 const dayOptions: SelectOption[] = [
-  { value: '0', label: 'Sunday' },
-  { value: '1', label: 'Monday' },
-  { value: '2', label: 'Tuesday' },
-  { value: '3', label: 'Wednesday' },
-  { value: '4', label: 'Thursday' },
-  { value: '5', label: 'Friday' },
-  { value: '6', label: 'Saturday' }
+  { value: "0", label: "Sunday" },
+  { value: "1", label: "Monday" },
+  { value: "2", label: "Tuesday" },
+  { value: "3", label: "Wednesday" },
+  { value: "4", label: "Thursday" },
+  { value: "5", label: "Friday" },
+  { value: "6", label: "Saturday" },
 ];
 
-export function ScheduleManagement({ portalType, division }: ScheduleManagementProps) {
+export function ScheduleManagement({
+  portalType,
+  division,
+}: ScheduleManagementProps) {
   const { user } = useAuth();
-  
+
   // Helper functions to always derive name from email (firstname.lastname format)
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
@@ -62,44 +65,46 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;
   };
-  
+
   const formatDisplayName = (name?: string, email?: string): string => {
     // Always prioritize email-derived name (firstname.lastname format)
     const derived = deriveNameFromEmail(email);
     if (derived) return derived;
-    
+
     // Fallback to provided name or email
-    const n = (name || '').trim();
-    return n || email || 'Unknown';
+    const n = (name || "").trim();
+    return n || email || "Unknown";
   };
-  
+
   const [technicians, setTechnicians] = useState<AvailableTechnician[]>([]);
-  const [selectedTechnician, setSelectedTechnician] = useState<string>('');
-  const [availabilities, setAvailabilities] = useState<TechnicianAvailability[]>([]);
+  const [selectedTechnician, setSelectedTechnician] = useState<string>("");
+  const [availabilities, setAvailabilities] = useState<
+    TechnicianAvailability[]
+  >([]);
   const [exceptions, setExceptions] = useState<TechnicianException[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Form states
   const [showAvailabilityForm, setShowAvailabilityForm] = useState(false);
   const [showExceptionForm, setShowExceptionForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  
+
   const [availabilityForm, setAvailabilityForm] = useState<AvailabilityForm>({
-    userId: '',
+    userId: "",
     dayOfWeek: 1, // Monday default
-    startTime: '08:00',
-    endTime: '17:00',
-    isRecurring: true
+    startTime: "08:00",
+    endTime: "17:00",
+    isRecurring: true,
   });
 
   const [exceptionForm, setExceptionForm] = useState<ExceptionForm>({
-    userId: '',
-    exceptionDate: '',
-    startTime: '08:00',
-    endTime: '17:00',
+    userId: "",
+    exceptionDate: "",
+    startTime: "08:00",
+    endTime: "17:00",
     isAvailable: false,
-    reason: ''
+    reason: "",
   });
 
   // Fetch technicians
@@ -107,7 +112,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
     const fetchTechnicians = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await schedulingService.getAvailableTechnicians(portalType, division);
+        const { data, error } = await schedulingService.getAvailableTechnicians(
+          portalType,
+          division,
+        );
         if (error) {
           console.error("Error fetching technicians:", error);
           setError("Failed to load technicians. Please try again.");
@@ -115,15 +123,29 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
           setTechnicians(data || []);
           // Set current user as default selected technician if they're a technician
           if (data && data.length > 0) {
-            const currentUserAsTech = data.find(tech => tech.user_id === user?.id);
+            const currentUserAsTech = data.find(
+              (tech) => tech.user_id === user?.id,
+            );
             if (currentUserAsTech) {
               setSelectedTechnician(currentUserAsTech.user_id);
-              setAvailabilityForm(prev => ({ ...prev, userId: currentUserAsTech.user_id }));
-              setExceptionForm(prev => ({ ...prev, userId: currentUserAsTech.user_id }));
+              setAvailabilityForm((prev) => ({
+                ...prev,
+                userId: currentUserAsTech.user_id,
+              }));
+              setExceptionForm((prev) => ({
+                ...prev,
+                userId: currentUserAsTech.user_id,
+              }));
             } else {
               setSelectedTechnician(data[0].user_id);
-              setAvailabilityForm(prev => ({ ...prev, userId: data[0].user_id }));
-              setExceptionForm(prev => ({ ...prev, userId: data[0].user_id }));
+              setAvailabilityForm((prev) => ({
+                ...prev,
+                userId: data[0].user_id,
+              }));
+              setExceptionForm((prev) => ({
+                ...prev,
+                userId: data[0].user_id,
+              }));
             }
           }
         }
@@ -142,10 +164,14 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
   useEffect(() => {
     const fetchAvailabilities = async () => {
       if (!selectedTechnician) return;
-      
+
       setIsLoading(true);
       try {
-        const { data, error } = await schedulingService.getTechnicianAvailability(selectedTechnician, portalType);
+        const { data, error } =
+          await schedulingService.getTechnicianAvailability(
+            selectedTechnician,
+            portalType,
+          );
         if (error) {
           console.error("Error fetching availabilities:", error);
           setError("Failed to load technician availability.");
@@ -162,24 +188,24 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
     fetchAvailabilities();
   }, [selectedTechnician, portalType]);
-  
+
   // Fetch exceptions when technician changes
   useEffect(() => {
     const fetchExceptions = async () => {
       if (!selectedTechnician) return;
-      
+
       setIsLoading(true);
       try {
         // Get current month date range
         const today = new Date();
         const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         const endDate = new Date(today.getFullYear(), today.getMonth() + 3, 0);
-        
+
         const { data, error } = await schedulingService.getTechnicianExceptions(
-          selectedTechnician, 
+          selectedTechnician,
           portalType,
-          dayjs(startDate).format('YYYY-MM-DD'),
-          dayjs(endDate).format('YYYY-MM-DD')
+          dayjs(startDate).format("YYYY-MM-DD"),
+          dayjs(endDate).format("YYYY-MM-DD"),
         );
         if (error) {
           console.error("Error fetching exceptions:", error);
@@ -201,8 +227,8 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
   // Form handlers
   const handleTechnicianChange = (techId: string) => {
     setSelectedTechnician(techId);
-    setAvailabilityForm(prev => ({ ...prev, userId: techId }));
-    setExceptionForm(prev => ({ ...prev, userId: techId }));
+    setAvailabilityForm((prev) => ({ ...prev, userId: techId }));
+    setExceptionForm((prev) => ({ ...prev, userId: techId }));
   };
 
   const handleAddAvailability = async () => {
@@ -217,25 +243,26 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
         division: division,
         recurring: availabilityForm.isRecurring,
       });
-      
+
       if (error) {
         console.error("Error adding availability:", error);
         setError("Failed to save availability.");
       } else {
         // Refresh availabilities
-        const { data: newData } = await schedulingService.getTechnicianAvailability(
-          selectedTechnician, 
-          portalType
-        );
+        const { data: newData } =
+          await schedulingService.getTechnicianAvailability(
+            selectedTechnician,
+            portalType,
+          );
         setAvailabilities(newData || []);
         setShowAvailabilityForm(false);
         // Reset form
         setAvailabilityForm({
           userId: selectedTechnician,
           dayOfWeek: 1,
-          startTime: '08:00',
-          endTime: '17:00',
-          isRecurring: true
+          startTime: "08:00",
+          endTime: "17:00",
+          isRecurring: true,
         });
       }
     } catch (err) {
@@ -258,7 +285,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
         reason: exceptionForm.reason,
         portal_type: portalType,
       });
-      
+
       if (error) {
         console.error("Error adding exception:", error);
         setError("Failed to save exception.");
@@ -267,23 +294,24 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
         const today = new Date();
         const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         const endDate = new Date(today.getFullYear(), today.getMonth() + 3, 0);
-        
-        const { data: newData } = await schedulingService.getTechnicianExceptions(
-          selectedTechnician, 
-          portalType,
-          dayjs(startDate).format('YYYY-MM-DD'),
-          dayjs(endDate).format('YYYY-MM-DD')
-        );
+
+        const { data: newData } =
+          await schedulingService.getTechnicianExceptions(
+            selectedTechnician,
+            portalType,
+            dayjs(startDate).format("YYYY-MM-DD"),
+            dayjs(endDate).format("YYYY-MM-DD"),
+          );
         setExceptions(newData || []);
         setShowExceptionForm(false);
         // Reset form
         setExceptionForm({
           userId: selectedTechnician,
-          exceptionDate: '',
-          startTime: '08:00',
-          endTime: '17:00',
+          exceptionDate: "",
+          startTime: "08:00",
+          endTime: "17:00",
           isAvailable: false,
-          reason: ''
+          reason: "",
         });
         setSelectedDate(null);
       }
@@ -296,16 +324,20 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
   };
 
   const handleDeleteAvailability = async (availabilityId: string) => {
-    if (!window.confirm('Are you sure you want to delete this availability?')) return;
-    
+    if (!window.confirm("Are you sure you want to delete this availability?"))
+      return;
+
     setIsLoading(true);
     try {
-      const { error } = await schedulingService.deleteTechnicianAvailability(availabilityId);
+      const { error } =
+        await schedulingService.deleteTechnicianAvailability(availabilityId);
       if (error) {
         console.error("Error deleting availability:", error);
         setError("Failed to delete availability.");
       } else {
-        setAvailabilities(availabilities.filter(a => a.id !== availabilityId));
+        setAvailabilities(
+          availabilities.filter((a) => a.id !== availabilityId),
+        );
       }
     } catch (err) {
       console.error("Exception deleting availability:", err);
@@ -316,16 +348,18 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
   };
 
   const handleDeleteException = async (exceptionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this exception?')) return;
-    
+    if (!window.confirm("Are you sure you want to delete this exception?"))
+      return;
+
     setIsLoading(true);
     try {
-      const { error } = await schedulingService.deleteTechnicianException(exceptionId);
+      const { error } =
+        await schedulingService.deleteTechnicianException(exceptionId);
       if (error) {
         console.error("Error deleting exception:", error);
         setError("Failed to delete exception.");
       } else {
-        setExceptions(exceptions.filter(e => e.id !== exceptionId));
+        setExceptions(exceptions.filter((e) => e.id !== exceptionId));
       }
     } catch (err) {
       console.error("Exception deleting exception:", err);
@@ -337,10 +371,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    setExceptionForm(prev => ({
+    setExceptionForm((prev) => ({
       ...prev,
-      exceptionDate: dayjs(date).format('YYYY-MM-DD'),
-      userId: selectedTechnician
+      exceptionDate: dayjs(date).format("YYYY-MM-DD"),
+      userId: selectedTechnician,
     }));
     setShowExceptionForm(true);
   };
@@ -348,31 +382,41 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
   // Filter out lab technicians - only show NETA and admin technicians
   const isNotLabTech = (tech: any) => {
     const portalType = tech.portal_type || tech.division;
-    return portalType !== 'lab';
+    return portalType !== "lab";
   };
-  
+
   // Prepare options for the technician select
   const technicianOptions: SelectOption[] = technicians
-    .filter(tech => isNotLabTech(tech))
-    .map(tech => ({
+    .filter((tech) => isNotLabTech(tech))
+    .map((tech) => ({
       value: tech.user_id,
-      label: formatDisplayName(tech.full_name, tech.email)
+      label: formatDisplayName(tech.full_name, tech.email),
     }));
 
   // Get day name from number
   const getDayName = (dayNumber: number): string => {
-    const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return dayMap[dayNumber] || 'Unknown';
+    const dayMap = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    return dayMap[dayNumber] || "Unknown";
   };
 
   return (
     <div className="container mx-auto px-4 space-y-8">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between p-6">
-          <CardTitle className="text-xl font-bold">Technician Schedule Management</CardTitle>
+          <CardTitle className="text-xl font-bold">
+            Technician Schedule Management
+          </CardTitle>
           <div className="flex space-x-2">
             <Select
-              value={selectedTechnician} 
+              value={selectedTechnician}
               onChange={(e) => handleTechnicianChange(e.target.value)}
               options={technicianOptions}
               className="w-[220px]"
@@ -385,15 +429,24 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
           {error && (
             <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
               {error}
-              <button className="ml-2 text-red-600" onClick={() => setError(null)}>Dismiss</button>
+              <button
+                className="ml-2 text-red-600"
+                onClick={() => setError(null)}
+              >
+                Dismiss
+              </button>
             </div>
           )}
 
           <Tabs defaultValue="calendar">
             <TabsList className="mb-4">
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
-              <TabsTrigger value="availability">Regular Availability</TabsTrigger>
-              <TabsTrigger value="exceptions">Time Off & Exceptions</TabsTrigger>
+              <TabsTrigger value="availability">
+                Regular Availability
+              </TabsTrigger>
+              <TabsTrigger value="exceptions">
+                Time Off & Exceptions
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="calendar">
@@ -401,7 +454,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                 <Button
                   onClick={() => {
                     setShowAvailabilityForm(true);
-                    setAvailabilityForm(prev => ({ ...prev, userId: selectedTechnician }));
+                    setAvailabilityForm((prev) => ({
+                      ...prev,
+                      userId: selectedTechnician,
+                    }));
                   }}
                   disabled={!selectedTechnician || isLoading}
                 >
@@ -412,10 +468,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                   onClick={() => {
                     const today = new Date();
                     setSelectedDate(today);
-                    setExceptionForm(prev => ({
+                    setExceptionForm((prev) => ({
                       ...prev,
-                      exceptionDate: dayjs(today).format('YYYY-MM-DD'),
-                      userId: selectedTechnician
+                      exceptionDate: dayjs(today).format("YYYY-MM-DD"),
+                      userId: selectedTechnician,
                     }));
                     setShowExceptionForm(true);
                   }}
@@ -426,7 +482,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                   Add Time Off
                 </Button>
               </div>
-              
+
               <TechnicianCalendar
                 portalType={portalType}
                 division={division}
@@ -441,7 +497,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                 <Button
                   onClick={() => {
                     setShowAvailabilityForm(true);
-                    setAvailabilityForm(prev => ({ ...prev, userId: selectedTechnician }));
+                    setAvailabilityForm((prev) => ({
+                      ...prev,
+                      userId: selectedTechnician,
+                    }));
                   }}
                   disabled={!selectedTechnician || isLoading}
                 >
@@ -453,65 +512,75 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
               {showAvailabilityForm && (
                 <Card className="mb-6 border-2 border-blue-200">
                   <CardHeader>
-                    <CardTitle className="text-md">Add Regular Availability</CardTitle>
+                    <CardTitle className="text-md">
+                      Add Regular Availability
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Day of Week
                         </label>
                         <Select
                           value={availabilityForm.dayOfWeek.toString()}
-                          onChange={(e) => setAvailabilityForm({
-                            ...availabilityForm,
-                            dayOfWeek: parseInt(e.target.value)
-                          })}
+                          onChange={(e) =>
+                            setAvailabilityForm({
+                              ...availabilityForm,
+                              dayOfWeek: parseInt(e.target.value),
+                            })
+                          }
                           options={dayOptions}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Recurring
                         </label>
                         <Select
                           value={availabilityForm.isRecurring.toString()}
-                          onChange={(e) => setAvailabilityForm({
-                            ...availabilityForm,
-                            isRecurring: e.target.value === 'true'
-                          })}
+                          onChange={(e) =>
+                            setAvailabilityForm({
+                              ...availabilityForm,
+                              isRecurring: e.target.value === "true",
+                            })
+                          }
                           options={[
-                            { value: 'true', label: 'Yes - Weekly' },
-                            { value: 'false', label: 'No - One Time' }
+                            { value: "true", label: "Yes - Weekly" },
+                            { value: "false", label: "No - One Time" },
                           ]}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Start Time
                         </label>
                         <input
                           type="time"
                           value={availabilityForm.startTime}
-                          onChange={(e) => setAvailabilityForm({
-                            ...availabilityForm,
-                            startTime: e.target.value
-                          })}
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          onChange={(e) =>
+                            setAvailabilityForm({
+                              ...availabilityForm,
+                              startTime: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           End Time
                         </label>
                         <input
                           type="time"
                           value={availabilityForm.endTime}
-                          onChange={(e) => setAvailabilityForm({
-                            ...availabilityForm,
-                            endTime: e.target.value
-                          })}
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          onChange={(e) =>
+                            setAvailabilityForm({
+                              ...availabilityForm,
+                              endTime: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                     </div>
@@ -537,19 +606,27 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+                  <div className="flex justify-center py-6">
+                    <LoadingSpinner size="md" />
+                  </div>
                 ) : availabilities.length === 0 ? (
-                  <p>No regular availability set for this technician. Add their working hours to enable scheduling.</p>
+                  <p>
+                    No regular availability set for this technician. Add their
+                    working hours to enable scheduling.
+                  </p>
                 ) : (
                   availabilities.map((avail) => (
-                    <Card key={avail.id} className="border border-gray-200">
+                    <Card key={avail.id} className="border border-zinc-200">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-medium">{getDayName(avail.day_of_week)}</h3>
-                            <p className="text-sm text-gray-600 dark:text-white">
-                              {avail.start_time.substring(0, 5)} - {avail.end_time.substring(0, 5)}
-                              {avail.recurring ? ' (Weekly)' : ' (One Time)'}
+                            <h3 className="font-medium">
+                              {getDayName(avail.day_of_week)}
+                            </h3>
+                            <p className="text-sm text-zinc-600 dark:text-white">
+                              {avail.start_time.substring(0, 5)} -{" "}
+                              {avail.end_time.substring(0, 5)}
+                              {avail.recurring ? " (Weekly)" : " (One Time)"}
                             </p>
                           </div>
                           <Button
@@ -574,10 +651,10 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                   onClick={() => {
                     const today = new Date();
                     setSelectedDate(today);
-                    setExceptionForm(prev => ({
+                    setExceptionForm((prev) => ({
                       ...prev,
-                      exceptionDate: dayjs(today).format('YYYY-MM-DD'),
-                      userId: selectedTechnician
+                      exceptionDate: dayjs(today).format("YYYY-MM-DD"),
+                      userId: selectedTechnician,
                     }));
                     setShowExceptionForm(true);
                   }}
@@ -592,82 +669,97 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                 <Card className="mb-6 border-2 border-blue-200">
                   <CardHeader>
                     <CardTitle className="text-md">
-                      {exceptionForm.isAvailable ? 'Add Special Availability' : 'Add Time Off'}
+                      {exceptionForm.isAvailable
+                        ? "Add Special Availability"
+                        : "Add Time Off"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Date
                         </label>
                         <input
                           type="date"
                           value={exceptionForm.exceptionDate}
-                          onChange={(e) => setExceptionForm({
-                            ...exceptionForm,
-                            exceptionDate: e.target.value
-                          })}
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          onChange={(e) =>
+                            setExceptionForm({
+                              ...exceptionForm,
+                              exceptionDate: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Type
                         </label>
                         <Select
                           value={exceptionForm.isAvailable.toString()}
-                          onChange={(e) => setExceptionForm({
-                            ...exceptionForm,
-                            isAvailable: e.target.value === 'true'
-                          })}
+                          onChange={(e) =>
+                            setExceptionForm({
+                              ...exceptionForm,
+                              isAvailable: e.target.value === "true",
+                            })
+                          }
                           options={[
-                            { value: 'false', label: 'Time Off - Unavailable' },
-                            { value: 'true', label: 'Special Hours - Available' }
+                            { value: "false", label: "Time Off - Unavailable" },
+                            {
+                              value: "true",
+                              label: "Special Hours - Available",
+                            },
                           ]}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Start Time
                         </label>
                         <input
                           type="time"
                           value={exceptionForm.startTime}
-                          onChange={(e) => setExceptionForm({
-                            ...exceptionForm,
-                            startTime: e.target.value
-                          })}
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          onChange={(e) =>
+                            setExceptionForm({
+                              ...exceptionForm,
+                              startTime: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           End Time
                         </label>
                         <input
                           type="time"
                           value={exceptionForm.endTime}
-                          onChange={(e) => setExceptionForm({
-                            ...exceptionForm,
-                            endTime: e.target.value
-                          })}
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          onChange={(e) =>
+                            setExceptionForm({
+                              ...exceptionForm,
+                              endTime: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                           Reason
                         </label>
                         <input
                           type="text"
                           value={exceptionForm.reason}
-                          onChange={(e) => setExceptionForm({
-                            ...exceptionForm,
-                            reason: e.target.value
-                          })}
+                          onChange={(e) =>
+                            setExceptionForm({
+                              ...exceptionForm,
+                              reason: e.target.value,
+                            })
+                          }
                           placeholder="E.g., Vacation, Training, Sick Leave"
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-gray-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
                         />
                       </div>
                     </div>
@@ -682,12 +774,12 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
                       >
                         Cancel
                       </Button>
-                      <Button
-                        onClick={handleAddException}
-                        disabled={isLoading}
-                      >
+                      <Button onClick={handleAddException} disabled={isLoading}>
                         <Save className="mr-2 h-4 w-4" />
-                        Save {exceptionForm.isAvailable ? 'Special Hours' : 'Time Off'}
+                        Save{" "}
+                        {exceptionForm.isAvailable
+                          ? "Special Hours"
+                          : "Time Off"}
                       </Button>
                     </div>
                   </CardContent>
@@ -696,35 +788,43 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+                  <div className="flex justify-center py-6">
+                    <LoadingSpinner size="md" />
+                  </div>
                 ) : exceptions.length === 0 ? (
                   <p>No time off or special availability records found.</p>
                 ) : (
                   exceptions.map((exception) => (
-                    <Card 
-                      key={exception.id} 
-                      className={`border ${exception.is_available ? 'border-green-200' : 'border-red-200'}`}
+                    <Card
+                      key={exception.id}
+                      className={`border ${exception.is_available ? "border-green-200" : "border-red-200"}`}
                     >
                       <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                           <div>
                             <h3 className="font-medium">
-                              {dayjs(exception.exception_date).format('MMM D, YYYY')}
-                              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                                exception.is_available 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {exception.is_available ? 'Available' : 'Unavailable'}
+                              {dayjs(exception.exception_date).format(
+                                "MMM D, YYYY",
+                              )}
+                              <span
+                                className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                                  exception.is_available
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {exception.is_available
+                                  ? "Available"
+                                  : "Unavailable"}
                               </span>
                             </h3>
-                            <p className="text-sm text-gray-600 dark:text-white">
-                              {exception.is_available 
-                                ? `Special Hours: ${exception.start_time?.substring(0, 5) || ''} - ${exception.end_time?.substring(0, 5) || ''}` 
+                            <p className="text-sm text-zinc-600 dark:text-white">
+                              {exception.is_available
+                                ? `Special Hours: ${exception.start_time?.substring(0, 5) || ""} - ${exception.end_time?.substring(0, 5) || ""}`
                                 : `Time Off: All Day`}
                             </p>
                             {exception.reason && (
-                              <p className="text-sm text-gray-600 dark:text-white mt-1">
+                              <p className="text-sm text-zinc-600 dark:text-white mt-1">
                                 {exception.reason}
                               </p>
                             )}
@@ -749,4 +849,4 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
       </Card>
     </div>
   );
-} 
+}

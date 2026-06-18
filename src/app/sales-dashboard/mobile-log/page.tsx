@@ -235,9 +235,9 @@ export default function MobileLogInteraction() {
     !!selectedCustomer && !!contactId && !!context.trim() && !saving;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-100 flex flex-col">
+    <div className="min-h-screen bg-zinc-50 dark:bg-dark-100 flex flex-col">
       {/* Branding */}
-      <div className="sticky top-0 z-20 bg-white dark:bg-dark-150 border-b border-gray-200 dark:border-dark-200 px-4 py-4 flex items-center justify-center">
+      <div className="sticky top-0 z-20 bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-dark-200 px-4 py-4 flex items-center justify-center">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP"
@@ -254,12 +254,12 @@ export default function MobileLogInteraction() {
       <main className="flex-1 px-4 py-6 pb-16 w-full space-y-7">
         {/* Step 1: Customer */}
         <div>
-          <label className="block text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-lg font-semibold text-zinc-700 dark:text-zinc-200 mb-2">
             1. Customer
           </label>
           {selectedCustomer ? (
-            <div className="flex items-center justify-between rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-5 py-4">
-              <span className="text-lg font-medium text-gray-900 dark:text-white truncate">
+            <div className="flex items-center justify-between rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-5 py-4">
+              <span className="text-lg font-medium text-zinc-900 dark:text-white truncate">
                 {selectedCustomer.company_name || selectedCustomer.name}
               </span>
               <button
@@ -280,16 +280,16 @@ export default function MobileLogInteraction() {
                 value={customerTerm}
                 onChange={(e) => setCustomerTerm(e.target.value)}
                 placeholder="Search customers..."
-                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
               />
               {customerTerm.trim() && (
-                <div className="mt-2 rounded-xl border border-gray-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-gray-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
+                <div className="mt-2 rounded-xl border border-zinc-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-zinc-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
                   {searching ? (
-                    <div className="px-5 py-4 text-base text-gray-500">
+                    <div className="px-5 py-4 text-base text-zinc-500">
                       Searching…
                     </div>
                   ) : customerResults.length === 0 ? (
-                    <div className="px-5 py-4 text-base text-gray-500">
+                    <div className="px-5 py-4 text-base text-zinc-500">
                       No customers found
                     </div>
                   ) : (
@@ -297,7 +297,7 @@ export default function MobileLogInteraction() {
                       <button
                         key={c.id}
                         onClick={() => setSelectedCustomer(c)}
-                        className="w-full text-left px-5 py-4 text-lg text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-dark-200 truncate"
+                        className="w-full text-left px-5 py-4 text-lg text-zinc-900 dark:text-white active:bg-zinc-100 dark:active:bg-dark-200 truncate"
                       >
                         {c.company_name || c.name}
                       </button>
@@ -311,14 +311,14 @@ export default function MobileLogInteraction() {
 
         {/* Step 2: Contact */}
         <div>
-          <label className="block text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-lg font-semibold text-zinc-700 dark:text-zinc-200 mb-2">
             2. Contact
           </label>
           <select
             value={contactId}
             onChange={(e) => setContactId(e.target.value)}
             disabled={!selectedCustomer || contactsLoading}
-            className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
           >
             {!selectedCustomer ? (
               <option value="">Select a customer first</option>
@@ -339,7 +339,7 @@ export default function MobileLogInteraction() {
 
         {/* Step 3: Type */}
         <div>
-          <label className="block text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-lg font-semibold text-zinc-700 dark:text-zinc-200 mb-2">
             3. Type
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -350,7 +350,7 @@ export default function MobileLogInteraction() {
                 className={`flex flex-col items-center justify-center gap-2 rounded-xl border py-5 text-base font-medium transition-colors ${
                   noteType === t.value
                     ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
-                    : "border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-600 dark:text-gray-300"
+                    : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-600 dark:text-zinc-300"
                 }`}
               >
                 {t.icon}
@@ -362,7 +362,7 @@ export default function MobileLogInteraction() {
 
         {/* Step 4: Note */}
         <div>
-          <label className="block text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-lg font-semibold text-zinc-700 dark:text-zinc-200 mb-2">
             4. Note
           </label>
           <textarea
@@ -371,7 +371,7 @@ export default function MobileLogInteraction() {
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="What happened during this interaction..."
-            className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
           />
         </div>
 
@@ -380,7 +380,7 @@ export default function MobileLogInteraction() {
           {selectedCustomer && (
             <button
               onClick={clearAll}
-              className="px-5 py-4 rounded-xl text-lg font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-dark-200"
+              className="px-5 py-4 rounded-xl text-lg font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-dark-200"
             >
               Clear
             </button>
@@ -398,21 +398,21 @@ export default function MobileLogInteraction() {
         {/* This-session confirmations */}
         {sessionLogs.length > 0 && (
           <div className="pt-2">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-200 mb-2">
               Logged this session
             </h2>
             <div className="space-y-2">
               {sessionLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-start gap-2 rounded-xl border border-gray-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-4 py-3"
+                  className="flex items-start gap-2 rounded-xl border border-zinc-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-4 py-3"
                 >
                   <CheckCircle2 className="h-6 w-6 text-green-500 shrink-0 mt-0.5" />
                   <div className="min-w-0">
-                    <p className="text-base font-medium text-gray-900 dark:text-white truncate">
+                    <p className="text-base font-medium text-zinc-900 dark:text-white truncate">
                       {log.customer} · {log.contact}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
                       {interactionTypeLabel(log.type)} ·{" "}
                       {format(new Date(log.at), "h:mm a")}
                     </p>

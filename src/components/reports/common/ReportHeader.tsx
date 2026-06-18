@@ -87,7 +87,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         {onBack && !isEditing && (
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-600 hover:text-zinc-800 dark:text-white dark:hover:text-zinc-200"
           >
             <svg
               className="w-4 h-4"
@@ -105,7 +105,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
             {backLabel}
           </button>
         )}
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
           {title}
         </h1>
       </div>
@@ -156,7 +156,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                 >
                   <button
                     onClick={onPrint || (() => window.print())}
-                    className="px-2 py-2 text-sm rounded-full text-white bg-gray-600 border border-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    className="px-2 py-2 text-sm rounded-full text-white bg-zinc-600 border border-zinc-600 hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500"
                     title="Print Report"
                   >
                     <Printer className="w-6 h-6" />
@@ -225,7 +225,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
       </div>
       {tooltip && (
         <span
-          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-gray-900"
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-zinc-900"
           style={{
             left: tooltip.x,
             top: tooltip.y + 14,

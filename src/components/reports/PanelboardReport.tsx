@@ -785,7 +785,7 @@ const PanelboardReport: React.FC = () => {
         .max-w-7xl { max-width: 100% !important; }
 
         /* Orange header bar for sections */
-        .border-b.dark\\:border-gray-700 {
+        .border-b.dark\\:border-zinc-700 {
           border: none !important;
           margin: 0 !important;
           padding: 0 !important;
@@ -1830,7 +1830,7 @@ const PanelboardReport: React.FC = () => {
     >
       <ReportWrapper isPrintMode={isPrintMode}>
         {/* Print Header - Only visible when printing */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
           <div
             style={{
               width: "120px",
@@ -1902,49 +1902,49 @@ const PanelboardReport: React.FC = () => {
         />
         {/* Job Information */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Job Information
           </h2>
 
           <div className="grid grid-cols-2 gap-4 mb-8 print:hidden job-info-onscreen">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Job #
                 </label>
                 <input
                   type="text"
                   value={formData.jobNumber}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Customer
                 </label>
                 <input
                   type="text"
                   value={maskCustomerName(formData.customerName)}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
                 <div className="print:hidden">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Address
                   </label>
                   <textarea
                     value={maskCustomerAddress(formData.customerLocation)}
                     readOnly={true}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Identifier
                 </label>
                 <input
@@ -1954,14 +1954,14 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "identifier", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter Identifier"
                 />
               </div>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Technicians
                 </label>
                 <input
@@ -1971,11 +1971,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "technicians", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Substation
                 </label>
                 <input
@@ -1985,11 +1985,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "substation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Equipment Location
                 </label>
                 <input
@@ -1999,11 +1999,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "eqptLocation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Date
                 </label>
                 <input
@@ -2011,11 +2011,11 @@ const PanelboardReport: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleChange(null, "date", e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   User
                 </label>
                 <input
@@ -2025,14 +2025,14 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "userName", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter User Name"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Temp. °F
                   </label>
                   <input
@@ -2042,11 +2042,11 @@ const PanelboardReport: React.FC = () => {
                       handleFahrenheitChange(Number(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     °C
                   </label>
                   <input
@@ -2056,18 +2056,18 @@ const PanelboardReport: React.FC = () => {
                       handleCelsiusChange(Number(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     TCF
                   </label>
                   <input
                     type="number"
                     value={formData.temperature.tcf}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
               </div>
@@ -2090,13 +2090,13 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Nameplate Data */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Nameplate Data
           </h2>
           <div className="grid grid-cols-2 gap-4 print:hidden nameplate-onscreen">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Manufacturer
                 </label>
                 <input
@@ -2106,11 +2106,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "manufacturer", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Catalog No.
                 </label>
                 <input
@@ -2120,11 +2120,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "catalogNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number
                 </label>
                 <input
@@ -2134,11 +2134,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "serialNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Type
                 </label>
                 <input
@@ -2146,13 +2146,13 @@ const PanelboardReport: React.FC = () => {
                   value={formData.type}
                   onChange={(e) => handleChange(null, "type", e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   System Voltage (V)
                 </label>
                 <input
@@ -2162,11 +2162,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "systemVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Rated Voltage (V)
                 </label>
                 <input
@@ -2176,11 +2176,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "ratedVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Rated Current (A)
                 </label>
                 <input
@@ -2190,11 +2190,11 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "ratedCurrent", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Phase Configuration
                 </label>
                 <input
@@ -2204,7 +2204,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "phaseConfiguration", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2224,11 +2224,11 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Visual and Mechanical Inspection
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
               <colgroup>
                 <col style={{ width: "12%" }} />
                 <col style={{ width: "68%" }} />
@@ -2236,24 +2236,24 @@ const PanelboardReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     ID
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Description
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Result
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {formData.visualInspectionItems.map((item, index) => (
                   <tr key={item.id}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white text-center">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white text-center">
                       {item.id}
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
                       {item.description}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
@@ -2271,7 +2271,7 @@ const PanelboardReport: React.FC = () => {
                             });
                           }}
                           disabled={!isEditing}
-                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2292,12 +2292,12 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Electrical Tests - Insulation Resistance */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Electrical Tests - Insulation Resistance
           </h2>
           <div className="flex justify-end mb-2">
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-white">
+              <span className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Voltage:
               </span>
               <select
@@ -2315,7 +2315,7 @@ const PanelboardReport: React.FC = () => {
                   });
                 }}
                 disabled={!isEditing}
-                className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               >
                 <option value="">Select...</option>
                 <option value="250V">250V</option>
@@ -2327,7 +2327,7 @@ const PanelboardReport: React.FC = () => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-table">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed ir-table">
               <colgroup>
                 <col style={{ width: "10.25%" }} />
                 <col style={{ width: "10.25%" }} />
@@ -2343,47 +2343,47 @@ const PanelboardReport: React.FC = () => {
               <thead>
                 <tr>
                   <th
-                    className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     colSpan={9}
                   >
                     Insulation Resistance
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Units
                   </th>
                 </tr>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-B
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-C
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-A
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 <tr>
                   {["ag", "bg", "cg", "ab", "bc", "ca", "an", "bn", "cn"].map(
                     (key) => (
@@ -2439,7 +2439,7 @@ const PanelboardReport: React.FC = () => {
                               });
                             }}
                             readOnly={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2467,7 +2467,7 @@ const PanelboardReport: React.FC = () => {
                           });
                         }}
                         disabled={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnits.map((unit) => (
                           <option key={unit.symbol} value={unit.symbol}>
@@ -2487,11 +2487,11 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Temperature Corrected Values */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Temperature Corrected Values
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-corrected-table">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed ir-corrected-table">
               <colgroup>
                 <col style={{ width: "10.25%" }} />
                 <col style={{ width: "10.25%" }} />
@@ -2507,47 +2507,47 @@ const PanelboardReport: React.FC = () => {
               <thead>
                 <tr>
                   <th
-                    className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     colSpan={9}
                   >
                     Insulation Resistance
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Units
                   </th>
                 </tr>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-G
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-B
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-C
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-A
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C-N
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 <tr>
                   {["ag", "bg", "cg", "ab", "bc", "ca", "an", "bn", "cn"].map(
                     (key) => (
@@ -2561,7 +2561,7 @@ const PanelboardReport: React.FC = () => {
                               ] || "",
                             )}
                             readOnly
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2582,7 +2582,7 @@ const PanelboardReport: React.FC = () => {
                           formData.insulationResistanceTests[0]?.unit || "MΩ"
                         }
                         readOnly
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                        className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                       />
                     </div>
                     <div className="hidden print:block text-center">
@@ -2596,12 +2596,12 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Contact Resistance */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Contact Resistance
           </h2>
           <div className="flex justify-end mb-2">
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-white">
+              <span className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Amperage:
               </span>
               <select
@@ -2619,7 +2619,7 @@ const PanelboardReport: React.FC = () => {
                   }));
                 }}
                 disabled={!isEditing}
-                className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               >
                 <option value="">Select...</option>
                 <option value="1 mA">1 mA</option>
@@ -2658,7 +2658,7 @@ const PanelboardReport: React.FC = () => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed contact-resistance-table">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed contact-resistance-table">
               <colgroup>
                 <col style={{ width: "6%" }} />
                 <col style={{ width: "17%" }} />
@@ -2670,26 +2670,26 @@ const PanelboardReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     A Phase
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     B Phase
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     C Phase
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     Neutral
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                     Ground
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {formData.contactResistanceTests.map((test, index) => (
                   <tr key={index}>
                     <td className="px-3 py-2"></td>
@@ -2736,7 +2736,7 @@ const PanelboardReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2760,7 +2760,7 @@ const PanelboardReport: React.FC = () => {
                             }));
                           }}
                           disabled={!isEditing}
-                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {contactResistanceUnits.map((unit) => (
                             <option
@@ -2785,13 +2785,13 @@ const PanelboardReport: React.FC = () => {
         </div>
         {/* Test Equipment Used */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 print:hidden test-eqpt-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Megohmmeter
                 </label>
                 <EquipmentAutocomplete
@@ -2848,7 +2848,7 @@ const PanelboardReport: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Serial Number
                 </label>
                 <input
@@ -2864,11 +2864,11 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Serial Number"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   AMP ID
                 </label>
                 <input
@@ -2884,11 +2884,11 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter AMP ID"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Cal Date
                 </label>
                 <input
@@ -2904,13 +2904,13 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Cal Date"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 print:hidden test-eqpt-onscreen mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Low-Resistance Ohmmeter
                 </label>
                 <EquipmentAutocomplete
@@ -2969,7 +2969,7 @@ const PanelboardReport: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Serial Number
                 </label>
                 <input
@@ -2997,11 +2997,11 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Serial Number"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   AMP ID
                 </label>
                 <input
@@ -3029,11 +3029,11 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter AMP ID"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Cal Date
                 </label>
                 <input
@@ -3061,13 +3061,13 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Cal Date"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             {/* Print-only compact Test Equipment table (4 boxes wide) */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] test-eqpt-print">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem] test-eqpt-print">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -3076,7 +3076,7 @@ const PanelboardReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">
                         Megohmmeter:
                       </div>
@@ -3084,7 +3084,7 @@ const PanelboardReport: React.FC = () => {
                         {formData.testEquipment.megohmmeter.name || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">
                         Serial Number:
                       </div>
@@ -3092,13 +3092,13 @@ const PanelboardReport: React.FC = () => {
                         {formData.testEquipment.megohmmeter.serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">AMP ID:</div>
                       <div className="mt-0 text-center">
                         {formData.testEquipment.megohmmeter.ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">Cal Date:</div>
                       <div className="mt-0 text-center">
                         {formData.testEquipment.megohmmeter.calDate || ""}
@@ -3106,7 +3106,7 @@ const PanelboardReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">
                         Low-Resistance Ohmmeter:
                       </div>
@@ -3115,7 +3115,7 @@ const PanelboardReport: React.FC = () => {
                           ?.name || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">
                         Serial Number:
                       </div>
@@ -3124,14 +3124,14 @@ const PanelboardReport: React.FC = () => {
                           ?.serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">AMP ID:</div>
                       <div className="mt-0 text-center">
                         {(formData.testEquipment as any).lowResistanceOhmmeter
                           ?.ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-middle border border-gray-300 print:border-black print:border text-center">
+                    <td className="p-2 align-middle border border-zinc-300 print:border-black print:border text-center">
                       <div className="font-semibold text-center">Cal Date:</div>
                       <div className="mt-0 text-center">
                         {(formData.testEquipment as any).lowResistanceOhmmeter
@@ -3149,7 +3149,7 @@ const PanelboardReport: React.FC = () => {
           className={`mb-32 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           style={{ marginBottom: "150px" }}
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments
           </h2>
           <div className="space-y-4">
@@ -3159,14 +3159,14 @@ const PanelboardReport: React.FC = () => {
               readOnly={!isEditing}
               rows={10}
               placeholder="Enter any additional comments, observations, or notes about the inspection..."
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

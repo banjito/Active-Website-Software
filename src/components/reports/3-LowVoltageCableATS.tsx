@@ -437,7 +437,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         .flex.items-center { display: inline-flex !important; margin-right: 10px !important; }
         section { page-break-inside: avoid !important; }
         .max-w-7xl { max-width: 100% !important; }
-        .border-b.dark\\:border-gray-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
+        .border-b.dark\\:border-zinc-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
         section { margin-bottom: 2px !important; padding: 0 !important; }
         .print\\:flex { margin-bottom: 3px !important; }
         div[class*='print:border'] { border: none !important; box-shadow: none !important; background: transparent !important; }
@@ -1205,7 +1205,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
       style={{ minHeight: "calc(100vh + 300px)", paddingBottom: "200px" }}
     >
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1246,7 +1246,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
         {/* Job Information Section */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Job Information
           </h2>
           {/* PASS/FAIL Status - Print Only, positioned to the right */}
@@ -1277,37 +1277,37 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 mb-8 print:hidden">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Job #
                 </label>
                 <input
                   type="text"
                   value={formData.jobNumber}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Customer
                 </label>
                 <input
                   type="text"
                   value={maskCustomerName(formData.customer)}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
                 <div className="print:hidden">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Address
                   </label>
                   <textarea
                     value={maskCustomerAddress(formData.address)}
                     readOnly={true}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div className="hidden print:flex print:items-baseline">
@@ -1335,7 +1335,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Identifier
                 </label>
                 <input
@@ -1348,14 +1348,14 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter Identifier"
                 />
               </div>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Technicians
                 </label>
                 <input
@@ -1368,11 +1368,11 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Substation
                 </label>
                 <input
@@ -1385,11 +1385,11 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Equipment Location
                 </label>
                 <input
@@ -1402,11 +1402,11 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Date
                 </label>
                 <input
@@ -1416,11 +1416,11 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, date: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   User
                 </label>
                 <input
@@ -1430,13 +1430,13 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, user: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter User Name"
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Temp. °F
                   </label>
                   <input
@@ -1449,29 +1449,29 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditMode}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     °C
                   </label>
                   <input
                     type="number"
                     value={celsiusTemperature}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     TCF
                   </label>
                   <input
                     type="number"
                     value={tcf}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
               </div>
@@ -1500,25 +1500,25 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
         {/* Placeholder for additional sections - to be completed */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Cable Information
           </h2>
-          <div className="text-gray-500 dark:text-white p-4 border border-gray-300 dark:border-gray-600 rounded">
+          <div className="text-zinc-500 dark:text-white p-4 border border-zinc-300 dark:border-zinc-600 rounded">
             Cable information section - to be implemented
           </div>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Results
           </h2>
-          <div className="text-gray-500 dark:text-white p-4 border border-gray-300 dark:border-gray-600 rounded">
+          <div className="text-zinc-500 dark:text-white p-4 border border-zinc-300 dark:border-zinc-600 rounded">
             Test results section - to be implemented
           </div>
         </div>
 
         <div className="mb-6 page-break-before">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
           <div className="grid grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
@@ -1590,7 +1590,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     },
                   }))
                 }
-                className={`form-input ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 readOnly={!isEditMode}
               />
             </div>
@@ -1612,7 +1612,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     },
                   }))
                 }
-                className={`form-input ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 readOnly={!isEditMode}
               />
             </div>
@@ -1634,14 +1634,14 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     },
                   }))
                 }
-                className={`form-input ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 readOnly={!isEditMode}
               />
             </div>
           </div>
           {/* Print-only compact Test Equipment table (3 boxes wide, 1 row) */}
           <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] test-eqpt-print">
+            <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem] test-eqpt-print">
               <colgroup>
                 <col style={{ width: "33.33%" }} />
                 <col style={{ width: "33.33%" }} />
@@ -1649,19 +1649,19 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
               </colgroup>
               <tbody>
                 <tr>
-                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                  <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                     <div className="font-semibold">Megohmmeter:</div>
                     <div className="mt-0">
                       {formData.testEquipment.megohmmeter || ""}
                     </div>
                   </td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                  <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                     <div className="font-semibold">Serial Number:</div>
                     <div className="mt-0">
                       {formData.testEquipment.serialNumber || ""}
                     </div>
                   </td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                  <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                     <div className="font-semibold">AMP ID:</div>
                     <div className="mt-0">
                       {formData.testEquipment.ampId || ""}
@@ -1676,7 +1676,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         <div
           className={`mb-6 comments-section print:break-inside-avoid ${!formData.testEquipment.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments
           </h2>
           <textarea
@@ -1692,7 +1692,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
             }
             readOnly={!isEditMode}
             rows={6}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+            className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             placeholder="Enter comments here..."
           />
           {formData.testEquipment.comments?.trim() && (

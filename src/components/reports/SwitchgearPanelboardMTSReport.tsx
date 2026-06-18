@@ -847,16 +847,16 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       }
 
       .form-label {
-        @apply block text-sm font-medium text-gray-700 dark:text-white;
+        @apply block text-sm font-medium text-zinc-700 dark:text-white;
       }
       .form-input, .form-select, .form-textarea {
-        @apply mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 dark:bg-dark-150 dark:text-white;
+        @apply mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 dark:bg-dark-150 dark:text-white;
       }
       .form-input-table {
         @apply w-full p-1 border-none bg-transparent text-center dark:text-white focus:ring-0 focus:outline-none;
       }
       .table-header {
-        @apply px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider;
+        @apply px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider;
       }
 
       /* Prevent comments from breaking across pages and auto-size for print */
@@ -1344,7 +1344,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative switchgear-panelboard-mts-titlebar">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative switchgear-panelboard-mts-titlebar">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1432,7 +1432,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               >
                 - Remove Last Section
               </button>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
                 ({formData.measuredInsulationResistance.length} bus section
                 {formData.measuredInsulationResistance.length !== 1 ? "s" : ""})
               </span>
@@ -1442,7 +1442,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-job-info">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-job-info">
               Job Information
             </h2>
 
@@ -1453,7 +1453,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   type="text"
                   value={maskCustomerName(formData.customerName)}
                   readOnly
-                  className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
                 />
               </div>
               <div>
@@ -1462,7 +1462,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   type="text"
                   value={formData.jobNumber}
                   readOnly
-                  className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
                 />
               </div>
               <div>
@@ -1477,7 +1477,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("technicians", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1490,7 +1490,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleInputChange("date", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1505,7 +1505,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("identifier", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1520,7 +1520,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleFahrenheitChange(parseFloat(e.target.value))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="ml-1">°F</span>
               </div>
@@ -1533,7 +1533,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   type="number"
                   value={formData.temperature.celsius}
                   readOnly
-                  className="form-input w-32 min-w-[7rem] bg-gray-100 dark:bg-dark-150"
+                  className="form-input w-32 min-w-[7rem] bg-zinc-100 dark:bg-dark-150"
                 />
               </div>
               <div>
@@ -1545,7 +1545,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   type="number"
                   value={formData.temperature.tcf.toFixed(3)}
                   readOnly
-                  className="form-input bg-gray-100 dark:bg-dark-150 w-16"
+                  className="form-input bg-zinc-100 dark:bg-dark-150 w-16"
                 />
               </div>
               <div>
@@ -1560,7 +1560,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("substation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1575,7 +1575,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("eqptLocation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="md:col-span-2">
@@ -1590,7 +1590,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("userName", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1608,7 +1608,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   placeholder="Optional"
                 />
               </div>
@@ -1621,7 +1621,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   type="text"
                   value={formData.customerLocation}
                   readOnly
-                  className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                  className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                 />
               </div>
             </div>
@@ -1649,7 +1649,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-nameplate-data">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-nameplate-data">
               Nameplate Data
             </h2>
 
@@ -1663,7 +1663,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.manufacturer", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1675,7 +1675,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.catalogNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1687,7 +1687,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.serialNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1701,7 +1701,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.series", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1713,7 +1713,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.type", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1725,7 +1725,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.systemVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1739,7 +1739,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.ratedVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1751,7 +1751,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.ratedCurrent", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1763,7 +1763,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     handleInputChange("nameplate.aicRating", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1780,7 +1780,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1803,36 +1803,36 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-visual-mechanical">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-visual-mechanical">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "68%" }} />
                   <col style={{ width: "20%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-white">
                         {item.id}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700 dark:text-white whitespace-normal break-words">
+                      <td className="px-6 py-4 text-sm text-zinc-700 dark:text-white whitespace-normal break-words">
                         {item.description}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -1848,7 +1848,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full md:w-48 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full md:w-48 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {VISUAL_INSPECTION_OPTIONS.map((opt) => (
                               <option key={opt} value={opt}>
@@ -1872,7 +1872,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Electrical Tests - Measured Insulation Resistance Values
               </h2>
               <div className="flex items-center space-x-4">
@@ -1886,7 +1886,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   </button>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-white">
+                  <span className="text-sm font-medium text-zinc-700 dark:text-white">
                     Test Voltage:
                   </span>
                   <select
@@ -1898,7 +1898,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   >
                     <option value="">Select...</option>
                     {INSULATION_RESISTANCE_TEST_VOLTAGES.map((opt) => (
@@ -1911,7 +1911,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto section-insulation-resistance">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed ir-table">
                 <colgroup>
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "9.3%" }} />
@@ -1927,52 +1927,52 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider w-32">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider w-32">
                       Bus Section
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={9}
                     >
                       Insulation Resistance
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-B
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-C
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-A
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.measuredInsulationResistance.map((test, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
@@ -1981,7 +1981,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                             type="text"
                             value={test.busSection}
                             readOnly
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-left">
@@ -2015,7 +2015,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2034,7 +2034,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2061,11 +2061,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           {/* Electrical Tests - Temperature Corrected Insulation Resistance */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold">
               Temperature Corrected Values
             </h2>
             <div className="overflow-x-auto section-temp-corrected">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-corrected-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed ir-corrected-table">
                 <colgroup>
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "9.3%" }} />
@@ -2081,52 +2081,52 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider w-32">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider w-32">
                       Bus Section
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={9}
                     >
                       Insulation Resistance
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-B
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-C
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-A
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.tempCorrectedInsulationResistance.map(
                     (test, index) => (
                       <tr key={index}>
@@ -2136,7 +2136,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               type="text"
                               value={test.busSection}
                               readOnly
-                              className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                              className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2160,7 +2160,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 type="text"
                                 value={test[key]}
                                 readOnly
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                                className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                               />
                             </div>
                             <div className="hidden print:block text-center">
@@ -2174,7 +2174,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               type="text"
                               value={formData.insulationResistanceUnit}
                               readOnly
-                              className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                              className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2193,12 +2193,12 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Contact Resistance
               </h2>
             </div>
             <div className="overflow-x-auto section-contact-resistance">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed contact-resistance-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed contact-resistance-table">
                 <colgroup>
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "18.4%" }} />
@@ -2210,40 +2210,40 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider w-32">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider w-32">
                       Bus Section
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={5}
                     >
                       Contact Resistance
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A Phase
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B Phase
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C Phase
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Neutral
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Ground
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.contactResistanceTests.map((test, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
@@ -2262,7 +2262,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2287,7 +2287,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                   }));
                                 }}
                                 readOnly={!isEditing}
-                                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                               />
                             </div>
                             <div className="hidden print:block text-center">
@@ -2307,7 +2307,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {CONTACT_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2335,11 +2335,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Dielectric Withstand
               </h2>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-white">
+                <span className="text-sm font-medium text-zinc-700 dark:text-white">
                   Test Voltage:
                 </span>
                 <select
@@ -2351,7 +2351,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   {DIELECTRIC_WITHSTAND_TEST_VOLTAGES.map((opt) => (
                     <option key={opt} value={opt}>
@@ -2362,7 +2362,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto section-dielectric">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed dielectric-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed dielectric-table">
                 <colgroup>
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "28%" }} />
@@ -2372,34 +2372,34 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider w-32">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider w-32">
                       Bus Section
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={3}
                     >
                       Dielectric Withstand
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.dielectricWithstandTests.map((test, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
@@ -2408,7 +2408,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                             type="text"
                             value={test.busSection}
                             readOnly
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2432,7 +2432,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2451,7 +2451,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {DIELECTRIC_WITHSTAND_UNITS.map((unit) => (
                               <option
@@ -2478,11 +2478,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-test-equipment">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-test-equipment">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
-              <div className="grid grid-cols-4 gap-4 border-b dark:border-gray-700 pb-4">
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-zinc-700 pb-4">
                 <div>
                   <label className="form-label">Megohmmeter:</label>
                   <EquipmentAutocomplete
@@ -2539,7 +2539,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2554,7 +2554,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2569,11 +2569,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-4 border-b dark:border-gray-700 pb-4">
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-zinc-700 pb-4">
                 <div>
                   <label className="form-label">Low Resistance Ohmmeter:</label>
                   <EquipmentAutocomplete
@@ -2635,7 +2635,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2650,7 +2650,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2665,7 +2665,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2726,7 +2726,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2741,7 +2741,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2756,7 +2756,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2764,7 +2764,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
             {/* Print-only compact Test Equipment table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                 <colgroup>
                   <col style={{ width: "33.33%" }} />
                   <col style={{ width: "33.33%" }} />
@@ -2772,19 +2772,19 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Megohmmeter:</div>
                       <div className="mt-0">
                         {formData.testEquipment.megohmmeter.name || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {formData.testEquipment.megohmmeter.serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {formData.testEquipment.megohmmeter.ampId || ""}
@@ -2792,7 +2792,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">
                         Low Resistance Ohmmeter:
                       </div>
@@ -2801,14 +2801,14 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                           ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {formData.testEquipment.lowResistanceOhmmeter
                           .serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {formData.testEquipment.lowResistanceOhmmeter.ampId ||
@@ -2817,19 +2817,19 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Hipot:</div>
                       <div className="mt-0">
                         {formData.testEquipment.hipot.name || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {formData.testEquipment.hipot.serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {formData.testEquipment.hipot.ampId || ""}
@@ -2846,7 +2846,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             className={`mb-6 section-comments print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-comments">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-comments">
               Comments
             </h2>
             <textarea
@@ -2854,15 +2854,15 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               onChange={(e) => handleInputChange("comments", e.target.value)}
               rows={4}
               readOnly={!isEditing}
-              className={`form-textarea w-full resize-none ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
               placeholder="Enter comments here..."
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

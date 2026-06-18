@@ -36,13 +36,13 @@ export default function SalesDashboard() {
       {/* Quick Actions */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-900">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-dark-900">
             Quick Actions
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           <Card
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-zinc-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/opportunities")}
           >
             <CardHeader className="p-6">
@@ -51,10 +51,10 @@ export default function SalesDashboard() {
                   <TrendingUp className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium text-gray-900 dark:text-dark-900">
+                  <CardTitle className="text-base font-medium text-zinc-900 dark:text-dark-900">
                     View Opportunities
                   </CardTitle>
-                  <CardDescription className="text-sm text-gray-500 dark:text-dark-400">
+                  <CardDescription className="text-sm text-zinc-500 dark:text-dark-400">
                     Manage your sales pipeline
                   </CardDescription>
                 </div>
@@ -63,7 +63,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-zinc-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/customers")}
           >
             <CardHeader className="p-6">
@@ -72,10 +72,10 @@ export default function SalesDashboard() {
                   <Users className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium text-gray-900 dark:text-dark-900">
+                  <CardTitle className="text-base font-medium text-zinc-900 dark:text-dark-900">
                     Manage Customers
                   </CardTitle>
-                  <CardDescription className="text-sm text-gray-500 dark:text-dark-400">
+                  <CardDescription className="text-sm text-zinc-500 dark:text-dark-400">
                     View and edit customer data
                   </CardDescription>
                 </div>
@@ -84,7 +84,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-zinc-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/contacts")}
           >
             <CardHeader className="p-6">
@@ -93,10 +93,10 @@ export default function SalesDashboard() {
                   <Users className="h-5 w-5 text-rose-500 dark:text-rose-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium text-gray-900 dark:text-dark-900">
+                  <CardTitle className="text-base font-medium text-zinc-900 dark:text-dark-900">
                     Manage Contacts
                   </CardTitle>
-                  <CardDescription className="text-sm text-gray-500 dark:text-dark-400">
+                  <CardDescription className="text-sm text-zinc-500 dark:text-dark-400">
                     View and edit contact information
                   </CardDescription>
                 </div>

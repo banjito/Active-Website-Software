@@ -1,15 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/AuthContext';
-import { 
-  Card, Button, Input, Select, Badge, 
-  Table, TableHeader, TableBody, TableRow, 
-  TableHead, TableCell, Pagination, toast 
-} from '@/components/ui';
-import { Search, Filter, Folder, File, Download } from 'lucide-react';
-import engineeringService from '@/lib/services/engineeringService';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  Card,
+  Button,
+  Input,
+  Select,
+  Badge,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Pagination,
+  toast,
+} from "@/components/ui";
+import { Search, Filter, Folder, File, Download } from "lucide-react";
+import engineeringService from "@/lib/services/engineeringService";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-export type DocumentCategory = 'technical' | 'manual' | 'procedure' | 'standard' | 'guide' | 'reference';
+export type DocumentCategory =
+  | "technical"
+  | "manual"
+  | "procedure"
+  | "standard"
+  | "guide"
+  | "reference";
 
 export interface DocumentFilters {
   category?: DocumentCategory;
@@ -41,28 +57,30 @@ export interface TechnicalDocument {
 export function TechnicalDocumentationLibrary() {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<TechnicalDocument[]>([]);
-  const [filteredDocuments, setFilteredDocuments] = useState<TechnicalDocument[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<
+    TechnicalDocument[]
+  >([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [uploading, setUploading] = useState<boolean>(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(10);
-  
+
   // Filter states
   const [filters, setFilters] = useState<DocumentFilters>({});
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  
+
   // Upload dialog states
   const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false);
   const [newDocument, setNewDocument] = useState({
-    title: '',
-    description: '',
-    category: 'technical' as DocumentCategory,
+    title: "",
+    description: "",
+    category: "technical" as DocumentCategory,
     tags: [] as string[],
-    file: null as File | null
+    file: null as File | null,
   });
 
   useEffect(() => {
@@ -79,14 +97,16 @@ export function TechnicalDocumentationLibrary() {
     // This will be implemented in the engineeringService
     // Placeholder for now
     const response = { data: [], error: null };
-    
+
     if (response.data) {
       setDocuments(response.data as TechnicalDocument[]);
     } else {
       toast({
-        title: 'Error',
-        description: response.error ? String(response.error) : 'Failed to fetch documents',
-        variant: 'destructive',
+        title: "Error",
+        description: response.error
+          ? String(response.error)
+          : "Failed to fetch documents",
+        variant: "destructive",
       });
     }
     setLoading(false);
@@ -95,8 +115,18 @@ export function TechnicalDocumentationLibrary() {
   const fetchTags = async () => {
     // This will be implemented in the engineeringService
     // Placeholder for now
-    const response = { data: ['CAD', 'Blueprint', 'Procedure', 'Safety', 'Electrical', 'Mechanical'], error: null };
-    
+    const response = {
+      data: [
+        "CAD",
+        "Blueprint",
+        "Procedure",
+        "Safety",
+        "Electrical",
+        "Mechanical",
+      ],
+      error: null,
+    };
+
     if (response.data) {
       setTags(response.data);
     }
@@ -104,54 +134,55 @@ export function TechnicalDocumentationLibrary() {
 
   const filterDocuments = () => {
     let filtered = [...documents];
-    
+
     if (filters.category) {
-      filtered = filtered.filter(doc => doc.category === filters.category);
+      filtered = filtered.filter((doc) => doc.category === filters.category);
     }
-    
+
     if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(doc => 
-        filters.tags?.some(tag => doc.tags.includes(tag))
+      filtered = filtered.filter((doc) =>
+        filters.tags?.some((tag) => doc.tags.includes(tag)),
       );
     }
-    
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(doc => 
-        doc.title.toLowerCase().includes(searchLower) ||
-        doc.description.toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(searchLower) ||
+          doc.description.toLowerCase().includes(searchLower),
       );
     }
-    
+
     if (filters.dateFrom) {
-      filtered = filtered.filter(doc => 
-        new Date(doc.created_at) >= new Date(filters.dateFrom!)
+      filtered = filtered.filter(
+        (doc) => new Date(doc.created_at) >= new Date(filters.dateFrom!),
       );
     }
-    
+
     if (filters.dateTo) {
-      filtered = filtered.filter(doc => 
-        new Date(doc.created_at) <= new Date(filters.dateTo!)
+      filtered = filtered.filter(
+        (doc) => new Date(doc.created_at) <= new Date(filters.dateTo!),
       );
     }
-    
+
     setFilteredDocuments(filtered);
   };
 
   const handleFilterChange = (key: keyof DocumentFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
   const handleTagChange = (tag: string) => {
     const updatedTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
+      ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
-    
+
     setSelectedTags(updatedTags);
-    handleFilterChange('tags', updatedTags);
+    handleFilterChange("tags", updatedTags);
   };
 
   const clearFilters = () => {
@@ -166,15 +197,15 @@ export function TechnicalDocumentationLibrary() {
   const handleUploadSubmit = async () => {
     if (!newDocument.title || !newDocument.category || !newDocument.file) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill all required fields and select a file',
-        variant: 'destructive',
+        title: "Validation Error",
+        description: "Please fill all required fields and select a file",
+        variant: "destructive",
       });
       return;
     }
-    
+
     setUploading(true);
-    
+
     // This will be implemented in the engineeringService
     // Placeholder for now
     // Would upload the file and create the document record
@@ -182,63 +213,66 @@ export function TechnicalDocumentationLibrary() {
       setUploading(false);
       setShowUploadDialog(false);
       setNewDocument({
-        title: '',
-        description: '',
-        category: 'technical',
+        title: "",
+        description: "",
+        category: "technical",
         tags: [],
-        file: null
+        file: null,
       });
-      
+
       toast({
-        title: 'Success',
-        description: 'Document uploaded successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Document uploaded successfully",
+        variant: "success",
       });
-      
+
       fetchDocuments();
     }, 1500);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getCategoryLabel = (category: DocumentCategory) => {
     const categoryMap: Record<DocumentCategory, string> = {
-      technical: 'Technical Document',
-      manual: 'Manual',
-      procedure: 'Procedure',
-      standard: 'Standard',
-      guide: 'Guide',
-      reference: 'Reference'
+      technical: "Technical Document",
+      manual: "Manual",
+      procedure: "Procedure",
+      standard: "Standard",
+      guide: "Guide",
+      reference: "Reference",
     };
-    
+
     return categoryMap[category] || category;
   };
 
   const getCategoryBadgeColor = (category: DocumentCategory) => {
     const colorMap: Record<DocumentCategory, string> = {
-      technical: 'bg-blue-500',
-      manual: 'bg-green-500',
-      procedure: 'bg-purple-500',
-      standard: 'bg-yellow-500',
-      guide: 'bg-orange-500',
-      reference: 'bg-gray-500'
+      technical: "bg-blue-500",
+      manual: "bg-green-500",
+      procedure: "bg-purple-500",
+      standard: "bg-yellow-500",
+      guide: "bg-orange-500",
+      reference: "bg-zinc-500",
     };
-    
-    return colorMap[category] || 'bg-gray-500';
+
+    return colorMap[category] || "bg-zinc-500";
   };
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredDocuments.slice(indexOfFirstItem, indexOfLastItem);
-  
+  const currentItems = filteredDocuments.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
+
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
@@ -246,34 +280,34 @@ export function TechnicalDocumentationLibrary() {
       {/* Header section with stats and actions */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">
+          <h2 className="text-2xl font-semibold text-zinc-800 dark:text-white">
             Technical Documentation Library
           </h2>
-          <p className="text-gray-600 dark:text-white mt-1">
+          <p className="text-zinc-600 dark:text-white mt-1">
             Manage and access engineering documentation
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input 
-              placeholder="Search documents..." 
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+            <Input
+              placeholder="Search documents..."
               className="pl-10 w-64"
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
+              value={filters.search || ""}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
             />
           </div>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2"
           >
             <Filter className="h-4 w-4" />
             Filters
           </Button>
-          
+
           <Button
             onClick={() => setShowUploadDialog(true)}
             className="flex items-center gap-2"
@@ -283,66 +317,65 @@ export function TechnicalDocumentationLibrary() {
           </Button>
         </div>
       </div>
-      
+
       {/* Filters panel */}
       {showFilters && (
         <Card className="mb-6 p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                 Category
               </label>
               <Select
-                value={filters.category || ''}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
+                value={filters.category || ""}
+                onChange={(e) => handleFilterChange("category", e.target.value)}
                 options={[
-                  { value: '', label: 'All Categories' },
-                  { value: 'technical', label: 'Technical Document' },
-                  { value: 'manual', label: 'Manual' },
-                  { value: 'procedure', label: 'Procedure' },
-                  { value: 'standard', label: 'Standard' },
-                  { value: 'guide', label: 'Guide' },
-                  { value: 'reference', label: 'Reference' }
+                  { value: "", label: "All Categories" },
+                  { value: "technical", label: "Technical Document" },
+                  { value: "manual", label: "Manual" },
+                  { value: "procedure", label: "Procedure" },
+                  { value: "standard", label: "Standard" },
+                  { value: "guide", label: "Guide" },
+                  { value: "reference", label: "Reference" },
                 ]}
-              >
-              </Select>
+              ></Select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                 Date From
               </label>
               <Input
                 type="date"
-                value={filters.dateFrom || ''}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                value={filters.dateFrom || ""}
+                onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                 Date To
               </label>
               <Input
                 type="date"
-                value={filters.dateTo || ''}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                value={filters.dateTo || ""}
+                onChange={(e) => handleFilterChange("dateTo", e.target.value)}
               />
             </div>
           </div>
-          
+
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
               Tags
             </label>
             <div className="flex flex-wrap gap-2">
-              {tags.map(tag => (
+              {tags.map((tag) => (
                 <Badge
                   key={tag}
                   className={`cursor-pointer ${
-                    selectedTags.includes(tag) 
-                      ? 'bg-primary text-white' 
-                      : 'bg-gray-100 dark:bg-dark-150 text-gray-700 dark:text-white'
+                    selectedTags.includes(tag)
+                      ? "bg-primary text-white"
+                      : "bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-white"
                   }`}
                   onClick={() => handleTagChange(tag)}
                 >
@@ -351,14 +384,16 @@ export function TechnicalDocumentationLibrary() {
               ))}
             </div>
           </div>
-          
+
           <div className="flex justify-end mt-4 gap-2">
-            <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
+            <Button variant="outline" onClick={clearFilters}>
+              Clear Filters
+            </Button>
             <Button onClick={applyFilters}>Apply Filters</Button>
           </div>
         </Card>
       )}
-      
+
       {/* Documents table */}
       <Card>
         <Table>
@@ -384,10 +419,16 @@ export function TechnicalDocumentationLibrary() {
             ) : currentItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
-                  <File className="w-10 h-10 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-500 dark:text-white">No documents found</p>
+                  <File className="w-10 h-10 mx-auto text-zinc-400 mb-2" />
+                  <p className="text-zinc-500 dark:text-white">
+                    No documents found
+                  </p>
                   {Object.keys(filters).length > 0 && (
-                    <Button variant="link" onClick={clearFilters} className="mt-2">
+                    <Button
+                      variant="link"
+                      onClick={clearFilters}
+                      className="mt-2"
+                    >
                       Clear filters
                     </Button>
                   )}
@@ -399,20 +440,22 @@ export function TechnicalDocumentationLibrary() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{doc.title}</div>
-                      <div className="text-xs text-gray-500 dark:text-white mt-1 line-clamp-1">
+                      <div className="text-xs text-zinc-500 dark:text-white mt-1 line-clamp-1">
                         {doc.description}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={`${getCategoryBadgeColor(doc.category)} text-white`}>
+                    <Badge
+                      className={`${getCategoryBadgeColor(doc.category)} text-white`}
+                    >
                       {getCategoryLabel(doc.category)}
                     </Badge>
                   </TableCell>
                   <TableCell>{doc.version}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {doc.tags.map(tag => (
+                      {doc.tags.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
@@ -421,7 +464,7 @@ export function TechnicalDocumentationLibrary() {
                   </TableCell>
                   <TableCell>
                     <div>{formatDate(doc.created_at)}</div>
-                    <div className="text-xs text-gray-500 dark:text-white">
+                    <div className="text-xs text-zinc-500 dark:text-white">
                       by {doc.created_by.display_name}
                     </div>
                   </TableCell>
@@ -437,10 +480,10 @@ export function TechnicalDocumentationLibrary() {
             )}
           </TableBody>
         </Table>
-        
+
         {/* Pagination */}
         {!loading && filteredDocuments.length > 0 && (
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-700">
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(filteredDocuments.length / itemsPerPage)}
@@ -449,79 +492,87 @@ export function TechnicalDocumentationLibrary() {
           </div>
         )}
       </Card>
-      
+
       {/* Upload document dialog - Placeholder for now */}
       {showUploadDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-semibold mb-4">Upload Document</h3>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Title *
                   </label>
                   <Input
                     value={newDocument.title}
-                    onChange={(e) => setNewDocument({...newDocument, title: e.target.value})}
+                    onChange={(e) =>
+                      setNewDocument({ ...newDocument, title: e.target.value })
+                    }
                     placeholder="Enter document title"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Description
                   </label>
                   <textarea
                     value={newDocument.description}
-                    onChange={(e) => setNewDocument({...newDocument, description: e.target.value})}
+                    onChange={(e) =>
+                      setNewDocument({
+                        ...newDocument,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Enter document description"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Category *
                   </label>
                   <Select
                     value={newDocument.category}
-                    onChange={(e) => setNewDocument({
-                      ...newDocument, 
-                      category: e.target.value as DocumentCategory
-                    })}
+                    onChange={(e) =>
+                      setNewDocument({
+                        ...newDocument,
+                        category: e.target.value as DocumentCategory,
+                      })
+                    }
                     options={[
-                      { value: 'technical', label: 'Technical Document' },
-                      { value: 'manual', label: 'Manual' },
-                      { value: 'procedure', label: 'Procedure' },
-                      { value: 'standard', label: 'Standard' },
-                      { value: 'guide', label: 'Guide' },
-                      { value: 'reference', label: 'Reference' }
+                      { value: "technical", label: "Technical Document" },
+                      { value: "manual", label: "Manual" },
+                      { value: "procedure", label: "Procedure" },
+                      { value: "standard", label: "Standard" },
+                      { value: "guide", label: "Guide" },
+                      { value: "reference", label: "Reference" },
                     ]}
-                  >
-                  </Select>
+                  ></Select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                     Tags
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {tags.map(tag => (
+                    {tags.map((tag) => (
                       <Badge
                         key={tag}
                         className={`cursor-pointer ${
-                          newDocument.tags.includes(tag) 
-                            ? 'bg-primary text-white' 
-                            : 'bg-gray-100 dark:bg-dark-150 text-gray-700 dark:text-white'
+                          newDocument.tags.includes(tag)
+                            ? "bg-primary text-white"
+                            : "bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-white"
                         }`}
                         onClick={() => {
                           const updatedTags = newDocument.tags.includes(tag)
-                            ? newDocument.tags.filter(t => t !== tag)
+                            ? newDocument.tags.filter((t) => t !== tag)
                             : [...newDocument.tags, tag];
-                          setNewDocument({...newDocument, tags: updatedTags});
+                          setNewDocument({ ...newDocument, tags: updatedTags });
                         }}
                       >
                         {tag}
@@ -529,46 +580,63 @@ export function TechnicalDocumentationLibrary() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     File *
                   </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-300 dark:border-zinc-600 border-dashed rounded-md">
                     <div className="space-y-1 text-center">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4h-8m-12 0v-8m0 0V4m0 4h4m8 0h-4m-12 4h4m8 0h-4m-12 4h12a4 4 0 014 4v4m0 0v-4m0 0h-12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        className="mx-auto h-12 w-12 text-zinc-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4h-8m-12 0v-8m0 0V4m0 4h4m8 0h-4m-12 4h4m8 0h-4m-12 4h12a4 4 0 014 4v4m0 0v-4m0 0h-12"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
-                      <div className="flex text-sm text-gray-600 dark:text-white">
-                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-dark-150 rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none">
+                      <div className="flex text-sm text-zinc-600 dark:text-white">
+                        <label
+                          htmlFor="file-upload"
+                          className="relative cursor-pointer bg-white dark:bg-dark-150 rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                        >
                           <span>Upload a file</span>
-                          <input 
-                            id="file-upload" 
-                            name="file-upload" 
-                            type="file" 
+                          <input
+                            id="file-upload"
+                            name="file-upload"
+                            type="file"
                             className="sr-only"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
-                                setNewDocument({...newDocument, file: e.target.files[0]});
+                                setNewDocument({
+                                  ...newDocument,
+                                  file: e.target.files[0],
+                                });
                               }
                             }}
                           />
                         </label>
                         <p className="pl-1">or drag and drop</p>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-white">
+                      <p className="text-xs text-zinc-500 dark:text-white">
                         PDF, DOC, CAD, DWG, XLS up to 10MB
                       </p>
                     </div>
                   </div>
                   {newDocument.file && (
-                    <p className="mt-2 text-sm text-gray-600 dark:text-white">
+                    <p className="mt-2 text-sm text-zinc-600 dark:text-white">
                       Selected file: {newDocument.file.name}
                     </p>
                   )}
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6 gap-2">
                 <Button
                   variant="outline"
@@ -577,11 +645,8 @@ export function TechnicalDocumentationLibrary() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleUploadSubmit}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading...' : 'Upload Document'}
+                <Button onClick={handleUploadSubmit} disabled={uploading}>
+                  {uploading ? "Uploading..." : "Upload Document"}
                 </Button>
               </div>
             </div>
@@ -590,4 +655,4 @@ export function TechnicalDocumentationLibrary() {
       )}
     </div>
   );
-} 
+}

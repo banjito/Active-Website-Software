@@ -653,42 +653,42 @@ export default function PipelineCalendarPage() {
     <div className="mx-auto flex max-w-[1500px] flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+          <h1 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50">
             Pipeline Projection
           </h1>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-dark-150">
+          <div className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
             Pipeline
           </div>
-          <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
+          <div className="mt-2 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">
             {formatMillions(totals.awarded)} / {formatMillions(totals.active)}
           </div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-dark-150">
+          <div className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
             Awarded
           </div>
-          <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
+          <div className="mt-2 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">
             {formatMillions(totals.awarded)}
           </div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-dark-150">
+          <div className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
             Expected
           </div>
-          <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
+          <div className="mt-2 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">
             {formatMillions(totals.expected)}
           </div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-dark-150">
+          <div className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
             Dropped
           </div>
-          <div className="mt-2 text-2xl font-semibold text-gray-500 dark:text-gray-400">
+          <div className="mt-2 text-2xl font-semibold text-zinc-500 dark:text-zinc-400">
             {formatMillions(totals.dropped)}
           </div>
         </div>
@@ -700,18 +700,18 @@ export default function PipelineCalendarPage() {
         </div>
       )}
 
-      <section className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-dark-150">
-        <div className="flex flex-col gap-4 border-b border-gray-200 p-4 dark:border-gray-800">
+      <section className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-dark-150">
+        <div className="flex flex-col gap-4 border-b border-zinc-200 p-4 dark:border-zinc-800">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
+              <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-900">
                 <button
                   type="button"
                   onClick={() => setViewMode("calendar")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-zinc-600 dark:text-zinc-300",
                     viewMode === "calendar" &&
-                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                      "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50",
                   )}
                 >
                   <CalendarRange className="h-4 w-4" />
@@ -721,9 +721,9 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-zinc-600 dark:text-zinc-300",
                     viewMode === "list" &&
-                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                      "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50",
                   )}
                 >
                   <Table2 className="h-4 w-4" />
@@ -731,14 +731,14 @@ export default function PipelineCalendarPage() {
                 </button>
               </div>
 
-              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
+              <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-900">
                 <button
                   type="button"
                   onClick={() => setRangeMode("month")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    "h-9 rounded-md px-3 text-sm font-medium text-zinc-600 dark:text-zinc-300",
                     rangeMode === "month" &&
-                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                      "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50",
                   )}
                 >
                   Month
@@ -747,9 +747,9 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setRangeMode("quarter")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    "h-9 rounded-md px-3 text-sm font-medium text-zinc-600 dark:text-zinc-300",
                     rangeMode === "quarter" &&
-                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                      "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50",
                   )}
                 >
                   Quarter
@@ -758,32 +758,32 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setRangeMode("year")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    "h-9 rounded-md px-3 text-sm font-medium text-zinc-600 dark:text-zinc-300",
                     rangeMode === "year" &&
-                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                      "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-zinc-50",
                   )}
                 >
                   Year
                 </button>
               </div>
 
-              <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
+              <div className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-900">
                 <button
                   type="button"
                   aria-label="Previous range"
                   onClick={() => moveRange(-1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-zinc-600 hover:bg-white hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <div className="min-w-32 px-2 text-center text-sm font-semibold text-gray-950 dark:text-gray-50">
+                <div className="min-w-32 px-2 text-center text-sm font-semibold text-zinc-950 dark:text-zinc-50">
                   {getRangeLabel(anchorDate, rangeMode)}
                 </div>
                 <button
                   type="button"
                   aria-label="Next range"
                   onClick={() => moveRange(1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-zinc-600 hover:bg-white hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -805,7 +805,7 @@ export default function PipelineCalendarPage() {
                     "inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-semibold",
                     statusFilter[status]
                       ? cn("border-transparent", getStatusBadgeClasses(status))
-                      : "border-gray-200 bg-gray-50 text-gray-400 opacity-70 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
+                      : "border-zinc-200 bg-zinc-50 text-zinc-400 opacity-70 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500",
                   )}
                 >
                   <StatusIcon status={status} />
@@ -826,8 +826,8 @@ export default function PipelineCalendarPage() {
                   className={cn(
                     "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
                     regionFilter[region]
-                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
-                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
+                      ? "border-zinc-300 bg-white text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500",
                   )}
                 >
                   <span
@@ -842,7 +842,7 @@ export default function PipelineCalendarPage() {
         </div>
 
         {selectedProjectionIds.size > 0 && (
-          <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-red-50 px-4 py-2 dark:border-gray-800 dark:bg-red-950/20">
+          <div className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-red-50 px-4 py-2 dark:border-zinc-800 dark:bg-red-950/20">
             <div className="text-sm font-medium text-red-800 dark:text-red-200">
               {selectedProjectionIds.size} selected
             </div>
@@ -862,19 +862,19 @@ export default function PipelineCalendarPage() {
             <div className="min-w-0 overflow-x-auto">
               <div
                 className={cn(
-                  "rounded-lg border border-gray-200 dark:border-gray-800",
+                  "rounded-lg border border-zinc-200 dark:border-zinc-800",
                   rangeMode === "year" ? "min-w-[1320px]" : "min-w-[900px]",
                 )}
               >
-                <div className="grid grid-cols-[230px_1fr] border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
-                  <div className="border-r border-gray-200 px-3 py-3 dark:border-gray-800">
+                <div className="grid grid-cols-[230px_1fr] border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                  <div className="border-r border-zinc-200 px-3 py-3 dark:border-zinc-800">
                     Job
                   </div>
                   <div className="relative h-11">
                     {monthSegments.map((segment) => (
                       <div
                         key={segment.label}
-                        className="absolute top-0 flex h-full items-center justify-center border-l border-gray-200 first:border-l-0 dark:border-gray-800"
+                        className="absolute top-0 flex h-full items-center justify-center border-l border-zinc-200 first:border-l-0 dark:border-zinc-800"
                         style={{
                           left: `${segment.left}%`,
                           width: `${segment.width}%`,
@@ -887,13 +887,13 @@ export default function PipelineCalendarPage() {
                 </div>
 
                 {visibleCalendarJobs.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
                     {isLoadingProjection
                       ? "Loading Pipeline Projection..."
                       : "No opportunities in this Projection view."}
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                  <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
                     {visibleCalendarJobs.map((job) => {
                       const isSelected = selectedJobId === job.id;
                       const barStyle = getBarStyle(job, viewStart, viewEnd);
@@ -904,7 +904,7 @@ export default function PipelineCalendarPage() {
                           className={cn(
                             "grid min-h-14 grid-cols-[230px_1fr] bg-white dark:bg-dark-150",
                             job.status === "dropped" &&
-                              "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
+                              "bg-zinc-50 text-zinc-500 dark:bg-zinc-900/60 dark:text-zinc-500",
                           )}
                         >
                           <button
@@ -916,21 +916,21 @@ export default function PipelineCalendarPage() {
                               })
                             }
                             className={cn(
-                              "min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
+                              "min-w-0 border-r border-zinc-200 px-3 py-2 text-left hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900",
                               isSelected &&
                                 "bg-orange-50 dark:bg-orange-950/20",
                             )}
                           >
                             <div
                               className={cn(
-                                "truncate text-sm font-semibold text-gray-950 dark:text-gray-50",
+                                "truncate text-sm font-semibold text-zinc-950 dark:text-zinc-50",
                                 job.status === "dropped" &&
-                                  "text-gray-500 line-through dark:text-gray-500",
+                                  "text-zinc-500 line-through dark:text-zinc-500",
                               )}
                             >
                               {job.customer}
                             </div>
-                            <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            <div className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                               {job.dataCenterId || "No DC ID"} · {job.location}
                             </div>
                           </button>
@@ -943,7 +943,7 @@ export default function PipelineCalendarPage() {
                             {dateTicks.map((tick) => (
                               <div
                                 key={`${job.id}-${tick.label}-${tick.left}`}
-                                className="absolute top-0 h-full border-l border-gray-100 dark:border-gray-800"
+                                className="absolute top-0 h-full border-l border-zinc-100 dark:border-zinc-800"
                                 style={{ left: `${tick.left}%` }}
                               />
                             ))}
@@ -959,9 +959,9 @@ export default function PipelineCalendarPage() {
                               className={cn(
                                 "absolute top-2 z-10 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
                                 isSelected &&
-                                  "z-30 ring-2 ring-gray-950 dark:ring-white",
+                                  "z-30 ring-2 ring-zinc-950 dark:ring-white",
                                 job.status === "dropped" &&
-                                  "text-gray-100 line-through opacity-70",
+                                  "text-zinc-100 line-through opacity-70",
                               )}
                               style={barStyle}
                               title={`${job.customer} ${job.dataCenterId || ""} ${formatMillions(job.amount)}`}
@@ -993,7 +993,7 @@ export default function PipelineCalendarPage() {
           <div className="overflow-x-auto p-4">
             <table className="min-w-[900px] w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-left text-xs uppercase text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                <tr className="border-b border-zinc-200 text-left text-xs uppercase text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                   <th className="w-10 px-3 py-3">
                     <input
                       type="checkbox"
@@ -1005,7 +1005,7 @@ export default function PipelineCalendarPage() {
                         )
                       }
                       onChange={toggleAllVisibleProjectionSelection}
-                      className="h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722] dark:border-gray-700 dark:bg-gray-900"
+                      className="h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722] dark:border-zinc-700 dark:bg-zinc-900"
                     />
                   </th>
                   {[
@@ -1018,7 +1018,7 @@ export default function PipelineCalendarPage() {
                       <button
                         type="button"
                         onClick={() => toggleSort(key as SortKey)}
-                        className="inline-flex items-center gap-1 hover:text-gray-950 dark:hover:text-gray-50"
+                        className="inline-flex items-center gap-1 hover:text-zinc-950 dark:hover:text-zinc-50"
                       >
                         {label}
                         {sortKey === key && (
@@ -1032,7 +1032,7 @@ export default function PipelineCalendarPage() {
                   <th className="px-3 py-3 font-semibold">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {sortedListJobs.map((job) => (
                   <tr
                     key={job.id}
@@ -1053,13 +1053,13 @@ export default function PipelineCalendarPage() {
                       });
                     }}
                     className={cn(
-                      "cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:hover:bg-gray-900 dark:focus:ring-white",
+                      "cursor-pointer hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900 dark:hover:bg-zinc-900 dark:focus:ring-white",
                       selectedJobId === job.id &&
                         "bg-orange-50 dark:bg-orange-950/20",
                       selectedProjectionIds.has(job.id) &&
                         "bg-orange-50 dark:bg-orange-950/20",
                       job.status === "dropped" &&
-                        "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
+                        "bg-zinc-50 text-zinc-500 dark:bg-zinc-900/60 dark:text-zinc-500",
                     )}
                   >
                     <td
@@ -1071,7 +1071,7 @@ export default function PipelineCalendarPage() {
                         aria-label={`Select ${job.customer}`}
                         checked={selectedProjectionIds.has(job.id)}
                         onChange={() => toggleProjectionSelection(job.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722] dark:border-gray-700 dark:bg-gray-900"
+                        className="h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722] dark:border-zinc-700 dark:bg-zinc-900"
                       />
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
@@ -1080,9 +1080,9 @@ export default function PipelineCalendarPage() {
                     </td>
                     <td
                       className={cn(
-                        "px-3 py-3 font-semibold text-gray-950 dark:text-gray-50",
+                        "px-3 py-3 font-semibold text-zinc-950 dark:text-zinc-50",
                         job.status === "dropped" &&
-                          "text-gray-500 line-through dark:text-gray-500",
+                          "text-zinc-500 line-through dark:text-zinc-500",
                       )}
                     >
                       {job.customer}
@@ -1114,7 +1114,7 @@ export default function PipelineCalendarPage() {
             </table>
 
             {sortedListJobs.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
                 {isLoadingProjection
                   ? "Loading Pipeline Projection..."
                   : "No opportunities match these filters."}
@@ -1129,7 +1129,7 @@ export default function PipelineCalendarPage() {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed z-[1000] w-72 rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-900 shadow-xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            className="fixed z-[1000] w-72 rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-900 shadow-xl ring-1 ring-black/5 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             style={{
               top: popoverPosition.top,
               left: popoverPosition.left,
@@ -1140,14 +1140,14 @@ export default function PipelineCalendarPage() {
                 <a
                   href={`/sales-dashboard/opportunities/${selectedJob.id}`}
                   className={cn(
-                    "block truncate font-semibold text-gray-950 hover:text-[#f26722] hover:underline dark:text-gray-50 dark:hover:text-[#f26722]",
+                    "block truncate font-semibold text-zinc-950 hover:text-[#f26722] hover:underline dark:text-zinc-50 dark:hover:text-[#f26722]",
                     selectedJob.status === "dropped" &&
-                      "text-gray-500 line-through dark:text-gray-500",
+                      "text-zinc-500 line-through dark:text-zinc-500",
                   )}
                 >
                   {selectedJob.customer}
                 </a>
-                <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
                   {selectedJob.dataCenterId || "No DC ID"}
                 </div>
               </div>
@@ -1155,7 +1155,7 @@ export default function PipelineCalendarPage() {
                 type="button"
                 aria-label="Close job details"
                 onClick={closeJobPopover}
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1163,7 +1163,7 @@ export default function PipelineCalendarPage() {
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
               <div>
-                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                <div className="font-medium uppercase text-zinc-500 dark:text-zinc-400">
                   Amount
                 </div>
                 <div className="mt-0.5 font-semibold">
@@ -1171,7 +1171,7 @@ export default function PipelineCalendarPage() {
                 </div>
               </div>
               <div>
-                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                <div className="font-medium uppercase text-zinc-500 dark:text-zinc-400">
                   Status
                 </div>
                 <div className="mt-0.5">
@@ -1179,7 +1179,7 @@ export default function PipelineCalendarPage() {
                 </div>
               </div>
               <div>
-                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                <div className="font-medium uppercase text-zinc-500 dark:text-zinc-400">
                   Region
                 </div>
                 <div className="mt-0.5 flex items-center gap-1.5 font-semibold">
@@ -1193,7 +1193,7 @@ export default function PipelineCalendarPage() {
                 </div>
               </div>
               <div>
-                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                <div className="font-medium uppercase text-zinc-500 dark:text-zinc-400">
                   Dates
                 </div>
                 <div className="mt-0.5 font-semibold">
@@ -1204,7 +1204,7 @@ export default function PipelineCalendarPage() {
                 </div>
               </div>
               <div className="col-span-2">
-                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                <div className="font-medium uppercase text-zinc-500 dark:text-zinc-400">
                   Location
                 </div>
                 <div className="mt-0.5 font-semibold">

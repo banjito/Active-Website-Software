@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { PDFDocument } from 'pdf-lib';
-import { Button } from '@/components/ui/Button';
-import { Save, X, Plus, FileText } from 'lucide-react';
-import { toast } from '@/components/ui/toast';
+import React, { useState, useRef, useEffect } from "react";
+import { PDFDocument } from "pdf-lib";
+import { Button } from "@/components/ui/Button";
+import { Save, X, Plus, FileText } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 interface SignatureField {
   id: string;
@@ -31,7 +31,8 @@ export function PDFSignatureFieldEditor({
   onClose,
   existingFields = [],
 }: PDFSignatureFieldEditorProps) {
-  const [signatureFields, setSignatureFields] = useState<SignatureField[]>(existingFields);
+  const [signatureFields, setSignatureFields] =
+    useState<SignatureField[]>(existingFields);
   const [isPlacing, setIsPlacing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pdfDoc, setPdfDoc] = useState<PDFDocument | null>(null);
@@ -40,8 +41,8 @@ export function PDFSignatureFieldEditor({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
-  const [newFieldName, setNewFieldName] = useState('');
-  const [newFieldSignerType, setNewFieldSignerType] = useState('employee');
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldSignerType, setNewFieldSignerType] = useState("employee");
 
   useEffect(() => {
     loadPDF();
@@ -53,16 +54,16 @@ export function PDFSignatureFieldEditor({
       const arrayBuffer = await response.arrayBuffer();
       const pdf = await PDFDocument.load(arrayBuffer);
       setPdfDoc(pdf);
-      
+
       const pages = pdf.getPages();
       setPdfPages(pages);
       renderPage();
     } catch (error) {
-      console.error('Error loading PDF:', error);
+      console.error("Error loading PDF:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load PDF',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load PDF",
+        variant: "destructive",
       });
     }
   };
@@ -76,7 +77,7 @@ export function PDFSignatureFieldEditor({
 
       const { width, height } = page.getSize();
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       // Set canvas size
@@ -88,39 +89,52 @@ export function PDFSignatureFieldEditor({
       // Render PDF page using pdf-lib's embedded rendering
       // Note: pdf-lib doesn't have built-in rendering, so we'll use an iframe approach
       // For now, we'll use a canvas-based approach with pdf.js or similar
-      
+
       // Draw signature fields
       drawSignatureFields(ctx, width, height);
     } catch (error) {
-      console.error('Error rendering page:', error);
+      console.error("Error rendering page:", error);
     }
   };
 
-  const drawSignatureFields = (ctx: CanvasRenderingContext2D, pageWidth: number, pageHeight: number) => {
-    const fieldsOnPage = signatureFields.filter(f => f.page === currentPage);
-    
-    fieldsOnPage.forEach(field => {
+  const drawSignatureFields = (
+    ctx: CanvasRenderingContext2D,
+    pageWidth: number,
+    pageHeight: number,
+  ) => {
+    const fieldsOnPage = signatureFields.filter((f) => f.page === currentPage);
+
+    fieldsOnPage.forEach((field) => {
       const isSelected = selectedField === field.id;
-      
+
       // Draw signature field rectangle
-      ctx.strokeStyle = isSelected ? '#f26722' : '#3b82f6';
+      ctx.strokeStyle = isSelected ? "#f26722" : "#3b82f6";
       ctx.lineWidth = isSelected ? 3 : 2;
       ctx.setLineDash(isSelected ? [] : [5, 5]);
-      ctx.strokeRect(field.x, pageHeight - field.y - field.height, field.width, field.height);
-      
-      // Draw field label
-      ctx.fillStyle = isSelected ? '#f26722' : '#3b82f6';
-      ctx.font = '12px Arial';
-      ctx.fillText(
-        field.name || 'Signature',
-        field.x + 5,
-        pageHeight - field.y - field.height + 15
+      ctx.strokeRect(
+        field.x,
+        pageHeight - field.y - field.height,
+        field.width,
+        field.height,
       );
-      
+
+      // Draw field label
+      ctx.fillStyle = isSelected ? "#f26722" : "#3b82f6";
+      ctx.font = "12px Arial";
+      ctx.fillText(
+        field.name || "Signature",
+        field.x + 5,
+        pageHeight - field.y - field.height + 15,
+      );
+
       // Draw required indicator
       if (field.required) {
-        ctx.fillStyle = '#ef4444';
-        ctx.fillText('*', field.x + field.width - 15, pageHeight - field.y - field.height + 15);
+        ctx.fillStyle = "#ef4444";
+        ctx.fillText(
+          "*",
+          field.x + field.width - 15,
+          pageHeight - field.y - field.height + 15,
+        );
       }
     });
   };
@@ -145,7 +159,7 @@ export function PDFSignatureFieldEditor({
     const actualScale = canvas.width / width;
 
     const actualX = x / actualScale;
-    const actualY = height - (y / actualScale);
+    const actualY = height - y / actualScale;
 
     // Create new signature field
     const newField: SignatureField = {
@@ -162,7 +176,7 @@ export function PDFSignatureFieldEditor({
 
     setSignatureFields([...signatureFields, newField]);
     setIsPlacing(false);
-    setNewFieldName('');
+    setNewFieldName("");
     setSelectedField(newField.id);
   };
 
@@ -173,8 +187,8 @@ export function PDFSignatureFieldEditor({
     try {
       // Add signature fields to PDF using pdf-lib
       const pages = pdfDoc.getPages();
-      
-      signatureFields.forEach(field => {
+
+      signatureFields.forEach((field) => {
         const page = pages[field.page - 1];
         if (!page) return;
 
@@ -182,7 +196,7 @@ export function PDFSignatureFieldEditor({
         // Note: pdf-lib has limited support for form fields, so we'll add them as annotations
         // For full Acrobat-style signature fields, you'd need a more advanced library
         // For now, we'll store the field positions and render them in the viewer
-        
+
         // Add a text annotation to mark the signature field location
         page.drawRectangle({
           x: field.x,
@@ -195,7 +209,7 @@ export function PDFSignatureFieldEditor({
           opacity: 0.3,
         });
 
-        page.drawText(field.name || 'Signature', {
+        page.drawText(field.name || "Signature", {
           x: field.x + 5,
           y: field.y + field.height - 15,
           size: 10,
@@ -204,21 +218,21 @@ export function PDFSignatureFieldEditor({
       });
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
 
       await onSave(blob, signatureFields);
 
       toast({
-        title: 'Success',
-        description: 'PDF with signature fields saved successfully',
-        variant: 'success',
+        title: "Success",
+        description: "PDF with signature fields saved successfully",
+        variant: "success",
       });
     } catch (error) {
-      console.error('Error saving PDF:', error);
+      console.error("Error saving PDF:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to save PDF',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to save PDF",
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -226,7 +240,7 @@ export function PDFSignatureFieldEditor({
   };
 
   const handleDeleteField = (fieldId: string) => {
-    setSignatureFields(signatureFields.filter(f => f.id !== fieldId));
+    setSignatureFields(signatureFields.filter((f) => f.id !== fieldId));
     if (selectedField === fieldId) {
       setSelectedField(null);
     }
@@ -235,9 +249,9 @@ export function PDFSignatureFieldEditor({
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b bg-gray-50 dark:bg-gray-800">
+      <div className="flex items-center justify-between p-3 border-b bg-zinc-50 dark:bg-zinc-800">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-gray-500" />
+          <FileText className="h-5 w-5 text-zinc-500" />
           <span className="text-sm font-medium">{fileName}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -246,12 +260,12 @@ export function PDFSignatureFieldEditor({
             size="sm"
             onClick={() => {
               setIsPlacing(true);
-              setNewFieldName('');
+              setNewFieldName("");
             }}
             disabled={isPlacing}
           >
             <Plus className="h-4 w-4 mr-1" />
-            {isPlacing ? 'Click on PDF to place field' : 'Add Signature Field'}
+            {isPlacing ? "Click on PDF to place field" : "Add Signature Field"}
           </Button>
           {isPlacing && (
             <div className="flex items-center gap-2">
@@ -262,7 +276,7 @@ export function PDFSignatureFieldEditor({
                 onChange={(e) => setNewFieldName(e.target.value)}
                 className="px-2 py-1 border rounded text-sm"
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') setIsPlacing(false);
+                  if (e.key === "Escape") setIsPlacing(false);
                 }}
               />
               <select
@@ -290,7 +304,7 @@ export function PDFSignatureFieldEditor({
             disabled={isSaving}
           >
             <Save className="h-4 w-4 mr-1" />
-            {isSaving ? 'Saving...' : 'Save PDF'}
+            {isSaving ? "Saving..." : "Save PDF"}
           </Button>
           <Button variant="outline" size="sm" onClick={onClose}>
             Close
@@ -300,7 +314,10 @@ export function PDFSignatureFieldEditor({
 
       <div className="flex flex-1 overflow-hidden">
         {/* PDF Viewer */}
-        <div className="flex-1 relative bg-gray-100 overflow-auto" ref={containerRef}>
+        <div
+          className="flex-1 relative bg-zinc-100 overflow-auto"
+          ref={containerRef}
+        >
           <div className="flex flex-col items-center p-4">
             {pdfPages.length > 0 && (
               <>
@@ -319,7 +336,9 @@ export function PDFSignatureFieldEditor({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(Math.min(pdfPages.length, currentPage + 1))}
+                    onClick={() =>
+                      setCurrentPage(Math.min(pdfPages.length, currentPage + 1))
+                    }
                     disabled={currentPage === pdfPages.length}
                   >
                     Next
@@ -328,9 +347,9 @@ export function PDFSignatureFieldEditor({
                 <div className="bg-white shadow-lg p-4">
                   <canvas
                     ref={canvasRef}
-                    className="border border-gray-300 cursor-crosshair"
+                    className="border border-zinc-300 cursor-crosshair"
                     onClick={handleCanvasClick}
-                    style={{ maxWidth: '100%', height: 'auto' }}
+                    style={{ maxWidth: "100%", height: "auto" }}
                   />
                 </div>
               </>
@@ -339,27 +358,28 @@ export function PDFSignatureFieldEditor({
         </div>
 
         {/* Signature Fields Panel */}
-        <div className="w-80 border-l bg-white dark:bg-gray-800 overflow-y-auto">
+        <div className="w-80 border-l bg-white dark:bg-zinc-800 overflow-y-auto">
           <div className="p-4">
             <h3 className="font-semibold mb-4">Signature Fields</h3>
             <div className="space-y-2">
               {signatureFields
-                .filter(f => f.page === currentPage)
+                .filter((f) => f.page === currentPage)
                 .map((field) => (
                   <div
                     key={field.id}
                     className={`p-3 border rounded cursor-pointer ${
                       selectedField === field.id
-                        ? 'border-[#f26722] bg-orange-50'
-                        : 'border-gray-200'
+                        ? "border-[#f26722] bg-orange-50"
+                        : "border-zinc-200"
                     }`}
                     onClick={() => setSelectedField(field.id)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="font-medium text-sm">{field.name}</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {field.signer_type} • {field.required ? 'Required' : 'Optional'}
+                        <div className="text-xs text-zinc-500 mt-1">
+                          {field.signer_type} •{" "}
+                          {field.required ? "Required" : "Optional"}
                         </div>
                       </div>
                       <Button
@@ -376,9 +396,11 @@ export function PDFSignatureFieldEditor({
                     </div>
                   </div>
                 ))}
-              {signatureFields.filter(f => f.page === currentPage).length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No signature fields on this page. Click "Add Signature Field" to add one.
+              {signatureFields.filter((f) => f.page === currentPage).length ===
+                0 && (
+                <p className="text-sm text-zinc-500 text-center py-4">
+                  No signature fields on this page. Click "Add Signature Field"
+                  to add one.
                 </p>
               )}
             </div>

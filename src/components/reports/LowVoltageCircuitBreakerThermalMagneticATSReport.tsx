@@ -325,22 +325,24 @@ interface FormData {
 // Define tableStyles based on MediumVoltageSwitchOilReport.tsx
 const tableStyles = {
   container:
-    "w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700",
+    "w-full overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700",
   table:
-    "w-full min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700",
+    "w-full min-w-full table-fixed divide-y divide-zinc-200 dark:divide-zinc-700",
   headerCell:
-    "px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider whitespace-normal",
-  cell: "px-2 py-2 text-sm text-gray-900 dark:text-white whitespace-normal",
+    "px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider whitespace-normal",
+  cell: "px-2 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
 };
 
 // Rename component
 const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -1166,7 +1168,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1241,7 +1243,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           },
         }}
       />
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-150">
+      <div className="p-6 flex justify-center bg-zinc-50 dark:bg-dark-150">
         <div className="max-w-7xl w-full space-y-6">
           <ReportHeader
             title={reportName}
@@ -1273,7 +1275,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Job Information Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden">
@@ -1291,7 +1293,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                     type="text"
                     value={maskCustomerName(formData.customer)}
                     readOnly={true}
-                    className="form-input flex-1 bg-gray-100 dark:bg-dark-150"
+                    className="form-input flex-1 bg-zinc-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -1306,7 +1308,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                     type="text"
                     value={maskCustomerAddress(formData.address)}
                     readOnly={true}
-                    className="form-input flex-1 bg-gray-100 dark:bg-dark-150"
+                    className="form-input flex-1 bg-zinc-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -1372,7 +1374,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                     type="text"
                     value={formData.jobNumber}
                     readOnly={true}
-                    className="form-input flex-1 bg-gray-100 dark:bg-dark-150"
+                    className="form-input flex-1 bg-zinc-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -1446,7 +1448,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                     type="number"
                     value={formData.temperature.celsius}
                     readOnly
-                    className="form-input w-20 bg-gray-100 dark:bg-dark-150"
+                    className="form-input w-20 bg-zinc-100 dark:bg-dark-150"
                   />
                   <span>°C</span>
                   <label className="form-label inline-block w-auto ml-4">
@@ -1456,7 +1458,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                     type="number"
                     value={formData.temperature.tcf}
                     readOnly
-                    className="form-input w-24 bg-gray-100 dark:bg-dark-150"
+                    className="form-input w-24 bg-zinc-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -1489,7 +1491,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Nameplate Data Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 print:hidden nameplate-onscreen">
@@ -1686,7 +1688,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             </div>
             {/* Print-only Nameplate Table (Thermal Magnetic specific) */}
             <div className="hidden print:block mt-2">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -1695,55 +1697,55 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Manufacturer:</div>
                       <div className="mt-0">{formData.manufacturer || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Catalog No.:</div>
                       <div className="mt-0">{formData.catalogNumber || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">{formData.serialNumber || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Type:</div>
                       <div className="mt-0">{formData.type || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Frame Size (A):</div>
                       <div className="mt-0">{formData.frameSize || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Rating Plug (A):</div>
                       <div className="mt-0">{formData.ratingPlug || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Curve No.:</div>
                       <div className="mt-0">{formData.curveNo || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">IC Rating (kA):</div>
                       <div className="mt-0">{formData.icRating || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Operation:</div>
                       <div className="mt-0">{formData.operation || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Mounting:</div>
                       <div className="mt-0">{formData.mounting || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Thermal Memory:</div>
                       <div className="mt-0">{formData.thermalMemory || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">&nbsp;</div>
                       <div className="mt-0">&nbsp;</div>
                     </td>
@@ -1756,39 +1758,39 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Visual and Mechanical Inspection Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 table-fixed">
+              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 table-fixed">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   <col style={{ width: "65%" }} />
                   <col style={{ width: "20%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white break-words">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white break-words">
                         {item.id}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                         {item.description}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                         <select
                           value={item.result}
                           onChange={(e) =>
@@ -1798,7 +1800,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           <option value=""></option>
                           {visualInspectionResultsOptions.map((option) => (
@@ -1818,7 +1820,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Device Settings Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Settings
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -1828,21 +1830,21 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   Settings As Found
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                    <thead className="bg-gray-50 dark:bg-dark-150">
+                  <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                    <thead className="bg-zinc-50 dark:bg-dark-150">
                       <tr>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                        <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                        <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                           Setting
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                       <tr>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                           Thermal
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.deviceSettings.asFound.thermal}
@@ -1853,15 +1855,15 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                           Magnetic
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.deviceSettings.asFound.magnetic}
@@ -1872,7 +1874,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1886,21 +1888,21 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   Settings As Left
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                    <thead className="bg-gray-50 dark:bg-dark-150">
+                  <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                    <thead className="bg-zinc-50 dark:bg-dark-150">
                       <tr>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                        <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                        <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                           Setting
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                       <tr>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                           Thermal
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.deviceSettings.asLeft.thermal}
@@ -1911,15 +1913,15 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                           Magnetic
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.deviceSettings.asLeft.magnetic}
@@ -1930,7 +1932,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1944,45 +1946,45 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 table-fixed">
+              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 table-fixed">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
                       colSpan={3}
                     >
                       Contact Resistance
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       P1
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       P2
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       P3
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p1}
@@ -1990,10 +1992,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           handleChange("contactResistance.p1", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p2}
@@ -2001,10 +2003,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           handleChange("contactResistance.p2", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p3}
@@ -2012,17 +2014,17 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           handleChange("contactResistance.p3", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <select
                         value={formData.contactResistance.unit}
                         onChange={(e) =>
                           handleChange("contactResistance.unit", e.target.value)
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {contactResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2040,7 +2042,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
             <div className="flex justify-end mb-4">
@@ -2070,7 +2072,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
               </select>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 ins-res-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600 ins-res-table">
                 <colgroup>
                   <col style={{ width: "16%" }} />
                   <col style={{ width: "12.5%" }} />
@@ -2081,60 +2083,60 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   <col style={{ width: "12.5%" }} />
                   <col style={{ width: "9%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"
                       rowSpan={2}
                     ></th>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
                       colSpan={3}
                     >
                       Measured Values
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
                       colSpan={3}
                     >
                       Temperature Corrected
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
                       rowSpan={2}
                     >
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P1 (P1-P2)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P2 (P2-P3)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P3 (P3-P1)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P1 (P1-P2)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P2 (P2-P3)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                       P3 (P3-P1)
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {/* Pole to Pole (Closed) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                       Pole to Pole (Closed)
                     </td>
                     {/* Measured Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2147,10 +2149,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2163,10 +2165,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2179,11 +2181,11 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2191,10 +2193,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             .p1p2
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2202,10 +2204,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             .p2p3
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2213,11 +2215,11 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             .p3p1
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) =>
@@ -2227,7 +2229,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2239,11 +2241,11 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   </tr>
                   {/* Pole to Frame (Closed) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                       Pole to Frame (Closed)
                     </td>
                     {/* Measured Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2256,10 +2258,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2272,10 +2274,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2288,42 +2290,42 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.poleToFrame.p1
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.poleToFrame.p2
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.poleToFrame.p3
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) =>
@@ -2333,7 +2335,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2345,11 +2347,11 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   </tr>
                   {/* Line to Load (Open) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                       Line to Load (Open)
                     </td>
                     {/* Measured Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2362,10 +2364,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2378,10 +2380,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
@@ -2394,42 +2396,42 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.lineToLoad.p1
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.lineToLoad.p2
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.corrected.lineToLoad.p3
                         }
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) =>
@@ -2439,7 +2441,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2457,7 +2459,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Electrical Tests - Primary Injection Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Primary Injection
             </h2>
 
@@ -2467,21 +2469,21 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 Tested Settings
               </h3>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                         Setting
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                         Thermal
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                         <input
                           type="text"
                           value={
@@ -2494,15 +2496,15 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
                         Magnetic
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
                         <input
                           type="text"
                           value={
@@ -2515,7 +2517,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     </tr>
@@ -2526,7 +2528,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
             {/* Primary Injection Results Table */}
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600 primary-injection-table">
                 <colgroup>
                   <col style={{ width: "16%" }} /> {/* Function */}
                   <col style={{ width: "10%" }} /> {/* Amperes 1 */}
@@ -2538,67 +2540,67 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   <col style={{ width: "12%" }} /> {/* Pole 2 */}
                   <col style={{ width: "12%" }} /> {/* Pole 3 */}
                 </colgroup>
-                <caption className="caption-top p-2 text-lg font-medium text-gray-900 dark:text-white">
+                <caption className="caption-top p-2 text-lg font-medium text-zinc-900 dark:text-white">
                   Primary Injection
                 </caption>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"
                       rowSpan={2}
                     >
                       Function
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                       Amperes
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                       Multiplier Tolerance
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                       Amperes
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"
                       colSpan={2}
                     >
                       Tolerance
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
                       colSpan={3}
                     >
                       Pole
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                       Min
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                       Max
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       Pole 1
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       Pole 2
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
                       Pole 3
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {/* Thermal Row */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       Thermal
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={
@@ -2611,10 +2613,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={
@@ -2628,10 +2630,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={calculateSecondAmperes(
@@ -2640,10 +2642,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             .multiplierTolerance,
                         )}
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={
@@ -2656,10 +2658,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={
@@ -2672,10 +2674,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2689,12 +2691,12 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">sec.</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2708,12 +2710,12 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">sec.</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2727,7 +2729,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">sec.</span>
                       </div>
@@ -2735,10 +2737,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                   </tr>
                   {/* Magnetic Row */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       Magnetic
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={
@@ -2751,10 +2753,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <div className="grid grid-cols-2 gap-1">
                         <div className="flex items-center">
                           <input
@@ -2780,9 +2782,9 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`tol-pct-input w-full p-2 text-center border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`tol-pct-input w-full p-2 text-center border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
-                          <span className="ml-1 text-sm text-gray-900 dark:text-white">
+                          <span className="ml-1 text-sm text-zinc-900 dark:text-white">
                             %
                           </span>
                         </div>
@@ -2810,15 +2812,15 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`tol-pct-input w-full p-2 text-center border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`tol-pct-input w-full p-2 text-center border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
-                          <span className="ml-1 text-sm text-gray-900 dark:text-white">
+                          <span className="ml-1 text-sm text-zinc-900 dark:text-white">
                             %
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={calculateSecondAmperes(
@@ -2826,10 +2828,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           `${formData.primaryInjection.results.magnetic.toleranceMinPct || ""} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ""}`.trim(),
                         )}
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={calculateMagneticTolerance(
@@ -2841,10 +2843,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           true,
                         )}
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
                       <input
                         type="text"
                         value={calculateMagneticTolerance(
@@ -2856,10 +2858,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                           false,
                         )}
                         readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2873,12 +2875,12 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">A</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2892,12 +2894,12 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">A</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <input
                           type="text"
@@ -2911,7 +2913,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                          className={`w-12 h-7 text-sm text-center border border-zinc-300 dark:border-zinc-600 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
                         />
                         <span className="text-xs">A</span>
                       </div>
@@ -2925,7 +2927,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 gap-y-4">
@@ -3211,7 +3213,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <div className="mb-4 print:hidden">
@@ -3219,17 +3221,17 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 value={formData.comments}
                 onChange={(e) => handleChange("comments", e.target.value)}
                 readOnly={!isEditing}
-                className={`w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`w-full p-2 rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 rows={4}
               />
             </div>
             {formData.comments?.trim() && (
               <div className="hidden print:block mt-2">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border">
                   <tbody>
                     <tr>
                       <td
-                        className="p-2 align-top border border-gray-300 print:border-black print:border"
+                        className="p-2 align-top border border-zinc-300 print:border-black print:border"
                         style={{ minHeight: "140px" }}
                       >
                         <div className="mt-0 whitespace-pre-wrap break-words">
@@ -3370,7 +3372,7 @@ if (typeof document !== "undefined") {
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
 
       /* Ultra-compact font sizes for Visual and Mechanical Inspection table */
-      .border.border-gray-300.dark\\:border-gray-600.px-4.py-2.text-sm.text-gray-900.dark\\:text-white.break-words {
+      .border.border-zinc-300.dark\\:border-zinc-600.px-4.py-2.text-sm.text-zinc-900.dark\\:text-white.break-words {
         font-size: 6px !important;
         line-height: 1.0 !important;
         padding: 2px 4px !important;
@@ -3379,13 +3381,13 @@ if (typeof document !== "undefined") {
         word-break: break-all !important;
       }
 
-      .border.border-gray-300.dark\\:border-gray-600.px-4.py-2.text-sm.text-gray-900.dark\\:text-white {
+      .border.border-zinc-300.dark\\:border-zinc-600.px-4.py-2.text-sm.text-zinc-900.dark\\:text-white {
         font-size: 6px !important;
         line-height: 1.0 !important;
         padding: 2px 4px !important;
       }
 
-      .border.border-gray-300.dark\\:border-gray-600.px-4.py-2.text-center {
+      .border.border-zinc-300.dark\\:border-zinc-600.px-4.py-2.text-center {
         font-size: 7px !important;
         padding: 2px 2px !important;
       }

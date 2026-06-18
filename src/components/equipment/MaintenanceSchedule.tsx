@@ -1,91 +1,116 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Card, { CardHeader, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
-import { Select } from '@/components/ui/Select';
-import { toast } from '@/components/ui/toast';
-import { equipmentService } from '@/lib/services/equipmentService';
-import { equipmentMaintenanceService } from '@/lib/services/equipmentMaintenanceService';
-import { Equipment, MaintenanceRecord } from '@/lib/interfaces/equipment';
-import MaintenanceForm from './MaintenanceForm';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { FaTools, FaClock, FaCalendarCheck, FaExclamationTriangle } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import Card, { CardHeader, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import { Select } from "@/components/ui/Select";
+import { toast } from "@/components/ui/toast";
+import { equipmentService } from "@/lib/services/equipmentService";
+import { equipmentMaintenanceService } from "@/lib/services/equipmentMaintenanceService";
+import { Equipment, MaintenanceRecord } from "@/lib/interfaces/equipment";
+import MaintenanceForm from "./MaintenanceForm";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  FaTools,
+  FaClock,
+  FaCalendarCheck,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
 interface MaintenanceScheduleProps {
   division?: string;
   portal?: string;
 }
 
-export default function MaintenanceSchedule({ division, portal }: MaintenanceScheduleProps) {
+export default function MaintenanceSchedule({
+  division,
+  portal,
+}: MaintenanceScheduleProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [upcomingMaintenance, setUpcomingMaintenance] = useState<Equipment[]>([]);
+  const [upcomingMaintenance, setUpcomingMaintenance] = useState<Equipment[]>(
+    [],
+  );
   const [overdueMaintenance, setOverdueMaintenance] = useState<Equipment[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [selectedMaintenance, setSelectedMaintenance] = useState<MaintenanceRecord | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
+    null,
+  );
+  const [selectedMaintenance, setSelectedMaintenance] =
+    useState<MaintenanceRecord | null>(null);
   const [daysAhead, setDaysAhead] = useState(30);
-  
+
   // Fetch maintenance schedule
   useEffect(() => {
     async function fetchMaintenanceSchedule() {
       setIsLoading(true);
       try {
-        const result = await equipmentMaintenanceService.getMaintenanceSchedule(daysAhead);
+        const result =
+          await equipmentMaintenanceService.getMaintenanceSchedule(daysAhead);
         if (result.upcoming.data) {
-          setUpcomingMaintenance(result.upcoming.data as unknown as Equipment[]);
+          setUpcomingMaintenance(
+            result.upcoming.data as unknown as Equipment[],
+          );
         }
         if (result.overdue.data) {
           setOverdueMaintenance(result.overdue.data as unknown as Equipment[]);
         }
       } catch (error) {
-        console.error('Error fetching maintenance schedule:', error);
+        console.error("Error fetching maintenance schedule:", error);
         toast({
-          title: 'Error',
-          description: 'Failed to load maintenance schedule',
-          variant: 'destructive',
+          title: "Error",
+          description: "Failed to load maintenance schedule",
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
     }
-    
+
     fetchMaintenanceSchedule();
   }, [daysAhead]);
-  
+
   const handleRefresh = () => {
     setSelectedEquipment(null);
     setSelectedMaintenance(null);
-    equipmentMaintenanceService.getMaintenanceSchedule(daysAhead).then(result => {
-      if (result.upcoming.data) setUpcomingMaintenance(result.upcoming.data as unknown as Equipment[]);
-      if (result.overdue.data) setOverdueMaintenance(result.overdue.data as unknown as Equipment[]);
-    });
+    equipmentMaintenanceService
+      .getMaintenanceSchedule(daysAhead)
+      .then((result) => {
+        if (result.upcoming.data)
+          setUpcomingMaintenance(
+            result.upcoming.data as unknown as Equipment[],
+          );
+        if (result.overdue.data)
+          setOverdueMaintenance(result.overdue.data as unknown as Equipment[]);
+      });
   };
-  
-  const handleOpenForm = (equipment: Equipment, maintenanceRecord?: MaintenanceRecord) => {
+
+  const handleOpenForm = (
+    equipment: Equipment,
+    maintenanceRecord?: MaintenanceRecord,
+  ) => {
     setSelectedEquipment(equipment);
     setSelectedMaintenance(maintenanceRecord || null);
     setIsFormOpen(true);
   };
-  
+
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setSelectedEquipment(null);
     setSelectedMaintenance(null);
   };
-  
+
   const handleSave = () => {
     handleCloseForm();
     handleRefresh();
     toast({
-      title: 'Success',
-      description: 'Maintenance schedule updated',
-      variant: 'success',
+      title: "Success",
+      description: "Maintenance schedule updated",
+      variant: "success",
     });
   };
-  
+
   const getDaysUntilMaintenance = (date: string) => {
     const today = new Date();
     const maintenanceDate = new Date(date);
@@ -93,13 +118,13 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
-  
+
   const getStatusClass = (days: number) => {
-    if (days < 0) return 'bg-red-100 text-red-800';
-    if (days < 7) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+    if (days < 0) return "bg-red-100 text-red-800";
+    if (days < 7) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col gap-6">
@@ -115,17 +140,13 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
                   value={daysAhead.toString()}
                   onChange={(e) => setDaysAhead(Number(e.target.value))}
                   options={[
-                    { value: '7', label: 'Next 7 days' },
-                    { value: '30', label: 'Next 30 days' },
-                    { value: '90', label: 'Next 90 days' },
+                    { value: "7", label: "Next 7 days" },
+                    { value: "30", label: "Next 30 days" },
+                    { value: "90", label: "Next 90 days" },
                   ]}
                   className="w-40"
                 />
-                <Button 
-                  onClick={handleRefresh}
-                  variant="outline"
-                  size="sm"
-                >
+                <Button onClick={handleRefresh} variant="outline" size="sm">
                   Refresh
                 </Button>
               </div>
@@ -133,7 +154,7 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="upcoming">
-              <TabsList className="flex border-b border-gray-200 mb-4">
+              <TabsList className="flex border-b border-zinc-200 mb-4">
                 <TabsTrigger value="upcoming">
                   Upcoming ({upcomingMaintenance.length})
                 </TabsTrigger>
@@ -141,73 +162,91 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
                   Overdue ({overdueMaintenance.length})
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="upcoming" className="space-y-4">
                 {isLoading ? (
                   <div className="py-8 text-center">
-                    <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+                    <div className="flex justify-center py-6">
+                      <LoadingSpinner size="md" />
+                    </div>
                   </div>
                 ) : upcomingMaintenance.length === 0 ? (
                   <div className="py-8 text-center">
-                    <FaCalendarCheck className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                    <p className="text-gray-500">No upcoming maintenance scheduled</p>
+                    <FaCalendarCheck className="mx-auto h-12 w-12 text-zinc-400 mb-3" />
+                    <p className="text-zinc-500">
+                      No upcoming maintenance scheduled
+                    </p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-zinc-200">
+                      <thead className="bg-zinc-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Equipment
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Last Maintenance
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Next Due
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Days Left
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-zinc-200">
                         {upcomingMaintenance.map((equipment) => {
-                          const daysLeft = equipment.next_maintenance_date 
-                            ? getDaysUntilMaintenance(equipment.next_maintenance_date)
+                          const daysLeft = equipment.next_maintenance_date
+                            ? getDaysUntilMaintenance(
+                                equipment.next_maintenance_date,
+                              )
                             : 0;
-                          
+
                           return (
                             <tr key={equipment.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{equipment.name}</div>
-                                <div className="text-sm text-gray-500">{equipment.serial_number}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{equipment.type}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {equipment.last_maintenance_date 
-                                    ? new Date(equipment.last_maintenance_date).toLocaleDateString() 
-                                    : 'Never'}
+                                <div className="text-sm font-medium text-zinc-900">
+                                  {equipment.name}
+                                </div>
+                                <div className="text-sm text-zinc-500">
+                                  {equipment.serial_number}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
+                                <div className="text-sm text-zinc-900">
+                                  {equipment.type}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-zinc-900">
+                                  {equipment.last_maintenance_date
+                                    ? new Date(
+                                        equipment.last_maintenance_date,
+                                      ).toLocaleDateString()
+                                    : "Never"}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-zinc-900">
                                   {equipment.next_maintenance_date
-                                    ? new Date(equipment.next_maintenance_date).toLocaleDateString()
-                                    : 'N/A'}
+                                    ? new Date(
+                                        equipment.next_maintenance_date,
+                                      ).toLocaleDateString()
+                                    : "N/A"}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(daysLeft)}`}>
+                                <span
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(daysLeft)}`}
+                                >
                                   {daysLeft} days
                                 </span>
                               </td>
@@ -228,16 +267,18 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
                   </div>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="overdue" className="space-y-4">
                 {isLoading ? (
                   <div className="py-8 text-center">
-                    <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+                    <div className="flex justify-center py-6">
+                      <LoadingSpinner size="md" />
+                    </div>
                   </div>
                 ) : overdueMaintenance.length === 0 ? (
                   <div className="py-8 text-center">
-                    <FaCalendarCheck className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                    <p className="text-gray-500">No overdue maintenance</p>
+                    <FaCalendarCheck className="mx-auto h-12 w-12 text-zinc-400 mb-3" />
+                    <p className="text-zinc-500">No overdue maintenance</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -248,63 +289,78 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
                         </div>
                         <div className="ml-3">
                           <p className="text-sm text-red-700">
-                            There are {overdueMaintenance.length} equipment items with overdue maintenance.
-                            Please schedule maintenance as soon as possible.
+                            There are {overdueMaintenance.length} equipment
+                            items with overdue maintenance. Please schedule
+                            maintenance as soon as possible.
                           </p>
                         </div>
                       </div>
                     </div>
-                    
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+
+                    <table className="min-w-full divide-y divide-zinc-200">
+                      <thead className="bg-zinc-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Equipment
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Last Maintenance
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Due Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Days Overdue
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-zinc-200">
                         {overdueMaintenance.map((equipment) => {
-                          const daysOverdue = equipment.next_maintenance_date 
-                            ? Math.abs(getDaysUntilMaintenance(equipment.next_maintenance_date))
+                          const daysOverdue = equipment.next_maintenance_date
+                            ? Math.abs(
+                                getDaysUntilMaintenance(
+                                  equipment.next_maintenance_date,
+                                ),
+                              )
                             : 0;
-                          
+
                           return (
                             <tr key={equipment.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{equipment.name}</div>
-                                <div className="text-sm text-gray-500">{equipment.serial_number}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{equipment.type}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {equipment.last_maintenance_date 
-                                    ? new Date(equipment.last_maintenance_date).toLocaleDateString() 
-                                    : 'Never'}
+                                <div className="text-sm font-medium text-zinc-900">
+                                  {equipment.name}
+                                </div>
+                                <div className="text-sm text-zinc-500">
+                                  {equipment.serial_number}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
+                                <div className="text-sm text-zinc-900">
+                                  {equipment.type}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-zinc-900">
+                                  {equipment.last_maintenance_date
+                                    ? new Date(
+                                        equipment.last_maintenance_date,
+                                      ).toLocaleDateString()
+                                    : "Never"}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-zinc-900">
                                   {equipment.next_maintenance_date
-                                    ? new Date(equipment.next_maintenance_date).toLocaleDateString()
-                                    : 'N/A'}
+                                    ? new Date(
+                                        equipment.next_maintenance_date,
+                                      ).toLocaleDateString()
+                                    : "N/A"}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -332,12 +388,16 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
           </CardContent>
         </Card>
       </div>
-      
+
       {isFormOpen && selectedEquipment && (
         <Modal
           isOpen={isFormOpen}
           onClose={handleCloseForm}
-          title={selectedMaintenance ? 'Edit Maintenance Record' : 'Create Maintenance Record'}
+          title={
+            selectedMaintenance
+              ? "Edit Maintenance Record"
+              : "Create Maintenance Record"
+          }
         >
           <MaintenanceForm
             equipmentId={selectedEquipment.id}
@@ -350,4 +410,4 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
       )}
     </div>
   );
-} 
+}

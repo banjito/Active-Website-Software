@@ -1,6 +1,6 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-import { Button } from './Button';
+import React from "react";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Button } from "./Button";
 
 interface PaginationProps {
   currentPage: number;
@@ -55,14 +55,14 @@ export const Pagination: React.FC<PaginationProps> = ({
       // Show first page + ... + last 5 pages
       const rightRange = Array.from(
         { length: 5 },
-        (_, i) => totalPages - 4 + i
+        (_, i) => totalPages - 4 + i,
       );
       return [1, -1, ...rightRange];
     } else if (showLeftDots && showRightDots) {
       // Show first page + ... + middle pages + ... + last page
       const middleRange = Array.from(
         { length: rightSiblingIndex - leftSiblingIndex + 1 },
-        (_, i) => leftSiblingIndex + i
+        (_, i) => leftSiblingIndex + i,
       );
       return [1, -1, ...middleRange, -1, totalPages];
     }
@@ -90,7 +90,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           return (
             <span
               key={`dots-${index}`}
-              className="flex h-8 w-8 items-center justify-center text-gray-500 dark:text-dark-400"
+              className="flex h-8 w-8 items-center justify-center text-zinc-500 dark:text-dark-400"
             >
               <MoreHorizontal className="h-4 w-4" />
             </span>
@@ -106,7 +106,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             className={`h-8 w-8 p-0 ${
               currentPage === page
                 ? "bg-amp-orange-600 hover:bg-amp-orange-700 text-white"
-                : "text-gray-700 dark:text-dark-300 hover:bg-gray-100 dark:hover:bg-dark-200"
+                : "text-zinc-700 dark:text-dark-300 hover:bg-zinc-100 dark:hover:bg-dark-200"
             }`}
           >
             {page}
@@ -127,4 +127,4 @@ export const Pagination: React.FC<PaginationProps> = ({
   );
 };
 
-export default Pagination; 
+export default Pagination;

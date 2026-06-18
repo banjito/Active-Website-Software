@@ -355,7 +355,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-96 text-gray-500">
+            <div className="flex justify-center items-center h-96 text-zinc-500">
               No revenue goals available for forecasting
             </div>
           )}
@@ -378,19 +378,19 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
-                      <p className="text-sm text-gray-500 mb-1">Current Revenue</p>
+                      <p className="text-sm text-zinc-500 mb-1">Current Revenue</p>
                       <p className="text-2xl font-bold">{formatCurrency(latestActual)}</p>
                     </div>
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
-                      <p className="text-sm text-gray-500 mb-1">Current Target</p>
+                      <p className="text-sm text-zinc-500 mb-1">Current Target</p>
                       <p className="text-2xl font-bold">{formatCurrency(latestTarget)}</p>
                     </div>
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
-                      <p className="text-sm text-gray-500 mb-1">Projected by End of Period</p>
+                      <p className="text-sm text-zinc-500 mb-1">Projected by End of Period</p>
                       <p className="text-2xl font-bold">{formatCurrency(finalProjected)}</p>
                     </div>
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
-                      <p className="text-sm text-gray-500 mb-1">Percent of Target</p>
+                      <p className="text-sm text-zinc-500 mb-1">Percent of Target</p>
                       <p className={`text-2xl font-bold ${
                         percentOfTarget >= 100 ? 'text-green-500' : 
                         percentOfTarget >= 85 ? 'text-amber-500' : 'text-red-500'
@@ -432,7 +432,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
               </div>
             </div>
           ) : (
-            <div className="text-center text-gray-500">
+            <div className="text-center text-zinc-500">
               No insights available without revenue goals
             </div>
           )}

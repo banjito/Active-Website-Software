@@ -86,7 +86,7 @@ type CalibrationEquipmentItem = {
 };
 
 const headerIconButtonClass =
-  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-zinc-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
 
 const headerIconButtonActiveClass =
   "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
@@ -743,7 +743,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   key={shortcut.id}
                   data-shortcut-tab
                   onClick={() => handleHeaderShortcutClick(shortcut.url)}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-md transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
+                  className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-md transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
                   title={shortcut.url}
                 >
                   {shortcut.title}
@@ -751,7 +751,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               ))}
               {hiddenShortcutCount + Math.max(0, headerShortcuts.length - 8) >
                 0 && (
-                <span className="shrink-0 px-2 py-1 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                <span className="shrink-0 px-2 py-1 text-xs text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
                   +
                   {hiddenShortcutCount +
                     Math.max(0, headerShortcuts.length - 8)}{" "}
@@ -904,8 +904,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </button>
               {isContactsOpen && (
                 <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
-                  <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between shrink-0">
-                    <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="p-3 border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between shrink-0">
+                    <div className="font-medium text-zinc-900 dark:text-white">
                       AMP contacts
                     </div>
                     <a
@@ -922,32 +922,32 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         <LoadingSpinner size="md" />
                       </div>
                     ) : ampContacts.length === 0 ? (
-                      <div className="p-4 text-sm text-gray-500 dark:text-white">
+                      <div className="p-4 text-sm text-zinc-500 dark:text-white">
                         No contacts. Add them in HR portal → HR Data → Call
                         list.
                       </div>
                     ) : (
                       <table className="w-full text-sm">
-                        <thead className="sticky top-0 bg-gray-50 dark:bg-dark-200">
+                        <thead className="sticky top-0 bg-zinc-50 dark:bg-dark-200">
                           <tr>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">
+                            <th className="text-left py-2 px-3 font-medium text-zinc-700 dark:text-zinc-300">
                               Name
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">
+                            <th className="text-left py-2 px-3 font-medium text-zinc-700 dark:text-zinc-300">
                               Phone
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">
+                            <th className="text-left py-2 px-3 font-medium text-zinc-700 dark:text-zinc-300">
                               Role
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-dark-200">
+                        <tbody className="divide-y divide-zinc-100 dark:divide-dark-200">
                           {ampContacts.map((c) => (
                             <tr
                               key={c.id}
-                              className="hover:bg-gray-50 dark:hover:bg-dark-200/50"
+                              className="hover:bg-zinc-50 dark:hover:bg-dark-200/50"
                             >
-                              <td className="py-2 px-3 text-gray-900 dark:text-white">
+                              <td className="py-2 px-3 text-zinc-900 dark:text-white">
                                 <a
                                   href={`mailto:${c.email}`}
                                   className="hover:underline"
@@ -963,7 +963,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                   {c.work_phone}
                                 </a>
                               </td>
-                              <td className="py-2 px-3 text-gray-600 dark:text-gray-400">
+                              <td className="py-2 px-3 text-zinc-600 dark:text-zinc-400">
                                 {c.role || "—"}
                               </td>
                             </tr>
@@ -1015,12 +1015,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
                 {isNotificationsOpen && (
                   <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                    <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="p-3 border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between">
+                      <div className="font-medium text-zinc-900 dark:text-white">
                         Notifications
                       </div>
                       {canApproveReports && (
-                        <div className="text-xs text-gray-500 dark:text-white">
+                        <div className="text-xs text-zinc-500 dark:text-white">
                           Reports
                         </div>
                       )}
@@ -1031,15 +1031,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           <LoadingSpinner size="md" />
                         </div>
                       ) : detailStatus === null ? (
-                        <div className="divide-y divide-gray-200 dark:divide-dark-200">
+                        <div className="divide-y divide-zinc-200 dark:divide-dark-200">
                           {canApproveReports &&
                             notificationSummary.map((row) => (
                               <button
                                 key={row.status}
                                 onClick={() => loadDetailForStatus(row.status)}
-                                className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                                className="w-full text-left px-4 py-3 hover:bg-zinc-50 dark:hover:bg-dark-200 flex items-center justify-between"
                               >
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                <div className="text-sm font-medium text-zinc-900 dark:text-white">
                                   {row.status === "ready_for_review" &&
                                     "Report approvals"}
                                   {row.status === "issue" && "Report Issues"}
@@ -1047,7 +1047,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     "Reports approved"}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <div className="text-xs text-gray-600 dark:text-white">
+                                  <div className="text-xs text-zinc-600 dark:text-white">
                                     {row.jobCount} jobs • {row.reportCount}{" "}
                                     reports
                                   </div>
@@ -1061,13 +1061,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             ))}
                           <button
                             onClick={() => setDetailStatus("needs_calibration")}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                            className="w-full text-left px-4 py-3 hover:bg-zinc-50 dark:hover:bg-dark-200 flex items-center justify-between"
                           >
-                            <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <div className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
                               <Gauge className="h-4 w-4 text-amber-500" />
                               Needs Calibration
                             </div>
-                            <div className="text-xs text-gray-600 dark:text-white">
+                            <div className="text-xs text-zinc-600 dark:text-white">
                               {calibrationNeedsList.length}{" "}
                               {calibrationNeedsList.length === 1
                                 ? "item"
@@ -1078,13 +1078,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             onClick={() =>
                               setDetailStatus("equipment_out_of_cal")
                             }
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                            className="w-full text-left px-4 py-3 hover:bg-zinc-50 dark:hover:bg-dark-200 flex items-center justify-between"
                           >
-                            <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <div className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
                               <AlertTriangle className="h-4 w-4 text-red-500" />
                               Equipment Out of Cal
                             </div>
-                            <div className="text-xs text-gray-600 dark:text-white">
+                            <div className="text-xs text-zinc-600 dark:text-white">
                               {calibrationOutList.length}{" "}
                               {calibrationOutList.length === 1
                                 ? "item"
@@ -1095,7 +1095,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       ) : detailStatus === "needs_calibration" ||
                         detailStatus === "equipment_out_of_cal" ? (
                         <div>
-                          <div className="px-4 py-2 text-xs text-gray-500 dark:text-white border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
+                          <div className="px-4 py-2 text-xs text-zinc-500 dark:text-white border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between">
                             <span>
                               {detailStatus === "needs_calibration"
                                 ? "Needs Calibration"
@@ -1116,11 +1116,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             ? calibrationNeedsList
                             : calibrationOutList
                           ).length === 0 ? (
-                            <div className="p-4 text-sm text-gray-500 dark:text-white">
+                            <div className="p-4 text-sm text-zinc-500 dark:text-white">
                               No items
                             </div>
                           ) : (
-                            <div className="divide-y divide-gray-100 dark:divide-dark-200">
+                            <div className="divide-y divide-zinc-100 dark:divide-dark-200">
                               {(detailStatus === "needs_calibration"
                                 ? calibrationNeedsList
                                 : calibrationOutList
@@ -1134,12 +1134,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                       `/neta/field-equipment?open=${encodeURIComponent(item.id)}`,
                                     );
                                   }}
-                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-200 text-sm transition-colors"
+                                  className="w-full text-left px-4 py-3 hover:bg-zinc-50 dark:hover:bg-dark-200 text-sm transition-colors"
                                 >
-                                  <div className="font-medium text-gray-900 dark:text-white">
+                                  <div className="font-medium text-zinc-900 dark:text-white">
                                     {item.equipment_name}
                                   </div>
-                                  <div className="text-xs text-gray-600 dark:text-white mt-0.5 space-y-0.5">
+                                  <div className="text-xs text-zinc-600 dark:text-white mt-0.5 space-y-0.5">
                                     {(item.amp_id || item.serial_number) && (
                                       <div className="flex flex-wrap gap-x-3 gap-y-0">
                                         {item.amp_id && (
@@ -1164,7 +1164,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         </div>
                       ) : (
                         <div>
-                          <div className="px-4 py-2 text-xs text-gray-500 dark:text-white border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
+                          <div className="px-4 py-2 text-xs text-zinc-500 dark:text-white border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between">
                             <span>
                               {detailStatus === "ready_for_review" &&
                                 "Report approvals"}
@@ -1194,11 +1194,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             </div>
                           </div>
                           {jobGroups.length === 0 ? (
-                            <div className="p-4 text-sm text-gray-500 dark:text-white">
+                            <div className="p-4 text-sm text-zinc-500 dark:text-white">
                               No items
                             </div>
                           ) : (
-                            <div className="divide-y divide-gray-100 dark:divide-dark-200">
+                            <div className="divide-y divide-zinc-100 dark:divide-dark-200">
                               {jobGroups.map((jg) => (
                                 <div key={jg.jobId} className="px-4 py-3">
                                   <div className="flex items-start justify-between gap-3">
@@ -1208,7 +1208,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                           onClick={() =>
                                             goToJobAssets(jg.jobId)
                                           }
-                                          className="text-sm font-medium text-gray-900 dark:text-white hover:underline"
+                                          className="text-sm font-medium text-zinc-900 dark:text-white hover:underline"
                                         >
                                           {jg.jobNumber
                                             ? `Job ${jg.jobNumber}`
@@ -1221,7 +1221,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                           </span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-gray-600 dark:text-white">
+                                      <div className="text-xs text-zinc-600 dark:text-white">
                                         {jg.count} reports • Oldest{" "}
                                         {new Date(jg.oldest).toLocaleString()}
                                       </div>
@@ -1231,7 +1231,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                         onClick={() =>
                                           markJobSeenInCurrentStatus(jg.jobId)
                                         }
-                                        className="text-xs text-gray-500 dark:text-white hover:underline whitespace-nowrap"
+                                        className="text-xs text-zinc-500 dark:text-white hover:underline whitespace-nowrap"
                                       >
                                         Mark seen
                                       </button>
@@ -1244,7 +1244,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         </div>
                       )}
                     </div>
-                    <div className="p-2 border-t border-gray-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
+                    <div className="p-2 border-t border-zinc-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
                       {detailStatus === null ? (
                         canApproveReports ? (
                           <button
@@ -1296,7 +1296,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               ref={profileMenuRef}
             >
               <button
-                className="rounded-full w-10 h-10 bg-gray-100 dark:bg-dark-150 hover:bg-gray-200 dark:hover:bg-gray-600 p-0 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600"
+                className="rounded-full w-10 h-10 bg-zinc-100 dark:bg-dark-150 hover:bg-zinc-200 dark:hover:bg-zinc-600 p-0 overflow-hidden flex items-center justify-center border border-zinc-300 dark:border-zinc-600"
                 onClick={() => {
                   const next = !isProfileMenuOpen;
                   setIsProfileMenuOpen(next);
@@ -1310,7 +1310,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
-                  <UserIcon className="h-5 w-5 text-gray-600 dark:text-white" />
+                  <UserIcon className="h-5 w-5 text-zinc-600 dark:text-white" />
                 )}
               </button>
               {isProfileMenuOpen && (
@@ -1332,46 +1332,46 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     )}
                     <div className="rounded-md bg-white dark:bg-dark-150 shadow-md ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
-                        <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
-                          <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
+                        <div className="px-4 py-2 border-b border-zinc-200 dark:border-dark-200">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-dark-900">
                             {user?.user_metadata?.name || "User"}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-dark-400 truncate">
+                          <p className="text-sm text-zinc-500 dark:text-dark-400 truncate">
                             {user?.user_metadata?.role || "No role assigned"}
                           </p>
-                          <p className="text-xs text-gray-400 dark:text-dark-500 truncate mt-1">
+                          <p className="text-xs text-zinc-400 dark:text-dark-500 truncate mt-1">
                             {user?.email || <LoadingSpinner size="xs" />}
                           </p>
                         </div>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                           View Profile
                         </button>
                         <button
                           type="button"
                           onClick={handleSettingsToggle}
-                          className={`flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50 ${
+                          className={`flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50 ${
                             isSettingsSubmenuOpen
-                              ? "bg-gray-100 dark:bg-dark-50"
+                              ? "bg-zinc-100 dark:bg-dark-50"
                               : ""
                           }`}
                         >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                           Settings
                         </button>
                         {canSeeDemoMode && (
                           <button
                             onClick={toggleDemoMode}
-                            className="flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                            className="flex items-center justify-between w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
                           >
                             <span className="flex items-center">
                               {isDemoMode ? (
-                                <EyeOff className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                                <EyeOff className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                               ) : (
-                                <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                                <Eye className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                               )}
                               Demo Mode
                             </span>
@@ -1379,7 +1379,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                 isDemoMode
                                   ? "bg-[#f26722] text-white"
-                                  : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                  : "bg-zinc-200 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300"
                               }`}
                             >
                               {isDemoMode ? "On" : "Off"}
@@ -1388,13 +1388,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         )}
                         <button
                           onClick={toggleDarkMode}
-                          className="flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center justify-between w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
                         >
                           <span className="flex items-center">
                             {isDark ? (
-                              <Sun className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                              <Sun className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                             ) : (
-                              <Moon className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                              <Moon className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                             )}
                             {isDark ? "Light Mode" : "Dark Mode (In Testing)"}
                           </span>
@@ -1402,19 +1402,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                               isDark
                                 ? "bg-[#f26722] text-white"
-                                : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                : "bg-zinc-200 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300"
                             }`}
                           >
                             {isDark ? "On" : "Off"}
                           </span>
                         </button>
-                        <div className="border-t border-gray-200 dark:border-dark-200" />
+                        <div className="border-t border-zinc-200 dark:border-dark-200" />
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-red-600/10 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-red-600/10 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
                           {isSigningOut ? "Signing out..." : "Sign Out"}
                         </button>
                       </div>

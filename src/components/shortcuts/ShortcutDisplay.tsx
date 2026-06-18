@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, ExternalLink, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/lib/AuthContext';
-import { useDivision } from '@/App';
-import { navigateFromShortcut } from '@/lib/shortcutNavigation';
-import { ShortcutService, Shortcut } from '@/services/ShortcutService';
-import { ShortcutManager } from './ShortcutManager';
-import { ShortcutManagerDndKit } from './ShortcutManagerDndKit';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Settings, ExternalLink, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/lib/AuthContext";
+import { useDivision } from "@/App";
+import { navigateFromShortcut } from "@/lib/shortcutNavigation";
+import { ShortcutService, Shortcut } from "@/services/ShortcutService";
+import { ShortcutManager } from "./ShortcutManager";
+import { ShortcutManagerDndKit } from "./ShortcutManagerDndKit";
 
 export const ShortcutDisplay: React.FC = () => {
   const { user } = useAuth();
@@ -21,7 +21,7 @@ export const ShortcutDisplay: React.FC = () => {
 
   // Debug user info
   useEffect(() => {
-    console.log('ShortcutDisplay - User:', user?.id);
+    console.log("ShortcutDisplay - User:", user?.id);
   }, [user]);
 
   useEffect(() => {
@@ -32,19 +32,19 @@ export const ShortcutDisplay: React.FC = () => {
 
   // Debug manager open state
   useEffect(() => {
-    console.log('ShortcutDisplay - Manager open state:', isOpen);
+    console.log("ShortcutDisplay - Manager open state:", isOpen);
   }, [isOpen]);
 
   const loadShortcuts = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const data = await ShortcutService.getUserShortcuts(user.id);
-      console.log('ShortcutDisplay - Loaded shortcuts:', data);
+      console.log("ShortcutDisplay - Loaded shortcuts:", data);
       setShortcuts(data);
     } catch (err) {
-      console.error('Error loading shortcuts:', err);
+      console.error("Error loading shortcuts:", err);
     } finally {
       setLoading(false);
     }
@@ -55,12 +55,12 @@ export const ShortcutDisplay: React.FC = () => {
   };
 
   const openShortcutManager = () => {
-    console.log('ShortcutDisplay - Opening manager');
+    console.log("ShortcutDisplay - Opening manager");
     setIsOpen(true);
   };
 
   const closeShortcutManager = () => {
-    console.log('ShortcutDisplay - Closing manager');
+    console.log("ShortcutDisplay - Closing manager");
     setIsOpen(false);
     // Reload shortcuts after manager is closed
     loadShortcuts();
@@ -68,13 +68,13 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="animate-pulse p-6 bg-gray-50 dark:bg-[#1e1e1e] rounded-xl">
-        <div className="h-6 w-48 bg-gray-200 dark:bg-dark-150 rounded mb-4"></div>
+      <div className="animate-pulse p-6 bg-zinc-50 dark:bg-[#1e1e1e] rounded-xl">
+        <div className="h-6 w-48 bg-zinc-200 dark:bg-dark-150 rounded mb-4"></div>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {[...Array(6)].map((_, i) => (
-            <div 
-              key={i} 
-              className="h-16 bg-gray-200 dark:bg-dark-150 rounded"
+            <div
+              key={i}
+              className="h-16 bg-zinc-200 dark:bg-dark-150 rounded"
             />
           ))}
         </div>
@@ -84,21 +84,25 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (shortcuts.length === 0) {
     return (
-      <div className="p-6 bg-gray-50 dark:bg-[#1e1e1e] rounded-xl">
+      <div className="p-6 bg-zinc-50 dark:bg-[#1e1e1e] rounded-xl">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">My Shortcuts</h3>
           <div className="flex items-center space-x-2">
             {/* Fallback toggle button - only visible if there are drag errors */}
-            {error && error.includes('drag') && (
-              <button 
+            {error && error.includes("drag") && (
+              <button
                 onClick={() => setUseDndKit(!useDndKit)}
-                className="text-xs text-gray-500 dark:text-white flex items-center"
+                className="text-xs text-zinc-500 dark:text-white flex items-center"
                 title="Switch drag and drop implementation"
               >
-                <span>{useDndKit ? 'Try alternate drag and drop' : 'Try modern drag and drop'}</span>
+                <span>
+                  {useDndKit
+                    ? "Try alternate drag and drop"
+                    : "Try modern drag and drop"}
+                </span>
               </button>
             )}
-            <button 
+            <button
               onClick={openShortcutManager}
               className="flex items-center text-sm px-3 py-1.5 rounded-md text-white bg-[#f26722] hover:bg-[#f26722]/90 border border-[#f26722] shadow-sm"
               title="Click to add, edit, delete or rearrange shortcuts"
@@ -109,18 +113,23 @@ export const ShortcutDisplay: React.FC = () => {
           </div>
         </div>
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-white mb-2">You don't have any shortcuts yet.</p>
-          <button 
+          <p className="text-zinc-500 dark:text-white mb-2">
+            You don't have any shortcuts yet.
+          </p>
+          <button
             onClick={openShortcutManager}
             className="px-4 py-2 bg-[#f26722] text-white rounded-md hover:bg-[#f26722]/90"
           >
             Add Shortcuts
           </button>
         </div>
-        
+
         {/* Always render ShortcutManager */}
         {useDndKit ? (
-          <ShortcutManagerDndKit isOpen={isOpen} onClose={closeShortcutManager} />
+          <ShortcutManagerDndKit
+            isOpen={isOpen}
+            onClose={closeShortcutManager}
+          />
         ) : (
           <ShortcutManager isOpen={isOpen} onClose={closeShortcutManager} />
         )}
@@ -134,16 +143,20 @@ export const ShortcutDisplay: React.FC = () => {
         <h3 className="text-lg font-medium"></h3>
         <div className="flex items-center space-x-2">
           {/* Fallback toggle button - only visible if there are drag errors */}
-          {error && error.includes('drag') && (
-            <button 
+          {error && error.includes("drag") && (
+            <button
               onClick={() => setUseDndKit(!useDndKit)}
-              className="text-xs text-gray-500 dark:text-white flex items-center"
+              className="text-xs text-zinc-500 dark:text-white flex items-center"
               title="Switch drag and drop implementation"
             >
-              <span>{useDndKit ? 'Try alternate drag and drop' : 'Try modern drag and drop'}</span>
+              <span>
+                {useDndKit
+                  ? "Try alternate drag and drop"
+                  : "Try modern drag and drop"}
+              </span>
             </button>
           )}
-          <button 
+          <button
             onClick={openShortcutManager}
             className="flex items-center text-sm px-3 py-1.5 rounded-md text-white bg-[#f26722] hover:bg-[#f26722]/90 border border-[#f26722] shadow-sm"
             title="Click to add, edit, delete or rearrange shortcuts"
@@ -158,18 +171,20 @@ export const ShortcutDisplay: React.FC = () => {
           <Button
             key={shortcut.id}
             variant="outline"
-            className="h-auto py-3 px-4 flex flex-col items-center justify-center text-center border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-dark-200 transition-colors"
+            className="h-auto py-3 px-4 flex flex-col items-center justify-center text-center border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-dark-200 transition-colors"
             onClick={() => handleShortcutClick(shortcut.url)}
           >
-            <span className="block w-full truncate font-medium">{shortcut.title}</span>
-            <div className="mt-1 text-xs text-gray-500 dark:text-white flex items-center">
-              {shortcut.url.startsWith('http') ? (
+            <span className="block w-full truncate font-medium">
+              {shortcut.title}
+            </span>
+            <div className="mt-1 text-xs text-zinc-500 dark:text-white flex items-center">
+              {shortcut.url.startsWith("http") ? (
                 <ExternalLink className="h-3 w-3 mr-1" />
               ) : (
                 <ChevronRight className="h-3 w-3 mr-1" />
               )}
               <span className="truncate max-w-[100px]">
-                {shortcut.url.startsWith('http')
+                {shortcut.url.startsWith("http")
                   ? new URL(shortcut.url).hostname
                   : shortcut.url}
               </span>
@@ -177,10 +192,13 @@ export const ShortcutDisplay: React.FC = () => {
           </Button>
         ))}
       </div>
-      
-      <div className="mt-3 text-xs text-gray-500 dark:text-white flex items-center justify-end">
+
+      <div className="mt-3 text-xs text-zinc-500 dark:text-white flex items-center justify-end">
         <Settings className="h-3 w-3 mr-1" />
-        <span>Click <strong>Manage Shortcuts</strong> to add, edit, or drag and drop to reorder</span>
+        <span>
+          Click <strong>Manage Shortcuts</strong> to add, edit, or drag and drop
+          to reorder
+        </span>
       </div>
 
       {/* Always render ShortcutManager */}
@@ -191,4 +209,4 @@ export const ShortcutDisplay: React.FC = () => {
       )}
     </div>
   );
-}; 
+};

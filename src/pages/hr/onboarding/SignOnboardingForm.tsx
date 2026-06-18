@@ -1,16 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { onboardingService, ESignForm } from '../../../services/hr/onboardingService';
-import { useAuth } from '../../../lib/AuthContext';
-import { toast } from '../../../components/ui/toast';
-import { Loader2, PenTool, ArrowLeft, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import {
+  onboardingService,
+  ESignForm,
+} from "../../../services/hr/onboardingService";
+import { useAuth } from "../../../lib/AuthContext";
+import { toast } from "../../../components/ui/toast";
+import { Loader2, PenTool, ArrowLeft, CheckCircle } from "lucide-react";
 
 function getAttachmentUrl(form: ESignForm): string | null {
   const docs = (form as any).custom_fields?.attached_documents;
   if (Array.isArray(docs) && docs[0]?.file_url) return docs[0].file_url;
-  const match = (form.form_content || '').match(/href=["']([^"']+)["']/);
+  const match = (form.form_content || "").match(/href=["']([^"']+)["']/);
   return match ? match[1] : null;
 }
 
@@ -22,12 +30,12 @@ export const SignOnboardingForm: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [alreadySigned, setAlreadySigned] = useState(false);
   const [signedAt, setSignedAt] = useState<string | null>(null);
-  const [signatureData, setSignatureData] = useState('');
+  const [signatureData, setSignatureData] = useState("");
   const [signing, setSigning] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const backPath = '/hr/onboarding/your-onboarding';
+  const backPath = "/hr/onboarding/your-onboarding";
 
   useEffect(() => {
     if (!formId) {
@@ -43,50 +51,79 @@ export const SignOnboardingForm: React.FC = () => {
         ]);
         if (!cancelled && f) {
           setForm(f);
-          const mySigned = subs.find((s: any) => s.signer_email === user?.email && s.status === 'signed');
+          const mySigned = subs.find(
+            (s: any) => s.signer_email === user?.email && s.status === "signed",
+          );
           if (mySigned) {
             setAlreadySigned(true);
             setSignedAt(mySigned.signed_at || mySigned.created_at || null);
           }
         }
       } catch {
-        if (!cancelled) toast({ title: 'Error', description: 'Form not found.', variant: 'destructive' });
+        if (!cancelled)
+          toast({
+            title: "Error",
+            description: "Form not found.",
+            variant: "destructive",
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [formId, user?.email]);
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e:
+      | React.MouseEvent<HTMLCanvasElement>
+      | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const x = ('touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left) * scaleX;
-    const y = ('touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top) * scaleY;
-    ctx.strokeStyle = '#000';
+    const x =
+      ("touches" in e
+        ? e.touches[0].clientX - rect.left
+        : e.clientX - rect.left) * scaleX;
+    const y =
+      ("touches" in e
+        ? e.touches[0].clientY - rect.top
+        : e.clientY - rect.top) * scaleY;
+    ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
     ctx.moveTo(x, y);
     setIsDrawing(true);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e:
+      | React.MouseEvent<HTMLCanvasElement>
+      | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     if (!isDrawing || !canvasRef.current) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const x = ('touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left) * scaleX;
-    const y = ('touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top) * scaleY;
+    const x =
+      ("touches" in e
+        ? e.touches[0].clientX - rect.left
+        : e.clientX - rect.left) * scaleX;
+    const y =
+      ("touches" in e
+        ? e.touches[0].clientY - rect.top
+        : e.clientY - rect.top) * scaleY;
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -98,35 +135,55 @@ export const SignOnboardingForm: React.FC = () => {
 
   const clearSignature = () => {
     if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      setSignatureData('');
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx)
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      setSignatureData("");
     }
   };
 
   const handleSubmit = async () => {
     if (!form || !user?.id) return;
     if (!signatureData) {
-      toast({ title: 'Error', description: 'Please sign in the box below.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Please sign in the box below.",
+        variant: "destructive",
+      });
       return;
     }
     setSigning(true);
     try {
-      const signerName = user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown';
-      const signerEmail = user.email || '';
+      const signerName =
+        user.user_metadata?.name || user.email?.split("@")[0] || "Unknown";
+      const signerEmail = user.email || "";
       await onboardingService.createESignSubmission({
         form_id: form.id,
         signer_email: signerEmail,
         signer_name: signerName,
-        signatures: [{ field_name: 'signature', signature_image: signatureData, signed_at: new Date().toISOString() }],
+        signatures: [
+          {
+            field_name: "signature",
+            signature_image: signatureData,
+            signed_at: new Date().toISOString(),
+          },
+        ],
         form_data: {},
-        status: 'signed',
+        status: "signed",
         signed_at: new Date().toISOString(),
       } as any);
-      toast({ title: 'Success', description: 'Form signed and recorded.', variant: 'success' });
+      toast({
+        title: "Success",
+        description: "Form signed and recorded.",
+        variant: "success",
+      });
       navigate(backPath);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to submit.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to submit.",
+        variant: "destructive",
+      });
     } finally {
       setSigning(false);
     }
@@ -147,15 +204,18 @@ export const SignOnboardingForm: React.FC = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Your Onboarding
         </Button>
-        <p className="text-gray-600 dark:text-gray-400">Form not found.</p>
+        <p className="text-zinc-600 dark:text-zinc-400">Form not found.</p>
       </div>
     );
   }
 
   const attachmentUrl = getAttachmentUrl(form);
   const hasFormContent = form.form_content?.trim();
-  const hasFormFields = Array.isArray(form.form_fields) && form.form_fields.length > 0;
-  const signedDate = signedAt ? new Date(signedAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+  const hasFormFields =
+    Array.isArray(form.form_fields) && form.form_fields.length > 0;
+  const signedDate = signedAt
+    ? new Date(signedAt).toLocaleDateString(undefined, { dateStyle: "medium" })
+    : "";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -167,63 +227,82 @@ export const SignOnboardingForm: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>{form.name}</CardTitle>
-          {form.description && <CardDescription>{form.description}</CardDescription>}
+          {form.description && (
+            <CardDescription>{form.description}</CardDescription>
+          )}
           {alreadySigned && (
             <p className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-2 mt-2">
               <CheckCircle className="h-4 w-4" />
-              You signed this{signedDate ? ` on ${signedDate}` : ''}.
+              You signed this{signedDate ? ` on ${signedDate}` : ""}.
             </p>
           )}
         </CardHeader>
         <CardContent className="space-y-6">
           {attachmentUrl && (
-            <div className="border rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 px-3 py-2 border-b border-gray-200 dark:border-gray-700">Attached document</p>
+            <div className="border rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
+                Attached document
+              </p>
               <iframe
                 title="Document"
                 src={attachmentUrl}
                 className="w-full border-0"
-                style={{ minHeight: '420px' }}
+                style={{ minHeight: "420px" }}
               />
             </div>
           )}
           {hasFormContent && (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 max-h-[400px] overflow-y-auto">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Form content</p>
+            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-4 max-h-[400px] overflow-y-auto">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Form content
+              </p>
               <div
-                className="text-sm text-gray-900 dark:text-white prose prose-sm dark:prose-invert max-w-none prose-p:my-1"
+                className="text-sm text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none prose-p:my-1"
                 dangerouslySetInnerHTML={{ __html: form.form_content }}
               />
             </div>
           )}
           {hasFormFields && (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Form fields</p>
-              <ul className="space-y-2 text-sm text-gray-900 dark:text-white">
+            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-4">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Form fields
+              </p>
+              <ul className="space-y-2 text-sm text-zinc-900 dark:text-white">
                 {form.form_fields.map((field, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span className="font-medium">{field.label}</span>
-                    {field.required && <span className="text-xs text-amber-600 dark:text-amber-400">(required)</span>}
-                    <span className="text-gray-500 dark:text-gray-400">— {field.type}</span>
+                    {field.required && (
+                      <span className="text-xs text-amber-600 dark:text-amber-400">
+                        (required)
+                      </span>
+                    )}
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      — {field.type}
+                    </span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
           {!hasFormContent && !hasFormFields && !attachmentUrl && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">No form content or document attached. You can still sign below to acknowledge.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No form content or document attached. You can still sign below to
+              acknowledge.
+            </p>
           )}
           {!alreadySigned && (
             <>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Your signature</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Your signature
+                </label>
                 <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
                   <canvas
                     ref={canvasRef}
                     width={500}
                     height={120}
-                    className="border border-gray-300 dark:border-gray-600 rounded w-full cursor-crosshair touch-none"
-                    style={{ maxWidth: '100%', height: '120px' }}
+                    className="border border-zinc-300 dark:border-zinc-600 rounded w-full cursor-crosshair touch-none"
+                    style={{ maxWidth: "100%", height: "120px" }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
@@ -233,14 +312,30 @@ export const SignOnboardingForm: React.FC = () => {
                     onTouchEnd={stopDrawing}
                   />
                   <div className="flex gap-2 mt-2">
-                    <Button variant="outline" size="sm" onClick={clearSignature}>Clear</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearSignature}
+                    >
+                      Clear
+                    </Button>
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => navigate(backPath)}>Cancel</Button>
-                <Button onClick={handleSubmit} disabled={!signatureData || signing} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">
-                  {signing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <PenTool className="h-4 w-4 mr-2" />}
+                <Button variant="outline" onClick={() => navigate(backPath)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!signatureData || signing}
+                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                >
+                  {signing ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <PenTool className="h-4 w-4 mr-2" />
+                  )}
                   Submit signature
                 </Button>
               </div>

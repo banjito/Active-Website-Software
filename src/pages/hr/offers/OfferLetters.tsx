@@ -1,19 +1,57 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Select } from '../../../components/ui/Select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { FileText, Plus, Edit, Trash2, Eye, Copy, Save, X, Send, Download, Link as LinkIcon, Paperclip, Upload, UserPlus, Clock, RefreshCw } from 'lucide-react';
-import { RichTextEditor } from '@/components/helpCenter/RichTextEditor';
-import { offersService, OfferTemplate, Offer, CreateOfferInput, OfferAttachment } from '../../../services/hr/offersService';
-import { candidatesService, Candidate } from '../../../services/hr/candidatesService';
-import { onboardingService } from '../../../services/hr/onboardingService';
-import { useAuth } from '../../../lib/AuthContext';
-import { toast } from '../../../components/ui/toast';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import { Select } from "../../../components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  FileText,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Copy,
+  Save,
+  X,
+  Send,
+  Download,
+  Link as LinkIcon,
+  Paperclip,
+  Upload,
+  UserPlus,
+  Clock,
+  RefreshCw,
+} from "lucide-react";
+import { RichTextEditor } from "@/components/helpCenter/RichTextEditor";
+import {
+  offersService,
+  OfferTemplate,
+  Offer,
+  CreateOfferInput,
+  OfferAttachment,
+} from "../../../services/hr/offersService";
+import {
+  candidatesService,
+  Candidate,
+} from "../../../services/hr/candidatesService";
+import { onboardingService } from "../../../services/hr/onboardingService";
+import { useAuth } from "../../../lib/AuthContext";
+import { toast } from "../../../components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export const OfferLetters: React.FC = () => {
   const navigate = useNavigate();
@@ -22,61 +60,76 @@ export const OfferLetters: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Template management
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<OfferTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<OfferTemplate | null>(null);
   const [templateFormData, setTemplateFormData] = useState({
-    name: '',
-    description: '',
-    template_content: '',
+    name: "",
+    description: "",
+    template_content: "",
     is_default: false,
   });
-  const getDefaultExpirationDate = () => offersService.getDefaultExpirationDate(new Date().toISOString().split('T')[0]);
+  const getDefaultExpirationDate = () =>
+    offersService.getDefaultExpirationDate(
+      new Date().toISOString().split("T")[0],
+    );
 
   // Offer creation
   const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false);
   const [isEditOfferModalOpen, setIsEditOfferModalOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
-  const [offerFormData, setOfferFormData] = useState<Partial<CreateOfferInput>>({
-    candidate_id: '',
-    template_id: '',
-    position_title: '',
-    department: '',
-    employment_type: 'full-time',
-    start_date: '',
-    location: '',
-    reporting_manager: '',
-    base_salary: undefined,
-    salary_currency: 'USD',
-    pay_frequency: 'annual',
-    bonus_amount: undefined,
-    bonus_description: '',
-    equity_compensation: '',
-    benefits_summary: '',
-    offer_date: new Date().toISOString().split('T')[0],
-    expiration_date: getDefaultExpirationDate(),
-  });
-  const [customizedContent, setCustomizedContent] = useState('');
+  const [offerFormData, setOfferFormData] = useState<Partial<CreateOfferInput>>(
+    {
+      candidate_id: "",
+      template_id: "",
+      position_title: "",
+      department: "",
+      employment_type: "full-time",
+      start_date: "",
+      location: "",
+      reporting_manager: "",
+      base_salary: undefined,
+      salary_currency: "USD",
+      pay_frequency: "annual",
+      bonus_amount: undefined,
+      bonus_description: "",
+      equity_compensation: "",
+      benefits_summary: "",
+      offer_date: new Date().toISOString().split("T")[0],
+      expiration_date: getDefaultExpirationDate(),
+    },
+  );
+  const [customizedContent, setCustomizedContent] = useState("");
 
   // Preview
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [previewContent, setPreviewContent] = useState('');
+  const [previewContent, setPreviewContent] = useState("");
   const [signingLink, setSigningLink] = useState<string | null>(null);
-  const [signingLinkOfferId, setSigningLinkOfferId] = useState<string | null>(null);
+  const [signingLinkOfferId, setSigningLinkOfferId] = useState<string | null>(
+    null,
+  );
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [markingSent, setMarkingSent] = useState(false);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
-  const [attachmentsOfferId, setAttachmentsOfferId] = useState<string | null>(null);
-  const [offerAttachments, setOfferAttachments] = useState<OfferAttachment[]>([]);
+  const [attachmentsOfferId, setAttachmentsOfferId] = useState<string | null>(
+    null,
+  );
+  const [offerAttachments, setOfferAttachments] = useState<OfferAttachment[]>(
+    [],
+  );
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
-  const [sendingToOnboardingOfferId, setSendingToOnboardingOfferId] = useState<string | null>(null);
+  const [sendingToOnboardingOfferId, setSendingToOnboardingOfferId] = useState<
+    string | null
+  >(null);
   const [extendOfferId, setExtendOfferId] = useState<string | null>(null);
   const [extendModalOpen, setExtendModalOpen] = useState(false);
-  const [extendNewDate, setExtendNewDate] = useState<string>('');
-  const [extendRegenerateToken, setExtendRegenerateToken] = useState<boolean>(true);
+  const [extendNewDate, setExtendNewDate] = useState<string>("");
+  const [extendRegenerateToken, setExtendRegenerateToken] =
+    useState<boolean>(true);
   const [extending, setExtending] = useState(false);
 
   useEffect(() => {
@@ -84,7 +137,9 @@ export const OfferLetters: React.FC = () => {
   }, []);
 
   // Expiration countdown helper (mirrors the one in OfferApprovals)
-  const getExpirationInfo = (offer: Offer): {
+  const getExpirationInfo = (
+    offer: Offer,
+  ): {
     label: string;
     color: string;
     expired: boolean;
@@ -97,13 +152,18 @@ export const OfferLetters: React.FC = () => {
     const diffMs = exp.getTime() - now.getTime();
     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     if (diffMs <= 0) {
-      return { label: 'Expired', color: 'text-red-600 dark:text-red-400', expired: true, daysLeft: 0 };
+      return {
+        label: "Expired",
+        color: "text-red-600 dark:text-red-400",
+        expired: true,
+        daysLeft: 0,
+      };
     }
     if (daysLeft <= 1) {
       const hoursLeft = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
       return {
-        label: `Expires in ${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`,
-        color: 'text-red-600 dark:text-red-400',
+        label: `Expires in ${hoursLeft} hour${hoursLeft === 1 ? "" : "s"}`,
+        color: "text-red-600 dark:text-red-400",
         expired: false,
         daysLeft,
       };
@@ -111,14 +171,14 @@ export const OfferLetters: React.FC = () => {
     if (daysLeft <= 3) {
       return {
         label: `Expires in ${daysLeft} days`,
-        color: 'text-orange-600 dark:text-orange-400',
+        color: "text-orange-600 dark:text-orange-400",
         expired: false,
         daysLeft,
       };
     }
     return {
       label: `Expires in ${daysLeft} days`,
-      color: 'text-gray-600 dark:text-gray-400',
+      color: "text-zinc-600 dark:text-zinc-400",
       expired: false,
       daysLeft,
     };
@@ -128,7 +188,7 @@ export const OfferLetters: React.FC = () => {
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 5);
     setExtendOfferId(offerId);
-    setExtendNewDate(defaultDate.toISOString().split('T')[0]);
+    setExtendNewDate(defaultDate.toISOString().split("T")[0]);
     setExtendRegenerateToken(true);
     setExtendModalOpen(true);
   };
@@ -148,20 +208,20 @@ export const OfferLetters: React.FC = () => {
         setShowLinkModal(true);
       }
       toast({
-        title: 'Expiration updated',
+        title: "Expiration updated",
         description: extendRegenerateToken
-          ? 'New expiration set and a fresh signing link was generated.'
-          : 'Expiration date updated. The existing signing link remains valid.',
-        variant: 'success',
+          ? "New expiration set and a fresh signing link was generated."
+          : "Expiration date updated. The existing signing link remains valid.",
+        variant: "success",
       });
       setExtendModalOpen(false);
       setExtendOfferId(null);
       fetchData();
     } catch (err: any) {
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to update expiration',
-        variant: 'destructive',
+        title: "Error",
+        description: err.message || "Failed to update expiration",
+        variant: "destructive",
       });
     } finally {
       setExtending(false);
@@ -178,33 +238,45 @@ export const OfferLetters: React.FC = () => {
       ]);
       setTemplates(templatesData);
       setOffers(offersData);
-      setCandidates(candidatesData.filter(c => ['offer', 'interview', 'offer_sent', 'offer_accepted'].includes(c.status)));
+      setCandidates(
+        candidatesData.filter((c) =>
+          ["offer", "interview", "offer_sent", "offer_accepted"].includes(
+            c.status,
+          ),
+        ),
+      );
     } catch (error: any) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load data. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load data. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTemplateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleTemplateInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setTemplateFormData(prev => ({
+    setTemplateFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
   const handleCreateTemplate = async () => {
-    if (!templateFormData.name.trim() || !templateFormData.template_content.trim()) {
+    if (
+      !templateFormData.name.trim() ||
+      !templateFormData.template_content.trim()
+    ) {
       toast({
-        title: 'Error',
-        description: 'Name and template content are required',
-        variant: 'destructive',
+        title: "Error",
+        description: "Name and template content are required",
+        variant: "destructive",
       });
       return;
     }
@@ -214,18 +286,23 @@ export const OfferLetters: React.FC = () => {
     try {
       await offersService.createTemplate(templateFormData, user.id);
       toast({
-        title: 'Success',
-        description: 'Template created successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Template created successfully",
+        variant: "success",
       });
       setIsTemplateModalOpen(false);
-      setTemplateFormData({ name: '', description: '', template_content: '', is_default: false });
+      setTemplateFormData({
+        name: "",
+        description: "",
+        template_content: "",
+        is_default: false,
+      });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create template',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to create template",
+        variant: "destructive",
       });
     }
   };
@@ -233,11 +310,14 @@ export const OfferLetters: React.FC = () => {
   const handleUpdateTemplate = async () => {
     if (!selectedTemplate) return;
 
-    if (!templateFormData.name.trim() || !templateFormData.template_content.trim()) {
+    if (
+      !templateFormData.name.trim() ||
+      !templateFormData.template_content.trim()
+    ) {
       toast({
-        title: 'Error',
-        description: 'Name and template content are required',
-        variant: 'destructive',
+        title: "Error",
+        description: "Name and template content are required",
+        variant: "destructive",
       });
       return;
     }
@@ -245,39 +325,44 @@ export const OfferLetters: React.FC = () => {
     try {
       await offersService.updateTemplate(selectedTemplate.id, templateFormData);
       toast({
-        title: 'Success',
-        description: 'Template updated successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Template updated successfully",
+        variant: "success",
       });
       setIsEditTemplateModalOpen(false);
       setSelectedTemplate(null);
-      setTemplateFormData({ name: '', description: '', template_content: '', is_default: false });
+      setTemplateFormData({
+        name: "",
+        description: "",
+        template_content: "",
+        is_default: false,
+      });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update template',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to update template",
+        variant: "destructive",
       });
     }
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
       await offersService.deleteTemplate(id);
       toast({
-        title: 'Success',
-        description: 'Template deleted successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Template deleted successfully",
+        variant: "success",
       });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete template',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to delete template",
+        variant: "destructive",
       });
     }
   };
@@ -286,82 +371,148 @@ export const OfferLetters: React.FC = () => {
     setSelectedTemplate(template);
     setTemplateFormData({
       name: template.name,
-      description: template.description || '',
+      description: template.description || "",
       template_content: template.template_content,
       is_default: template.is_default,
     });
     setIsEditTemplateModalOpen(true);
   };
 
-  const handleOfferInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleOfferInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
-    setOfferFormData(prev => ({
+    setOfferFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? (value ? parseFloat(value) : undefined) : (value || ''),
+      [name]:
+        type === "number"
+          ? value
+            ? parseFloat(value)
+            : undefined
+          : value || "",
     }));
   };
 
   const handleTemplateSelect = async (templateId: string) => {
     if (!templateId) {
-      setCustomizedContent('');
+      setCustomizedContent("");
       return;
     }
 
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t) => t.id === templateId);
     if (template) {
       setCustomizedContent(template.template_content);
-      setOfferFormData(prev => ({ ...prev, template_id: templateId }));
+      setOfferFormData((prev) => ({ ...prev, template_id: templateId }));
     }
   };
 
-  const replaceTemplateVariables = (content: string, candidate: Candidate | undefined, offerData: Partial<CreateOfferInput>): string => {
+  const replaceTemplateVariables = (
+    content: string,
+    candidate: Candidate | undefined,
+    offerData: Partial<CreateOfferInput>,
+  ): string => {
     if (!candidate) return content;
 
     let result = content;
-    result = result.replace(/\{\{candidate_name\}\}/g, `${candidate.first_name} ${candidate.last_name}`);
+    result = result.replace(
+      /\{\{candidate_name\}\}/g,
+      `${candidate.first_name} ${candidate.last_name}`,
+    );
     result = result.replace(/\{\{first_name\}\}/g, candidate.first_name);
     result = result.replace(/\{\{last_name\}\}/g, candidate.last_name);
-    result = result.replace(/\{\{position_title\}\}/g, offerData.position_title || '');
-    result = result.replace(/\{\{department\}\}/g, offerData.department || '');
-    result = result.replace(/\{\{employment_type\}\}/g, offerData.employment_type || '');
-    result = result.replace(/\{\{start_date\}\}/g, offerData.start_date ? new Date(offerData.start_date).toLocaleDateString() : '');
-    result = result.replace(/\{\{location\}\}/g, offerData.location || '');
-    result = result.replace(/\{\{base_salary\}\}/g, offerData.base_salary ? `$${offerData.base_salary.toLocaleString()}` : '');
-    result = result.replace(/\{\{pay_frequency\}\}/g, offerData.pay_frequency || '');
-    result = result.replace(/\{\{bonus_amount\}\}/g, offerData.bonus_amount ? `$${offerData.bonus_amount.toLocaleString()}` : '');
-    result = result.replace(/\{\{bonus_description\}\}/g, offerData.bonus_description || '');
-    result = result.replace(/\{\{equity_compensation\}\}/g, offerData.equity_compensation || '');
-    result = result.replace(/\{\{benefits_summary\}\}/g, offerData.benefits_summary || '');
-    result = result.replace(/\{\{reporting_manager\}\}/g, offerData.reporting_manager || '');
-    result = result.replace(/\{\{offer_date\}\}/g, offerData.offer_date ? new Date(offerData.offer_date).toLocaleDateString() : '');
-    result = result.replace(/\{\{expiration_date\}\}/g, offerData.expiration_date ? new Date(offerData.expiration_date).toLocaleDateString() : '');
+    result = result.replace(
+      /\{\{position_title\}\}/g,
+      offerData.position_title || "",
+    );
+    result = result.replace(/\{\{department\}\}/g, offerData.department || "");
+    result = result.replace(
+      /\{\{employment_type\}\}/g,
+      offerData.employment_type || "",
+    );
+    result = result.replace(
+      /\{\{start_date\}\}/g,
+      offerData.start_date
+        ? new Date(offerData.start_date).toLocaleDateString()
+        : "",
+    );
+    result = result.replace(/\{\{location\}\}/g, offerData.location || "");
+    result = result.replace(
+      /\{\{base_salary\}\}/g,
+      offerData.base_salary ? `$${offerData.base_salary.toLocaleString()}` : "",
+    );
+    result = result.replace(
+      /\{\{pay_frequency\}\}/g,
+      offerData.pay_frequency || "",
+    );
+    result = result.replace(
+      /\{\{bonus_amount\}\}/g,
+      offerData.bonus_amount
+        ? `$${offerData.bonus_amount.toLocaleString()}`
+        : "",
+    );
+    result = result.replace(
+      /\{\{bonus_description\}\}/g,
+      offerData.bonus_description || "",
+    );
+    result = result.replace(
+      /\{\{equity_compensation\}\}/g,
+      offerData.equity_compensation || "",
+    );
+    result = result.replace(
+      /\{\{benefits_summary\}\}/g,
+      offerData.benefits_summary || "",
+    );
+    result = result.replace(
+      /\{\{reporting_manager\}\}/g,
+      offerData.reporting_manager || "",
+    );
+    result = result.replace(
+      /\{\{offer_date\}\}/g,
+      offerData.offer_date
+        ? new Date(offerData.offer_date).toLocaleDateString()
+        : "",
+    );
+    result = result.replace(
+      /\{\{expiration_date\}\}/g,
+      offerData.expiration_date
+        ? new Date(offerData.expiration_date).toLocaleDateString()
+        : "",
+    );
 
     return result;
   };
 
   const handlePreview = () => {
-    const candidate = candidates.find(c => c.id === offerFormData.candidate_id);
-    const preview = replaceTemplateVariables(customizedContent, candidate, offerFormData);
+    const candidate = candidates.find(
+      (c) => c.id === offerFormData.candidate_id,
+    );
+    const preview = replaceTemplateVariables(
+      customizedContent,
+      candidate,
+      offerFormData,
+    );
     setPreviewContent(preview);
     setIsPreviewModalOpen(true);
   };
 
   const handleCreateOffer = async () => {
     // More robust validation - check for empty strings and trimmed values
-    const candidateId = String(offerFormData.candidate_id || '').trim();
-    const positionTitle = String(offerFormData.position_title || '').trim();
-    const department = String(offerFormData.department || '').trim();
-    
+    const candidateId = String(offerFormData.candidate_id || "").trim();
+    const positionTitle = String(offerFormData.position_title || "").trim();
+    const department = String(offerFormData.department || "").trim();
+
     if (!candidateId || !positionTitle || !department) {
       const missingFields = [];
-      if (!candidateId) missingFields.push('Candidate');
-      if (!positionTitle) missingFields.push('Position Title');
-      if (!department) missingFields.push('Department');
-      
+      if (!candidateId) missingFields.push("Candidate");
+      if (!positionTitle) missingFields.push("Position Title");
+      if (!department) missingFields.push("Department");
+
       toast({
-        title: 'Error',
-        description: `Please fill in all required fields: ${missingFields.join(', ')}`,
-        variant: 'destructive',
+        title: "Error",
+        description: `Please fill in all required fields: ${missingFields.join(", ")}`,
+        variant: "destructive",
       });
       return;
     }
@@ -369,55 +520,68 @@ export const OfferLetters: React.FC = () => {
     if (!user) return;
 
     try {
-      const candidate = candidates.find(c => c.id === candidateId);
-      const finalContent = replaceTemplateVariables(customizedContent, candidate, offerFormData);
+      const candidate = candidates.find((c) => c.id === candidateId);
+      const finalContent = replaceTemplateVariables(
+        customizedContent,
+        candidate,
+        offerFormData,
+      );
 
       // Clean up date fields - convert empty strings to undefined
       const cleanedFormData: CreateOfferInput = {
-        ...offerFormData as CreateOfferInput,
+        ...(offerFormData as CreateOfferInput),
         candidate_id: candidateId,
         position_title: positionTitle,
         department: department,
         offer_letter_content: finalContent,
-        start_date: offerFormData.start_date && offerFormData.start_date.trim() ? offerFormData.start_date : undefined,
-        offer_date: offerFormData.offer_date && offerFormData.offer_date.trim() ? offerFormData.offer_date : undefined,
-        expiration_date: offerFormData.expiration_date && offerFormData.expiration_date.trim() ? offerFormData.expiration_date : undefined,
+        start_date:
+          offerFormData.start_date && offerFormData.start_date.trim()
+            ? offerFormData.start_date
+            : undefined,
+        offer_date:
+          offerFormData.offer_date && offerFormData.offer_date.trim()
+            ? offerFormData.offer_date
+            : undefined,
+        expiration_date:
+          offerFormData.expiration_date && offerFormData.expiration_date.trim()
+            ? offerFormData.expiration_date
+            : undefined,
       };
 
       await offersService.create(cleanedFormData, user.id);
 
       toast({
-        title: 'Success',
-        description: 'Offer created successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Offer created successfully",
+        variant: "success",
       });
       setIsCreateOfferModalOpen(false);
       setOfferFormData({
-        candidate_id: '',
-        template_id: '',
-        position_title: '',
-        department: '',
-        employment_type: 'full-time',
-        start_date: '',
-        location: '',
-        reporting_manager: '',
+        candidate_id: "",
+        template_id: "",
+        position_title: "",
+        department: "",
+        employment_type: "full-time",
+        start_date: "",
+        location: "",
+        reporting_manager: "",
         base_salary: undefined,
-        salary_currency: 'USD',
-        pay_frequency: 'annual',
+        salary_currency: "USD",
+        pay_frequency: "annual",
         bonus_amount: undefined,
-        bonus_description: '',
-        equity_compensation: '',
-        benefits_summary: '',
-        offer_date: new Date().toISOString().split('T')[0],
+        bonus_description: "",
+        equity_compensation: "",
+        benefits_summary: "",
+        offer_date: new Date().toISOString().split("T")[0],
         expiration_date: getDefaultExpirationDate(),
       });
-      setCustomizedContent('');
+      setCustomizedContent("");
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create offer',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to create offer",
+        variant: "destructive",
       });
     }
   };
@@ -426,53 +590,68 @@ export const OfferLetters: React.FC = () => {
     if (!selectedOffer) return;
 
     try {
-      const candidate = candidates.find(c => c.id === offerFormData.candidate_id);
-      const finalContent = replaceTemplateVariables(customizedContent, candidate, offerFormData);
+      const candidate = candidates.find(
+        (c) => c.id === offerFormData.candidate_id,
+      );
+      const finalContent = replaceTemplateVariables(
+        customizedContent,
+        candidate,
+        offerFormData,
+      );
 
       // Clean up date fields - convert empty strings to undefined
       const cleanedFormData: Partial<CreateOfferInput> = {
         ...offerFormData,
         offer_letter_content: finalContent,
-        start_date: offerFormData.start_date && offerFormData.start_date.trim() ? offerFormData.start_date : undefined,
-        offer_date: offerFormData.offer_date && offerFormData.offer_date.trim() ? offerFormData.offer_date : undefined,
-        expiration_date: offerFormData.expiration_date && offerFormData.expiration_date.trim() ? offerFormData.expiration_date : undefined,
+        start_date:
+          offerFormData.start_date && offerFormData.start_date.trim()
+            ? offerFormData.start_date
+            : undefined,
+        offer_date:
+          offerFormData.offer_date && offerFormData.offer_date.trim()
+            ? offerFormData.offer_date
+            : undefined,
+        expiration_date:
+          offerFormData.expiration_date && offerFormData.expiration_date.trim()
+            ? offerFormData.expiration_date
+            : undefined,
       };
 
       await offersService.update(selectedOffer.id, cleanedFormData);
 
       toast({
-        title: 'Success',
-        description: 'Offer updated successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Offer updated successfully",
+        variant: "success",
       });
       setIsEditOfferModalOpen(false);
       setSelectedOffer(null);
       setOfferFormData({
-        candidate_id: '',
-        template_id: '',
-        position_title: '',
-        department: '',
-        employment_type: 'full-time',
-        start_date: '',
-        location: '',
-        reporting_manager: '',
+        candidate_id: "",
+        template_id: "",
+        position_title: "",
+        department: "",
+        employment_type: "full-time",
+        start_date: "",
+        location: "",
+        reporting_manager: "",
         base_salary: undefined,
-        salary_currency: 'USD',
-        pay_frequency: 'annual',
+        salary_currency: "USD",
+        pay_frequency: "annual",
         bonus_amount: undefined,
-        bonus_description: '',
-        equity_compensation: '',
-        benefits_summary: '',
-        offer_date: new Date().toISOString().split('T')[0],
+        bonus_description: "",
+        equity_compensation: "",
+        benefits_summary: "",
+        offer_date: new Date().toISOString().split("T")[0],
         expiration_date: getDefaultExpirationDate(),
       });
-      setCustomizedContent('');
+      setCustomizedContent("");
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update offer',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to update offer",
+        variant: "destructive",
       });
     }
   };
@@ -498,12 +677,17 @@ export const OfferLetters: React.FC = () => {
       offer_date: offer.offer_date,
       expiration_date: offer.expiration_date,
     });
-    setCustomizedContent(offer.offer_letter_content || '');
+    setCustomizedContent(offer.offer_letter_content || "");
     setIsEditOfferModalOpen(true);
   };
 
   const handleSendOffer = async (offerId: string) => {
-    if (!confirm('Generate signing link and share it with the candidate. Mark as sent when you\'ve sent the link.')) return;
+    if (
+      !confirm(
+        "Generate signing link and share it with the candidate. Mark as sent when you've sent the link.",
+      )
+    )
+      return;
 
     try {
       const link = await offersService.generateSigningLink(offerId);
@@ -511,15 +695,16 @@ export const OfferLetters: React.FC = () => {
       setSigningLink(link);
       setShowLinkModal(true);
       toast({
-        title: 'Signing link ready',
-        description: 'Copy the link and send it to the candidate. Click "Mark as sent" when you\'ve sent it.',
-        variant: 'success',
+        title: "Signing link ready",
+        description:
+          'Copy the link and send it to the candidate. Click "Mark as sent" when you\'ve sent it.',
+        variant: "success",
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to generate signing link',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to generate signing link",
+        variant: "destructive",
       });
     }
   };
@@ -532,9 +717,9 @@ export const OfferLetters: React.FC = () => {
       setShowLinkModal(true);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to generate signing link',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to generate signing link",
+        variant: "destructive",
       });
     }
   };
@@ -543,11 +728,11 @@ export const OfferLetters: React.FC = () => {
     if (!signingLinkOfferId) return;
     try {
       setMarkingSent(true);
-      await offersService.updateStatus(signingLinkOfferId, 'sent');
+      await offersService.updateStatus(signingLinkOfferId, "sent");
       toast({
-        title: 'Marked as sent',
-        description: 'Offer and candidate status updated to Offer Sent.',
-        variant: 'success',
+        title: "Marked as sent",
+        description: "Offer and candidate status updated to Offer Sent.",
+        variant: "success",
       });
       fetchData();
       setShowLinkModal(false);
@@ -555,9 +740,9 @@ export const OfferLetters: React.FC = () => {
       setSigningLink(null);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to mark as sent',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to mark as sent",
+        variant: "destructive",
       });
     } finally {
       setMarkingSent(false);
@@ -568,9 +753,9 @@ export const OfferLetters: React.FC = () => {
     if (signingLink) {
       navigator.clipboard.writeText(signingLink);
       toast({
-        title: 'Copied',
-        description: 'Signing link copied to clipboard',
-        variant: 'success',
+        title: "Copied",
+        description: "Signing link copied to clipboard",
+        variant: "success",
       });
     }
   };
@@ -582,7 +767,11 @@ export const OfferLetters: React.FC = () => {
       const list = await offersService.getAttachments(offerId);
       setOfferAttachments(list);
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message || 'Failed to load attachments', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e.message || "Failed to load attachments",
+        variant: "destructive",
+      });
       setOfferAttachments([]);
     }
   };
@@ -593,30 +782,49 @@ export const OfferLetters: React.FC = () => {
     setOfferAttachments([]);
   };
 
-  const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file || !attachmentsOfferId) return;
-    e.target.value = '';
+    e.target.value = "";
     setUploadingAttachment(true);
     try {
       const added = await offersService.addAttachment(attachmentsOfferId, file);
-      setOfferAttachments(prev => [...prev, added]);
-      toast({ title: 'Added', description: 'Attachment added. It will be available on the signing page.', variant: 'success' });
+      setOfferAttachments((prev) => [...prev, added]);
+      toast({
+        title: "Added",
+        description:
+          "Attachment added. It will be available on the signing page.",
+        variant: "success",
+      });
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to upload', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: err.message || "Failed to upload",
+        variant: "destructive",
+      });
     } finally {
       setUploadingAttachment(false);
     }
   };
 
   const handleDeleteAttachment = async (id: string) => {
-    if (!confirm('Remove this attachment?')) return;
+    if (!confirm("Remove this attachment?")) return;
     try {
       await offersService.deleteAttachment(id);
-      setOfferAttachments(prev => prev.filter(a => a.id !== id));
-      toast({ title: 'Removed', description: 'Attachment removed.', variant: 'success' });
+      setOfferAttachments((prev) => prev.filter((a) => a.id !== id));
+      toast({
+        title: "Removed",
+        description: "Attachment removed.",
+        variant: "success",
+      });
     } catch (err: any) {
-      toast({ title: 'Error', description: (err as Error).message || 'Failed to remove', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: (err as Error).message || "Failed to remove",
+        variant: "destructive",
+      });
     }
   };
 
@@ -626,18 +834,19 @@ export const OfferLetters: React.FC = () => {
     try {
       await onboardingService.createOnboardingFromOffer(offerId, user.id);
       toast({
-        title: 'Sent to onboarding',
-        description: 'Onboarding tracking and New Hire Packet created. Open Onboarding → Onboarding Tracking.',
-        variant: 'success',
+        title: "Sent to onboarding",
+        description:
+          "Onboarding tracking and New Hire Packet created. Open Onboarding → Onboarding Tracking.",
+        variant: "success",
       });
       setSendingToOnboardingOfferId(null);
-      navigate('/hr/onboarding/tracking');
+      navigate("/hr/onboarding/tracking");
     } catch (err: any) {
       setSendingToOnboardingOfferId(null);
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to send to onboarding',
-        variant: 'destructive',
+        title: "Error",
+        description: err.message || "Failed to send to onboarding",
+        variant: "destructive",
       });
     }
   };
@@ -645,30 +854,34 @@ export const OfferLetters: React.FC = () => {
   const generatePDF = (offer: Offer) => {
     if (!offer.offer_letter_content) {
       toast({
-        title: 'Error',
-        description: 'No offer content to generate PDF',
-        variant: 'destructive',
+        title: "Error",
+        description: "No offer content to generate PDF",
+        variant: "destructive",
       });
       return;
     }
 
     // Create a new window with the offer content
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
       toast({
-        title: 'Error',
-        description: 'Please allow popups to generate PDF',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please allow popups to generate PDF",
+        variant: "destructive",
       });
       return;
     }
 
-    const candidateName = offer.candidate 
+    const candidateName = offer.candidate
       ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
-      : 'Candidate';
+      : "Candidate";
 
-    const offerDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    
+    const offerDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -747,7 +960,7 @@ export const OfferLetters: React.FC = () => {
           </div>
           <div class="offer-content">${offer.offer_letter_content}</div>
           <div class="footer">
-            ${offer.expiration_date ? `<p><strong>Expiration Date:</strong> ${new Date(offer.expiration_date).toLocaleDateString()}</p>` : ''}
+            ${offer.expiration_date ? `<p><strong>Expiration Date:</strong> ${new Date(offer.expiration_date).toLocaleDateString()}</p>` : ""}
           </div>
         </body>
       </html>
@@ -755,7 +968,7 @@ export const OfferLetters: React.FC = () => {
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    
+
     // Wait for content to load, then print
     setTimeout(() => {
       printWindow.print();
@@ -763,21 +976,21 @@ export const OfferLetters: React.FC = () => {
   };
 
   const handleSendToApprovals = async (offerId: string) => {
-    if (!confirm('Send this offer to the approval workflow?')) return;
+    if (!confirm("Send this offer to the approval workflow?")) return;
 
     try {
-      await offersService.updateStatus(offerId, 'pending_approval');
+      await offersService.updateStatus(offerId, "pending_approval");
       toast({
-        title: 'Success',
-        description: 'Offer sent to approvals',
-        variant: 'success',
+        title: "Success",
+        description: "Offer sent to approvals",
+        variant: "success",
       });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to send offer to approvals',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to send offer to approvals",
+        variant: "destructive",
       });
     }
   };
@@ -796,8 +1009,10 @@ export const OfferLetters: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Offer Letters</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+            Offer Letters
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
             Manage offer letter templates and create customized offers
           </p>
         </div>
@@ -805,7 +1020,12 @@ export const OfferLetters: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => {
-              setTemplateFormData({ name: '', description: '', template_content: '', is_default: false });
+              setTemplateFormData({
+                name: "",
+                description: "",
+                template_content: "",
+                is_default: false,
+              });
               setIsTemplateModalOpen(true);
             }}
           >
@@ -816,25 +1036,25 @@ export const OfferLetters: React.FC = () => {
             className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
             onClick={() => {
               setOfferFormData({
-                candidate_id: '',
-                template_id: '',
-                position_title: '',
-                department: '',
-                employment_type: 'full-time',
-                start_date: '',
-                location: '',
-                reporting_manager: '',
+                candidate_id: "",
+                template_id: "",
+                position_title: "",
+                department: "",
+                employment_type: "full-time",
+                start_date: "",
+                location: "",
+                reporting_manager: "",
                 base_salary: undefined,
-                salary_currency: 'USD',
-                pay_frequency: 'annual',
+                salary_currency: "USD",
+                pay_frequency: "annual",
                 bonus_amount: undefined,
-                bonus_description: '',
-                equity_compensation: '',
-                benefits_summary: '',
-                offer_date: new Date().toISOString().split('T')[0],
+                bonus_description: "",
+                equity_compensation: "",
+                benefits_summary: "",
+                offer_date: new Date().toISOString().split("T")[0],
                 expiration_date: getDefaultExpirationDate(),
               });
-              setCustomizedContent('');
+              setCustomizedContent("");
               setIsCreateOfferModalOpen(true);
             }}
           >
@@ -849,26 +1069,34 @@ export const OfferLetters: React.FC = () => {
         <CardHeader>
           <CardTitle>Offer Letter Templates</CardTitle>
           <CardDescription>
-            Create and manage reusable offer letter templates with customizable variables
+            Create and manage reusable offer letter templates with customizable
+            variables
           </CardDescription>
         </CardHeader>
         <CardContent>
           {templates.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No templates</h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <FileText className="mx-auto h-12 w-12 text-zinc-400" />
+              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+                No templates
+              </h3>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                 Get started by creating your first offer letter template
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map((template) => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={template.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{template.name}</CardTitle>
+                        <CardTitle className="text-lg">
+                          {template.name}
+                        </CardTitle>
                         {template.is_default && (
                           <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-[#f26722] text-white rounded">
                             Default
@@ -877,7 +1105,9 @@ export const OfferLetters: React.FC = () => {
                       </div>
                     </div>
                     {template.description && (
-                      <CardDescription className="mt-2">{template.description}</CardDescription>
+                      <CardDescription className="mt-2">
+                        {template.description}
+                      </CardDescription>
                     )}
                   </CardHeader>
                   <CardContent>
@@ -910,16 +1140,16 @@ export const OfferLetters: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Offers</CardTitle>
-          <CardDescription>
-            View and manage all offer letters
-          </CardDescription>
+          <CardDescription>View and manage all offer letters</CardDescription>
         </CardHeader>
         <CardContent>
           {offers.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No offers</h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <FileText className="mx-auto h-12 w-12 text-zinc-400" />
+              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+                No offers
+              </h3>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                 Create your first offer letter
               </p>
             </div>
@@ -928,34 +1158,54 @@ export const OfferLetters: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {offer.candidate ? `${offer.candidate.first_name} ${offer.candidate.last_name}` : 'Unknown Candidate'}
+                    <div className="font-medium text-zinc-900 dark:text-white">
+                      {offer.candidate
+                        ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
+                        : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      Status: <span className={`font-medium ${
-                        offer.status === 'accepted' ? 'text-green-600' :
-                        offer.status === 'declined' ? 'text-red-600' :
-                        offer.status === 'sent' ? 'text-blue-600' :
-                        offer.status === 'expired' ? 'text-red-600' :
-                        'text-gray-600'
-                      }`}>
-                        {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                      Status:{" "}
+                      <span
+                        className={`font-medium ${
+                          offer.status === "accepted"
+                            ? "text-green-600"
+                            : offer.status === "declined"
+                              ? "text-red-600"
+                              : offer.status === "sent"
+                                ? "text-blue-600"
+                                : offer.status === "expired"
+                                  ? "text-red-600"
+                                  : "text-zinc-600"
+                        }`}
+                      >
+                        {offer.status.charAt(0).toUpperCase() +
+                          offer.status.slice(1)}
                       </span>
                     </div>
                     {(() => {
                       const exp = getExpirationInfo(offer);
                       if (!exp) return null;
-                      if (!['sent', 'approved', 'expired'].includes(offer.status)) return null;
+                      if (
+                        !["sent", "approved", "expired"].includes(offer.status)
+                      )
+                        return null;
                       return (
-                        <div className={`flex items-center gap-1 text-xs mt-1 ${exp.color}`}>
+                        <div
+                          className={`flex items-center gap-1 text-xs mt-1 ${exp.color}`}
+                        >
                           <Clock className="h-3 w-3" />
-                          <span>{exp.label}{offer.expiration_date ? ` (${new Date(offer.expiration_date).toLocaleDateString()})` : ''}</span>
+                          <span>
+                            {exp.label}
+                            {offer.expiration_date
+                              ? ` (${new Date(offer.expiration_date).toLocaleDateString()})`
+                              : ""}
+                          </span>
                         </div>
                       );
                     })()}
@@ -965,7 +1215,7 @@ export const OfferLetters: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setPreviewContent(offer.offer_letter_content || '');
+                        setPreviewContent(offer.offer_letter_content || "");
                         setIsPreviewModalOpen(true);
                       }}
                     >
@@ -994,7 +1244,7 @@ export const OfferLetters: React.FC = () => {
                     >
                       <Paperclip className="h-4 w-4" />
                     </Button>
-                    {offer.status === 'draft' && (
+                    {offer.status === "draft" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1005,7 +1255,7 @@ export const OfferLetters: React.FC = () => {
                         Send to Approvals
                       </Button>
                     )}
-                    {offer.status === 'approved' && (
+                    {offer.status === "approved" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1015,7 +1265,8 @@ export const OfferLetters: React.FC = () => {
                         Send
                       </Button>
                     )}
-                    {(offer.status === 'sent' || offer.status === 'approved') && (
+                    {(offer.status === "sent" ||
+                      offer.status === "approved") && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1025,7 +1276,9 @@ export const OfferLetters: React.FC = () => {
                         <LinkIcon className="h-4 w-4" />
                       </Button>
                     )}
-                    {(offer.status === 'sent' || offer.status === 'approved' || offer.status === 'expired') && (
+                    {(offer.status === "sent" ||
+                      offer.status === "approved" ||
+                      offer.status === "expired") && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1035,7 +1288,7 @@ export const OfferLetters: React.FC = () => {
                         <RefreshCw className="h-4 w-4" />
                       </Button>
                     )}
-                    {offer.status === 'accepted' && (
+                    {offer.status === "accepted" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1045,7 +1298,9 @@ export const OfferLetters: React.FC = () => {
                         className="bg-[#f26722]/10 hover:bg-[#f26722]/20 text-[#f26722] border-[#f26722]/30"
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        {sendingToOnboardingOfferId === offer.id ? 'Sending...' : 'Send to Onboarding'}
+                        {sendingToOnboardingOfferId === offer.id
+                          ? "Sending..."
+                          : "Send to Onboarding"}
                       </Button>
                     )}
                   </div>
@@ -1062,7 +1317,9 @@ export const OfferLetters: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Create Template</DialogTitle>
             <DialogDescription>
-              Create a new offer letter template. Use variables like {'{{candidate_name}}'}, {'{{position_title}}'}, {'{{base_salary}}'}, etc.
+              Create a new offer letter template. Use variables like{" "}
+              {"{{candidate_name}}"}, {"{{position_title}}"},{" "}
+              {"{{base_salary}}"}, etc.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1087,34 +1344,53 @@ export const OfferLetters: React.FC = () => {
                   name="is_default"
                   checked={templateFormData.is_default}
                   onChange={handleTemplateInputChange}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-zinc-300"
                 />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Set as default template
                 </span>
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 Template Content *
               </label>
               <RichTextEditor
                 value={templateFormData.template_content}
-                onChange={(content) => setTemplateFormData(prev => ({ ...prev, template_content: content }))}
+                onChange={(content) =>
+                  setTemplateFormData((prev) => ({
+                    ...prev,
+                    template_content: content,
+                  }))
+                }
                 minHeight="300px"
                 placeholder="Dear {{candidate_name}},&#10;&#10;We are pleased to offer you the position of {{position_title}}..."
               />
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
               <p className="font-medium mb-1">Available variables:</p>
-              <p>{'{{candidate_name}}'}, {'{{first_name}}'}, {'{{last_name}}'}, {'{{position_title}}'}, {'{{department}}'}, {'{{employment_type}}'}, {'{{start_date}}'}, {'{{location}}'}, {'{{base_salary}}'}, {'{{pay_frequency}}'}, {'{{bonus_amount}}'}, {'{{bonus_description}}'}, {'{{equity_compensation}}'}, {'{{benefits_summary}}'}, {'{{reporting_manager}}'}, {'{{offer_date}}'}, {'{{expiration_date}}'}</p>
+              <p>
+                {"{{candidate_name}}"}, {"{{first_name}}"}, {"{{last_name}}"},{" "}
+                {"{{position_title}}"}, {"{{department}}"},{" "}
+                {"{{employment_type}}"}, {"{{start_date}}"}, {"{{location}}"},{" "}
+                {"{{base_salary}}"}, {"{{pay_frequency}}"}, {"{{bonus_amount}}"}
+                , {"{{bonus_description}}"}, {"{{equity_compensation}}"},{" "}
+                {"{{benefits_summary}}"}, {"{{reporting_manager}}"},{" "}
+                {"{{offer_date}}"}, {"{{expiration_date}}"}
+              </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTemplateModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsTemplateModalOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleCreateTemplate} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">
+            <Button
+              onClick={handleCreateTemplate}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
               Create Template
             </Button>
           </DialogFooter>
@@ -1122,7 +1398,10 @@ export const OfferLetters: React.FC = () => {
       </Dialog>
 
       {/* Edit Template Modal */}
-      <Dialog open={isEditTemplateModalOpen} onOpenChange={setIsEditTemplateModalOpen}>
+      <Dialog
+        open={isEditTemplateModalOpen}
+        onOpenChange={setIsEditTemplateModalOpen}
+      >
         <DialogContent className="w-[75vw] max-w-[75vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Template</DialogTitle>
@@ -1152,30 +1431,41 @@ export const OfferLetters: React.FC = () => {
                   name="is_default"
                   checked={templateFormData.is_default}
                   onChange={handleTemplateInputChange}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-zinc-300"
                 />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Set as default template
                 </span>
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 Template Content *
               </label>
               <RichTextEditor
                 value={templateFormData.template_content}
-                onChange={(content) => setTemplateFormData(prev => ({ ...prev, template_content: content }))}
+                onChange={(content) =>
+                  setTemplateFormData((prev) => ({
+                    ...prev,
+                    template_content: content,
+                  }))
+                }
                 minHeight="300px"
                 placeholder="Dear {{candidate_name}},&#10;&#10;We are pleased to offer you the position of {{position_title}}..."
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditTemplateModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditTemplateModalOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleUpdateTemplate} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">
+            <Button
+              onClick={handleUpdateTemplate}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
               Update Template
             </Button>
           </DialogFooter>
@@ -1183,18 +1473,25 @@ export const OfferLetters: React.FC = () => {
       </Dialog>
 
       {/* Create/Edit Offer Modal */}
-      <Dialog open={isCreateOfferModalOpen || isEditOfferModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateOfferModalOpen(false);
-          setIsEditOfferModalOpen(false);
-          setSelectedOffer(null);
-        }
-      }}>
+      <Dialog
+        open={isCreateOfferModalOpen || isEditOfferModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateOfferModalOpen(false);
+            setIsEditOfferModalOpen(false);
+            setSelectedOffer(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditOfferModalOpen ? 'Edit Offer' : 'Create Offer'}</DialogTitle>
+            <DialogTitle>
+              {isEditOfferModalOpen ? "Edit Offer" : "Create Offer"}
+            </DialogTitle>
             <DialogDescription>
-              {isEditOfferModalOpen ? 'Update offer details' : 'Create a new offer letter for a candidate'}
+              {isEditOfferModalOpen
+                ? "Update offer details"
+                : "Create a new offer letter for a candidate"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1202,23 +1499,28 @@ export const OfferLetters: React.FC = () => {
               <Select
                 label="Candidate *"
                 name="candidate_id"
-                value={offerFormData.candidate_id || ''}
+                value={offerFormData.candidate_id || ""}
                 onChange={(e) => {
                   const selectedValue = e.target.value;
                   // Update candidate_id and position_title in a single state update to avoid batching issues
-                  const candidate = selectedValue ? candidates.find(c => c.id === selectedValue) : null;
-                  setOfferFormData(prev => ({
+                  const candidate = selectedValue
+                    ? candidates.find((c) => c.id === selectedValue)
+                    : null;
+                  setOfferFormData((prev) => ({
                     ...prev,
-                    candidate_id: selectedValue || '',
+                    candidate_id: selectedValue || "",
                     // Auto-fill position title if empty and candidate is selected
-                    position_title: (candidate && (!prev.position_title || prev.position_title.trim() === '')) 
-                      ? candidate.position_applied 
-                      : prev.position_title,
+                    position_title:
+                      candidate &&
+                      (!prev.position_title ||
+                        prev.position_title.trim() === "")
+                        ? candidate.position_applied
+                        : prev.position_title,
                   }));
                 }}
                 options={[
-                  { value: '', label: 'Select a candidate...' },
-                  ...candidates.map(c => ({
+                  { value: "", label: "Select a candidate..." },
+                  ...candidates.map((c) => ({
                     value: c.id,
                     label: `${c.first_name} ${c.last_name} - ${c.position_applied}`,
                   })),
@@ -1231,8 +1533,8 @@ export const OfferLetters: React.FC = () => {
                 value={offerFormData.template_id}
                 onChange={(e) => handleTemplateSelect(e.target.value)}
                 options={[
-                  { value: '', label: 'No template' },
-                  ...templates.map(t => ({ value: t.id, label: t.name })),
+                  { value: "", label: "No template" },
+                  ...templates.map((t) => ({ value: t.id, label: t.name })),
                 ]}
               />
             </div>
@@ -1259,10 +1561,10 @@ export const OfferLetters: React.FC = () => {
                 value={offerFormData.employment_type}
                 onChange={handleOfferInputChange}
                 options={[
-                  { value: 'full-time', label: 'Full-Time' },
-                  { value: 'part-time', label: 'Part-Time' },
-                  { value: 'contract', label: 'Contract' },
-                  { value: 'temporary', label: 'Temporary' },
+                  { value: "full-time", label: "Full-Time" },
+                  { value: "part-time", label: "Part-Time" },
+                  { value: "contract", label: "Contract" },
+                  { value: "temporary", label: "Temporary" },
                 ]}
                 required
               />
@@ -1291,7 +1593,7 @@ export const OfferLetters: React.FC = () => {
                 label="Base Salary"
                 name="base_salary"
                 type="number"
-                value={offerFormData.base_salary?.toString() || ''}
+                value={offerFormData.base_salary?.toString() || ""}
                 onChange={handleOfferInputChange}
               />
               <Select
@@ -1300,11 +1602,11 @@ export const OfferLetters: React.FC = () => {
                 value={offerFormData.pay_frequency}
                 onChange={handleOfferInputChange}
                 options={[
-                  { value: 'hourly', label: 'Hourly' },
-                  { value: 'weekly', label: 'Weekly' },
-                  { value: 'bi-weekly', label: 'Bi-Weekly' },
-                  { value: 'monthly', label: 'Monthly' },
-                  { value: 'annual', label: 'Annual' },
+                  { value: "hourly", label: "Hourly" },
+                  { value: "weekly", label: "Weekly" },
+                  { value: "bi-weekly", label: "Bi-Weekly" },
+                  { value: "monthly", label: "Monthly" },
+                  { value: "annual", label: "Annual" },
                 ]}
               />
               <Input
@@ -1319,7 +1621,7 @@ export const OfferLetters: React.FC = () => {
                 label="Bonus Amount"
                 name="bonus_amount"
                 type="number"
-                value={offerFormData.bonus_amount?.toString() || ''}
+                value={offerFormData.bonus_amount?.toString() || ""}
                 onChange={handleOfferInputChange}
               />
               <Textarea
@@ -1361,7 +1663,7 @@ export const OfferLetters: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 Customized Offer Letter Content *
               </label>
               <RichTextEditor
@@ -1379,18 +1681,23 @@ export const OfferLetters: React.FC = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsCreateOfferModalOpen(false);
-              setIsEditOfferModalOpen(false);
-              setSelectedOffer(null);
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateOfferModalOpen(false);
+                setIsEditOfferModalOpen(false);
+                setSelectedOffer(null);
+              }}
+            >
               Cancel
             </Button>
             <Button
-              onClick={isEditOfferModalOpen ? handleUpdateOffer : handleCreateOffer}
+              onClick={
+                isEditOfferModalOpen ? handleUpdateOffer : handleCreateOffer
+              }
               className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
             >
-              {isEditOfferModalOpen ? 'Update Offer' : 'Create Offer'}
+              {isEditOfferModalOpen ? "Update Offer" : "Create Offer"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1404,12 +1711,19 @@ export const OfferLetters: React.FC = () => {
           </DialogHeader>
           <div className="py-4">
             <div
-              className="prose max-w-none dark:prose-invert border border-gray-200 dark:border-gray-700 rounded-lg p-6"
-              dangerouslySetInnerHTML={{ __html: previewContent || '<p class="text-gray-500 dark:text-gray-400">No content to preview</p>' }}
+              className="prose max-w-none dark:prose-invert border border-zinc-200 dark:border-zinc-700 rounded-lg p-6"
+              dangerouslySetInnerHTML={{
+                __html:
+                  previewContent ||
+                  '<p class="text-zinc-500 dark:text-zinc-400">No content to preview</p>',
+              }}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPreviewModalOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>
@@ -1417,12 +1731,16 @@ export const OfferLetters: React.FC = () => {
       </Dialog>
 
       {/* Attachments (e.g. benefit package) Modal */}
-      <Dialog open={showAttachmentsModal} onOpenChange={(open) => !open && closeAttachmentsModal()}>
+      <Dialog
+        open={showAttachmentsModal}
+        onOpenChange={(open) => !open && closeAttachmentsModal()}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Attachments (e.g. benefit package)</DialogTitle>
             <DialogDescription>
-              Add PDFs or other documents to send with this offer. Candidates will see download links on the signing page.
+              Add PDFs or other documents to send with this offer. Candidates
+              will see download links on the signing page.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -1443,16 +1761,23 @@ export const OfferLetters: React.FC = () => {
                 onClick={() => attachmentInputRef.current?.click()}
               >
                 <Upload className="h-4 w-4 mr-1" />
-                {uploadingAttachment ? 'Uploading...' : 'Add attachment'}
+                {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
-            <ul className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+            <ul className="border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-200 dark:divide-zinc-700">
               {offerAttachments.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No attachments yet.</li>
+                <li className="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                  No attachments yet.
+                </li>
               ) : (
                 offerAttachments.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between px-4 py-2">
-                    <span className="text-sm text-gray-900 dark:text-white truncate flex-1">{a.name}</span>
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between px-4 py-2"
+                  >
+                    <span className="text-sm text-zinc-900 dark:text-white truncate flex-1">
+                      {a.name}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1475,46 +1800,51 @@ export const OfferLetters: React.FC = () => {
       </Dialog>
 
       {/* Signing Link Modal */}
-      <Dialog open={showLinkModal} onOpenChange={(open) => {
-        setShowLinkModal(open);
-        if (!open) {
-          setSigningLinkOfferId(null);
-          setSigningLink(null);
-        }
-      }}>
+      <Dialog
+        open={showLinkModal}
+        onOpenChange={(open) => {
+          setShowLinkModal(open);
+          if (!open) {
+            setSigningLinkOfferId(null);
+            setSigningLink(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Signing Link</DialogTitle>
             <DialogDescription>
-              Share this link with the candidate to sign the offer letter. When you&apos;ve sent the link, click &quot;Mark as sent&quot; to update the candidate to Offer Sent (then they can move to Offer Accepted or Denied).
+              Share this link with the candidate to sign the offer letter. When
+              you&apos;ve sent the link, click &quot;Mark as sent&quot; to
+              update the candidate to Offer Sent (then they can move to Offer
+              Accepted or Denied).
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                   Signing Link
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={signingLink || ''}
+                    value={signingLink || ""}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white"
                   />
-                  <Button
-                    variant="outline"
-                    onClick={copySigningLink}
-                  >
+                  <Button variant="outline" onClick={copySigningLink}>
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-zinc-500 dark:text-zinc-400">
                 <p>This link allows the candidate to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>View the offer letter</li>
-                  <li>Download any benefit package or other attachments you added</li>
+                  <li>
+                    Download any benefit package or other attachments you added
+                  </li>
                   <li>Download a PDF copy of the letter</li>
                   <li>Sign electronically</li>
                   <li>Accept or decline the offer</li>
@@ -1526,24 +1856,29 @@ export const OfferLetters: React.FC = () => {
             <Button variant="outline" onClick={() => setShowLinkModal(false)}>
               Close
             </Button>
-            {signingLinkOfferId && offers.find(o => o.id === signingLinkOfferId)?.status !== 'sent' && (
-              <Button
-                onClick={handleMarkAsSent}
-                disabled={markingSent}
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
-              >
-                {markingSent ? 'Updating...' : 'Mark as sent'}
-              </Button>
-            )}
+            {signingLinkOfferId &&
+              offers.find((o) => o.id === signingLinkOfferId)?.status !==
+                "sent" && (
+                <Button
+                  onClick={handleMarkAsSent}
+                  disabled={markingSent}
+                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                >
+                  {markingSent ? "Updating..." : "Mark as sent"}
+                </Button>
+              )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Extend / Refresh Expiration Modal */}
-      <Dialog open={extendModalOpen} onOpenChange={(open) => {
-        setExtendModalOpen(open);
-        if (!open) setExtendOfferId(null);
-      }}>
+      <Dialog
+        open={extendModalOpen}
+        onOpenChange={(open) => {
+          setExtendModalOpen(open);
+          if (!open) setExtendOfferId(null);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1551,23 +1886,24 @@ export const OfferLetters: React.FC = () => {
               Extend Offer Expiration
             </DialogTitle>
             <DialogDescription>
-              Pick a new expiration date. Optionally regenerate the signing link so the previously-shared link stops working.
+              Pick a new expiration date. Optionally regenerate the signing link
+              so the previously-shared link stops working.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 New expiration date
               </label>
               <input
                 type="date"
                 value={extendNewDate}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
-            <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <label className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
               <input
                 type="checkbox"
                 checked={extendRegenerateToken}
@@ -1575,7 +1911,8 @@ export const OfferLetters: React.FC = () => {
                 className="mt-1"
               />
               <span>
-                Regenerate the signing link (recommended). The old link will stop working and a fresh link will open for you to share.
+                Regenerate the signing link (recommended). The old link will
+                stop working and a fresh link will open for you to share.
               </span>
             </label>
           </div>
@@ -1588,8 +1925,10 @@ export const OfferLetters: React.FC = () => {
               disabled={!extendNewDate || extending}
               className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${extending ? 'animate-spin' : ''}`} />
-              {extending ? 'Updating...' : 'Save & Refresh'}
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`}
+              />
+              {extending ? "Updating..." : "Save & Refresh"}
             </Button>
           </DialogFooter>
         </DialogContent>

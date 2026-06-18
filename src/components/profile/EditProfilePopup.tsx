@@ -1,14 +1,37 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { User as UserIcon, X, Upload, ChevronLeft, ChevronRight, Mail, MapPin, Briefcase, Calendar, LinkIcon, Check, Camera, ChevronDown, Eye, Image, Phone, Target } from "lucide-react";
-import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import ReactCrop, { type Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
-import { ProfileView } from './ProfileView';
-import { formatDivisionDisplay } from '@/lib/utils/divisionDisplay';
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  User as UserIcon,
+  X,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  MapPin,
+  Briefcase,
+  Calendar,
+  LinkIcon,
+  Check,
+  Camera,
+  ChevronDown,
+  Eye,
+  Image,
+  Phone,
+  Target,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import ReactCrop, {
+  type Crop,
+  PixelCrop,
+  centerCrop,
+  makeAspectCrop,
+} from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { ProfileView } from "./ProfileView";
+import { formatDivisionDisplay } from "@/lib/utils/divisionDisplay";
 
 interface EditProfilePopupProps {
   isOpen: boolean;
@@ -39,14 +62,14 @@ interface EditProfilePopupProps {
 function getCroppedImg(
   image: HTMLImageElement,
   crop: PixelCrop,
-  fileName: string
+  fileName: string,
 ): Promise<File | null> {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
   canvas.width = crop.width;
   canvas.height = crop.height;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   if (!ctx) {
     return Promise.resolve(null);
@@ -56,7 +79,7 @@ function getCroppedImg(
   canvas.width = crop.width * pixelRatio;
   canvas.height = crop.height * pixelRatio;
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-  ctx.imageSmoothingQuality = 'high';
+  ctx.imageSmoothingQuality = "high";
 
   ctx.drawImage(
     image,
@@ -67,21 +90,21 @@ function getCroppedImg(
     0,
     0,
     crop.width,
-    crop.height
+    crop.height,
   );
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          console.error('Canvas is empty');
+          console.error("Canvas is empty");
           resolve(null);
           return;
         }
         resolve(new File([blob], fileName, { type: blob.type }));
       },
-      'image/jpeg', // Adjust type if needed (e.g., 'image/png')
-      0.9 // Adjust quality (0 to 1)
+      "image/jpeg", // Adjust type if needed (e.g., 'image/png')
+      0.9, // Adjust quality (0 to 1)
     );
   });
 }
@@ -91,13 +114,16 @@ async function getResizedImg(
   image: HTMLImageElement,
   fileName: string,
   maxWidth: number,
-  maxHeight: number
+  maxHeight: number,
 ): Promise<File | null> {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+  const scale = Math.min(
+    maxWidth / image.naturalWidth,
+    maxHeight / image.naturalHeight,
+  );
   canvas.width = image.naturalWidth * scale;
   canvas.height = image.naturalHeight * scale;
 
@@ -107,14 +133,14 @@ async function getResizedImg(
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          console.error('Canvas is empty after resize');
+          console.error("Canvas is empty after resize");
           resolve(null);
           return;
         }
         resolve(new File([blob], fileName, { type: blob.type }));
       },
-      'image/jpeg', 
-      0.85 // Slightly lower quality for resized might be okay
+      "image/jpeg",
+      0.85, // Slightly lower quality for resized might be okay
     );
   });
 }
@@ -125,8 +151,8 @@ const COVER_MAX_WIDTH = 1600; // Example max width
 const COVER_MAX_HEIGHT = COVER_MAX_WIDTH / COVER_ASPECT; // ~640px
 
 function formatPhoneNumber(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10);
-  if (digits.length === 0) return '';
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  if (digits.length === 0) return "";
   if (digits.length <= 3) return `(${digits}`;
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -137,25 +163,54 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   onClose,
   currentUser,
   targetUserId,
-  isNewUser = false
+  isNewUser = false,
 }) => {
   const { user } = useAuth();
-  const editingUserId = targetUserId || user?.id || '';
+  const editingUserId = targetUserId || user?.id || "";
   const isEditingOwnProfile = !!user?.id && editingUserId === user.id;
   const [step, setStep] = useState(1);
-  const [name, setName] = useState(currentUser?.name || '');
-  const [selectedRole, setSelectedRole] = useState(currentUser?.role || '');
-  const [bio, setBio] = useState(currentUser?.bio || user?.user_metadata?.bio || '');
-  const [division, setDivision] = useState(currentUser?.division || user?.user_metadata?.division || '');
-  const [birthday, setBirthday] = useState(currentUser?.birthday || user?.user_metadata?.birthday || '');
-  const [jobTitle, setJobTitle] = useState(currentUser?.job_title || user?.user_metadata?.job_title || '');
-  const [department, setDepartment] = useState(currentUser?.department || user?.user_metadata?.department || '');
-  const [workPhone, setWorkPhone] = useState(currentUser?.work_phone || user?.user_metadata?.work_phone || '');
-  const [personalPhone, setPersonalPhone] = useState(currentUser?.personal_phone || user?.user_metadata?.personal_phone || '');
-  const [emergencyContactName, setEmergencyContactName] = useState(currentUser?.emergency_contact_name || user?.user_metadata?.emergency_contact_name || '');
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState(currentUser?.emergency_contact_phone || user?.user_metadata?.emergency_contact_phone || '');
-  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(currentUser?.emergency_contact_relationship || user?.user_metadata?.emergency_contact_relationship || '');
-  const [goals, setGoals] = useState(currentUser?.goals || user?.user_metadata?.goals || '');
+  const [name, setName] = useState(currentUser?.name || "");
+  const [selectedRole, setSelectedRole] = useState(currentUser?.role || "");
+  const [bio, setBio] = useState(
+    currentUser?.bio || user?.user_metadata?.bio || "",
+  );
+  const [division, setDivision] = useState(
+    currentUser?.division || user?.user_metadata?.division || "",
+  );
+  const [birthday, setBirthday] = useState(
+    currentUser?.birthday || user?.user_metadata?.birthday || "",
+  );
+  const [jobTitle, setJobTitle] = useState(
+    currentUser?.job_title || user?.user_metadata?.job_title || "",
+  );
+  const [department, setDepartment] = useState(
+    currentUser?.department || user?.user_metadata?.department || "",
+  );
+  const [workPhone, setWorkPhone] = useState(
+    currentUser?.work_phone || user?.user_metadata?.work_phone || "",
+  );
+  const [personalPhone, setPersonalPhone] = useState(
+    currentUser?.personal_phone || user?.user_metadata?.personal_phone || "",
+  );
+  const [emergencyContactName, setEmergencyContactName] = useState(
+    currentUser?.emergency_contact_name ||
+      user?.user_metadata?.emergency_contact_name ||
+      "",
+  );
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState(
+    currentUser?.emergency_contact_phone ||
+      user?.user_metadata?.emergency_contact_phone ||
+      "",
+  );
+  const [emergencyContactRelationship, setEmergencyContactRelationship] =
+    useState(
+      currentUser?.emergency_contact_relationship ||
+        user?.user_metadata?.emergency_contact_relationship ||
+        "",
+    );
+  const [goals, setGoals] = useState(
+    currentUser?.goals || user?.user_metadata?.goals || "",
+  );
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,15 +218,15 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [isImageHovering, setIsImageHovering] = useState(false);
   const [showProfileView, setShowProfileView] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   // Cropping state
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-  const [imgSrc, setImgSrc] = useState('');
-  const [originalFileName, setOriginalFileName] = useState('');
+  const [imgSrc, setImgSrc] = useState("");
+  const [originalFileName, setOriginalFileName] = useState("");
   const imgRef = useRef<HTMLImageElement>(null);
-  
+
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
@@ -180,37 +235,43 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   // Update state when user metadata changes
   useEffect(() => {
     if (isEditingOwnProfile && user?.user_metadata) {
-      setName(user.user_metadata.name || '');
-      setSelectedRole(user.user_metadata.role || '');
-      setBio(user.user_metadata.bio || '');
-      setDivision(user.user_metadata.division || '');
-      setBirthday(user.user_metadata.birthday || '');
-      setJobTitle(user.user_metadata.job_title || '');
-      setDepartment(user.user_metadata.department || '');
-      setWorkPhone(user.user_metadata.work_phone || '');
-      setPersonalPhone(user.user_metadata.personal_phone || '');
-      setEmergencyContactName(user.user_metadata.emergency_contact_name || '');
-      setEmergencyContactPhone(user.user_metadata.emergency_contact_phone || '');
-      setEmergencyContactRelationship(user.user_metadata.emergency_contact_relationship || '');
-      setGoals(user.user_metadata.goals || '');
+      setName(user.user_metadata.name || "");
+      setSelectedRole(user.user_metadata.role || "");
+      setBio(user.user_metadata.bio || "");
+      setDivision(user.user_metadata.division || "");
+      setBirthday(user.user_metadata.birthday || "");
+      setJobTitle(user.user_metadata.job_title || "");
+      setDepartment(user.user_metadata.department || "");
+      setWorkPhone(user.user_metadata.work_phone || "");
+      setPersonalPhone(user.user_metadata.personal_phone || "");
+      setEmergencyContactName(user.user_metadata.emergency_contact_name || "");
+      setEmergencyContactPhone(
+        user.user_metadata.emergency_contact_phone || "",
+      );
+      setEmergencyContactRelationship(
+        user.user_metadata.emergency_contact_relationship || "",
+      );
+      setGoals(user.user_metadata.goals || "");
       setProfileImage(user.user_metadata.profileImage || null);
       setCoverImage(user.user_metadata.coverImage || null);
       return;
     }
     if (currentUser) {
-      setName(currentUser.name || '');
-      setSelectedRole(currentUser.role || '');
-      setBio(currentUser.bio || '');
-      setDivision(currentUser.division || '');
-      setBirthday(currentUser.birthday || '');
-      setJobTitle(currentUser.job_title || '');
-      setDepartment(currentUser.department || '');
-      setWorkPhone(currentUser.work_phone || '');
-      setPersonalPhone(currentUser.personal_phone || '');
-      setEmergencyContactName(currentUser.emergency_contact_name || '');
-      setEmergencyContactPhone(currentUser.emergency_contact_phone || '');
-      setEmergencyContactRelationship(currentUser.emergency_contact_relationship || '');
-      setGoals(currentUser.goals || '');
+      setName(currentUser.name || "");
+      setSelectedRole(currentUser.role || "");
+      setBio(currentUser.bio || "");
+      setDivision(currentUser.division || "");
+      setBirthday(currentUser.birthday || "");
+      setJobTitle(currentUser.job_title || "");
+      setDepartment(currentUser.department || "");
+      setWorkPhone(currentUser.work_phone || "");
+      setPersonalPhone(currentUser.personal_phone || "");
+      setEmergencyContactName(currentUser.emergency_contact_name || "");
+      setEmergencyContactPhone(currentUser.emergency_contact_phone || "");
+      setEmergencyContactRelationship(
+        currentUser.emergency_contact_relationship || "",
+      );
+      setGoals(currentUser.goals || "");
       setProfileImage(currentUser.profileImage || null);
       setCoverImage(currentUser.coverImage || null);
     }
@@ -222,316 +283,381 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     if (!isOpen || !editingUserId) return;
     (async () => {
       const { data } = await supabase
-        .schema('common')
-        .from('profiles')
-        .select('job_title, department, avatar_url, profile_image, cover_image')
-        .eq('id', editingUserId)
+        .schema("common")
+        .from("profiles")
+        .select("job_title, department, avatar_url, profile_image, cover_image")
+        .eq("id", editingUserId)
         .single();
       if (data) {
         if (data.job_title != null) setJobTitle(data.job_title);
         if (data.department != null) setDepartment(data.department);
       }
       // Backfill: if user has profile/cover in metadata but profiles doesn't, sync so others can see
-      const metaImg = isEditingOwnProfile ? (user?.user_metadata?.profileImage || user?.user_metadata?.avatar_url) : profileImage;
-      const metaCover = isEditingOwnProfile ? user?.user_metadata?.coverImage : coverImage;
+      const metaImg = isEditingOwnProfile
+        ? user?.user_metadata?.profileImage || user?.user_metadata?.avatar_url
+        : profileImage;
+      const metaCover = isEditingOwnProfile
+        ? user?.user_metadata?.coverImage
+        : coverImage;
       const hasInProfiles = data?.avatar_url || data?.profile_image;
       const hasCoverInProfiles = data?.cover_image;
       if (metaImg && !hasInProfiles) {
-        await supabase.schema('common').from('profiles').upsert({
-          id: editingUserId,
-          avatar_url: metaImg,
-          profile_image: metaImg,
-        }, { onConflict: 'id' });
+        await supabase.schema("common").from("profiles").upsert(
+          {
+            id: editingUserId,
+            avatar_url: metaImg,
+            profile_image: metaImg,
+          },
+          { onConflict: "id" },
+        );
       }
       if (metaCover && !hasCoverInProfiles) {
-        await supabase.schema('common').from('profiles').upsert({
-          id: editingUserId,
-          cover_image: metaCover,
-        }, { onConflict: 'id' });
+        await supabase.schema("common").from("profiles").upsert(
+          {
+            id: editingUserId,
+            cover_image: metaCover,
+          },
+          { onConflict: "id" },
+        );
       }
     })();
-  }, [coverImage, editingUserId, isEditingOwnProfile, isOpen, profileImage, user?.user_metadata?.coverImage, user?.user_metadata?.profileImage]);
+  }, [
+    coverImage,
+    editingUserId,
+    isEditingOwnProfile,
+    isOpen,
+    profileImage,
+    user?.user_metadata?.coverImage,
+    user?.user_metadata?.profileImage,
+  ]);
 
   // Handle clicks outside the dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const availableRoles = [
-    'Admin',
-    'NETA Technician',
-    'Lab Technician',
-    'Sales Representative',
-    'Office Admin',
-    'HR Representative',
-    'Engineering',
-    'Scavenger'
+    "Admin",
+    "NETA Technician",
+    "Lab Technician",
+    "Sales Representative",
+    "Office Admin",
+    "HR Representative",
+    "Engineering",
+    "Scavenger",
   ];
 
-  const divisions = [
-    'North Alabama',
-    'Tennessee',
-    'International',
-    'Georgia'
-  ];
+  const divisions = ["North Alabama", "Tennessee", "International", "Georgia"];
 
   const uploadProfileImage = async (file: File): Promise<string> => {
-    console.log('Starting upload process (using direct fetch)...');
-    
+    console.log("Starting upload process (using direct fetch)...");
+
     if (!user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     // Get session token
-    console.log('-> About to call supabase.auth.getSession()');
+    console.log("-> About to call supabase.auth.getSession()");
     let sessionData;
     try {
       sessionData = await supabase.auth.getSession();
     } catch (e) {
-      console.error('!!! Error DURING supabase.auth.getSession call:', e);
+      console.error("!!! Error DURING supabase.auth.getSession call:", e);
       throw e;
     }
-    console.log('<- Finished supabase.auth.getSession call');
-    
-    const { data: { session }, error: sessionError } = sessionData;
+    console.log("<- Finished supabase.auth.getSession call");
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = sessionData;
     if (sessionError || !session) {
-      console.error('Failed to get session:', sessionError);
-      throw new Error('Could not get user session for upload.');
+      console.error("Failed to get session:", sessionError);
+      throw new Error("Could not get user session for upload.");
     }
     const token = session.access_token;
 
     // Create a unique filename
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${editingUserId}_${Date.now()}.${fileExt}`;
     const storagePath = `user-uploads/profile-images/${fileName}`;
-    
+
     // Construct the Supabase Storage URL
     // Ensure VITE_SUPABASE_URL is defined and accessible
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) {
-      throw new Error('VITE_SUPABASE_URL is not defined');
+      throw new Error("VITE_SUPABASE_URL is not defined");
     }
     const uploadUrl = `${supabaseUrl}/storage/v1/object/${storagePath}`;
 
     // Log details
-    console.log('File details:', { fileName, storagePath, fileSize: file.size, fileType: file.type });
-    console.log('Upload URL:', uploadUrl);
+    console.log("File details:", {
+      fileName,
+      storagePath,
+      fileSize: file.size,
+      fileType: file.type,
+    });
+    console.log("Upload URL:", uploadUrl);
 
     try {
-      console.log('-> Starting fetch upload...');
+      console.log("-> Starting fetch upload...");
       const response = await fetch(uploadUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': file.type,
-          'x-upsert': 'true' // Use x-upsert header for upsert behavior
+          Authorization: `Bearer ${token}`,
+          "Content-Type": file.type,
+          "x-upsert": "true", // Use x-upsert header for upsert behavior
         },
-        body: file
+        body: file,
       });
-      console.log('<- Finished fetch upload call');
+      console.log("<- Finished fetch upload call");
 
-      console.log('Fetch response status:', response.status);
-      console.log('Fetch response headers:', Object.fromEntries(response.headers.entries()));
+      console.log("Fetch response status:", response.status);
+      console.log(
+        "Fetch response headers:",
+        Object.fromEntries(response.headers.entries()),
+      );
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error('Fetch upload failed:', { status: response.status, body: errorBody });
-        throw new Error(`Upload failed with status ${response.status}: ${errorBody}`);
+        console.error("Fetch upload failed:", {
+          status: response.status,
+          body: errorBody,
+        });
+        throw new Error(
+          `Upload failed with status ${response.status}: ${errorBody}`,
+        );
       }
 
       // If successful, construct the public URL
       const publicUrl = `${supabaseUrl}/storage/v1/object/public/${storagePath}`;
-      console.log('Constructed public URL:', publicUrl);
+      console.log("Constructed public URL:", publicUrl);
 
       // Update the profile image state immediately
       setProfileImage(publicUrl);
 
-      console.log('Updating user metadata...');
+      console.log("Updating user metadata...");
       if (isEditingOwnProfile) {
         const { error: updateError } = await supabase.auth.updateUser({
-          data: { ...user.user_metadata, profileImage: publicUrl }
+          data: { ...user.user_metadata, profileImage: publicUrl },
         });
 
         if (updateError) {
-          console.error('Failed to update user metadata:', updateError);
-          throw new Error('Failed to update profile: ' + updateError.message);
+          console.error("Failed to update user metadata:", updateError);
+          throw new Error("Failed to update profile: " + updateError.message);
         }
       } else {
         const { error: rpcError } = await supabase
-          .schema('common')
-          .rpc('admin_update_user_metadata', {
+          .schema("common")
+          .rpc("admin_update_user_metadata", {
             target_user_id: editingUserId,
             new_metadata: { profileImage: publicUrl },
           });
         if (rpcError) {
-          console.error('Failed to update target user metadata (avatar):', rpcError);
-          throw new Error('Failed to update profile: ' + rpcError.message);
+          console.error(
+            "Failed to update target user metadata (avatar):",
+            rpcError,
+          );
+          throw new Error("Failed to update profile: " + rpcError.message);
         }
       }
 
-      await supabase.schema('common').from('profiles').upsert({
-        id: editingUserId,
-        avatar_url: publicUrl,
-        profile_image: publicUrl,
-      }, { onConflict: 'id' });
+      await supabase.schema("common").from("profiles").upsert(
+        {
+          id: editingUserId,
+          avatar_url: publicUrl,
+          profile_image: publicUrl,
+        },
+        { onConflict: "id" },
+      );
 
-      console.log('Profile image update completed successfully');
+      console.log("Profile image update completed successfully");
       return publicUrl;
-
     } catch (error) {
-      console.error('Error in direct fetch upload:', error);
+      console.error("Error in direct fetch upload:", error);
       if (error instanceof Error) {
-        console.error('Error details:', { name: error.name, message: error.message, stack: error.stack });
+        console.error("Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        });
       }
       throw error;
     }
   };
 
   const uploadCoverImage = async (file: File): Promise<string> => {
-    console.log('Starting cover image upload...');
-    if (!user) throw new Error('User not authenticated');
+    console.log("Starting cover image upload...");
+    if (!user) throw new Error("User not authenticated");
 
     const sessionData = await supabase.auth.getSession();
-    const { data: { session }, error: sessionError } = sessionData;
+    const {
+      data: { session },
+      error: sessionError,
+    } = sessionData;
     if (sessionError || !session) {
-      console.error('Failed to get session:', sessionError);
-      throw new Error('Could not get user session for upload.');
+      console.error("Failed to get session:", sessionError);
+      throw new Error("Could not get user session for upload.");
     }
     const token = session.access_token;
 
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${editingUserId}_cover_${Date.now()}.${fileExt}`;
     const storagePath = `user-uploads/cover-images/${fileName}`; // Changed path
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL is not defined');
+    if (!supabaseUrl) throw new Error("VITE_SUPABASE_URL is not defined");
     const uploadUrl = `${supabaseUrl}/storage/v1/object/${storagePath}`;
 
-    console.log('Cover file details:', { fileName, storagePath, fileSize: file.size, fileType: file.type });
+    console.log("Cover file details:", {
+      fileName,
+      storagePath,
+      fileSize: file.size,
+      fileType: file.type,
+    });
 
     try {
       const response = await fetch(uploadUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': file.type,
-          'x-upsert': 'true'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": file.type,
+          "x-upsert": "true",
         },
-        body: file
+        body: file,
       });
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error('Cover upload failed:', { status: response.status, body: errorBody });
-        throw new Error(`Upload failed with status ${response.status}: ${errorBody}`);
+        console.error("Cover upload failed:", {
+          status: response.status,
+          body: errorBody,
+        });
+        throw new Error(
+          `Upload failed with status ${response.status}: ${errorBody}`,
+        );
       }
 
       const publicUrl = `${supabaseUrl}/storage/v1/object/public/${storagePath}`;
-      console.log('Constructed cover public URL:', publicUrl);
+      console.log("Constructed cover public URL:", publicUrl);
 
       // Update state immediately
       setCoverImage(publicUrl);
 
       if (isEditingOwnProfile) {
         const { error: updateError } = await supabase.auth.updateUser({
-          data: { ...user.user_metadata, coverImage: publicUrl }
+          data: { ...user.user_metadata, coverImage: publicUrl },
         });
 
         if (updateError) {
-          console.error('Failed to update user metadata (cover):', updateError);
-          throw new Error('Failed to update cover image: ' + updateError.message);
+          console.error("Failed to update user metadata (cover):", updateError);
+          throw new Error(
+            "Failed to update cover image: " + updateError.message,
+          );
         }
       } else {
         const { error: rpcError } = await supabase
-          .schema('common')
-          .rpc('admin_update_user_metadata', {
+          .schema("common")
+          .rpc("admin_update_user_metadata", {
             target_user_id: editingUserId,
             new_metadata: { coverImage: publicUrl },
           });
         if (rpcError) {
-          console.error('Failed to update target user metadata (cover):', rpcError);
-          throw new Error('Failed to update cover image: ' + rpcError.message);
+          console.error(
+            "Failed to update target user metadata (cover):",
+            rpcError,
+          );
+          throw new Error("Failed to update cover image: " + rpcError.message);
         }
       }
 
-      await supabase.schema('common').from('profiles').upsert({
-        id: editingUserId,
-        cover_image: publicUrl,
-      }, { onConflict: 'id' });
+      await supabase.schema("common").from("profiles").upsert(
+        {
+          id: editingUserId,
+          cover_image: publicUrl,
+        },
+        { onConflict: "id" },
+      );
 
-      console.log('Cover image update completed successfully');
+      console.log("Cover image update completed successfully");
       return publicUrl;
-
     } catch (error) {
-      console.error('Error in cover image upload:', error);
+      console.error("Error in cover image upload:", error);
       throw error;
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
-        console.log('Starting image upload process...');
-        
+        console.log("Starting image upload process...");
+
         // Check file size (limit to 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          alert('File size should be less than 5MB');
+          alert("File size should be less than 5MB");
           return;
         }
 
         // Check file type
-        if (!file.type.startsWith('image/')) {
-          alert('Please upload an image file');
+        if (!file.type.startsWith("image/")) {
+          alert("Please upload an image file");
           return;
         }
 
-        console.log('File validation passed');
+        console.log("File validation passed");
 
         // Delete old profile image if exists
         if (profileImage) {
           try {
-            console.log('Attempting to delete old image:', profileImage);
+            console.log("Attempting to delete old image:", profileImage);
             // Extract the path from the full URL
             const url = new URL(profileImage);
-            const pathParts = url.pathname.split('/');
+            const pathParts = url.pathname.split("/");
             const oldFilePath = pathParts[pathParts.length - 1];
-            
+
             if (oldFilePath) {
-              console.log('Deleting old image:', `profile-images/${oldFilePath}`);
+              console.log(
+                "Deleting old image:",
+                `profile-images/${oldFilePath}`,
+              );
               const { error: deleteError } = await supabase.storage
-                .from('user-uploads')
+                .from("user-uploads")
                 .remove([`profile-images/${oldFilePath}`]);
-                
+
               if (deleteError) {
-                console.error('Failed to delete old image:', deleteError);
+                console.error("Failed to delete old image:", deleteError);
               } else {
-                console.log('Old image deleted successfully');
+                console.log("Old image deleted successfully");
               }
             }
           } catch (deleteError) {
-            console.error('Error deleting old image:', deleteError);
+            console.error("Error deleting old image:", deleteError);
           }
         }
 
         // Upload new image
-        console.log('Starting new image upload...');
+        console.log("Starting new image upload...");
         const publicUrl = await uploadProfileImage(file);
-        console.log('New profile image URL:', publicUrl);
-        
-        // State and metadata are already updated in uploadProfileImage function
+        console.log("New profile image URL:", publicUrl);
 
+        // State and metadata are already updated in uploadProfileImage function
       } catch (error) {
-        console.error('Error in handleImageUpload:', error);
-        alert('Failed to upload image. Please try again.');
+        console.error("Error in handleImageUpload:", error);
+        alert("Failed to upload image. Please try again.");
       }
     }
   };
@@ -542,15 +668,15 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     const initialCrop = centerCrop(
       makeAspectCrop(
         {
-          unit: '%',
+          unit: "%",
           width: 90, // Start with 90% width crop
         },
         COVER_ASPECT,
         width,
-        height
+        height,
       ),
       width,
-      height
+      height,
     );
     setCrop(initialCrop);
     setCompletedCrop(undefined); // Reset completed crop when image loads
@@ -558,7 +684,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   const handleCropConfirm = async () => {
     if (!completedCrop || !imgRef.current || !originalFileName) {
-      console.error('Crop details or image ref missing');
+      console.error("Crop details or image ref missing");
       return;
     }
 
@@ -567,7 +693,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       const croppedFile = await getCroppedImg(
         imgRef.current,
         completedCrop,
-        originalFileName
+        originalFileName,
       );
 
       if (croppedFile) {
@@ -575,31 +701,37 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         if (coverImage) {
           try {
             const url = new URL(coverImage);
-            const pathParts = url.pathname.split('/');
+            const pathParts = url.pathname.split("/");
             const oldFilePath = pathParts.pop();
-            const folderPath = pathParts.slice(-2).join('/');
-            if (oldFilePath && folderPath === 'cover-images') {
+            const folderPath = pathParts.slice(-2).join("/");
+            if (oldFilePath && folderPath === "cover-images") {
               const fullPath = `cover-images/${oldFilePath}`;
-              console.log('Deleting old cover image before cropping confirm:', fullPath);
-              await supabase.storage.from('user-uploads').remove([fullPath]);
+              console.log(
+                "Deleting old cover image before cropping confirm:",
+                fullPath,
+              );
+              await supabase.storage.from("user-uploads").remove([fullPath]);
             }
           } catch (deleteError) {
-            console.error('Error deleting old cover image before crop confirm:', deleteError);
+            console.error(
+              "Error deleting old cover image before crop confirm:",
+              deleteError,
+            );
           }
         }
         // Upload the cropped file
         await uploadCoverImage(croppedFile);
-        console.log('Cropped image uploaded successfully');
+        console.log("Cropped image uploaded successfully");
       } else {
-        alert('Could not process the image crop.');
+        alert("Could not process the image crop.");
       }
     } catch (error) {
-      console.error('Error during crop confirmation and upload:', error);
-      alert('Failed to upload cropped image.');
+      console.error("Error during crop confirmation and upload:", error);
+      alert("Failed to upload cropped image.");
     } finally {
       setIsCropping(false);
-      setImgSrc(''); // Clear image source
-      setOriginalFileName('');
+      setImgSrc(""); // Clear image source
+      setOriginalFileName("");
       setCrop(undefined);
       setCompletedCrop(undefined);
       setIsSubmitting(false);
@@ -612,10 +744,10 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   const handleFitImage = async () => {
     if (!imgRef.current || !originalFileName) {
-      console.error('Image ref or filename missing for fit operation');
+      console.error("Image ref or filename missing for fit operation");
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       // Resize the image using the helper function
@@ -623,43 +755,45 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         imgRef.current,
         originalFileName,
         COVER_MAX_WIDTH,
-        COVER_MAX_HEIGHT
+        COVER_MAX_HEIGHT,
       );
 
       if (!resizedFile) {
-        alert('Could not process the image for fitting.');
-        throw new Error('Resizing failed');
+        alert("Could not process the image for fitting.");
+        throw new Error("Resizing failed");
       }
-        
+
       // Optional: Delete old before uploading new
       if (coverImage) {
         try {
           const url = new URL(coverImage);
-          const pathParts = url.pathname.split('/');
+          const pathParts = url.pathname.split("/");
           const oldFilePath = pathParts.pop();
-          const folderPath = pathParts.slice(-2).join('/');
-          if (oldFilePath && folderPath === 'cover-images') {
+          const folderPath = pathParts.slice(-2).join("/");
+          if (oldFilePath && folderPath === "cover-images") {
             const fullPath = `cover-images/${oldFilePath}`;
-            console.log('Deleting old cover image before fitting:', fullPath);
-            await supabase.storage.from('user-uploads').remove([fullPath]);
+            console.log("Deleting old cover image before fitting:", fullPath);
+            await supabase.storage.from("user-uploads").remove([fullPath]);
           }
         } catch (deleteError) {
-          console.error('Error deleting old cover image before fit:', deleteError);
+          console.error(
+            "Error deleting old cover image before fit:",
+            deleteError,
+          );
         }
       }
-      
+
       // Upload the RESIZED file
       await uploadCoverImage(resizedFile);
-      console.log('Resized image uploaded (Fit option)');
-
+      console.log("Resized image uploaded (Fit option)");
     } catch (error) {
-      console.error('Error fitting/uploading resized image:', error);
-      alert('Failed to upload fitted image.');
+      console.error("Error fitting/uploading resized image:", error);
+      alert("Failed to upload fitted image.");
     } finally {
       // Reset state regardless of success/failure
       setIsCropping(false);
-      setImgSrc('');
-      setOriginalFileName('');
+      setImgSrc("");
+      setOriginalFileName("");
       setIsSubmitting(false);
       if (coverFileInputRef.current) {
         coverFileInputRef.current.value = "";
@@ -668,23 +802,26 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   };
 
   // -- COVER IMAGE UPLOAD TRIGGER --
-  const handleCoverImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // Increased limit slightly for cropping flexibility
-        alert('File size should be less than 10MB');
+      if (file.size > 10 * 1024 * 1024) {
+        // Increased limit slightly for cropping flexibility
+        alert("File size should be less than 10MB");
         return;
       }
-      if (!file.type.startsWith('image/')) {
-        alert('Please upload an image file');
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file");
         return;
       }
-      
+
       // Read the file and open the cropper
       setOriginalFileName(file.name);
       const reader = new FileReader();
-      reader.addEventListener('load', () => {
-        setImgSrc(reader.result?.toString() || '');
+      reader.addEventListener("load", () => {
+        setImgSrc(reader.result?.toString() || "");
         setIsCropping(true);
       });
       reader.readAsDataURL(file);
@@ -712,7 +849,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         // DO NOT include 'role' here - it should only be updated by admins
       };
 
-      // Add profile image URL if it exists 
+      // Add profile image URL if it exists
       if (profileImage) {
         userMetadata.profileImage = profileImage;
       }
@@ -722,7 +859,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         userMetadata.coverImage = coverImage;
       }
 
-      console.log('[EditProfilePopup] handleSubmit', {
+      console.log("[EditProfilePopup] handleSubmit", {
         editingUserId,
         isEditingOwnProfile,
         viewerId: user?.id,
@@ -731,26 +868,27 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
       if (isEditingOwnProfile) {
         const { error } = await supabase.auth.updateUser({
-          data: userMetadata
+          data: userMetadata,
         });
 
         if (error) throw error;
       } else {
         const { data: rpcData, error: rpcError } = await supabase
-          .schema('common')
-          .rpc('admin_update_user_metadata', {
+          .schema("common")
+          .rpc("admin_update_user_metadata", {
             target_user_id: editingUserId,
             new_metadata: userMetadata,
           });
-        console.log('[EditProfilePopup] admin_update_user_metadata result', {
+        console.log("[EditProfilePopup] admin_update_user_metadata result", {
           rpcData,
           rpcError,
         });
         if (rpcError) {
-          console.error('admin_update_user_metadata failed:', rpcError);
+          console.error("admin_update_user_metadata failed:", rpcError);
           throw new Error(
-            'Failed to update profile: ' + rpcError.message +
-            '. If this is the first time, run create_admin_update_user_metadata_function.sql in Supabase.'
+            "Failed to update profile: " +
+              rpcError.message +
+              ". If this is the first time, run create_admin_update_user_metadata_function.sql in Supabase.",
           );
         }
       }
@@ -771,11 +909,14 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         profilesRow.cover_image = coverImage;
       }
       const { error: profilesError } = await supabase
-        .schema('common')
-        .from('profiles')
-        .upsert(profilesRow, { onConflict: 'id' });
+        .schema("common")
+        .from("profiles")
+        .upsert(profilesRow, { onConflict: "id" });
       if (profilesError) {
-        console.warn('common.profiles mirror upsert failed (non-fatal):', profilesError);
+        console.warn(
+          "common.profiles mirror upsert failed (non-fatal):",
+          profilesError,
+        );
       }
 
       setShowSuccess(true);
@@ -784,8 +925,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         onClose();
       }, 2000);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -809,7 +950,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     // Only close if the click is directly on the backdrop itself
     if (e.target === e.currentTarget) {
       setIsCropping(false);
-      setImgSrc(''); // Clear image source to reset
+      setImgSrc(""); // Clear image source to reset
     }
   };
 
@@ -818,7 +959,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const modalContent = (
     <>
       <div
-        className={`fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto ${isCropping ? 'hidden' : ''}`}
+        className={`fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto ${isCropping ? "hidden" : ""}`}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -833,11 +974,15 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
           {/* Header - fixed height */}
           <div className="relative flex-shrink-0">
             {/* Cover Image Area */}
-            <div className="h-40 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-dark-200 dark:to-dark-300 relative group">
+            <div className="h-40 bg-gradient-to-r from-zinc-300 to-zinc-400 dark:from-dark-200 dark:to-dark-300 relative group">
               {coverImage ? (
-                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                <img
+                  src={coverImage}
+                  alt="Cover"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-dark-400">
+                <div className="w-full h-full flex items-center justify-center text-zinc-500 dark:text-dark-400">
                   {/* Placeholder content if no cover image */}
                   <Image className="w-10 h-10 opacity-50" />
                 </div>
@@ -860,25 +1005,26 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
             </div>
 
             {/* Profile Image & Info Row */}
-            <div className="p-4 flex items-end justify-between border-b border-gray-200 dark:border-dark-200 relative -mt-12 z-10">
+            <div className="p-4 flex items-end justify-between border-b border-zinc-200 dark:border-dark-200 relative -mt-12 z-10">
               {/* Left side: Profile Image and Edit Profile Title */}
               <div className="flex items-end space-x-4">
                 {/* Profile Image with Dropdown */}
-                <div
-                  className="relative"
-                  ref={dropdownRef}
-                >
-                  <div 
-                    className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl cursor-pointer bg-gray-200 dark:bg-dark-150"
+                <div className="relative" ref={dropdownRef}>
+                  <div
+                    className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl cursor-pointer bg-zinc-200 dark:bg-dark-150"
                     onClick={() => setShowDropdown(!showDropdown)}
                     onMouseEnter={() => setIsImageHovering(true)}
                     onMouseLeave={() => setIsImageHovering(false)}
                   >
                     {profileImage ? (
-                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      <img
+                        src={profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <UserIcon className="w-8 h-8 text-gray-400 dark:text-white" />
+                        <UserIcon className="w-8 h-8 text-zinc-400 dark:text-white" />
                       </div>
                     )}
                     {isImageHovering && (
@@ -887,24 +1033,24 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-dark-150 rounded-md shadow-lg z-20 border border-gray-200 dark:border-dark-300">
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-dark-150 rounded-md shadow-lg z-20 border border-zinc-200 dark:border-dark-300">
                       <div className="py-1">
                         <button
                           onClick={() => {
                             fileInputRef.current?.click();
                             setShowDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-200 flex items-center"
+                          className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-200 flex items-center"
                         >
                           <Camera className="h-4 w-4 mr-2" />
                           Change Photo
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-200 flex items-center"
+                          className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-200 flex items-center"
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View Profile
@@ -912,7 +1058,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       </div>
                     </div>
                   )}
-                  
+
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -921,18 +1067,22 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                     className="hidden"
                   />
                 </div>
-                
+
                 {/* Edit Profile Title and Step */}
                 <div className="pb-2">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Profile</h2>
-                  <p className="text-sm text-gray-500 dark:text-white">Step {step} of 3</p>
+                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                    Edit Profile
+                  </h2>
+                  <p className="text-sm text-zinc-500 dark:text-white">
+                    Step {step} of 3
+                  </p>
                 </div>
               </div>
 
               {/* Right side: Close Button */}
-              <button 
+              <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-200 mb-2"
+                className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200 mb-2"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -941,17 +1091,17 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
           {/* Scrollable: progress + content + nav */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-          {/* Progress indicator */}
+            {/* Progress indicator */}
             <div className="px-8 py-4 flex items-center space-x-2 flex-shrink-0">
               {[1, 2, 3].map((i) => (
                 <React.Fragment key={i}>
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-medium transition-colors ${
                       step === i
-                        ? 'bg-[#f26722] text-white'
+                        ? "bg-[#f26722] text-white"
                         : step > i
-                        ? 'bg-[#f26722]/20 text-[#f26722]'
-                        : 'bg-gray-100 dark:bg-dark-150 text-gray-500 dark:text-white'
+                          ? "bg-[#f26722]/20 text-[#f26722]"
+                          : "bg-zinc-100 dark:bg-dark-150 text-zinc-500 dark:text-white"
                     }`}
                   >
                     {step > i ? <Check className="h-4 w-4" /> : i}
@@ -959,7 +1109,9 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   {i < 3 && (
                     <div
                       className={`h-1 flex-1 ${
-                        step > i ? 'bg-[#f26722]' : 'bg-gray-100 dark:bg-dark-150'
+                        step > i
+                          ? "bg-[#f26722]"
+                          : "bg-zinc-100 dark:bg-dark-150"
                       }`}
                     />
                   )}
@@ -967,360 +1119,447 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
               ))}
             </div>
 
-          {/* Content */}
-          <div className="p-8">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                {step === 1 && (
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
-                    <div className="space-y-4">
-                      {/* Name and Role in a row */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Display Name
-                          </label>
-                          <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                            placeholder="Enter your name"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Role
-                          </label>
-                          <p className="w-full px-3 py-2 border border-gray-200 dark:border-dark-600 bg-gray-100 dark:bg-dark-800 rounded-md text-gray-700 dark:text-white">
-                            {user?.user_metadata?.role || 'Not Assigned'} 
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-white mt-1">Your role is assigned by an administrator.</p>
-                        </div>
-                      </div>
-
-                      {/* Email Address */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={user?.email || ''}
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm bg-gray-50 dark:bg-dark-150 text-gray-500 dark:text-white cursor-not-allowed"
-                        />
-                      </div>
-
-                      {/* Phone Numbers */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Work Phone
-                          </label>
-                          <input
-                            type="tel"
-                            value={workPhone}
-                            onChange={(e) => setWorkPhone(formatPhoneNumber(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                            placeholder="(555) 123-4567"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Personal Phone
-                          </label>
-                          <input
-                            type="tel"
-                            value={personalPhone}
-                            onChange={(e) => setPersonalPhone(formatPhoneNumber(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                            placeholder="(555) 987-6543"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Additional Details</h3>
-                    <div className="space-y-4">
-                      {/* Bio */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                          Bio
-                        </label>
-                        <textarea
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white min-h-[100px]"
-                          placeholder="Tell us about yourself..."
-                        />
-                      </div>
-
-                      {/* Job title & Department */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Job title
-                          </label>
-                          <input
-                            type="text"
-                            value={jobTitle}
-                            onChange={(e) => setJobTitle(e.target.value)}
-                            placeholder="e.g. Senior Engineer"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Department
-                          </label>
-                          <input
-                            type="text"
-                            value={department}
-                            onChange={(e) => setDepartment(e.target.value)}
-                            placeholder="e.g. Engineering, HR"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Division and Birthday in a row */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            NETA Division
-                          </label>
-                          <select
-                            value={division}
-                            onChange={(e) => setDivision(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                          >
-                            <option value="">Select a division</option>
-                            {divisions.map((div) => (
-                              <option key={div} value={div}>{formatDivisionDisplay(div) || div}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                            Birthday
-                          </label>
-                          <input
-                            type="date"
-                            value={birthday}
-                            onChange={(e) => setBirthday(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Emergency Contact */}
-                      <div className="pt-2 border-t border-gray-200 dark:border-dark-200">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                          <Phone className="h-4 w-4" /> Emergency Contact
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Name</label>
+            {/* Content */}
+            <div className="p-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {step === 1 && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                        Basic Information
+                      </h3>
+                      <div className="space-y-4">
+                        {/* Name and Role in a row */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Display Name
+                            </label>
                             <input
                               type="text"
-                              value={emergencyContactName}
-                              onChange={(e) => setEmergencyContactName(e.target.value)}
-                              placeholder="Full name"
-                              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              placeholder="Enter your name"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Role
+                            </label>
+                            <p className="w-full px-3 py-2 border border-zinc-200 dark:border-dark-600 bg-zinc-100 dark:bg-dark-800 rounded-md text-zinc-700 dark:text-white">
+                              {user?.user_metadata?.role || "Not Assigned"}
+                            </p>
+                            <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                              Your role is assigned by an administrator.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Email Address */}
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={user?.email || ""}
+                            disabled
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm bg-zinc-50 dark:bg-dark-150 text-zinc-500 dark:text-white cursor-not-allowed"
+                          />
+                        </div>
+
+                        {/* Phone Numbers */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Work Phone
+                            </label>
+                            <input
+                              type="tel"
+                              value={workPhone}
+                              onChange={(e) =>
+                                setWorkPhone(formatPhoneNumber(e.target.value))
+                              }
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              placeholder="(555) 123-4567"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Relationship</label>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Personal Phone
+                            </label>
                             <input
-                              type="text"
-                              value={emergencyContactRelationship}
-                              onChange={(e) => setEmergencyContactRelationship(e.target.value)}
-                              placeholder="e.g. Spouse, Parent"
-                              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
+                              type="tel"
+                              value={personalPhone}
+                              onChange={(e) =>
+                                setPersonalPhone(
+                                  formatPhoneNumber(e.target.value),
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              placeholder="(555) 987-6543"
                             />
                           </div>
                         </div>
-                        <div className="mt-3">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Phone</label>
-                          <input
-                            type="tel"
-                            value={emergencyContactPhone}
-                            onChange={(e) => setEmergencyContactPhone(formatPhoneNumber(e.target.value))}
-                            placeholder="(555) 123-4567"
-                            className="w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 2 && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                        Additional Details
+                      </h3>
+                      <div className="space-y-4">
+                        {/* Bio */}
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            Bio
+                          </label>
+                          <textarea
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white min-h-[100px]"
+                            placeholder="Tell us about yourself..."
+                          />
+                        </div>
+
+                        {/* Job title & Department */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Job title
+                            </label>
+                            <input
+                              type="text"
+                              value={jobTitle}
+                              onChange={(e) => setJobTitle(e.target.value)}
+                              placeholder="e.g. Senior Engineer"
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Department
+                            </label>
+                            <input
+                              type="text"
+                              value={department}
+                              onChange={(e) => setDepartment(e.target.value)}
+                              placeholder="e.g. Engineering, HR"
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Division and Birthday in a row */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              NETA Division
+                            </label>
+                            <select
+                              value={division}
+                              onChange={(e) => setDivision(e.target.value)}
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                            >
+                              <option value="">Select a division</option>
+                              {divisions.map((div) => (
+                                <option key={div} value={div}>
+                                  {formatDivisionDisplay(div) || div}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Birthday
+                            </label>
+                            <input
+                              type="date"
+                              value={birthday}
+                              onChange={(e) => setBirthday(e.target.value)}
+                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Emergency Contact */}
+                        <div className="pt-2 border-t border-zinc-200 dark:border-dark-200">
+                          <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+                            <Phone className="h-4 w-4" /> Emergency Contact
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="sm:col-span-2">
+                              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                                Name
+                              </label>
+                              <input
+                                type="text"
+                                value={emergencyContactName}
+                                onChange={(e) =>
+                                  setEmergencyContactName(e.target.value)
+                                }
+                                placeholder="Full name"
+                                className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                                Relationship
+                              </label>
+                              <input
+                                type="text"
+                                value={emergencyContactRelationship}
+                                onChange={(e) =>
+                                  setEmergencyContactRelationship(
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="e.g. Spouse, Parent"
+                                className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              Phone
+                            </label>
+                            <input
+                              type="tel"
+                              value={emergencyContactPhone}
+                              onChange={(e) =>
+                                setEmergencyContactPhone(
+                                  formatPhoneNumber(e.target.value),
+                                )
+                              }
+                              placeholder="(555) 123-4567"
+                              className="w-full max-w-xs px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Goals */}
+                        <div className="pt-2 border-t border-zinc-200 dark:border-dark-200">
+                          <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+                            <Target className="h-4 w-4" /> Goals
+                          </h4>
+                          <textarea
+                            value={goals}
+                            onChange={(e) => setGoals(e.target.value)}
+                            placeholder="Personal or career goals (visible on your profile)"
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white min-h-[80px]"
                           />
                         </div>
                       </div>
-
-                      {/* Goals */}
-                      <div className="pt-2 border-t border-gray-200 dark:border-dark-200">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                          <Target className="h-4 w-4" /> Goals
-                        </h4>
-                        <textarea
-                          value={goals}
-                          onChange={(e) => setGoals(e.target.value)}
-                          placeholder="Personal or career goals (visible on your profile)"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white min-h-[80px]"
-                        />
-                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {step === 3 && (
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Review & Submit</h3>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-gray-50 dark:bg-dark-150 rounded-lg">
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">Profile Summary</h4>
-                        <dl className="space-y-2">
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Name:</dt>
-                            <dd className="text-gray-900 dark:text-white">{name || 'Not set'}</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Role:</dt>
-                            <dd className="text-gray-900 dark:text-white">{user?.user_metadata?.role || 'Not Assigned'}</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Job title:</dt>
-                            <dd className="text-gray-900 dark:text-white">{jobTitle || 'Not set'}</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Department:</dt>
-                            <dd className="text-gray-900 dark:text-white">{department || 'Not set'}</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Division:</dt>
-                            <dd className="text-gray-900 dark:text-white">{formatDivisionDisplay(division) || 'Not set'}</dd>
-                          </div>
-                          {workPhone && (
+                  {step === 3 && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                        Review & Submit
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-zinc-50 dark:bg-dark-150 rounded-lg">
+                          <h4 className="font-medium text-zinc-900 dark:text-white mb-2">
+                            Profile Summary
+                          </h4>
+                          <dl className="space-y-2">
                             <div className="flex justify-between">
-                              <dt className="text-gray-500 dark:text-white">Work phone:</dt>
-                              <dd className="text-gray-900 dark:text-white">{workPhone}</dd>
-                            </div>
-                          )}
-                          {personalPhone && (
-                            <div className="flex justify-between">
-                              <dt className="text-gray-500 dark:text-white">Personal phone:</dt>
-                              <dd className="text-gray-900 dark:text-white">{personalPhone}</dd>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500 dark:text-white">Birthday:</dt>
-                            <dd className="text-gray-900 dark:text-white">
-                              {birthday
-                                ? new Date(birthday + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })
-                                : 'Not set'}
-                            </dd>
-                          </div>
-                          {(emergencyContactName || emergencyContactPhone) && (
-                            <div className="flex flex-col space-y-1">
-                              <dt className="text-gray-500 dark:text-white">Emergency contact:</dt>
-                              <dd className="text-gray-900 dark:text-white text-sm">
-                                {emergencyContactName}{emergencyContactRelationship ? ` (${emergencyContactRelationship})` : ''}
-                                {emergencyContactPhone && ` · ${emergencyContactPhone}`}
+                              <dt className="text-zinc-500 dark:text-white">
+                                Name:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {name || "Not set"}
                               </dd>
                             </div>
-                          )}
-                          {goals && (
-                            <div className="flex flex-col space-y-1">
-                              <dt className="text-gray-500 dark:text-white">Goals:</dt>
-                              <dd className="text-gray-900 dark:text-white text-sm whitespace-pre-wrap">{goals}</dd>
+                            <div className="flex justify-between">
+                              <dt className="text-zinc-500 dark:text-white">
+                                Role:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {user?.user_metadata?.role || "Not Assigned"}
+                              </dd>
                             </div>
-                          )}
-                          {bio && (
-                            <div className="flex flex-col space-y-1">
-                              <dt className="text-gray-500 dark:text-white">Bio:</dt>
-                              <dd className="text-gray-900 dark:text-white text-sm">{bio}</dd>
+                            <div className="flex justify-between">
+                              <dt className="text-zinc-500 dark:text-white">
+                                Job title:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {jobTitle || "Not set"}
+                              </dd>
                             </div>
-                          )}
-                        </dl>
+                            <div className="flex justify-between">
+                              <dt className="text-zinc-500 dark:text-white">
+                                Department:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {department || "Not set"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-zinc-500 dark:text-white">
+                                Division:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {formatDivisionDisplay(division) || "Not set"}
+                              </dd>
+                            </div>
+                            {workPhone && (
+                              <div className="flex justify-between">
+                                <dt className="text-zinc-500 dark:text-white">
+                                  Work phone:
+                                </dt>
+                                <dd className="text-zinc-900 dark:text-white">
+                                  {workPhone}
+                                </dd>
+                              </div>
+                            )}
+                            {personalPhone && (
+                              <div className="flex justify-between">
+                                <dt className="text-zinc-500 dark:text-white">
+                                  Personal phone:
+                                </dt>
+                                <dd className="text-zinc-900 dark:text-white">
+                                  {personalPhone}
+                                </dd>
+                              </div>
+                            )}
+                            <div className="flex justify-between">
+                              <dt className="text-zinc-500 dark:text-white">
+                                Birthday:
+                              </dt>
+                              <dd className="text-zinc-900 dark:text-white">
+                                {birthday
+                                  ? new Date(
+                                      birthday + "T00:00:00Z",
+                                    ).toLocaleDateString("en-US", {
+                                      month: "long",
+                                      day: "numeric",
+                                      timeZone: "UTC",
+                                    })
+                                  : "Not set"}
+                              </dd>
+                            </div>
+                            {(emergencyContactName ||
+                              emergencyContactPhone) && (
+                              <div className="flex flex-col space-y-1">
+                                <dt className="text-zinc-500 dark:text-white">
+                                  Emergency contact:
+                                </dt>
+                                <dd className="text-zinc-900 dark:text-white text-sm">
+                                  {emergencyContactName}
+                                  {emergencyContactRelationship
+                                    ? ` (${emergencyContactRelationship})`
+                                    : ""}
+                                  {emergencyContactPhone &&
+                                    ` · ${emergencyContactPhone}`}
+                                </dd>
+                              </div>
+                            )}
+                            {goals && (
+                              <div className="flex flex-col space-y-1">
+                                <dt className="text-zinc-500 dark:text-white">
+                                  Goals:
+                                </dt>
+                                <dd className="text-zinc-900 dark:text-white text-sm whitespace-pre-wrap">
+                                  {goals}
+                                </dd>
+                              </div>
+                            )}
+                            {bio && (
+                              <div className="flex flex-col space-y-1">
+                                <dt className="text-zinc-500 dark:text-white">
+                                  Bio:
+                                </dt>
+                                <dd className="text-zinc-900 dark:text-white text-sm">
+                                  {bio}
+                                </dd>
+                              </div>
+                            )}
+                          </dl>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-            {/* Navigation buttons */}
-            <div className="flex justify-between mt-8">
-              <div>
-                {step > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    className="px-4 py-2 flex items-center"
-                  >
-                    <span className="flex items-center">
-                      <ChevronLeft className="mr-2 h-4 w-4" />Back
-                    </span>
-                  </Button>
-                )}
-              </div>
-
-              <div>
-                {step < 3 ? (
-                  <Button
-                    type="button"
-                    onClick={nextStep}
-                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 flex items-center justify-center min-w-[120px]"
-                  >
-                    <span className="flex items-center">
-                      Continue<ChevronRight className="ml-2 h-4 w-4" />
-                    </span>
-                  </Button>
-                ) : (
-                  <div className="flex items-center space-x-3">
+              {/* Navigation buttons */}
+              <div className="flex justify-between mt-8">
+                <div>
+                  {step > 1 && (
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={onClose}
-                      className="px-4 py-2"
+                      onClick={prevStep}
+                      className="px-4 py-2 flex items-center"
                     >
-                      Cancel
+                      <span className="flex items-center">
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Back
+                      </span>
                     </Button>
+                  )}
+                </div>
+
+                <div>
+                  {step < 3 ? (
                     <Button
-                      type="submit"
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 min-w-[100px]"
+                      type="button"
+                      onClick={nextStep}
+                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 flex items-center justify-center min-w-[120px]"
                     >
-                      {isSubmitting ? (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2" />
-                          Saving...
-                        </div>
-                      ) : showSuccess ? (
-                        <div className="flex items-center">
-                          <Check className="mr-2 h-4 w-4" />
-                          Saved!
-                        </div>
-                      ) : (
-                        "Save Changes"
-                      )}
+                      <span className="flex items-center">
+                        Continue
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </span>
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onClose}
+                        className="px-4 py-2"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 min-w-[100px]"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center">
+                            <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2" />
+                            Saving...
+                          </div>
+                        ) : showSuccess ? (
+                          <div className="flex items-center">
+                            <Check className="mr-2 h-4 w-4" />
+                            Saved!
+                          </div>
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           </div>
         </motion.div>
       </div>
@@ -1328,18 +1567,20 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       {/* Image Cropping Modal */}
       <AnimatePresence>
         {isCropping && imgSrc && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleCropBackdropClick}
           >
-            <div 
+            <div
               className="w-full max-w-4xl bg-white dark:bg-dark-150 rounded-lg shadow-xl p-6 overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Adjust Cover Photo</h3>
+              <h3 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">
+                Adjust Cover Photo
+              </h3>
               <div className="flex-grow overflow-auto mb-4 flex items-center justify-center">
                 <ReactCrop
                   crop={crop}
@@ -1351,31 +1592,35 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                 >
                   <img
                     ref={imgRef}
-                    alt="Crop me" 
+                    alt="Crop me"
                     src={imgSrc}
                     onLoad={onImageLoad}
-                    style={{ maxHeight: '60vh', objectFit: 'contain' }} 
+                    style={{ maxHeight: "60vh", objectFit: "contain" }}
                   />
                 </ReactCrop>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-300">
-                <Button variant="outline" onClick={() => setIsCropping(false)} disabled={isSubmitting}>
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-dark-300">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCropping(false)}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  onClick={handleFitImage} 
+                <Button
+                  variant="secondary"
+                  onClick={handleFitImage}
                   disabled={isSubmitting}
-                  className="bg-gray-200 hover:bg-gray-300 dark:bg-dark-150 dark:hover:bg-dark-300 dark:text-white"
+                  className="bg-zinc-200 hover:bg-zinc-300 dark:bg-dark-150 dark:hover:bg-dark-300 dark:text-white"
                 >
                   Fit Image (No Crop)
                 </Button>
-                <Button 
-                  onClick={handleCropConfirm} 
-                  disabled={!completedCrop || isSubmitting} 
+                <Button
+                  onClick={handleCropConfirm}
+                  disabled={!completedCrop || isSubmitting}
                   className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
                 >
-                  {isSubmitting ? 'Saving...' : 'Save Cropped Image'}
+                  {isSubmitting ? "Saving..." : "Save Cropped Image"}
                 </Button>
               </div>
             </div>
@@ -1385,13 +1630,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
       {/* Profile View Modal */}
       {showProfileView && (
-        <ProfileView 
-          isOpen={showProfileView} 
-          onClose={() => setShowProfileView(false)} 
+        <ProfileView
+          isOpen={showProfileView}
+          onClose={() => setShowProfileView(false)}
         />
       )}
     </>
   );
 
   return createPortal(modalContent, document.body);
-}; 
+};

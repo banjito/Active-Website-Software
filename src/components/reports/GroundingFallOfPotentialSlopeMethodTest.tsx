@@ -167,7 +167,9 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
     reportId,
     substation,
   } = useParams<{ id: string; reportId?: string; substation?: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -495,11 +497,11 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
   return (
     <ReportWrapper>
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
+      <div className="p-6 flex justify-center bg-zinc-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-6">
           {/* Print Header - Only visible when printing */}
           <div className="hidden print:block">
-            <div className="relative flex items-center justify-between border-b-2 border-gray-800 pb-4 mb-4">
+            <div className="relative flex items-center justify-between border-b-2 border-zinc-800 pb-4 mb-4">
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                 alt="AMP Logo"
@@ -588,16 +590,16 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           {/* Job Information (mirrors MV VLF layout) */}
           <section className="mb-6 job-info-section">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:hidden">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:hidden">
               Job Details
             </h2>
             <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={maskCustomerName(jobInfo.customer)}
@@ -611,10 +613,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={maskCustomerAddress(jobInfo.address)}
@@ -628,10 +630,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.user}
@@ -645,10 +647,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="date"
                       value={jobInfo.date}
@@ -662,10 +664,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.identifier}
@@ -685,10 +687,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.jobNumber}
@@ -702,10 +704,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.technicians}
@@ -722,11 +724,11 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={temperature.fahrenheit}
@@ -739,7 +741,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                     <span className="mx-2">{temperature.celsius}</span>
                     <span className="mx-2">°C</span>
                     <span className="mx-5">Humidity</span>
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={temperature.humidity}
@@ -758,10 +760,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.substation}
@@ -779,10 +781,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={jobInfo.eqptLocation}
@@ -827,7 +829,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Grounding Inputs - Screen only */}
           <section className="p-0 print:hidden">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Grounding Test Inputs
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -843,7 +845,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       setSoil((p) => ({ ...p, type: e.target.value }))
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -857,7 +859,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       setSoil((p) => ({ ...p, conditions: e.target.value }))
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -871,7 +873,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       setSoil((p) => ({ ...p, rodDepth: e.target.value }))
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -884,7 +886,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       setSoil((p) => ({ ...p, multipleRods: e.target.value }))
                     }
                     disabled={!isEditing}
-                    className={`form-select ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-select ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   >
                     <option value="Y">Y</option>
                     <option value="N">N</option>
@@ -904,7 +906,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
               </div>
@@ -922,7 +924,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                       setDcFeet(v === "" ? NaN : Number(v));
                     }}
                     readOnly={!isEditing}
-                    className={`form-input w-40 ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input w-40 ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                   <span className="ml-2">Feet</span>
                 </div>
@@ -945,10 +947,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                           setR40(v === "" ? NaN : Number(v));
                         }}
                         readOnly={!isEditing}
-                        className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </div>
-                    <div className="text-gray-500">40%</div>
+                    <div className="text-zinc-500">40%</div>
                     <div>{d60}</div>
                     <div>
                       <input
@@ -959,10 +961,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                           setR60(v === "" ? NaN : Number(v));
                         }}
                         readOnly={!isEditing}
-                        className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </div>
-                    <div className="text-gray-500">60%</div>
+                    <div className="text-zinc-500">60%</div>
                     <div>{d80}</div>
                     <div>
                       <input
@@ -973,10 +975,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                           setR80(v === "" ? NaN : Number(v));
                         }}
                         readOnly={!isEditing}
-                        className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </div>
-                    <div className="text-gray-500">80%</div>
+                    <div className="text-zinc-500">80%</div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 items-center mt-4">
@@ -986,7 +988,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                         type="text"
                         readOnly
                         value={u.toFixed(2)}
-                        className="form-input bg-gray-100 dark:bg-dark-200"
+                        className="form-input bg-zinc-100 dark:bg-dark-200"
                       />
                     </div>
                     <div className="font-medium">Dp</div>
@@ -995,7 +997,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                         type="text"
                         readOnly
                         value={dpFeet.toFixed(3)}
-                        className="form-input bg-gray-100 dark:bg-dark-200 w-40"
+                        className="form-input bg-zinc-100 dark:bg-dark-200 w-40"
                       />
                       <span className="ml-2">Feet</span>
                     </div>
@@ -1018,12 +1020,12 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                   }}
                   readOnly={!isEditing}
                   placeholder="Enter measured resistance"
-                  className={`form-input w-40 ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input w-40 ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-zinc-600 dark:text-zinc-400">
                   Ω @ {dpFeet.toFixed(3)} Feet
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 ml-4">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 ml-4">
                   (Interpolated: {groundResistanceAtDp} Ω)
                 </span>
               </div>
@@ -1032,110 +1034,110 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Print-only Soil & Test Data Summary */}
           <section className="hidden print:block p-0 mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 border-b border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 border-b border-zinc-700 pb-2">
               Grounding Test Data
             </h2>
             <table className="w-full border-collapse mb-4">
               <tbody>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100 w-1/4">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100 w-1/4">
                     Soil Type
                   </td>
-                  <td className="border border-gray-400 px-3 py-2 w-1/4">
+                  <td className="border border-zinc-400 px-3 py-2 w-1/4">
                     {soil.type || "-"}
                   </td>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100 w-1/4">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100 w-1/4">
                     Soil Conditions
                   </td>
-                  <td className="border border-gray-400 px-3 py-2 w-1/4">
+                  <td className="border border-zinc-400 px-3 py-2 w-1/4">
                     {soil.conditions || "-"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Rod Depth
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {soil.rodDepth || "-"}
                   </td>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Multiple Rods
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {soil.multipleRods}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Longest Dimension
                   </td>
-                  <td className="border border-gray-400 px-3 py-2" colSpan={3}>
+                  <td className="border border-zinc-400 px-3 py-2" colSpan={3}>
                     {soil.longestDimension || "-"}
                   </td>
                 </tr>
               </tbody>
             </table>
 
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 border-b border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 border-b border-zinc-700 pb-2">
               Test Results
             </h2>
             <table className="w-full border-collapse">
               <tbody>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100 w-1/3">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100 w-1/3">
                     Distance Of Current Probe (Dc)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {dcFeet} Feet
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Resistance @ 40% ({d40} ft)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">{r40} Ω</td>
+                  <td className="border border-zinc-400 px-3 py-2">{r40} Ω</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Resistance @ 60% ({d60} ft)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">{r60} Ω</td>
+                  <td className="border border-zinc-400 px-3 py-2">{r60} Ω</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Resistance @ 80% ({d80} ft)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">{r80} Ω</td>
+                  <td className="border border-zinc-400 px-3 py-2">{r80} Ω</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Change in Slope (u)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {u.toFixed(2)}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Potential Probe Location (Dp)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {dpFeet.toFixed(3)} Feet
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Ground Resistance @ Dp (Measured)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {Number.isFinite(rDp) ? `${rDp} Ω` : "N/A"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-400 px-3 py-2 font-medium bg-gray-100">
+                  <td className="border border-zinc-400 px-3 py-2 font-medium bg-zinc-100">
                     Ground Resistance @ Dp (Interpolated)
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">
+                  <td className="border border-zinc-400 px-3 py-2">
                     {groundResistanceAtDp} Ω
                   </td>
                 </tr>
@@ -1145,7 +1147,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Chart (shown on screen and print) */}
           <section className="p-0">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Resistance vs Distance
             </h2>
             <div style={{ width: "100%", height: 320 }}>
@@ -1194,21 +1196,21 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           <section
             className={`p-0 mb-6 comments-section print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
           >
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Comments
             </h2>
             <textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
               readOnly={!isEditing}
-              className={`form-textarea min-h-[120px] whitespace-pre-wrap break-words print:hidden ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+              className={`form-textarea min-h-[120px] whitespace-pre-wrap break-words print:hidden ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
             />
           </section>
 
           {/* Ground Test Equipment - table lookup at bottom like other reports */}
           <section className="mb-20">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Ground Test Equipment
             </h2>
 
@@ -1263,7 +1265,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div>
@@ -1278,7 +1280,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div>
@@ -1293,7 +1295,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div>
@@ -1309,52 +1311,52 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="MM/DD/YYYY"
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
             </div>
 
             {/* Print view - table */}
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <table className="w-full border-collapse border border-zinc-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Model
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Serial Number
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       AMP ID
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Cal Date
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Cal Due
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {groundTestEquipment.model || "—"}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {groundTestEquipment.serialNumber || "—"}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {groundTestEquipment.ampId || "—"}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {groundTestEquipment.calDate
                         ? new Date(
                             groundTestEquipment.calDate + "T00:00:00",
                           ).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {groundTestEquipment.calDue || "—"}
                     </td>
                   </tr>

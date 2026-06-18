@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
-const JOB_INFO_PRINT_STYLE_ID = 'job-info-print-table-print-css';
+const JOB_INFO_PRINT_STYLE_ID = "job-info-print-table-print-css";
 
 function ensureJobInfoPrintStylesInHead() {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   if (document.getElementById(JOB_INFO_PRINT_STYLE_ID)) return;
-  const el = document.createElement('style');
+  const el = document.createElement("style");
   el.id = JOB_INFO_PRINT_STYLE_ID;
   el.textContent = `
 @media print {
@@ -55,57 +55,57 @@ function ensureJobInfoPrintStylesInHead() {
 
 // Map full US state names to USPS abbreviations
 const STATE_NAME_TO_ABBR: Record<string, string> = {
-  'alabama': 'AL',
-  'alaska': 'AK',
-  'arizona': 'AZ',
-  'arkansas': 'AR',
-  'california': 'CA',
-  'colorado': 'CO',
-  'connecticut': 'CT',
-  'delaware': 'DE',
-  'district of columbia': 'DC',
-  'florida': 'FL',
-  'georgia': 'GA',
-  'hawaii': 'HI',
-  'idaho': 'ID',
-  'illinois': 'IL',
-  'indiana': 'IN',
-  'iowa': 'IA',
-  'kansas': 'KS',
-  'kentucky': 'KY',
-  'louisiana': 'LA',
-  'maine': 'ME',
-  'maryland': 'MD',
-  'massachusetts': 'MA',
-  'michigan': 'MI',
-  'minnesota': 'MN',
-  'mississippi': 'MS',
-  'missouri': 'MO',
-  'montana': 'MT',
-  'nebraska': 'NE',
-  'nevada': 'NV',
-  'new hampshire': 'NH',
-  'new jersey': 'NJ',
-  'new mexico': 'NM',
-  'new york': 'NY',
-  'north carolina': 'NC',
-  'north dakota': 'ND',
-  'ohio': 'OH',
-  'oklahoma': 'OK',
-  'oregon': 'OR',
-  'pennsylvania': 'PA',
-  'rhode island': 'RI',
-  'south carolina': 'SC',
-  'south dakota': 'SD',
-  'tennessee': 'TN',
-  'texas': 'TX',
-  'utah': 'UT',
-  'vermont': 'VT',
-  'virginia': 'VA',
-  'washington': 'WA',
-  'west virginia': 'WV',
-  'wisconsin': 'WI',
-  'wyoming': 'WY'
+  alabama: "AL",
+  alaska: "AK",
+  arizona: "AZ",
+  arkansas: "AR",
+  california: "CA",
+  colorado: "CO",
+  connecticut: "CT",
+  delaware: "DE",
+  "district of columbia": "DC",
+  florida: "FL",
+  georgia: "GA",
+  hawaii: "HI",
+  idaho: "ID",
+  illinois: "IL",
+  indiana: "IN",
+  iowa: "IA",
+  kansas: "KS",
+  kentucky: "KY",
+  louisiana: "LA",
+  maine: "ME",
+  maryland: "MD",
+  massachusetts: "MA",
+  michigan: "MI",
+  minnesota: "MN",
+  mississippi: "MS",
+  missouri: "MO",
+  montana: "MT",
+  nebraska: "NE",
+  nevada: "NV",
+  "new hampshire": "NH",
+  "new jersey": "NJ",
+  "new mexico": "NM",
+  "new york": "NY",
+  "north carolina": "NC",
+  "north dakota": "ND",
+  ohio: "OH",
+  oklahoma: "OK",
+  oregon: "OR",
+  pennsylvania: "PA",
+  "rhode island": "RI",
+  "south carolina": "SC",
+  "south dakota": "SD",
+  tennessee: "TN",
+  texas: "TX",
+  utah: "UT",
+  vermont: "VT",
+  virginia: "VA",
+  washington: "WA",
+  "west virginia": "WV",
+  wisconsin: "WI",
+  wyoming: "WY",
 };
 
 export interface JobInfoData {
@@ -118,12 +118,14 @@ export interface JobInfoData {
   user?: string;
   substation?: string;
   eqptLocation?: string;
-  temperature?: {
-    fahrenheit?: number | '';
-    celsius?: number | '';
-    tcf?: number;
-    humidity?: number | '';
-  } | number;
+  temperature?:
+    | {
+        fahrenheit?: number | "";
+        celsius?: number | "";
+        tcf?: number;
+        humidity?: number | "";
+      }
+    | number;
 }
 
 interface Props {
@@ -139,12 +141,15 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
     ensureJobInfoPrintStylesInHead();
   }, []);
 
-  const temp = typeof data.temperature === 'number' ? { fahrenheit: data.temperature } : (data.temperature || {});
+  const temp =
+    typeof data.temperature === "number"
+      ? { fahrenheit: data.temperature }
+      : data.temperature || {};
   const formatDate = (value?: string) => {
-    if (!value) return '';
+    if (!value) return "";
     // Handle YYYY-MM-DD dates (from <input type="date">) in local time to avoid off-by-one
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      const [y, m, d] = value.split('-').map(Number);
+      const [y, m, d] = value.split("-").map(Number);
       const local = new Date(y, (m || 1) - 1, d || 1);
       return local.toLocaleDateString();
     }
@@ -152,32 +157,40 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
     return isNaN(dt.getTime()) ? value : dt.toLocaleDateString();
   };
   const dateText = formatDate(data.date);
-  const formatCommaSpace = (text?: string) => (text || '').replace(/,\s*/g, ', ');
+  const formatCommaSpace = (text?: string) =>
+    (text || "").replace(/,\s*/g, ", ");
   const formatAddress = (text?: string) => {
     const withSpaces = formatCommaSpace(text);
     // Replace full state names with USPS abbreviations where they appear after a comma or at word boundary
-    const withStateAbbr = withSpaces.replace(/\b([A-Za-z]+(?:\s+[A-Za-z]+)*)\b/g, (match) => {
-      const lower = match.toLowerCase();
-      return STATE_NAME_TO_ABBR[lower] || match;
-    });
+    const withStateAbbr = withSpaces.replace(
+      /\b([A-Za-z]+(?:\s+[A-Za-z]+)*)\b/g,
+      (match) => {
+        const lower = match.toLowerCase();
+        return STATE_NAME_TO_ABBR[lower] || match;
+      },
+    );
     // Remove occurrences of "United States" with optional preceding comma/space and trailing period
-    const withoutCountry = withStateAbbr.replace(/,?\s*\bUnited States\b\.?/gi, '');
+    const withoutCountry = withStateAbbr.replace(
+      /,?\s*\bUnited States\b\.?/gi,
+      "",
+    );
     // Normalize duplicate commas/spaces and trim trailing punctuation/space
     return withoutCountry
-      .replace(/,\s*,+/g, ', ')
-      .replace(/\s+,/g, ', ')
-      .replace(/[\s,]+$/g, '')
+      .replace(/,\s*,+/g, ", ")
+      .replace(/\s+,/g, ", ")
+      .replace(/[\s,]+$/g, "")
       .trim();
   };
   const addressText = formatAddress(data.address);
 
-  const cellWrap = 'mt-1 text-center whitespace-normal break-words [overflow-wrap:anywhere] max-w-full leading-snug';
+  const cellWrap =
+    "mt-1 text-center whitespace-normal break-words [overflow-wrap:anywhere] max-w-full leading-snug";
 
   return (
     <div className="hidden print:block job-info-print">
       <table
-        className="job-info-print-table w-full table-fixed border-collapse border border-gray-300 print:border-black print:border"
-        style={{ marginLeft: 0, tableLayout: 'fixed' }}
+        className="job-info-print-table w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border"
+        style={{ marginLeft: 0, tableLayout: "fixed" }}
       >
         <colgroup>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -186,55 +199,63 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
         </colgroup>
         <tbody>
           <tr>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Customer:</div>
-              <div className={cellWrap}>{data.customer || ''}</div>
+              <div className={cellWrap}>{data.customer || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Temp:</div>
-              <div className={cellWrap}>{temp?.fahrenheit !== undefined || temp?.celsius !== undefined ? `${temp?.fahrenheit ?? ''}°F ${temp?.celsius !== undefined ? `(${temp.celsius}°C)` : ''}` : ''}</div>
+              <div className={cellWrap}>
+                {temp?.fahrenheit !== undefined || temp?.celsius !== undefined
+                  ? `${temp?.fahrenheit ?? ""}°F ${temp?.celsius !== undefined ? `(${temp.celsius}°C)` : ""}`
+                  : ""}
+              </div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Job #:</div>
-              <div className={cellWrap}>{data.jobNumber || ''}</div>
+              <div className={cellWrap}>{data.jobNumber || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Technicians:</div>
-              <div className={cellWrap}>{data.technicians || ''}</div>
+              <div className={cellWrap}>{data.technicians || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Date:</div>
               <div className={cellWrap}>{dateText}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Identifier:</div>
-              <div className={cellWrap}>{data.identifier || ''}</div>
+              <div className={cellWrap}>{data.identifier || ""}</div>
             </td>
           </tr>
           <tr>
-            <td className="job-info-print-address-cell p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="job-info-print-address-cell p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Address:</div>
-              <div className={`job-info-print-address-value ${cellWrap}`}>{addressText}</div>
+              <div className={`job-info-print-address-value ${cellWrap}`}>
+                {addressText}
+              </div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">TCF:</div>
-              <div className={cellWrap}>{temp?.tcf ?? ''}</div>
+              <div className={cellWrap}>{temp?.tcf ?? ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Humidity:</div>
-              <div className={cellWrap}>{temp?.humidity !== undefined ? `${temp.humidity}%` : ''}</div>
+              <div className={cellWrap}>
+                {temp?.humidity !== undefined ? `${temp.humidity}%` : ""}
+              </div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Substation:</div>
-              <div className={cellWrap}>{data.substation || ''}</div>
+              <div className={cellWrap}>{data.substation || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Eqpt. Location:</div>
-              <div className={cellWrap}>{data.eqptLocation || ''}</div>
+              <div className={cellWrap}>{data.eqptLocation || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">User:</div>
-              <div className={cellWrap}>{data.user || ''}</div>
+              <div className={cellWrap}>{data.user || ""}</div>
             </td>
           </tr>
         </tbody>
@@ -244,5 +265,3 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
 };
 
 export default JobInfoPrintTable;
-
-

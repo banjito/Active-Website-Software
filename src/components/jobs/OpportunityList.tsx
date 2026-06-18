@@ -70,7 +70,7 @@ interface TMFormData {
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case "awareness":
-      return "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100";
+      return "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100";
     case "interest":
       return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
     case "quote":
@@ -86,9 +86,9 @@ function getStatusColor(status: string) {
     case "lost":
       return "bg-red-500 text-white dark:bg-red-600";
     case "no quote":
-      return "bg-gray-500 text-white dark:bg-gray-600";
+      return "bg-zinc-500 text-white dark:bg-zinc-600";
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100";
+      return "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100";
   }
 }
 
@@ -119,7 +119,7 @@ function getOpportunityTypeColor(type: string) {
       return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400";
     case "other":
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400";
+      return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400";
   }
 }
 
@@ -185,7 +185,7 @@ function getQuotedAmountForList(opportunity: any): number | null {
 
 function getEstimateApprovalColor(status: string | null | undefined) {
   if (!status)
-    return "bg-gray-100 text-gray-500 dark:bg-dark-200 dark:text-gray-500";
+    return "bg-zinc-100 text-zinc-500 dark:bg-dark-200 dark:text-zinc-500";
   switch (status) {
     case "in_progress":
       return "bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100";
@@ -197,9 +197,9 @@ function getEstimateApprovalColor(status: string | null | undefined) {
       return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
     case "no_quote":
     case "no quote":
-      return "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400";
+      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400";
     default:
-      return "bg-gray-100 text-gray-500 dark:bg-dark-200 dark:text-gray-500";
+      return "bg-zinc-100 text-zinc-500 dark:bg-dark-200 dark:text-zinc-500";
   }
 }
 
@@ -333,7 +333,7 @@ function formatDivisionName(division: string): string {
 }
 
 const OPPORTUNITY_MODAL_PANEL_CLASS =
-  "relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:hover:bg-gray-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600";
+  "relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-400 [&::-webkit-scrollbar-thumb]:hover:bg-zinc-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600";
 
 export default function OpportunityList() {
   const { user, loading: authLoading, softRefresh } = useAuth();
@@ -556,7 +556,7 @@ export default function OpportunityList() {
               className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "text-[#f26722]"
-                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+                  : "text-zinc-700 hover:bg-zinc-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
             >
@@ -564,7 +564,7 @@ export default function OpportunityList() {
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                   checked
                     ? "border-[#f26722] bg-[#f26722] text-white"
-                    : "border-gray-300 dark:border-dark-300"
+                    : "border-zinc-300 dark:border-dark-300"
                 }`}
                 aria-hidden
               >
@@ -599,7 +599,7 @@ export default function OpportunityList() {
               className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
-                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+                  : "text-zinc-700 hover:bg-zinc-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
             >
@@ -2406,7 +2406,7 @@ export default function OpportunityList() {
             />
           </svg>
         </div>
-        <div className="text-gray-900 dark:text-gray-100 mb-4">{loadError}</div>
+        <div className="text-zinc-900 dark:text-zinc-100 mb-4">{loadError}</div>
         <button
           onClick={() => {
             setLoadError(null);
@@ -2427,12 +2427,12 @@ export default function OpportunityList() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-dark-900">
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-dark-900">
               Opportunities
             </h1>
             {selectedForMerge.size > 0 && (
               <div className="mt-3 flex items-center gap-3 text-sm">
-                <span className="text-gray-600 dark:text-dark-400">
+                <span className="text-zinc-600 dark:text-dark-400">
                   {selectedForMerge.size} selected
                 </span>
                 <button
@@ -2448,14 +2448,14 @@ export default function OpportunityList() {
                   onClick={handleMergeSelected}
                   className={`rounded-md px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                     selectedForMerge.size < 2
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-dark-200 dark:text-dark-400"
+                      ? "bg-zinc-200 text-zinc-500 cursor-not-allowed dark:bg-dark-200 dark:text-dark-400"
                       : "bg-green-600 text-white hover:bg-green-700"
                   }`}
                 >
                   Merge selected
                 </button>
                 {selectedForMerge.size < 2 && (
-                  <span className="text-xs text-gray-500 dark:text-dark-400">
+                  <span className="text-xs text-zinc-500 dark:text-dark-400">
                     Pick at least 2 opportunities.
                   </span>
                 )}
@@ -2465,7 +2465,7 @@ export default function OpportunityList() {
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               to="/sales-dashboard/opportunities/calendar"
-              className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
+              className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
             >
               <Calendar className="h-4 w-4 text-[#f26722]" />
               Calendar
@@ -2479,8 +2479,8 @@ export default function OpportunityList() {
                 className={`w-72 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                   searchTerm
                     ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
-                    : "border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150"
-                } text-gray-900 dark:text-white`}
+                    : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150"
+                } text-zinc-900 dark:text-white`}
               />
               {searchLoading && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -2500,7 +2500,7 @@ export default function OpportunityList() {
                 className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                   activeFilterCount > 0
                     ? "text-[#f26722]"
-                    : "text-gray-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                    : "text-zinc-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
                 }`}
                 aria-expanded={isFilterMenuOpen}
                 aria-label="Filter opportunities"
@@ -2509,9 +2509,9 @@ export default function OpportunityList() {
                 <Filter className="h-5 w-5" />
               </button>
               {isFilterMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                   <div>
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
                       Division
                     </div>
                     {renderFilterOptions(
@@ -2521,7 +2521,7 @@ export default function OpportunityList() {
                     )}
                   </div>
                   <div className="mt-2">
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
                       Type
                     </div>
                     {renderFilterOptions(
@@ -2531,7 +2531,7 @@ export default function OpportunityList() {
                     )}
                   </div>
                   <div className="mt-2">
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
                       Status
                     </div>
                     {renderFilterOptions(
@@ -2549,7 +2549,7 @@ export default function OpportunityList() {
                         setStatusFilters([]);
                         setPage(1);
                       }}
-                      className="mt-3 w-full rounded-md border border-gray-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="mt-3 w-full rounded-md border border-zinc-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     >
                       Clear filters
                     </button>
@@ -2561,7 +2561,7 @@ export default function OpportunityList() {
               <button
                 type="button"
                 onClick={() => setIsSortMenuOpen((prev) => !prev)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
                 aria-expanded={isSortMenuOpen}
                 aria-label="Sort opportunities"
                 title="Sort"
@@ -2569,9 +2569,9 @@ export default function OpportunityList() {
                 <ArrowDownWideNarrow className="h-5 w-5" />
               </button>
               {isSortMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                   <div>
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
                       Sort by
                     </div>
                     {renderSingleChoiceOptions(
@@ -2581,7 +2581,7 @@ export default function OpportunityList() {
                     )}
                   </div>
                   <div className="mt-2">
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
                       Order
                     </div>
                     {renderSingleChoiceOptions(
@@ -2636,11 +2636,11 @@ export default function OpportunityList() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100 dark:border-dark-200">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-dark-200 overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-2 border-b border-zinc-100 dark:border-dark-200">
             <div
               ref={topScrollbarRef}
-              className="relative min-w-0 flex-1 h-2 bg-gray-200 dark:bg-dark-200 cursor-pointer"
+              className="relative min-w-0 flex-1 h-2 bg-zinc-200 dark:bg-dark-200 cursor-pointer"
               onMouseDown={handleCustomScrollbarMouseDown}
               aria-label="Horizontal table scrollbar"
             >
@@ -2659,83 +2659,83 @@ export default function OpportunityList() {
           >
             <table
               ref={tableRef}
-              className="min-w-full divide-y divide-gray-200 dark:divide-dark-200"
+              className="min-w-full divide-y divide-zinc-200 dark:divide-dark-200"
             >
-              <thead className="bg-gray-50 dark:bg-dark-150">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
                   <th
                     scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-3 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   ></th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Quote
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Due
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Created
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Customer
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Opportunity
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Status
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Est. Approval
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Job
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Division
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Type
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Amount
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-dark-400 uppercase tracking-wider"
                   >
                     Probability
                   </th>
@@ -2744,12 +2744,12 @@ export default function OpportunityList() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-dark-200">
                 {opportunities.length === 0 ? (
                   <tr>
                     <td
                       colSpan={14}
-                      className="px-6 py-4 text-center text-gray-500 dark:text-dark-400"
+                      className="px-6 py-4 text-center text-zinc-500 dark:text-dark-400"
                     >
                       {activeFilterCount > 0 || searchTerm
                         ? "No opportunities match the current filters."
@@ -2763,7 +2763,7 @@ export default function OpportunityList() {
                       onClick={() => {
                         openOpportunity(opportunity.id);
                       }}
-                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors"
+                      className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
                     >
                       <td
                         className="px-3 py-4 whitespace-nowrap"
@@ -2784,20 +2784,20 @@ export default function OpportunityList() {
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-dark-900">
+                        <div className="text-sm font-medium text-zinc-900 dark:text-dark-900">
                           {opportunity.quote_number}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-dark-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-dark-400">
                         {opportunity.proposal_due_date
                           ? formatDateSafe(opportunity.proposal_due_date)
                           : "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-dark-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-dark-400">
                         {formatDateSafe(opportunity.opportunity_created_date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-dark-900">
+                        <div className="text-sm font-medium text-zinc-900 dark:text-dark-900">
                           {maskCustomerName(
                             opportunity.customers?.company_name ||
                               opportunity.customers?.name,
@@ -2805,7 +2805,7 @@ export default function OpportunityList() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                        <div className="text-sm text-zinc-900 dark:text-dark-900">
                           {opportunity.title}
                         </div>
                       </td>
@@ -2893,7 +2893,7 @@ export default function OpportunityList() {
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                        <div className="text-sm text-zinc-900 dark:text-dark-900">
                           {(opportunity as any).job_number ? (
                             <button
                               onClick={(e) => {
@@ -2911,7 +2911,7 @@ export default function OpportunityList() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                        <div className="text-sm text-zinc-900 dark:text-dark-900">
                           {opportunity.amp_division ? (
                             <button
                               onClick={(e) => {
@@ -2960,7 +2960,7 @@ export default function OpportunityList() {
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                        <div className="text-sm text-zinc-900 dark:text-dark-900">
                           {(() => {
                             const amount = getQuotedAmountForList(opportunity);
                             return amount
@@ -2973,7 +2973,7 @@ export default function OpportunityList() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                        <div className="text-sm text-zinc-900 dark:text-dark-900">
                           {opportunity.probability !== null &&
                           opportunity.probability !== undefined
                             ? `${opportunity.probability}%`
@@ -3001,7 +3001,7 @@ export default function OpportunityList() {
                                       : opportunity.id,
                                   );
                                 }}
-                                className="text-gray-600 hover:text-[#f26722] dark:text-gray-300 dark:hover:text-[#f26722]"
+                                className="text-zinc-600 hover:text-[#f26722] dark:text-zinc-300 dark:hover:text-[#f26722]"
                                 title="In Pipeline Projection"
                                 aria-label="In Pipeline Projection"
                               >
@@ -3011,7 +3011,7 @@ export default function OpportunityList() {
                                 projectionPopupPos && (
                                   <div
                                     ref={projectionMenuRef}
-                                    className="fixed z-50 w-48 rounded-lg border border-gray-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:ring-white/10"
+                                    className="fixed z-50 w-48 rounded-lg border border-zinc-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-zinc-700 dark:bg-zinc-900 dark:ring-white/10"
                                     style={{
                                       left: projectionPopupPos.x - 200,
                                       top: projectionPopupPos.y - 4,
@@ -3024,12 +3024,12 @@ export default function OpportunityList() {
                                         setOpenProjectionMenuId(null);
                                         setProjectionPopupPos(null);
                                       }}
-                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
                                     >
-                                      <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
+                                      <ExternalLink className="h-4 w-4 shrink-0 text-zinc-400" />
                                       Go to pipeline
                                     </Link>
-                                    <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+                                    <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -3083,17 +3083,17 @@ export default function OpportunityList() {
         {/* Pagination Controls */}
         <div className="mt-4 flex items-center justify-between">
           <button
-            className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+            className="px-3 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 disabled:opacity-50"
             disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Previous
           </button>
-          <span className="text-sm text-gray-600 dark:text-white">
+          <span className="text-sm text-zinc-600 dark:text-white">
             Page {page}
           </span>
           <button
-            className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+            className="px-3 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 disabled:opacity-50"
             disabled={!hasMore || loading}
             onClick={() => setPage((p) => p + 1)}
           >
@@ -3115,7 +3115,7 @@ export default function OpportunityList() {
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
-                className="text-gray-400 hover:text-gray-500 dark:text-white dark:hover:text-gray-200"
+                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-zinc-200"
                 onClick={() => setIsOpen(false)}
               >
                 <span className="sr-only">Close</span>
@@ -3123,7 +3123,7 @@ export default function OpportunityList() {
               </button>
             </div>
 
-            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
               Add New Opportunity
             </Dialog.Title>
 
@@ -3131,12 +3131,12 @@ export default function OpportunityList() {
               {showNewCustomer && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
                       New Customer
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-gray-600"
+                      className="text-xs text-zinc-600"
                       onClick={() => setShowNewCustomer(false)}
                     >
                       Cancel
@@ -3215,12 +3215,12 @@ export default function OpportunityList() {
               {showNewContact && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
                       New Contact
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-gray-600"
+                      className="text-xs text-zinc-600"
                       onClick={() => setShowNewContact(false)}
                     >
                       Cancel
@@ -3289,7 +3289,7 @@ export default function OpportunityList() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Sales Person
                 </label>
                 <input
@@ -3297,19 +3297,19 @@ export default function OpportunityList() {
                   name="sales_person"
                   value={user?.email || ""}
                   disabled
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-dark-150 focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:text-white cursor-not-allowed"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-50 dark:bg-dark-150 focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:text-white cursor-not-allowed"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Sales Stage
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option
@@ -3370,7 +3370,7 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Customer
                 </label>
                 <input
@@ -3378,10 +3378,10 @@ export default function OpportunityList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {formData.customer_id && (
-                  <div className="text-xs text-gray-600 dark:text-white mb-1">
+                  <div className="text-xs text-zinc-600 dark:text-white mb-1">
                     Selected:{" "}
                     {customers.find((c) => c.id === formData.customer_id)
                       ?.company_name ||
@@ -3399,7 +3399,7 @@ export default function OpportunityList() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-zinc-300 dark:border-zinc-600 rounded-md">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = formData.customer_id === customer.id;
                     return (
@@ -3415,8 +3415,8 @@ export default function OpportunityList() {
                         }}
                         className={`w-full text-left px-3 py-2 text-sm ${
                           isSelected
-                            ? "bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white"
-                            : "hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200"
+                            ? "bg-orange-50 text-zinc-900 dark:bg-orange-900/20 dark:text-white"
+                            : "hover:bg-zinc-50 dark:hover:bg-dark-200 text-zinc-700 dark:text-zinc-200"
                         }`}
                       >
                         {maskCustomerName(
@@ -3426,7 +3426,7 @@ export default function OpportunityList() {
                     );
                   })}
                   {filteredCustomers.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-white">
+                    <div className="px-3 py-2 text-sm text-zinc-500 dark:text-white">
                       No matches
                     </div>
                   )}
@@ -3451,14 +3451,14 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Contact
                 </label>
                 <select
                   name="contact_id"
                   value={formData.contact_id}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!formData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -3487,7 +3487,7 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Opportunity Title
                 </label>
                 <input
@@ -3495,13 +3495,13 @@ export default function OpportunityList() {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Opportunity Description
                 </label>
                 <textarea
@@ -3555,14 +3555,14 @@ export default function OpportunityList() {
                   }}
                   ref={descriptionRef}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Expected Value ($)
                   </label>
                   <input
@@ -3570,13 +3570,13 @@ export default function OpportunityList() {
                     name="expected_value"
                     value={formData.expected_value}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     min="0"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Probability (%)
                   </label>
                   <input
@@ -3584,7 +3584,7 @@ export default function OpportunityList() {
                     name="probability"
                     value={formData.probability}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     min="0"
                     max="100"
                     required
@@ -3593,7 +3593,7 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Proposal Due Date
                 </label>
                 <input
@@ -3601,13 +3601,13 @@ export default function OpportunityList() {
                   name="proposal_due_date"
                   value={formData.proposal_due_date}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Start Date
                   </label>
                   <input
@@ -3615,12 +3615,12 @@ export default function OpportunityList() {
                     name="estimated_start_date"
                     value={formData.estimated_start_date}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     End Date
                   </label>
                   <input
@@ -3629,20 +3629,20 @@ export default function OpportunityList() {
                     value={formData.estimated_end_date}
                     onChange={handleChange}
                     min={formData.estimated_start_date || undefined}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   AMP Division
                 </label>
                 <select
                   name="amp_division"
                   value={formData.amp_division}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -3688,14 +3688,14 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Documents Stage
                 </label>
                 <select
                   name="documents_stage"
                   value={formData.documents_stage || ""}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
                     Select Documents Stage
@@ -3765,7 +3765,7 @@ export default function OpportunityList() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Reviewed By
                   </label>
                   <input
@@ -3773,13 +3773,13 @@ export default function OpportunityList() {
                     name="reviewed_by"
                     value={formData.reviewed_by}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     placeholder="Enter reviewer name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Quote Prepared By (Auto-populated)
                   </label>
                   <input
@@ -3788,7 +3788,7 @@ export default function OpportunityList() {
                     value={formData.prepared_by}
                     onChange={handleChange}
                     readOnly
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
+                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
                     placeholder="Auto-populated from quote creators"
                   />
                 </div>
@@ -3797,7 +3797,7 @@ export default function OpportunityList() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => setIsOpen(false)}
                 >
                   Cancel
@@ -3844,7 +3844,7 @@ export default function OpportunityList() {
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
-                className="text-gray-400 hover:text-gray-500 dark:text-white dark:hover:text-gray-200"
+                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-zinc-200"
                 onClick={() => setShowTMModal(false)}
               >
                 <span className="sr-only">Close</span>
@@ -3852,7 +3852,7 @@ export default function OpportunityList() {
               </button>
             </div>
 
-            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
               Add T&M Opportunity
             </Dialog.Title>
 
@@ -3860,12 +3860,12 @@ export default function OpportunityList() {
               {showNewCustomer && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
                       New Customer
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-gray-600 dark:text-gray-400"
+                      className="text-xs text-zinc-600 dark:text-zinc-400"
                       onClick={() => setShowNewCustomer(false)}
                     >
                       Cancel
@@ -3947,12 +3947,12 @@ export default function OpportunityList() {
               {showNewContact && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
                       New Contact
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-gray-600 dark:text-gray-400"
+                      className="text-xs text-zinc-600 dark:text-zinc-400"
                       onClick={() => setShowNewContact(false)}
                     >
                       Cancel
@@ -4021,7 +4021,7 @@ export default function OpportunityList() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Customer *
                 </label>
                 <input
@@ -4029,10 +4029,10 @@ export default function OpportunityList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
-                  <div className="text-xs text-gray-600 dark:text-white mb-1">
+                  <div className="text-xs text-zinc-600 dark:text-white mb-1">
                     Selected:{" "}
                     {customers.find((c) => c.id === TMFormData.customer_id)
                       ?.company_name ||
@@ -4050,7 +4050,7 @@ export default function OpportunityList() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-zinc-300 dark:border-zinc-600 rounded-md">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = TMFormData.customer_id === customer.id;
                     return (
@@ -4067,8 +4067,8 @@ export default function OpportunityList() {
                         }}
                         className={`w-full text-left px-3 py-2 text-sm ${
                           isSelected
-                            ? "bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white"
-                            : "hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200"
+                            ? "bg-orange-50 text-zinc-900 dark:bg-orange-900/20 dark:text-white"
+                            : "hover:bg-zinc-50 dark:hover:bg-dark-200 text-zinc-700 dark:text-zinc-200"
                         }`}
                       >
                         {maskCustomerName(
@@ -4078,7 +4078,7 @@ export default function OpportunityList() {
                     );
                   })}
                   {filteredCustomers.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-white">
+                    <div className="px-3 py-2 text-sm text-zinc-500 dark:text-white">
                       No matches
                     </div>
                   )}
@@ -4103,14 +4103,14 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Contact
                 </label>
                 <select
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -4139,7 +4139,7 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Title *
                 </label>
                 <input
@@ -4147,20 +4147,20 @@ export default function OpportunityList() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Division *
                 </label>
                 <select
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -4206,7 +4206,7 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Description
                 </label>
                 <textarea
@@ -4214,7 +4214,7 @@ export default function OpportunityList() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>
@@ -4222,7 +4222,7 @@ export default function OpportunityList() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => setShowTMModal(false)}
                 >
                   Cancel

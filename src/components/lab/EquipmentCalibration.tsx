@@ -170,7 +170,7 @@ export function EquipmentCalibration({ division }: EquipmentCalibrationProps) {
                       {item.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-500">{item.manufacturer} {item.model}</p>
+                  <p className="text-sm text-zinc-500">{item.manufacturer} {item.model}</p>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">

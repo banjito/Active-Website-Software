@@ -1,9 +1,15 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { AlertTriangle, Filter, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  AlertTriangle,
+  Filter,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-type EvaluationResult = 'PASS' | 'FAIL' | 'LIMITED SERVICE';
+type EvaluationResult = "PASS" | "FAIL" | "LIMITED SERVICE";
 
 interface DiscrepancyRow {
   assetId: string;
@@ -30,69 +36,92 @@ interface DiscrepancyTrackerProps {
 
 /** Slug-to-table mapping (mirrors the one in JobDetail) */
 const slugToTable: Record<string, string> = {
-  'switchgear-switchboard-assemblies-ats25': 'switchgear_switchboard_ats25_reports',
-  'panelboard-assemblies-ats25': 'panelboard_assemblies_ats25_reports',
-  'small-lv-dry-type-transformer-ats25': 'small_lv_dry_type_transformer_ats25_reports',
-  'liquid-filled-xfmr-ats25': 'liquid_filled_xfmr_ats25_reports',
-  'panelboard-report': 'panelboard_reports',
-  'switchgear-report': 'switchgear_reports',
-  'dry-type-transformer': 'transformer_reports',
-  'large-dry-type-transformer-report': 'large_transformer_reports',
-  'large-dry-type-transformer': 'large_transformer_reports',
-  'large-dry-type-transformer-mts-report': 'large_dry_type_transformer_mts_reports',
-  'large-dry-type-xfmr-mts-report': 'large_dry_type_transformer_mts_reports',
-  'liquid-xfmr-visual-mts-report': 'liquid_xfmr_visual_mts_reports',
-  'low-voltage-switch-report': 'low_voltage_switch_reports',
-  'medium-voltage-switch-oil-report': 'medium_voltage_switch_oil_reports',
-  'medium-voltage-switch-sf6': 'medium_voltage_switch_sf6_reports',
-  'medium-voltage-switch-sf6-report': 'medium_voltage_switch_sf6_reports',
-  'potential-transformer-ats-report': 'potential_transformer_ats_reports',
-  'low-voltage-panelboard-small-breaker-report': 'low_voltage_panelboard_small_breaker_reports',
-  'medium-voltage-circuit-breaker-report': 'medium_voltage_circuit_breaker_reports',
-  'medium-voltage-circuit-breaker-mts-report': 'medium_voltage_circuit_breaker_mts_reports',
-  'medium-voltage-vlf-mts-report': 'medium_voltage_vlf_mts_reports',
-  'medium-voltage-cable-vlf-test-mts': 'medium_voltage_vlf_mts_reports',
-  'medium-voltage-vlf': 'medium_voltage_vlf_mts_reports',
-  'medium-voltage-vlf-tan-delta': 'tandelta_reports',
-  'medium-voltage-vlf-tan-delta-mts': 'tandelta_mts_reports',
-  'electrical-tan-delta-test-mts-form': 'tandelta_mts_reports',
-  'medium-voltage-cable-vlf-test': 'medium_voltage_cable_vlf_test',
-  'current-transformer-test-ats-report': 'current_transformer_test_ats_reports',
-  '12-current-transformer-test-ats-report': 'current_transformer_test_ats_reports',
-  '12-current-transformer-test-mts-report': 'current_transformer_test_mts_reports',
-  '13-voltage-potential-transformer-test-mts-report': 'voltage_potential_transformer_mts_reports',
-  '23-medium-voltage-motor-starter-mts-report': 'medium_voltage_motor_starter_mts_reports',
-  '23-medium-voltage-switch-mts-report': 'medium_voltage_switch_mts_reports',
-  'metal-enclosed-busway': 'metal_enclosed_busway_reports',
-  'low-voltage-circuit-breaker-thermal-magnetic-mts-report': 'low_voltage_circuit_breaker_thermal_magnetic_mts_reports',
-  'lv-molded-case-circuit-breaker-ats25': 'lv_molded_case_circuit_breaker_ats25',
-  'emergency-systems-engine-generator-ats25': 'emergency_systems_engine_generator_ats25',
-  'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low_voltage_circuit_breaker_electronic_trip_ats',
-  'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': 'low_voltage_circuit_breaker_electronic_trip_ats',
-  'low-voltage-circuit-breaker-thermal-magnetic-ats-report': 'low_voltage_circuit_breaker_thermal_magnetic_ats',
-  'automatic-transfer-switch-ats-report': 'automatic_transfer_switch_ats_reports',
-  'gfi-trip-test-report': 'gfi_trip_test_reports',
-  'low-voltage-circuit-breaker-electronic-trip-mts-report': 'low_voltage_circuit_breaker_electronic_trip_mts',
-  'low-voltage-circuit-breaker-electronic-trip-mts': 'low_voltage_circuit_breaker_electronic_trip_mts',
-  'low-voltage-circuit-breaker-electronic-trip-unit-mts': 'low_voltage_circuit_breaker_electronic_trip_mts',
-  'two-small-dry-typer-xfmr-mts-report': 'two_small_dry_type_xfmr_mts_reports',
-  'low-voltage-cable-test-3sets': 'low_voltage_cable_test_3sets',
-  'low-voltage-cable-test-12sets': 'low_voltage_cable_test_12sets',
-  'low-voltage-cable-test-20sets': 'transformer_reports',
-  'low-voltage-switch-multi-device-test': 'low_voltage_switch_multi_device_reports',
-  'two-small-dry-typer-xfmr-ats-report': 'two_small_dry_type_xfmr_ats_reports',
-  'switchgear-panelboard-mts-report': 'switchgear_panelboard_mts_reports',
-  'liquid-filled-transformer': 'liquid_filled_transformer_reports',
-  'liquid-filled-transformer-report': 'liquid_filled_transformer_reports',
-  'metal-enclosed-busway-report': 'metal_enclosed_busway_reports',
-  'oil-inspection': 'oil_inspection_reports',
-  'grounding-system-master': 'grounding_system_master_reports',
-  'grounding-fall-of-potential-slope-method-test': 'grounding_fall_of_potential_slope_method_test_reports',
-  'standard-report': 'standard_reports',
-  '6-low-voltage-switch-maint-mts-report': 'low_voltage_switch_maint_mts_reports',
-  'applied-voltage-test-ats-report': 'applied_voltage_test_ats_reports',
-  '3-low-voltage-cable-mts': 'low_voltage_cable_mts_reports',
-  '3-low-voltage-cable-ats': 'low_voltage_cable_ats_reports',
+  "switchgear-switchboard-assemblies-ats25":
+    "switchgear_switchboard_ats25_reports",
+  "panelboard-assemblies-ats25": "panelboard_assemblies_ats25_reports",
+  "small-lv-dry-type-transformer-ats25":
+    "small_lv_dry_type_transformer_ats25_reports",
+  "liquid-filled-xfmr-ats25": "liquid_filled_xfmr_ats25_reports",
+  "panelboard-report": "panelboard_reports",
+  "switchgear-report": "switchgear_reports",
+  "dry-type-transformer": "transformer_reports",
+  "large-dry-type-transformer-report": "large_transformer_reports",
+  "large-dry-type-transformer": "large_transformer_reports",
+  "large-dry-type-transformer-mts-report":
+    "large_dry_type_transformer_mts_reports",
+  "large-dry-type-xfmr-mts-report": "large_dry_type_transformer_mts_reports",
+  "liquid-xfmr-visual-mts-report": "liquid_xfmr_visual_mts_reports",
+  "low-voltage-switch-report": "low_voltage_switch_reports",
+  "medium-voltage-switch-oil-report": "medium_voltage_switch_oil_reports",
+  "medium-voltage-switch-sf6": "medium_voltage_switch_sf6_reports",
+  "medium-voltage-switch-sf6-report": "medium_voltage_switch_sf6_reports",
+  "potential-transformer-ats-report": "potential_transformer_ats_reports",
+  "low-voltage-panelboard-small-breaker-report":
+    "low_voltage_panelboard_small_breaker_reports",
+  "medium-voltage-circuit-breaker-report":
+    "medium_voltage_circuit_breaker_reports",
+  "medium-voltage-circuit-breaker-mts-report":
+    "medium_voltage_circuit_breaker_mts_reports",
+  "medium-voltage-vlf-mts-report": "medium_voltage_vlf_mts_reports",
+  "medium-voltage-cable-vlf-test-mts": "medium_voltage_vlf_mts_reports",
+  "medium-voltage-vlf": "medium_voltage_vlf_mts_reports",
+  "medium-voltage-vlf-tan-delta": "tandelta_reports",
+  "medium-voltage-vlf-tan-delta-mts": "tandelta_mts_reports",
+  "electrical-tan-delta-test-mts-form": "tandelta_mts_reports",
+  "medium-voltage-cable-vlf-test": "medium_voltage_cable_vlf_test",
+  "current-transformer-test-ats-report": "current_transformer_test_ats_reports",
+  "12-current-transformer-test-ats-report":
+    "current_transformer_test_ats_reports",
+  "12-current-transformer-test-mts-report":
+    "current_transformer_test_mts_reports",
+  "13-voltage-potential-transformer-test-mts-report":
+    "voltage_potential_transformer_mts_reports",
+  "23-medium-voltage-motor-starter-mts-report":
+    "medium_voltage_motor_starter_mts_reports",
+  "23-medium-voltage-switch-mts-report": "medium_voltage_switch_mts_reports",
+  "metal-enclosed-busway": "metal_enclosed_busway_reports",
+  "low-voltage-circuit-breaker-thermal-magnetic-mts-report":
+    "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
+  "lv-molded-case-circuit-breaker-ats25":
+    "lv_molded_case_circuit_breaker_ats25",
+  "emergency-systems-engine-generator-ats25":
+    "emergency_systems_engine_generator_ats25",
+  "low-voltage-circuit-breaker-electronic-trip-ats-report":
+    "low_voltage_circuit_breaker_electronic_trip_ats",
+  "low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report":
+    "low_voltage_circuit_breaker_electronic_trip_ats",
+  "low-voltage-circuit-breaker-thermal-magnetic-ats-report":
+    "low_voltage_circuit_breaker_thermal_magnetic_ats",
+  "automatic-transfer-switch-ats-report":
+    "automatic_transfer_switch_ats_reports",
+  "gfi-trip-test-report": "gfi_trip_test_reports",
+  "low-voltage-circuit-breaker-electronic-trip-mts-report":
+    "low_voltage_circuit_breaker_electronic_trip_mts",
+  "low-voltage-circuit-breaker-electronic-trip-mts":
+    "low_voltage_circuit_breaker_electronic_trip_mts",
+  "low-voltage-circuit-breaker-electronic-trip-unit-mts":
+    "low_voltage_circuit_breaker_electronic_trip_mts",
+  "two-small-dry-typer-xfmr-mts-report": "two_small_dry_type_xfmr_mts_reports",
+  "low-voltage-cable-test-3sets": "low_voltage_cable_test_3sets",
+  "low-voltage-cable-test-12sets": "low_voltage_cable_test_12sets",
+  "low-voltage-cable-test-20sets": "transformer_reports",
+  "low-voltage-switch-multi-device-test":
+    "low_voltage_switch_multi_device_reports",
+  "two-small-dry-typer-xfmr-ats-report": "two_small_dry_type_xfmr_ats_reports",
+  "switchgear-panelboard-mts-report": "switchgear_panelboard_mts_reports",
+  "liquid-filled-transformer": "liquid_filled_transformer_reports",
+  "liquid-filled-transformer-report": "liquid_filled_transformer_reports",
+  "metal-enclosed-busway-report": "metal_enclosed_busway_reports",
+  "oil-inspection": "oil_inspection_reports",
+  "grounding-system-master": "grounding_system_master_reports",
+  "grounding-fall-of-potential-slope-method-test":
+    "grounding_fall_of_potential_slope_method_test_reports",
+  "standard-report": "standard_reports",
+  "6-low-voltage-switch-maint-mts-report":
+    "low_voltage_switch_maint_mts_reports",
+  "applied-voltage-test-ats-report": "applied_voltage_test_ats_reports",
+  "3-low-voltage-cable-mts": "low_voltage_cable_mts_reports",
+  "3-low-voltage-cable-ats": "low_voltage_cable_ats_reports",
 };
 
 /** Extract status (PASS/FAIL/LIMITED SERVICE) from report data with deep heuristics */
@@ -109,9 +138,9 @@ function extractStatus(data: any): EvaluationResult | null {
     data?.equipment_evaluation_result,
   ];
   for (const val of candidates) {
-    if (typeof val === 'string') {
+    if (typeof val === "string") {
       const upper = val.toUpperCase().trim();
-      if (upper === 'PASS' || upper === 'FAIL' || upper === 'LIMITED SERVICE') {
+      if (upper === "PASS" || upper === "FAIL" || upper === "LIMITED SERVICE") {
         return upper as EvaluationResult;
       }
     }
@@ -128,11 +157,11 @@ function extractComments(data: any): string {
     data?.data?.comments,
   ];
   for (const val of candidates) {
-    if (typeof val === 'string' && val.trim()) {
+    if (typeof val === "string" && val.trim()) {
       return val.trim();
     }
   }
-  return '';
+  return "";
 }
 
 /** Extract identifier from report data */
@@ -166,11 +195,11 @@ function extractIdentifier(data: any): string {
     data?.data?.reportInfo?.location,
   ];
   for (const val of candidates) {
-    if (typeof val === 'string' && val.trim()) {
+    if (typeof val === "string" && val.trim()) {
       return val.trim();
     }
   }
-  return '';
+  return "";
 }
 
 /** Extract substation from report data */
@@ -191,11 +220,11 @@ function extractSubstation(data: any): string {
     data?.data?.reportInfo?.location,
   ];
   for (const val of candidates) {
-    if (typeof val === 'string' && val.trim()) {
+    if (typeof val === "string" && val.trim()) {
       return val.trim();
     }
   }
-  return '';
+  return "";
 }
 
 export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
@@ -207,7 +236,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
   const [rows, setRows] = useState<DiscrepancyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedResults, setSelectedResults] = useState<Set<EvaluationResult>>(
-    new Set(['PASS', 'FAIL', 'LIMITED SERVICE'])
+    new Set(["PASS", "FAIL", "LIMITED SERVICE"]),
   );
   const [filterOpen, setFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -226,26 +255,29 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
       const discrepancyRows: DiscrepancyRow[] = [];
 
       const reportAssets = assets.filter(
-        (a) => a.file_url && a.file_url.startsWith('report:') && a.status !== 'archived'
+        (a) =>
+          a.file_url &&
+          a.file_url.startsWith("report:") &&
+          a.status !== "archived",
       );
 
       const tasks = reportAssets.map(async (asset) => {
         try {
-          const urlContent = asset.file_url.split(':/')[1] || '';
-          const parts = urlContent.split('/');
-          if (parts[0] !== 'jobs' || !parts[2]) return;
+          const urlContent = asset.file_url.split(":/")[1] || "";
+          const parts = urlContent.split("/");
+          if (parts[0] !== "jobs" || !parts[2]) return;
 
-          let slug = parts[2].split('?')[0];
+          let slug = parts[2].split("?")[0];
           const isGroundingReport =
-            slug === 'grounding-system-master' ||
-            slug === 'grounding-fall-of-potential-slope-method-test' ||
-            slug === 'gfi-trip-test-report';
+            slug === "grounding-system-master" ||
+            slug === "grounding-fall-of-potential-slope-method-test" ||
+            slug === "gfi-trip-test-report";
 
-          let reportIdFromUrl = '';
+          let reportIdFromUrl = "";
           if (isGroundingReport && parts.length >= 5) {
-            reportIdFromUrl = (parts[4] || '').split('?')[0];
+            reportIdFromUrl = (parts[4] || "").split("?")[0];
           } else {
-            reportIdFromUrl = (parts[3] || '').split('?')[0];
+            reportIdFromUrl = (parts[3] || "").split("?")[0];
           }
           if (!reportIdFromUrl) return;
 
@@ -253,10 +285,10 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
           if (!table) return;
 
           const { data } = await supabase
-            .schema('neta_ops')
+            .schema("neta_ops")
             .from(table)
-            .select('*')
-            .eq('id', reportIdFromUrl)
+            .select("*")
+            .eq("id", reportIdFromUrl)
             .maybeSingle();
 
           if (!data) return;
@@ -264,8 +296,12 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
           const status = extractStatus(data);
           if (!status) return; // Skip reports without a status
 
-          const identifier = extractIdentifier(data) || dynamicAssetNames[asset.id]?.split(' - ').pop() || '';
-          const substation = assetSubstations[asset.id] || extractSubstation(data) || '';
+          const identifier =
+            extractIdentifier(data) ||
+            dynamicAssetNames[asset.id]?.split(" - ").pop() ||
+            "";
+          const substation =
+            assetSubstations[asset.id] || extractSubstation(data) || "";
           const comments = extractComments(data);
 
           discrepancyRows.push({
@@ -285,7 +321,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
       // Sort: FAIL first, then LIMITED SERVICE, then PASS; within each group sort by substation then identifier
       const resultOrder: Record<EvaluationResult, number> = {
         FAIL: 0,
-        'LIMITED SERVICE': 1,
+        "LIMITED SERVICE": 1,
         PASS: 2,
       };
       discrepancyRows.sort((a, b) => {
@@ -318,7 +354,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
   // Filtered rows based on selected result types
   const filteredRows = useMemo(
     () => rows.filter((r) => selectedResults.has(r.result)),
-    [rows, selectedResults]
+    [rows, selectedResults],
   );
 
   // Reset to page 1 whenever the filter changes
@@ -329,32 +365,36 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
   // Pagination derived values
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const paginatedRows = useMemo(
-    () => filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
-    [filteredRows, currentPage]
+    () =>
+      filteredRows.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE,
+      ),
+    [filteredRows, currentPage],
   );
 
   // Counts for the summary badges
   const counts = useMemo(() => {
-    const c = { PASS: 0, FAIL: 0, 'LIMITED SERVICE': 0 };
+    const c = { PASS: 0, FAIL: 0, "LIMITED SERVICE": 0 };
     rows.forEach((r) => c[r.result]++);
     return c;
   }, [rows]);
 
   const getResultBadge = (result: EvaluationResult) => {
     switch (result) {
-      case 'PASS':
+      case "PASS":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
             PASS
           </span>
         );
-      case 'FAIL':
+      case "FAIL":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
             FAIL
           </span>
         );
-      case 'LIMITED SERVICE':
+      case "LIMITED SERVICE":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
             LIMITED SERVICE
@@ -373,10 +413,11 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
 
   if (rows.length === 0) {
     return (
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-        <AlertTriangle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          No report evaluations found for this project. Evaluations will appear here once reports have been completed.
+      <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-8 text-center">
+        <AlertTriangle className="h-8 w-8 text-zinc-400 mx-auto mb-3" />
+        <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+          No report evaluations found for this project. Evaluations will appear
+          here once reports have been completed.
         </p>
       </div>
     );
@@ -387,21 +428,22 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
             Discrepancy Summary
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Overview of all report evaluations for this project. Filter by result type to focus on deficiencies.
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Overview of all report evaluations for this project. Filter by
+            result type to focus on deficiencies.
           </p>
         </div>
       </div>
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
                 Pass
               </p>
               <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">
@@ -409,14 +451,16 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
               </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <span className="text-green-600 dark:text-green-400 text-lg font-bold">&#10003;</span>
+              <span className="text-green-600 dark:text-green-400 text-lg font-bold">
+                &#10003;
+              </span>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
                 Fail
               </p>
               <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">
@@ -424,18 +468,20 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
               </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="text-red-600 dark:text-red-400 text-lg font-bold">&#10007;</span>
+              <span className="text-red-600 dark:text-red-400 text-lg font-bold">
+                &#10007;
+              </span>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
                 Limited Service
               </p>
               <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
-                {counts['LIMITED SERVICE']}
+                {counts["LIMITED SERVICE"]}
               </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
@@ -447,104 +493,119 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
 
       {/* Filter Controls */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Showing {Math.min((currentPage - 1) * PAGE_SIZE + 1, filteredRows.length)}–{Math.min(currentPage * PAGE_SIZE, filteredRows.length)} of {filteredRows.length} reports
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Showing{" "}
+          {Math.min((currentPage - 1) * PAGE_SIZE + 1, filteredRows.length)}–
+          {Math.min(currentPage * PAGE_SIZE, filteredRows.length)} of{" "}
+          {filteredRows.length} reports
           {filteredRows.length !== rows.length && ` (${rows.length} total)`}
         </p>
         <div className="relative">
           <button
             onClick={() => setFilterOpen(!filterOpen)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
           >
             <Filter className="h-4 w-4" />
             Filter by Result
-            <ChevronDown className={`h-4 w-4 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${filterOpen ? "rotate-180" : ""}`}
+            />
           </button>
           {filterOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg z-10 py-2">
-              <p className="px-4 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-lg z-10 py-2">
+              <p className="px-4 py-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
                 Select all that apply
               </p>
-              {(['PASS', 'FAIL', 'LIMITED SERVICE'] as EvaluationResult[]).map((result) => (
-                <label
-                  key={result}
-                  className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-dark-100 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedResults.has(result)}
-                    onChange={() => toggleResult(result)}
-                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-[#f26722] focus:ring-[#f26722]"
-                  />
-                  <span className="flex items-center gap-2 text-sm">
-                    {getResultBadge(result)}
-                    <span className="text-gray-500 dark:text-gray-400">({counts[result]})</span>
-                  </span>
-                </label>
-              ))}
+              {(["PASS", "FAIL", "LIMITED SERVICE"] as EvaluationResult[]).map(
+                (result) => (
+                  <label
+                    key={result}
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-50 dark:hover:bg-dark-100 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedResults.has(result)}
+                      onChange={() => toggleResult(result)}
+                      className="h-4 w-4 rounded border-zinc-300 dark:border-zinc-600 text-[#f26722] focus:ring-[#f26722]"
+                    />
+                    <span className="flex items-center gap-2 text-sm">
+                      {getResultBadge(result)}
+                      <span className="text-zinc-500 dark:text-zinc-400">
+                        ({counts[result]})
+                      </span>
+                    </span>
+                  </label>
+                ),
+              )}
             </div>
           )}
         </div>
       </div>
 
       {/* Results Table */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-dark-100">
+          <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+            <thead className="bg-zinc-50 dark:bg-dark-100">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider"
                 >
                   Substation
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider"
                 >
                   Identifier
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider"
                 >
                   Result
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider"
                 >
                   Issues &amp; Recommendations
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {paginatedRows.map((row) => (
                 <tr
                   key={row.assetId}
-                  className={`hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors ${
-                    row.result === 'FAIL'
-                      ? 'bg-red-50/40 dark:bg-red-900/10'
-                      : row.result === 'LIMITED SERVICE'
-                        ? 'bg-yellow-50/40 dark:bg-yellow-900/10'
-                        : ''
+                  className={`hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors ${
+                    row.result === "FAIL"
+                      ? "bg-red-50/40 dark:bg-red-900/10"
+                      : row.result === "LIMITED SERVICE"
+                        ? "bg-yellow-50/40 dark:bg-yellow-900/10"
+                        : ""
                   }`}
                 >
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    {row.substation || <span className="text-gray-400 italic">—</span>}
+                  <td className="px-6 py-4 text-sm text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                    {row.substation || (
+                      <span className="text-zinc-400 italic">—</span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    {row.identifier || <span className="text-gray-400 italic">—</span>}
+                  <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                    {row.identifier || (
+                      <span className="text-zinc-400 italic">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getResultBadge(row.result)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-md">
+                  <td className="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300 max-w-md">
                     {row.comments ? (
-                      <span className="whitespace-pre-wrap">{row.comments}</span>
+                      <span className="whitespace-pre-wrap">
+                        {row.comments}
+                      </span>
                     ) : (
-                      <span className="text-gray-400 italic">No comments</span>
+                      <span className="text-zinc-400 italic">No comments</span>
                     )}
                   </td>
                 </tr>
@@ -555,8 +616,9 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
 
         {filteredRows.length === 0 && (
           <div className="py-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              No reports match the current filter. Adjust your filter to see results.
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+              No reports match the current filter. Adjust your filter to see
+              results.
             </p>
           </div>
         )}
@@ -565,21 +627,21 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Page {currentPage} of {totalPages}
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               First
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -587,7 +649,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Next
               <ChevronRight className="h-4 w-4" />
@@ -595,7 +657,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             <button
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Last
             </button>

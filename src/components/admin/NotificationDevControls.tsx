@@ -94,7 +94,7 @@ export const NotificationDevControls: React.FC = () => {
       <CardContent>
         <div className="flex items-center gap-2 mb-4">
           <div className="flex items-center gap-2 flex-1">
-            <Search className="h-4 w-4 text-gray-500" />
+            <Search className="h-4 w-4 text-zinc-500" />
             <input
               type="text"
               value={search}
@@ -117,7 +117,7 @@ export const NotificationDevControls: React.FC = () => {
 
         <div className="border rounded-md divide-y">
           {visibleJobs.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500">No jobs found.</div>
+            <div className="p-4 text-sm text-zinc-500">No jobs found.</div>
           ) : (
             visibleJobs.map(j => (
               <div key={j.id} className="flex items-center justify-between p-3">
@@ -126,7 +126,7 @@ export const NotificationDevControls: React.FC = () => {
                     {j.job_number ? `Job ${j.job_number}` : 'Job'} • {j.title || 'Untitled'}
                   </div>
                   {j.deleted_at && (
-                    <div className="text-xs text-gray-500">Deleted</div>
+                    <div className="text-xs text-zinc-500">Deleted</div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export const NotificationDevControls: React.FC = () => {
           )}
         </div>
 
-        <div className="mt-3 text-xs text-gray-500">
+        <div className="mt-3 text-xs text-zinc-500">
           This writes to local storage only on this machine using the key "{HIDDEN_NOTIF_JOB_IDS_KEY}". The portal notifications already respect this list.
         </div>
       </CardContent>

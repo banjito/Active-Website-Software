@@ -1,20 +1,55 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
-import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Badge } from '@/components/ui/Badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { AlertCircle, CheckCircle, Clock, AlertTriangle, Plus, RefreshCw, FileText } from 'lucide-react';
-import { Label } from '@/components/ui/Label';
-import Input from '@/components/ui/Input';
-import { SelectRoot as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import Textarea from '@/components/ui/Textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { formatDistanceToNow, formatRelative, format } from 'date-fns';
-import toast from '@/components/ui/toast';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import Button from "@/components/ui/Button";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/Dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Badge } from "@/components/ui/Badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Plus,
+  RefreshCw,
+  FileText,
+} from "lucide-react";
+import { Label } from "@/components/ui/Label";
+import Input from "@/components/ui/Input";
+import {
+  SelectRoot as Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { formatDistanceToNow, formatRelative, format } from "date-fns";
+import toast from "@/components/ui/toast";
 
 import {
   SLADefinition,
@@ -31,50 +66,66 @@ import {
   checkAndUpdateSLACompliance,
   completeSLATracking,
   acknowledgeSLAViolation,
-  getSLAPerformanceSummary
-} from '@/services/slaService';
+  getSLAPerformanceSummary,
+} from "@/services/slaService";
 
 // Helper functions for formatting
 const formatSLAStatus = (status: SLAComplianceStatus) => {
   switch (status) {
-    case 'compliant':
-      return { label: 'Compliant', color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-4 w-4" /> };
-    case 'at_risk':
-      return { label: 'At Risk', color: 'bg-yellow-100 text-yellow-800', icon: <AlertTriangle className="h-4 w-4" /> };
-    case 'violated':
-      return { label: 'Violated', color: 'bg-red-100 text-red-800', icon: <AlertCircle className="h-4 w-4" /> };
+    case "compliant":
+      return {
+        label: "Compliant",
+        color: "bg-green-100 text-green-800",
+        icon: <CheckCircle className="h-4 w-4" />,
+      };
+    case "at_risk":
+      return {
+        label: "At Risk",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: <AlertTriangle className="h-4 w-4" />,
+      };
+    case "violated":
+      return {
+        label: "Violated",
+        color: "bg-red-100 text-red-800",
+        icon: <AlertCircle className="h-4 w-4" />,
+      };
     default:
-      return { label: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: <Clock className="h-4 w-4" /> };
+      return {
+        label: "Unknown",
+        color: "bg-zinc-100 text-zinc-800",
+        icon: <Clock className="h-4 w-4" />,
+      };
   }
 };
 
 const formatPriority = (priority: SLAPriority) => {
   switch (priority) {
-    case 'low':
-      return { label: 'Low', color: 'bg-blue-100 text-blue-800' };
-    case 'medium':
-      return { label: 'Medium', color: 'bg-yellow-100 text-yellow-800' };
-    case 'high':
-      return { label: 'High', color: 'bg-orange-100 text-orange-800' };
-    case 'critical':
-      return { label: 'Critical', color: 'bg-red-100 text-red-800' };
+    case "low":
+      return { label: "Low", color: "bg-blue-100 text-blue-800" };
+    case "medium":
+      return { label: "Medium", color: "bg-yellow-100 text-yellow-800" };
+    case "high":
+      return { label: "High", color: "bg-orange-100 text-orange-800" };
+    case "critical":
+      return { label: "Critical", color: "bg-red-100 text-red-800" };
     default:
-      return { label: 'Unknown', color: 'bg-gray-100 text-gray-800' };
+      return { label: "Unknown", color: "bg-zinc-100 text-zinc-800" };
   }
 };
 
 const formatMetricType = (type: SLAMetricType) => {
   switch (type) {
-    case 'response_time':
-      return 'Response Time';
-    case 'resolution_time':
-      return 'Resolution Time';
-    case 'uptime_percentage':
-      return 'Uptime Percentage';
-    case 'custom':
-      return 'Custom Metric';
+    case "response_time":
+      return "Response Time";
+    case "resolution_time":
+      return "Resolution Time";
+    case "uptime_percentage":
+      return "Uptime Percentage";
+    case "custom":
+      return "Custom Metric";
     default:
-      return 'Unknown';
+      return "Unknown";
   }
 };
 
@@ -98,9 +149,9 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
   const [slaTracking, setSLATracking] = useState<SLATracking[]>([]);
   const [slaViolations, setSLAViolations] = useState<SLAViolation[]>([]);
   const [showAddSLADialog, setShowAddSLADialog] = useState(false);
-  const [selectedSLA, setSelectedSLA] = useState<string>('');
+  const [selectedSLA, setSelectedSLA] = useState<string>("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState("active");
 
   // Fetch SLA data
   useEffect(() => {
@@ -108,28 +159,28 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
       setIsLoading(true);
       try {
         // Get SLA definitions (active ones)
-        const definitions = await getSLADefinitions('active');
+        const definitions = await getSLADefinitions("active");
         setSLADefinitions(definitions);
-        
+
         // Get SLA tracking for this job
         const tracking = await getSLATrackingForJob(jobId);
         setSLATracking(tracking);
-        
+
         // Get SLA violations for this job
         const violations = await getSLAViolationsForJob(jobId);
         setSLAViolations(violations);
       } catch (error) {
-        console.error('Error fetching SLA data:', error);
+        console.error("Error fetching SLA data:", error);
         toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load SLA data. Please try again.'
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load SLA data. Please try again.",
         });
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchSLAData();
   }, [jobId, refreshTrigger]);
 
@@ -137,33 +188,33 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
   const handleAddSLA = async () => {
     if (!selectedSLA) {
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please select an SLA to add.'
+        variant: "destructive",
+        title: "Error",
+        description: "Please select an SLA to add.",
       });
       return;
     }
-    
+
     try {
       const result = await applySLAToJob(jobId, selectedSLA);
-      
+
       if (result) {
         toast({
-          title: 'Success',
-          description: 'SLA has been added to the job.',
+          title: "Success",
+          description: "SLA has been added to the job.",
         });
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
         setShowAddSLADialog(false);
-        setSelectedSLA('');
+        setSelectedSLA("");
       } else {
-        throw new Error('Failed to add SLA');
+        throw new Error("Failed to add SLA");
       }
     } catch (error) {
-      console.error('Error adding SLA:', error);
+      console.error("Error adding SLA:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add SLA to job. Please try again.'
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add SLA to job. Please try again.",
       });
     }
   };
@@ -171,25 +222,25 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
   // Acknowledge SLA violation
   const handleAcknowledgeViolation = async (violationId: string) => {
     if (!user?.id) return;
-    
+
     try {
       const result = await acknowledgeSLAViolation(violationId, user.id);
-      
+
       if (result) {
         toast({
-          title: 'Success',
-          description: 'SLA violation has been acknowledged.',
+          title: "Success",
+          description: "SLA violation has been acknowledged.",
         });
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
       } else {
-        throw new Error('Failed to acknowledge violation');
+        throw new Error("Failed to acknowledge violation");
       }
     } catch (error) {
-      console.error('Error acknowledging violation:', error);
+      console.error("Error acknowledging violation:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to acknowledge violation. Please try again.'
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to acknowledge violation. Please try again.",
       });
     }
   };
@@ -197,34 +248,36 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
   // Refresh SLA status
   const handleRefreshStatus = async () => {
     if (slaTracking.length === 0) return;
-    
+
     try {
       // Only check and update SLAs that don't have an actual_time (incomplete)
-      const incompleteSLAs = slaTracking.filter(sla => !sla.actual_time);
-      
+      const incompleteSLAs = slaTracking.filter((sla) => !sla.actual_time);
+
       if (incompleteSLAs.length === 0) {
         toast({
-          title: 'Info',
-          description: 'No active SLAs to refresh.'
+          title: "Info",
+          description: "No active SLAs to refresh.",
         });
         return;
       }
-      
+
       // Check and update the status of each incomplete SLA
-      const promises = incompleteSLAs.map(sla => checkAndUpdateSLACompliance(sla.id));
+      const promises = incompleteSLAs.map((sla) =>
+        checkAndUpdateSLACompliance(sla.id),
+      );
       await Promise.all(promises);
-      
+
       toast({
-        title: 'Success',
-        description: 'SLA status has been refreshed.',
+        title: "Success",
+        description: "SLA status has been refreshed.",
       });
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
     } catch (error) {
-      console.error('Error refreshing status:', error);
+      console.error("Error refreshing status:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to refresh SLA status. Please try again.'
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh SLA status. Please try again.",
       });
     }
   };
@@ -233,46 +286,50 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
   const handleCompleteSLA = async (trackingId: string) => {
     try {
       const result = await completeSLATracking(trackingId);
-      
+
       if (result) {
         toast({
-          title: 'Success',
-          description: 'SLA has been marked as complete.',
+          title: "Success",
+          description: "SLA has been marked as complete.",
         });
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
       } else {
-        throw new Error('Failed to complete SLA');
+        throw new Error("Failed to complete SLA");
       }
     } catch (error) {
-      console.error('Error completing SLA:', error);
+      console.error("Error completing SLA:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to complete SLA. Please try again.'
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to complete SLA. Please try again.",
       });
     }
   };
 
   // Filter SLAs based on active tab
-  const filteredSLAs = slaTracking.filter(sla => {
-    if (activeTab === 'active') {
+  const filteredSLAs = slaTracking.filter((sla) => {
+    if (activeTab === "active") {
       return !sla.actual_time;
-    } else if (activeTab === 'completed') {
+    } else if (activeTab === "completed") {
       return !!sla.actual_time;
-    } else if (activeTab === 'violated') {
-      return sla.compliance_status === 'violated';
+    } else if (activeTab === "violated") {
+      return sla.compliance_status === "violated";
     }
     return true;
   });
 
   // Check if there are any active SLAs
-  const hasActiveSLAs = slaTracking.some(sla => !sla.actual_time);
-  
+  const hasActiveSLAs = slaTracking.some((sla) => !sla.actual_time);
+
   // Check if there are any SLA violations
-  const hasViolations = slaTracking.some(sla => sla.compliance_status === 'violated');
-  
+  const hasViolations = slaTracking.some(
+    (sla) => sla.compliance_status === "violated",
+  );
+
   // Get unacknowledged violations count
-  const unacknowledgedViolations = slaViolations.filter(v => !v.acknowledged).length;
+  const unacknowledgedViolations = slaViolations.filter(
+    (v) => !v.acknowledged,
+  ).length;
 
   return (
     <Card className="w-full">
@@ -280,11 +337,13 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Service Level Agreements</CardTitle>
-            <CardDescription>Manage and track SLAs for this job</CardDescription>
+            <CardDescription>
+              Manage and track SLAs for this job
+            </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={handleRefreshStatus}
               disabled={!hasActiveSLAs}
               title="Refresh SLA Status"
@@ -292,8 +351,8 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
               <RefreshCw className="h-4 w-4 mr-1" />
               Refresh
             </Button>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={() => setShowAddSLADialog(true)}
               title="Add SLA to Job"
             >
@@ -303,7 +362,7 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {isLoading ? (
           <div className="space-y-2">
@@ -318,29 +377,45 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>SLA Violation</AlertTitle>
                 <AlertDescription>
-                  This job has {unacknowledgedViolations} {unacknowledgedViolations === 1 ? 'unacknowledged violation' : 'unacknowledged violations'}.
+                  This job has {unacknowledgedViolations}{" "}
+                  {unacknowledgedViolations === 1
+                    ? "unacknowledged violation"
+                    : "unacknowledged violations"}
+                  .
                 </AlertDescription>
               </Alert>
             )}
-            
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsList className="mb-4">
                 <TabsTrigger value="active">
                   Active
-                  {hasActiveSLAs && <Badge variant="outline" className="ml-2">{slaTracking.filter(sla => !sla.actual_time).length}</Badge>}
+                  {hasActiveSLAs && (
+                    <Badge variant="outline" className="ml-2">
+                      {slaTracking.filter((sla) => !sla.actual_time).length}
+                    </Badge>
+                  )}
                 </TabsTrigger>
-                <TabsTrigger value="completed">
-                  Completed
-                </TabsTrigger>
+                <TabsTrigger value="completed">Completed</TabsTrigger>
                 <TabsTrigger value="violated">
                   Violations
-                  {hasViolations && <Badge variant="destructive" className="ml-2">{slaTracking.filter(sla => sla.compliance_status === 'violated').length}</Badge>}
+                  {hasViolations && (
+                    <Badge variant="destructive" className="ml-2">
+                      {
+                        slaTracking.filter(
+                          (sla) => sla.compliance_status === "violated",
+                        ).length
+                      }
+                    </Badge>
+                  )}
                 </TabsTrigger>
-                <TabsTrigger value="all">
-                  All
-                </TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value={activeTab} className="space-y-4">
                 {filteredSLAs.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -363,37 +438,63 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                       {filteredSLAs.map((sla) => {
                         const definition = sla.sla_definition;
                         const status = formatSLAStatus(sla.compliance_status);
-                        const priority = definition ? formatPriority(definition.priority) : { label: 'Unknown', color: 'bg-gray-100 text-gray-800' };
-                        
+                        const priority = definition
+                          ? formatPriority(definition.priority)
+                          : {
+                              label: "Unknown",
+                              color: "bg-zinc-100 text-zinc-800",
+                            };
+
                         return (
                           <TableRow key={sla.id}>
                             <TableCell className="font-medium">
                               <div className="flex flex-col">
-                                <span>{definition?.name || 'Unknown SLA'}</span>
-                                <Badge className={`mt-1 w-fit ${priority.color}`}>
+                                <span>{definition?.name || "Unknown SLA"}</span>
+                                <Badge
+                                  className={`mt-1 w-fit ${priority.color}`}
+                                >
                                   {priority.label}
                                 </Badge>
                               </div>
                             </TableCell>
                             <TableCell>
-                              {definition ? formatMetricType(definition.metric_type) : 'Unknown'}
+                              {definition
+                                ? formatMetricType(definition.metric_type)
+                                : "Unknown"}
                             </TableCell>
                             <TableCell>
-                              {definition ? formatTimePeriod(definition.target_value, definition.time_period) : 'Unknown'}
+                              {definition
+                                ? formatTimePeriod(
+                                    definition.target_value,
+                                    definition.time_period,
+                                  )
+                                : "Unknown"}
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span>{format(new Date(sla.start_time), 'PPp')}</span>
+                                <span>
+                                  {format(new Date(sla.start_time), "PPp")}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {formatRelative(new Date(sla.start_time), new Date())}
+                                  {formatRelative(
+                                    new Date(sla.start_time),
+                                    new Date(),
+                                  )}
                                 </span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span>{format(new Date(sla.target_time), 'PPp')}</span>
+                                <span>
+                                  {format(new Date(sla.target_time), "PPp")}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {!sla.actual_time ? formatDistanceToNow(new Date(sla.target_time), { addSuffix: true }) : 'Completed'}
+                                  {!sla.actual_time
+                                    ? formatDistanceToNow(
+                                        new Date(sla.target_time),
+                                        { addSuffix: true },
+                                      )
+                                    : "Completed"}
                                 </span>
                               </div>
                             </TableCell>
@@ -407,8 +508,8 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                             </TableCell>
                             <TableCell>
                               {!sla.actual_time ? (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => handleCompleteSLA(sla.id)}
                                 >
@@ -416,7 +517,9 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                                 </Button>
                               ) : (
                                 <span className="text-muted-foreground text-sm">
-                                  {sla.actual_time ? `Completed ${formatRelative(new Date(sla.actual_time), new Date())}` : ''}
+                                  {sla.actual_time
+                                    ? `Completed ${formatRelative(new Date(sla.actual_time), new Date())}`
+                                    : ""}
                                 </span>
                               )}
                             </TableCell>
@@ -428,11 +531,11 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                 )}
               </TabsContent>
             </Tabs>
-            
-            {activeTab === 'violated' && filteredSLAs.length > 0 && (
+
+            {activeTab === "violated" && filteredSLAs.length > 0 && (
               <div className="mt-6 space-y-4">
                 <h3 className="text-lg font-medium">Violation Details</h3>
-                
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -447,26 +550,34 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                     {slaViolations.map((violation) => {
                       const tracking = violation.sla_tracking;
                       const definition = tracking?.sla_definition;
-                      
+
                       return (
                         <TableRow key={violation.id}>
                           <TableCell className="font-medium">
-                            {definition?.name || 'Unknown SLA'}
+                            {definition?.name || "Unknown SLA"}
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col">
-                              <span>{format(new Date(violation.violation_time), 'PPp')}</span>
+                              <span>
+                                {format(
+                                  new Date(violation.violation_time),
+                                  "PPp",
+                                )}
+                              </span>
                               <span className="text-xs text-muted-foreground">
-                                {formatRelative(new Date(violation.violation_time), new Date())}
+                                {formatRelative(
+                                  new Date(violation.violation_time),
+                                  new Date(),
+                                )}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            {violation.reason || 'SLA target time exceeded'}
+                            {violation.reason || "SLA target time exceeded"}
                           </TableCell>
                           <TableCell>
                             {violation.acknowledged ? (
-                              <Badge variant="outline" className="bg-gray-100">
+                              <Badge variant="outline" className="bg-zinc-100">
                                 Acknowledged
                               </Badge>
                             ) : (
@@ -477,16 +588,19 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                           </TableCell>
                           <TableCell>
                             {!violation.acknowledged ? (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
-                                onClick={() => handleAcknowledgeViolation(violation.id)}
+                                onClick={() =>
+                                  handleAcknowledgeViolation(violation.id)
+                                }
                               >
                                 Acknowledge
                               </Button>
                             ) : (
                               <span className="text-muted-foreground text-sm">
-                                Acknowledged by {violation.acknowledged_by || 'unknown'}
+                                Acknowledged by{" "}
+                                {violation.acknowledged_by || "unknown"}
                               </span>
                             )}
                           </TableCell>
@@ -500,7 +614,7 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
           </>
         )}
       </CardContent>
-      
+
       {/* Add SLA Dialog */}
       <Dialog open={showAddSLADialog} onOpenChange={setShowAddSLADialog}>
         <DialogContent>
@@ -510,7 +624,7 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
               Select an SLA template to apply to this job.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="sla-select">SLA Template</Label>
@@ -523,7 +637,9 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                     <SelectItem key={definition.id} value={definition.id}>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{definition.name}</span>
-                        <Badge className={formatPriority(definition.priority).color}>
+                        <Badge
+                          className={formatPriority(definition.priority).color}
+                        >
                           {formatPriority(definition.priority).label}
                         </Badge>
                       </div>
@@ -532,35 +648,41 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                 </SelectContent>
               </Select>
             </div>
-            
-            {selectedSLA && slaDefinitions.find(d => d.id === selectedSLA) && (
-              <div className="pt-2 space-y-2 border-t">
-                <h4 className="font-medium">SLA Details</h4>
-                {(() => {
-                  const definition = slaDefinitions.find(d => d.id === selectedSLA);
-                  if (!definition) return null;
-                  
-                  return (
-                    <div className="text-sm space-y-2">
-                      <div>
-                        <span className="font-medium">Description: </span>
-                        {definition.description}
+
+            {selectedSLA &&
+              slaDefinitions.find((d) => d.id === selectedSLA) && (
+                <div className="pt-2 space-y-2 border-t">
+                  <h4 className="font-medium">SLA Details</h4>
+                  {(() => {
+                    const definition = slaDefinitions.find(
+                      (d) => d.id === selectedSLA,
+                    );
+                    if (!definition) return null;
+
+                    return (
+                      <div className="text-sm space-y-2">
+                        <div>
+                          <span className="font-medium">Description: </span>
+                          {definition.description}
+                        </div>
+                        <div>
+                          <span className="font-medium">Metric Type: </span>
+                          {formatMetricType(definition.metric_type)}
+                        </div>
+                        <div>
+                          <span className="font-medium">Target: </span>
+                          {formatTimePeriod(
+                            definition.target_value,
+                            definition.time_period,
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-medium">Metric Type: </span>
-                        {formatMetricType(definition.metric_type)}
-                      </div>
-                      <div>
-                        <span className="font-medium">Target: </span>
-                        {formatTimePeriod(definition.target_value, definition.time_period)}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+                    );
+                  })()}
+                </div>
+              )}
           </div>
-          
+
           <DialogFooter>
             <Button
               variant="outline"
@@ -576,4 +698,4 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
       </Dialog>
     </Card>
   );
-} 
+}

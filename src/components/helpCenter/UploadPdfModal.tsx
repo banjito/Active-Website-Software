@@ -6,18 +6,22 @@
  * are supported; increase the storage bucket file size limit in Supabase if needed.
  */
 
-import React, { useState } from 'react';
-import { useAuth } from '@/lib/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
-import { Upload, FileText, Video, Loader2 } from 'lucide-react';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { PortalCategory, PORTAL_CATEGORY_LABELS, HelpCenterDocument } from '@/lib/types/helpCenter';
+import React, { useState } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { toast } from "react-hot-toast";
+import { Upload, FileText, Video, Loader2 } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  PortalCategory,
+  PORTAL_CATEGORY_LABELS,
+  HelpCenterDocument,
+} from "@/lib/types/helpCenter";
 
-const ACCEPTED_PDF = '.pdf,application/pdf';
-const ACCEPTED_VIDEO = 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov';
+const ACCEPTED_PDF = ".pdf,application/pdf";
+const ACCEPTED_VIDEO = "video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov";
 const ACCEPTED_ALL = `${ACCEPTED_PDF},${ACCEPTED_VIDEO}`;
 
 const MAX_PDF_MB = 50;
@@ -26,14 +30,14 @@ const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
 const MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024;
 
 function isVideoFile(file: File): boolean {
-  const t = (file.type || '').toLowerCase();
-  if (t.startsWith('video/')) return true;
-  const name = (file.name || '').toLowerCase();
+  const t = (file.type || "").toLowerCase();
+  if (t.startsWith("video/")) return true;
+  const name = (file.name || "").toLowerCase();
   return /\.(mp4|webm|mov|ogg)$/.test(name);
 }
 
 function fileNameWithoutExtension(name: string): string {
-  return name.replace(/\.(pdf|mp4|webm|mov|ogg)$/i, '');
+  return name.replace(/\.(pdf|mp4|webm|mov|ogg)$/i, "");
 }
 
 interface UploadPdfModalProps {
@@ -49,8 +53,10 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [documentName, setDocumentName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<PortalCategory>(PortalCategory.GENERAL);
+  const [documentName, setDocumentName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<PortalCategory>(
+    PortalCategory.GENERAL,
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -63,13 +69,16 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
     const maxLabel = isVideo ? `${MAX_VIDEO_MB}MB` : `${MAX_PDF_MB}MB`;
 
     if (isVideo) {
-      if (!file.type.startsWith('video/') && !/\.(mp4|webm|mov|ogg)$/i.test(file.name)) {
-        toast.error('Please select a video file (MP4, WebM, or MOV) or a PDF');
+      if (
+        !file.type.startsWith("video/") &&
+        !/\.(mp4|webm|mov|ogg)$/i.test(file.name)
+      ) {
+        toast.error("Please select a video file (MP4, WebM, or MOV) or a PDF");
         return;
       }
     } else {
-      if (file.type !== 'application/pdf') {
-        toast.error('Please select a PDF or video file (MP4, WebM, MOV)');
+      if (file.type !== "application/pdf") {
+        toast.error("Please select a PDF or video file (MP4, WebM, MOV)");
         return;
       }
     }
@@ -87,17 +96,17 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error('Please select a PDF or video file');
+      toast.error("Please select a PDF or video file");
       return;
     }
 
     if (!documentName.trim()) {
-      toast.error('Please enter a document name');
+      toast.error("Please enter a document name");
       return;
     }
 
     if (!user) {
-      toast.error('You must be logged in to upload documents');
+      toast.error("You must be logged in to upload documents");
       return;
     }
 
@@ -106,7 +115,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
     try {
       // 1. Upload file to storage
-      const fileExt = selectedFile.name.split('.').pop();
+      const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       // File path should not include bucket name - just the file name or subfolder
       const filePath = fileName;
@@ -114,21 +123,32 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
       setUploadProgress(10);
 
       const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('help-center-documents')
+        .from("help-center-documents")
         .upload(filePath, selectedFile, {
-          cacheControl: '3600',
+          cacheControl: "3600",
           upsert: false,
         });
 
       if (uploadError) {
-        console.error('Upload error details:', uploadError);
+        console.error("Upload error details:", uploadError);
         // If bucket doesn't exist, provide helpful error
-        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('does not exist')) {
-          toast.error('Storage bucket "help-center-documents" not found. Please create it in Supabase Storage first.');
-        } else if (uploadError.message.includes('new row violates row-level security')) {
-          toast.error('Permission denied. Please check storage bucket policies.');
+        if (
+          uploadError.message.includes("Bucket not found") ||
+          uploadError.message.includes("does not exist")
+        ) {
+          toast.error(
+            'Storage bucket "help-center-documents" not found. Please create it in Supabase Storage first.',
+          );
+        } else if (
+          uploadError.message.includes("new row violates row-level security")
+        ) {
+          toast.error(
+            "Permission denied. Please check storage bucket policies.",
+          );
         } else {
-          toast.error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
+          toast.error(
+            `Upload failed: ${uploadError.message || "Unknown error"}`,
+          );
           throw uploadError;
         }
         setIsUploading(false);
@@ -139,16 +159,16 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
       setUploadProgress(50);
 
       // 2. Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('help-center-documents')
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("help-center-documents").getPublicUrl(filePath);
 
       setUploadProgress(70);
 
       // 3. Create document record in database
       const { data, error: dbError } = await supabase
-        .schema('common')
-        .from('help_center_documents')
+        .schema("common")
+        .from("help_center_documents")
         .insert({
           name: documentName.trim(),
           category: selectedCategory,
@@ -163,9 +183,11 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
       if (dbError) {
         // If table doesn't exist, clean up uploaded file
-        await supabase.storage.from('help-center-documents').remove([filePath]);
-        if (dbError.code === '42P01') {
-          toast.error('Database table not configured. Please run the migration script.');
+        await supabase.storage.from("help-center-documents").remove([filePath]);
+        if (dbError.code === "42P01") {
+          toast.error(
+            "Database table not configured. Please run the migration script.",
+          );
         } else {
           throw dbError;
         }
@@ -174,20 +196,24 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
       setUploadProgress(100);
 
-      toast.success(selectedFile.type.startsWith('video/') ? 'Video uploaded successfully!' : 'PDF uploaded successfully!');
-      
+      toast.success(
+        selectedFile.type.startsWith("video/")
+          ? "Video uploaded successfully!"
+          : "PDF uploaded successfully!",
+      );
+
       // Reset form
       setSelectedFile(null);
-      setDocumentName('');
+      setDocumentName("");
       setSelectedCategory(PortalCategory.GENERAL);
       setUploadProgress(0);
-      
+
       // Close modal and refresh list
       onClose();
       onUploadSuccess();
     } catch (error: any) {
-      console.error('Error uploading file:', error);
-      toast.error(`Failed to upload: ${error.message || 'Unknown error'}`);
+      console.error("Error uploading file:", error);
+      toast.error(`Failed to upload: ${error.message || "Unknown error"}`);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -196,23 +222,28 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
   const handleClose = () => {
     if (isUploading) return; // Prevent closing during upload
-    
+
     setSelectedFile(null);
-    setDocumentName('');
+    setDocumentName("");
     setSelectedCategory(PortalCategory.GENERAL);
     setUploadProgress(0);
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Upload PDF or Video" size="md">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Upload PDF or Video"
+      size="md"
+    >
       <div className="space-y-6">
         {/* File Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
             Select PDF or Video File
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-[#f26722] transition-colors">
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-300 dark:border-zinc-600 border-dashed rounded-lg hover:border-[#f26722] transition-colors">
             <div className="space-y-1 text-center">
               {selectedFile ? (
                 <div className="flex flex-col items-center">
@@ -221,14 +252,17 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                   ) : (
                     <FileText className="w-12 h-12 text-[#f26722] mb-2" />
                   )}
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    {isVideoFile(selectedFile) && selectedFile.size > 100 * 1024 * 1024 && (
-                      <span className="block mt-1">Large file – upload may take a few minutes</span>
-                    )}
+                    {isVideoFile(selectedFile) &&
+                      selectedFile.size > 100 * 1024 * 1024 && (
+                        <span className="block mt-1">
+                          Large file – upload may take a few minutes
+                        </span>
+                      )}
                   </p>
                   <button
                     type="button"
@@ -240,8 +274,8 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                 </div>
               ) : (
                 <>
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                  <Upload className="mx-auto h-12 w-12 text-zinc-400" />
+                  <div className="flex text-sm text-zinc-600 dark:text-zinc-400">
                     <label
                       htmlFor="file-upload"
                       className="relative cursor-pointer rounded-md font-medium text-[#f26722] hover:text-[#e55611] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f26722] focus-within:ring-offset-2"
@@ -259,8 +293,9 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PDF up to {MAX_PDF_MB}MB • Video (MP4, WebM, MOV) up to {MAX_VIDEO_MB}MB
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    PDF up to {MAX_PDF_MB}MB • Video (MP4, WebM, MOV) up to{" "}
+                    {MAX_VIDEO_MB}MB
                   </p>
                 </>
               )}
@@ -270,7 +305,10 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
         {/* Document Name */}
         <div>
-          <label htmlFor="document-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="document-name"
+            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+          >
             Document Name *
           </label>
           <Input
@@ -286,15 +324,20 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
 
         {/* Portal Category */}
         <div>
-          <label htmlFor="portal-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="portal-category"
+            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+          >
             Portal Category *
           </label>
           <select
             id="portal-category"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as PortalCategory)}
+            onChange={(e) =>
+              setSelectedCategory(e.target.value as PortalCategory)
+            }
             disabled={isUploading}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
           >
             {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -308,10 +351,14 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         {isUploading && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Uploading...</span>
-              <span className="text-gray-600 dark:text-gray-400">{uploadProgress}%</span>
+              <span className="text-zinc-600 dark:text-zinc-400">
+                Uploading...
+              </span>
+              <span className="text-zinc-600 dark:text-zinc-400">
+                {uploadProgress}%
+              </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-dark-100 rounded-full h-2">
+            <div className="w-full bg-zinc-200 dark:bg-dark-100 rounded-full h-2">
               <div
                 className="bg-[#f26722] h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -321,7 +368,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
           <Button
             type="button"
             variant="outline"

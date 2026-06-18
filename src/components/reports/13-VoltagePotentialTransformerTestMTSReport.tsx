@@ -347,7 +347,9 @@ const calculatePassFail = (
 
 const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -909,7 +911,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -976,7 +978,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Job Information */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
             Job Information
           </h2>
 
@@ -987,7 +989,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 type="text"
                 value={maskCustomerName(formData.customerName)}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
               />
             </div>
             <div>
@@ -996,7 +998,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 type="text"
                 value={formData.jobNumber}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
               />
             </div>
             <div>
@@ -1009,7 +1011,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange("technicians", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1022,7 +1024,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange("date", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1035,7 +1037,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange("identifier", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div className="flex items-center space-x-1">
@@ -1051,7 +1053,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                     handleFahrenheitChange(Number(e.target.value))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="ml-1 text-xs">°F</span>
               </div>
@@ -1068,7 +1070,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   value={formData.temperature.celsius}
                   onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="ml-1 text-xs">°C</span>
               </div>
@@ -1082,7 +1084,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 type="number"
                 value={formData.temperature.tcf}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-16"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-16"
               />
             </div>
             <div>
@@ -1100,7 +1102,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   )
                 }
                 readOnly={!isEditing}
-                className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
               <span className="ml-1 text-xs">%</span>
             </div>
@@ -1114,7 +1116,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange("substation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1127,7 +1129,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange("eqptLocation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div className="md:col-span-2">
@@ -1140,7 +1142,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.userName}
                 onChange={(e) => handleChange("userName", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
@@ -1164,7 +1166,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Device Data */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-device-data">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-device-data">
             Device Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-2 print:hidden device-onscreen">
@@ -1180,7 +1182,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.manufacturer", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1195,7 +1197,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.catalogNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1210,7 +1212,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.serialNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1225,7 +1227,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.accuracyClass", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1243,7 +1245,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.manufacturedYear", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1258,7 +1260,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.voltageRating", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1276,7 +1278,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.insulationClass", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1291,13 +1293,13 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("deviceData.frequency", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
           {/* Print-only compact table for device data */}
           <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
               <colgroup>
                 <col style={{ width: "25%" }} />
                 <col style={{ width: "25%" }} />
@@ -1343,11 +1345,11 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
             Visual and Mechanical Inspection
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
               <colgroup>
                 <col style={{ width: "15%" }} />
                 <col style={{ width: "65%" }} />
@@ -1355,13 +1357,13 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
                     NETA
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
                     Description
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
                     Result
                   </th>
                 </tr>
@@ -1372,13 +1374,13 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   : []
                 ).map((item, index) => (
                   <tr key={item.netaSection}>
-                    <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">
+                    <td className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 align-top">
                       {item.netaSection}
                     </td>
-                    <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">
+                    <td className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 align-top">
                       {item.description}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700 align-top">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 align-top">
                       <select
                         value={item.result}
                         onChange={(e) =>
@@ -1389,7 +1391,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {visualInspectionResultOptions.map((option) => (
                           <option key={option} value={option}>
@@ -1408,7 +1410,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Fuse Data */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-data">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-data">
             Fuse Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden fuse-onscreen">
@@ -1424,7 +1426,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("fuseData.manufacturer", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1439,7 +1441,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("fuseData.catalogNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1452,7 +1454,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 value={formData.fuseData.class}
                 onChange={(e) => handleChange("fuseData.class", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1467,7 +1469,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("fuseData.voltageRatingKv", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1482,7 +1484,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("fuseData.ampacityA", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1497,13 +1499,13 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("fuseData.icRatingKa", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
           {/* Print-only compact table for fuse data */}
           <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
               <thead>
                 <tr>
                   <th>Manufacturer</th>
@@ -1531,28 +1533,28 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Electrical Tests - Fuse Resistance */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-resistance">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-resistance">
             Electrical Tests - Fuse Resistance
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full w-max divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-dark-150">
+            <table className="min-w-full w-max divide-y divide-zinc-200 dark:divide-zinc-700">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Fuse Resistance
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     As Found
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     As Left
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Units
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 <tr>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     Fuse Resistance
@@ -1568,7 +1570,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -1582,7 +1584,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -1592,7 +1594,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         handleChange("fuseResistanceTest.units", e.target.value)
                       }
                       disabled={!isEditing}
-                      className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     >
                       {fuseResistanceUnitOptions.map((opt) => (
                         <option key={opt.symbol} value={opt.symbol}>
@@ -1610,35 +1612,35 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Electrical Tests - Insulation Resistance & Ratio */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-ratio">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-ratio">
             Electrical Tests - Insulation Resistance & Ratio
           </h2>
 
           {/* Insulation Resistance Table */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100">
+              <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-100">
                 Insulation Resistance
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Winding Tested
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Test Voltage
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Results
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Units
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                     {(Array.isArray(formData.insulationResistance)
                       ? formData.insulationResistance
                       : []
@@ -1658,7 +1660,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {insulationTestVoltageOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -1679,7 +1681,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -1693,7 +1695,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {insulationResistanceUnitOptions.map((opt) => (
                               <option key={opt.symbol} value={opt.symbol}>
@@ -1711,28 +1713,28 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
             {/* Temperature Corrected Table */}
             <div>
-              <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100">
+              <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-100">
                 Temperature Corrected
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Winding Tested
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Test Voltage
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Results
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                         Units
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                     {(Array.isArray(formData.insulationResistance)
                       ? formData.insulationResistance
                       : []
@@ -1746,7 +1748,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={item.testVoltage}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -1754,7 +1756,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={item.correctedResults}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -1762,7 +1764,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={item.units}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                       </tr>
@@ -1790,7 +1792,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                   handleChange("secondaryVoltageAsFoundTap", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input inline-block w-24 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input inline-block w-24 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
               <span className="ml-2">V</span>
             </div>
@@ -1805,23 +1807,23 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                     handleChange("revenueMetering", e.target.checked)
                   }
                   disabled={!isEditing}
-                  className={`form-checkbox h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-checkbox h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
                   Used for Revenue Metering (0.5% tolerance)
                 </span>
               </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Uncheck if not used for revenue metering (1.2% tolerance)
               </p>
             </div>
 
-            <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100">
+            <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-100">
               Turns Ratio Test
             </h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-dark-150">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
                     {[
                       "Tap",
@@ -1833,14 +1835,14 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                     ].map((header) => (
                       <th
                         key={header}
-                        className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                        className="px-2 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       >
                         {header}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.turnsRatioTest &&
                     formData.turnsRatioTest.length > 0 && (
                       <tr>
@@ -1852,7 +1854,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               handleTurnsRatioChange("tap", e.target.value)
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -1866,7 +1868,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -1874,7 +1876,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={formData.turnsRatioTest[0].calculatedRatio}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -1888,7 +1890,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -1896,7 +1898,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={formData.turnsRatioTest[0].percentDeviation}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -1904,7 +1906,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                             type="text"
                             value={formData.turnsRatioTest[0].passFail}
                             readOnly
-                            className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
                       </tr>
@@ -1918,7 +1920,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         {/* Test Equipment Used */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
           <div className="space-y-4 print:hidden">
@@ -2011,7 +2013,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2032,7 +2034,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2053,7 +2055,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                 </div>
@@ -2062,7 +2064,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
           </div>
           {/* Print-only table */}
           <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
               <thead>
                 <tr>
                   <th>Equipment</th>
@@ -2112,7 +2114,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
           className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
             Comments
           </h2>
           <textarea
@@ -2120,7 +2122,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
             onChange={(e) => handleChange("comments", e.target.value)}
             readOnly={!isEditing}
             rows={1}
-            className={`form-textarea w-full resize-none print:hidden ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+            className={`form-textarea w-full resize-none print:hidden ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             placeholder="Enter comments here..."
           />
           {formData.comments?.trim() && (
@@ -2694,7 +2696,7 @@ if (typeof document !== "undefined") {
       }
 
       /* Orange header bar for sections */
-      .border-b.dark\\:border-gray-700 {
+      .border-b.dark\\:border-zinc-700 {
         border: none !important;
         margin: 0 !important;
         padding: 0 !important;

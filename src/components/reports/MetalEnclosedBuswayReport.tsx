@@ -343,7 +343,9 @@ const TCF_TABLE = {
 
 const MetalEnclosedBuswayReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -1331,16 +1333,16 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   if (notFound) {
     return (
       <div className="p-6">
-        <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">
           Report not found or access denied
         </h2>
-        <p className="text-sm text-gray-600 dark:text-white mb-4">
+        <p className="text-sm text-zinc-600 dark:text-white mb-4">
           We couldn’t load this Metal Enclosed Busway report. It may not exist,
           or you may not have permission.
         </p>
         {jobId && suggestedReports.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium mb-2 text-gray-900 dark:text-white">
+            <h3 className="text-sm font-medium mb-2 text-zinc-900 dark:text-white">
               Recent reports for this job:
             </h3>
             <ul className="list-disc pl-5 text-sm text-blue-600 dark:text-blue-300">
@@ -1352,7 +1354,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   >
                     {r.id}
                   </a>
-                  <span className="ml-2 text-gray-500 dark:text-white">
+                  <span className="ml-2 text-zinc-500 dark:text-white">
                     {new Date(r.created_at).toLocaleString()}
                   </span>
                 </li>
@@ -1398,7 +1400,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1454,10 +1456,10 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Optional debug dump: open with ?debug=true */}
           {searchParams.get("debug") === "true" && (
             <section className="mb-4">
-              <h2 className="text-sm font-semibold mb-2 text-gray-900 dark:text-white">
+              <h2 className="text-sm font-semibold mb-2 text-zinc-900 dark:text-white">
                 Debug: Raw Loaded Row
               </h2>
-              <pre className="p-3 bg-gray-100 dark:bg-dark-150 rounded text-xs overflow-auto max-h-64 text-gray-900 dark:text-white">
+              <pre className="p-3 bg-zinc-100 dark:bg-dark-150 rounded text-xs overflow-auto max-h-64 text-zinc-900 dark:text-white">
                 {rawRow ? JSON.stringify(rawRow, null, 2) : "No row loaded"}
               </pre>
             </section>
@@ -1470,14 +1472,14 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Job Information */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-2 gap-6 jobinfo-screen print:hidden job-info-onscreen">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Job #
                   </label>
                   <input
@@ -1486,11 +1488,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.jobNumber}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-dark-150 text-gray-900 dark:text-white text-sm"
+                    className="block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-dark-150 text-zinc-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Customer
                   </label>
                   <input
@@ -1499,11 +1501,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.customer}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-dark-150 text-gray-900 dark:text-white text-sm"
+                    className="block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-dark-150 text-zinc-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Location
                   </label>
                   <textarea
@@ -1512,11 +1514,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     onChange={handleInputChange}
                     readOnly={!isEditing}
                     rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-dark-150 text-gray-900 dark:text-white text-sm resize-none"
+                    className="block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-dark-150 text-zinc-900 dark:text-white text-sm resize-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Identifier
                   </label>
                   <input
@@ -1525,13 +1527,13 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.identifier}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Technicians
                   </label>
                   <input
@@ -1540,11 +1542,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.technicians}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Substation
                   </label>
                   <input
@@ -1553,11 +1555,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.substation}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Equipment Location
                   </label>
                   <input
@@ -1566,11 +1568,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.equipment}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Date
                   </label>
                   <input
@@ -1579,11 +1581,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.date}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     User
                   </label>
                   <input
@@ -1592,12 +1594,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.user}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white text-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
-                    <label className="text-xs font-medium text-gray-700 dark:text-white">
+                    <label className="text-xs font-medium text-zinc-700 dark:text-white">
                       Temp.
                     </label>
                     <input
@@ -1606,9 +1608,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                       value={formData.temperature}
                       onChange={handleInputChange}
                       readOnly={!isEditing}
-                      className={`w-12 px-1 py-1 text-right border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-white text-xs focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`w-12 px-1 py-1 text-right border border-zinc-300 dark:border-zinc-700 rounded text-zinc-900 dark:text-white text-xs focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                     />
-                    <span className="text-xs text-gray-500 dark:text-white">
+                    <span className="text-xs text-zinc-500 dark:text-white">
                       °F
                     </span>
                   </div>
@@ -1622,22 +1624,22 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           : ""
                       }
                       readOnly
-                      className="w-10 px-1 py-1 text-right border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-dark-150 text-gray-900 dark:text-white text-xs"
+                      className="w-10 px-1 py-1 text-right border border-zinc-300 dark:border-zinc-700 rounded bg-zinc-50 dark:bg-dark-150 text-zinc-900 dark:text-white text-xs"
                     />
-                    <span className="text-xs text-gray-500 dark:text-white">
+                    <span className="text-xs text-zinc-500 dark:text-white">
                       °C
                     </span>
                   </div>
 
                   <div className="flex items-center space-x-1">
-                    <label className="text-xs font-medium text-gray-700 dark:text-white">
+                    <label className="text-xs font-medium text-zinc-700 dark:text-white">
                       TCF
                     </label>
                     <input
                       type="text"
                       value={formData.tcf.toFixed(3)}
                       readOnly
-                      className="w-10 px-1 py-1 text-right border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-dark-150 text-gray-900 dark:text-white text-xs"
+                      className="w-10 px-1 py-1 text-right border border-zinc-300 dark:border-zinc-700 rounded bg-zinc-50 dark:bg-dark-150 text-zinc-900 dark:text-white text-xs"
                     />
                   </div>
 
@@ -1648,9 +1650,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                       value={formData.humidity}
                       onChange={handleInputChange}
                       readOnly={!isEditing}
-                      className={`w-12 px-1 py-1 text-right border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-white text-xs focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`w-12 px-1 py-1 text-right border border-zinc-300 dark:border-zinc-700 rounded text-zinc-900 dark:text-white text-xs focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                     />
-                    <span className="text-xs text-gray-500 dark:text-white">
+                    <span className="text-xs text-zinc-500 dark:text-white">
                       %
                     </span>
                   </div>
@@ -1690,14 +1692,14 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Nameplate Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-2 gap-4 nameplate-screen print:hidden nameplate-onscreen">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Manufacturer
                   </label>
                   <input
@@ -1706,11 +1708,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.manufacturer}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Catalog Number
                   </label>
                   <input
@@ -1719,11 +1721,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.catalogNumber}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
@@ -1732,11 +1734,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.serialNumber}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Fed From
                   </label>
                   <input
@@ -1745,13 +1747,13 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.fedFrom}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Conductor Material
                   </label>
                   <input
@@ -1760,11 +1762,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.conductorMaterial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Rated Voltage (kV)
                   </label>
                   <input
@@ -1773,11 +1775,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.ratedVoltage}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Operating Voltage (kV)
                   </label>
                   <input
@@ -1786,11 +1788,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.operatingVoltage}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Ampacity (A)
                   </label>
                   <input
@@ -1799,14 +1801,14 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.ampacity}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
             </div>
             {/* Print-only compact table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -1815,35 +1817,35 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Manufacturer:</div>
                       <div className="mt-1">{formData.manufacturer || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Catalog Number:</div>
                       <div className="mt-1">{formData.catalogNumber || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-1">{formData.serialNumber || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Fed From:</div>
                       <div className="mt-1">{formData.fedFrom || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Conductor Material:</div>
                       <div className="mt-1">
                         {formData.conductorMaterial || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Rated Voltage (kV):</div>
                       <div className="mt-1">{formData.ratedVoltage || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">
                         Operating Voltage (kV):
                       </div>
@@ -1851,7 +1853,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         {formData.operatingVoltage || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Ampacity (A):</div>
                       <div className="mt-1">{formData.ampacity || ""}</div>
                     </td>
@@ -1864,11 +1866,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "63%" }} />
@@ -1876,24 +1878,24 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       ID
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {Object.entries(formData.netaResults).map(([id, result]) => (
                     <tr key={id}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                         {id}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
                         {(() => {
                           switch (id) {
                             case "7.4.A.1":
@@ -1926,7 +1928,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                             value={result}
                             onChange={handleNetaChange}
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSPECTION_OPTIONS.map((option) => (
                               <option key={option} value={option}>
@@ -1949,39 +1951,39 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Electrical Tests - Contact/Pole Resistance */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
                 <thead>
                   <tr>
                     <th
                       colSpan={5}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       Bus Resistance
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       P1
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       P2
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       P3
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Neutral
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Units
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
                     <td className="px-3 py-2">
                       <input
@@ -1990,7 +1992,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p1}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2000,7 +2002,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p2}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2010,7 +2012,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p3}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2020,10 +2022,10 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.neutral}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white">
                       {formData.contactResistanceUnit}
                     </td>
                   </tr>
@@ -2035,12 +2037,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Electrical Tests - Insulation Resistance */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
             <div className="flex justify-end mb-2 space-x-4">
-              <div className="w-48 border border-gray-300 dark:border-gray-700 p-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+              <div className="w-48 border border-zinc-300 dark:border-zinc-700 p-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Test Voltage:
                 </label>
                 <select
@@ -2048,7 +2050,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   value={formData.testVoltage1}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   <option value="">Select Voltage</option>
                   {INSULATION_TEST_VOLTAGES.map((voltage) => (
@@ -2058,8 +2060,8 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <div className="w-48 border border-gray-300 dark:border-gray-700 p-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+              <div className="w-48 border border-zinc-300 dark:border-zinc-700 p-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Unit:
                 </label>
                 <select
@@ -2067,7 +2069,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   value={formData.insulationResistanceUnit}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   {INSULATION_RESISTANCE_UNITS.map((unit) => (
                     <option key={unit.value} value={unit.value}>
@@ -2079,7 +2081,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ir-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 ir-table">
                 {/* Print-only column sizing */}
                 <colgroup>
                   <col className="ir-col" />
@@ -2098,49 +2100,49 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   <tr>
                     <th
                       colSpan={10}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       Insulation Resistance
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider ir-units">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider ir-units">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-B
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-C
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-A
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       N-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
                     {[
                       "A-B",
@@ -2161,11 +2163,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           value={formData.insulationResistance[getDataKey(key)]}
                           onChange={handleInsulationChange}
                           readOnly={!isEditing}
-                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     ))}
-                    <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white ir-units">
+                    <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white ir-units">
                       {formData.insulationResistanceUnit}
                     </td>
                   </tr>
@@ -2177,20 +2179,20 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Temperature Corrected Insulation Resistance
               Values
             </h2>
             <div className="flex justify-end mb-2">
-              <div className="w-48 border border-gray-300 dark:border-gray-700 p-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+              <div className="w-48 border border-zinc-300 dark:border-zinc-700 p-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Test Voltage:
                 </label>
                 <input
                   type="text"
                   value={formData.testVoltage1}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
             </div>
@@ -2198,18 +2200,18 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             {/* Temperature and TCF Information - CORRECTED VALUES SECTION */}
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Temperature (°F):
                 </label>
                 <input
                   type="text"
                   value={formData.temperature || ""}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Temperature (°C):
                 </label>
                 <input
@@ -2223,24 +2225,24 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                       : ""
                   }
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   TCF:
                 </label>
                 <input
                   type="text"
                   value={formData.tcf ? formData.tcf.toFixed(3) : ""}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ir-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 ir-table">
                 {/* Print-only column sizing */}
                 <colgroup>
                   <col className="ir-col" />
@@ -2259,49 +2261,49 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   <tr>
                     <th
                       colSpan={10}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       Temperature Corrected Values
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider ir-units">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider ir-units">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-B
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-C
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-A
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-N
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       A-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       B-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       C-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       N-G
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
                     {[
                       "A-B",
@@ -2330,12 +2332,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                             type="text"
                             value={displayCorrected}
                             readOnly
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </td>
                       );
                     })}
-                    <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white ir-units">
+                    <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white ir-units">
                       {formData.insulationResistanceUnit}
                     </td>
                   </tr>
@@ -2347,14 +2349,14 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           {/* Test Equipment Used */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Megohmmeter
                   </label>
                   <EquipmentAutocomplete
@@ -2397,7 +2399,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
@@ -2406,11 +2408,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megohmSerial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     AMP ID
                   </label>
                   <input
@@ -2419,11 +2421,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megAmpId}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Cal Date
                   </label>
                   <input
@@ -2432,13 +2434,13 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megCalDate}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Low Resistance Ohmmeter
                   </label>
                   <EquipmentAutocomplete
@@ -2481,7 +2483,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
@@ -2490,11 +2492,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceSerial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     AMP ID
                   </label>
                   <input
@@ -2503,11 +2505,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceAmpId}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Cal Date
                   </label>
                   <input
@@ -2516,14 +2518,14 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceCalDate}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
             </div>
             {/* Print-only compact arrangement */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black te-print">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black te-print">
                 <colgroup>
                   <col style={{ width: "30%" }} />
                   <col style={{ width: "25%" }} />
@@ -2532,25 +2534,25 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Megohmmeter:</div>
                       <div className="mt-0">{formData.megohmmeter || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">{formData.megohmSerial || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">{formData.megAmpId || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Cal Date:</div>
                       <div className="mt-0">{formData.megCalDate || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">
                         Low Resistance Ohmmeter:
                       </div>
@@ -2558,19 +2560,19 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         {formData.lowResistanceOhmmeter || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {formData.lowResistanceSerial || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {formData.lowResistanceAmpId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Cal Date:</div>
                       <div className="mt-0">
                         {formData.lowResistanceCalDate || ""}
@@ -2587,7 +2589,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             {/* On-screen textarea - hidden in print */}
@@ -2598,15 +2600,15 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                 onChange={handleInputChange}
                 readOnly={!isEditing}
                 rows={4}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

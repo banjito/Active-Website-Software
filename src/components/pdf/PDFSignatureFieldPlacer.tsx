@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { PDFDocument } from 'pdf-lib';
-import { Button } from '@/components/ui/Button';
-import { Save, X, Plus, FileText, Trash2 } from 'lucide-react';
-import { toast } from '@/components/ui/toast';
+import React, { useState, useRef, useEffect } from "react";
+import { PDFDocument } from "pdf-lib";
+import { Button } from "@/components/ui/Button";
+import { Save, X, Plus, FileText, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 export interface SignatureFieldPosition {
   id: string;
@@ -31,7 +31,8 @@ export function PDFSignatureFieldPlacer({
   onClose,
   existingFields = [],
 }: PDFSignatureFieldPlacerProps) {
-  const [signatureFields, setSignatureFields] = useState<SignatureFieldPosition[]>(existingFields);
+  const [signatureFields, setSignatureFields] =
+    useState<SignatureFieldPosition[]>(existingFields);
   const [isPlacing, setIsPlacing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -39,9 +40,12 @@ export function PDFSignatureFieldPlacer({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
-  const [newFieldName, setNewFieldName] = useState('');
-  const [newFieldSignerType, setNewFieldSignerType] = useState('employee');
-  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldSignerType, setNewFieldSignerType] = useState("employee");
+  const [clickPosition, setClickPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     // Get total pages from iframe
@@ -55,7 +59,7 @@ export function PDFSignatureFieldPlacer({
             setTotalPages(iframeWindow.PDFViewerApplication.pagesCount);
           }
         } catch (e) {
-          console.log('Could not get page count');
+          console.log("Could not get page count");
         }
       };
     }
@@ -84,7 +88,7 @@ export function PDFSignatureFieldPlacer({
 
     setSignatureFields([...signatureFields, newField]);
     setIsPlacing(false);
-    setNewFieldName('');
+    setNewFieldName("");
     setSelectedField(newField.id);
     setClickPosition(null);
   };
@@ -94,16 +98,16 @@ export function PDFSignatureFieldPlacer({
     try {
       await onSave(signatureFields);
       toast({
-        title: 'Success',
-        description: 'Signature fields saved successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Signature fields saved successfully",
+        variant: "success",
       });
     } catch (error) {
-      console.error('Error saving signature fields:', error);
+      console.error("Error saving signature fields:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to save signature fields',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to save signature fields",
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -111,20 +115,22 @@ export function PDFSignatureFieldPlacer({
   };
 
   const handleDeleteField = (fieldId: string) => {
-    setSignatureFields(signatureFields.filter(f => f.id !== fieldId));
+    setSignatureFields(signatureFields.filter((f) => f.id !== fieldId));
     if (selectedField === fieldId) {
       setSelectedField(null);
     }
   };
 
-  const fieldsOnCurrentPage = signatureFields.filter(f => f.page === currentPage);
+  const fieldsOnCurrentPage = signatureFields.filter(
+    (f) => f.page === currentPage,
+  );
 
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+      <div className="flex items-center justify-between p-3 border-b bg-zinc-50 dark:bg-zinc-800 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-gray-500" />
+          <FileText className="h-5 w-5 text-zinc-500" />
           <span className="text-sm font-medium">{fileName}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -133,12 +139,12 @@ export function PDFSignatureFieldPlacer({
             size="sm"
             onClick={() => {
               setIsPlacing(true);
-              setNewFieldName('');
+              setNewFieldName("");
             }}
             disabled={isPlacing}
           >
             <Plus className="h-4 w-4 mr-1" />
-            {isPlacing ? 'Click on PDF to place' : 'Add Signature Field'}
+            {isPlacing ? "Click on PDF to place" : "Add Signature Field"}
           </Button>
           {isPlacing && (
             <div className="flex items-center gap-2">
@@ -149,7 +155,7 @@ export function PDFSignatureFieldPlacer({
                 onChange={(e) => setNewFieldName(e.target.value)}
                 className="px-2 py-1 border rounded text-sm w-40"
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') setIsPlacing(false);
+                  if (e.key === "Escape") setIsPlacing(false);
                 }}
               />
               <select
@@ -180,7 +186,7 @@ export function PDFSignatureFieldPlacer({
             disabled={isSaving}
           >
             <Save className="h-4 w-4 mr-1" />
-            {isSaving ? 'Saving...' : 'Save Fields'}
+            {isSaving ? "Saving..." : "Save Fields"}
           </Button>
           <Button variant="outline" size="sm" onClick={onClose}>
             Close
@@ -190,11 +196,11 @@ export function PDFSignatureFieldPlacer({
 
       <div className="flex flex-1 overflow-hidden">
         {/* PDF Viewer with Overlay */}
-        <div 
-          className="flex-1 relative bg-gray-100 overflow-auto" 
+        <div
+          className="flex-1 relative bg-zinc-100 overflow-auto"
           ref={containerRef}
           onClick={handleIframeClick}
-          style={{ cursor: isPlacing ? 'crosshair' : 'default' }}
+          style={{ cursor: isPlacing ? "crosshair" : "default" }}
         >
           <iframe
             ref={iframeRef}
@@ -202,7 +208,7 @@ export function PDFSignatureFieldPlacer({
             className="w-full h-full border-0"
             title={fileName}
           />
-          
+
           {/* Signature Field Overlays */}
           <div className="absolute inset-0 pointer-events-none">
             {fieldsOnCurrentPage.map((field) => (
@@ -210,9 +216,9 @@ export function PDFSignatureFieldPlacer({
                 key={field.id}
                 className={`absolute border-2 ${
                   selectedField === field.id
-                    ? 'border-[#f26722] bg-orange-100/30'
-                    : 'border-blue-500 bg-blue-100/20'
-                } ${isPlacing ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer'}`}
+                    ? "border-[#f26722] bg-orange-100/30"
+                    : "border-blue-500 bg-blue-100/20"
+                } ${isPlacing ? "pointer-events-none" : "pointer-events-auto cursor-pointer"}`}
                 style={{
                   left: `${field.x}%`,
                   top: `${field.y}%`,
@@ -226,7 +232,9 @@ export function PDFSignatureFieldPlacer({
               >
                 <div className="absolute -top-6 left-0 text-xs font-medium bg-white px-1 rounded shadow">
                   {field.name}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                  {field.required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -248,7 +256,9 @@ export function PDFSignatureFieldPlacer({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               disabled={currentPage === totalPages}
             >
               Next
@@ -257,28 +267,27 @@ export function PDFSignatureFieldPlacer({
         </div>
 
         {/* Signature Fields Panel */}
-        <div className="w-80 border-l bg-white dark:bg-gray-800 overflow-y-auto flex-shrink-0">
+        <div className="w-80 border-l bg-white dark:bg-zinc-800 overflow-y-auto flex-shrink-0">
           <div className="p-4">
             <h3 className="font-semibold mb-2">Signature Fields</h3>
-            <div className="text-xs text-gray-500 mb-4">
-              Page {currentPage}
-            </div>
+            <div className="text-xs text-zinc-500 mb-4">Page {currentPage}</div>
             <div className="space-y-2">
               {fieldsOnCurrentPage.map((field) => (
                 <div
                   key={field.id}
                   className={`p-3 border rounded cursor-pointer transition-colors ${
                     selectedField === field.id
-                      ? 'border-[#f26722] bg-orange-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? "border-[#f26722] bg-orange-50"
+                      : "border-zinc-200 hover:border-zinc-300"
                   }`}
                   onClick={() => setSelectedField(field.id)}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="font-medium text-sm">{field.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {field.signer_type} • {field.required ? 'Required' : 'Optional'}
+                      <div className="text-xs text-zinc-500 mt-1">
+                        {field.signer_type} •{" "}
+                        {field.required ? "Required" : "Optional"}
                       </div>
                     </div>
                     <Button
@@ -296,25 +305,31 @@ export function PDFSignatureFieldPlacer({
                 </div>
               ))}
               {fieldsOnCurrentPage.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No signature fields on this page. Click "Add Signature Field" to add one.
+                <p className="text-sm text-zinc-500 text-center py-4">
+                  No signature fields on this page. Click "Add Signature Field"
+                  to add one.
                 </p>
               )}
             </div>
-            
+
             {/* All Fields Summary */}
             {signatureFields.length > 0 && (
               <div className="mt-6 pt-4 border-t">
-                <div className="text-xs text-gray-500 mb-2">All Pages</div>
+                <div className="text-xs text-zinc-500 mb-2">All Pages</div>
                 <div className="space-y-1">
-                  {Array.from(new Set(signatureFields.map(f => f.page))).map(page => {
-                    const fieldsOnPage = signatureFields.filter(f => f.page === page);
-                    return (
-                      <div key={page} className="text-xs text-gray-600">
-                        Page {page}: {fieldsOnPage.length} field{fieldsOnPage.length !== 1 ? 's' : ''}
-                      </div>
-                    );
-                  })}
+                  {Array.from(new Set(signatureFields.map((f) => f.page))).map(
+                    (page) => {
+                      const fieldsOnPage = signatureFields.filter(
+                        (f) => f.page === page,
+                      );
+                      return (
+                        <div key={page} className="text-xs text-zinc-600">
+                          Page {page}: {fieldsOnPage.length} field
+                          {fieldsOnPage.length !== 1 ? "s" : ""}
+                        </div>
+                      );
+                    },
+                  )}
                 </div>
               </div>
             )}

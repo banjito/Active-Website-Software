@@ -2127,7 +2127,7 @@ export function ReportApprovalWorkflow({
             <CardContent>
               <div className="text-2xl font-bold text-amber-600">
                 {metrics.submitted}
-                <span className="text-sm text-gray-500 font-normal ml-2">
+                <span className="text-sm text-zinc-500 font-normal ml-2">
                   reports
                 </span>
               </div>
@@ -2141,7 +2141,7 @@ export function ReportApprovalWorkflow({
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
                 {metrics.approved}
-                <span className="text-sm text-gray-500 font-normal ml-2">
+                <span className="text-sm text-zinc-500 font-normal ml-2">
                   reports
                 </span>
               </div>
@@ -2155,7 +2155,7 @@ export function ReportApprovalWorkflow({
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
                 {metrics.sent}
-                <span className="text-sm text-gray-500 font-normal ml-2">
+                <span className="text-sm text-zinc-500 font-normal ml-2">
                   reports
                 </span>
               </div>
@@ -2169,7 +2169,7 @@ export function ReportApprovalWorkflow({
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
                 {metrics.rejected}
-                <span className="text-sm text-gray-500 font-normal ml-2">
+                <span className="text-sm text-zinc-500 font-normal ml-2">
                   reports
                 </span>
               </div>
@@ -2186,10 +2186,10 @@ export function ReportApprovalWorkflow({
         value={activeTab}
         onValueChange={setActiveTab}
       >
-        <TabsList className="inline-flex h-auto flex-wrap bg-gray-100 dark:bg-dark-150 p-1.5 rounded-lg gap-1">
+        <TabsList className="inline-flex h-auto flex-wrap bg-zinc-100 dark:bg-dark-150 p-1.5 rounded-lg gap-1">
           <TabsTrigger
             value="pending"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <Clock className="mr-2 h-4 w-4" />
             Pending Approval
@@ -2197,35 +2197,35 @@ export function ReportApprovalWorkflow({
 
           <TabsTrigger
             value="approved"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <CheckCircle className="mr-2 h-4 w-4" />
             Approved
           </TabsTrigger>
           <TabsTrigger
             value="sent"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <Send className="mr-2 h-4 w-4" />
             Sent
           </TabsTrigger>
           <TabsTrigger
             value="rejected"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <XCircle className="mr-2 h-4 w-4" />
             Rejected
           </TabsTrigger>
           <TabsTrigger
             value="accepted"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <UserCheck className="mr-2 h-4 w-4" />
             Accepted
           </TabsTrigger>
           <TabsTrigger
             value="archived"
-            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-zinc-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             <Trash className="mr-2 h-4 w-4" />
             Archived
@@ -2245,10 +2245,10 @@ export function ReportApprovalWorkflow({
             </div>
           ) : reports.length === 0 ? (
             <div className="text-center py-10 border rounded-md">
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-zinc-900">
                 No reports found
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-zinc-500">
                 There are no reports with the current filter criteria.
               </p>
             </div>
@@ -2257,7 +2257,7 @@ export function ReportApprovalWorkflow({
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <label
                   htmlFor="report-sort"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
                   Sort by
                 </label>
@@ -2280,7 +2280,7 @@ export function ReportApprovalWorkflow({
                       setSort({ by, dir });
                     }
                   }}
-                  className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm min-w-[220px]"
+                  className="rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-zinc-100 px-3 py-2 text-sm min-w-[220px]"
                 >
                   <option value="submission_date_asc">
                     Submission date (oldest first)
@@ -2368,7 +2368,7 @@ export function ReportApprovalWorkflow({
                   return (
                     <>
                       {hasMoreReports && (
-                        <div className="flex justify-center py-3 mb-2 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
+                        <div className="flex justify-center py-3 mb-2 rounded-md border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-dark-200">
                           <Button
                             variant="outline"
                             onClick={() => fetchReports(reportsOffset)}
@@ -2391,21 +2391,21 @@ export function ReportApprovalWorkflow({
                           key={folderKey}
                           className="group border rounded-md overflow-hidden"
                         >
-                          <summary className="cursor-pointer select-none bg-gray-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
+                          <summary className="cursor-pointer select-none bg-zinc-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-800 dark:text-white">
+                              <span className="font-semibold text-zinc-800 dark:text-white">
                                 {folderKey === "Imported"
                                   ? "Imported"
                                   : folderKey === "Other"
                                     ? "Other"
                                     : `${folderKey}`}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-zinc-500">
                                 ({groups[folderKey].length})
                               </span>
                             </div>
                             <svg
-                              className="w-4 h-4 text-gray-500 transform group-open:rotate-180 transition-transform"
+                              className="w-4 h-4 text-zinc-500 transform group-open:rotate-180 transition-transform"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -2445,7 +2445,7 @@ export function ReportApprovalWorkflow({
                                     })()}
                                     {getStatusBadge(report.status)}
                                   </div>
-                                  <div className="mt-1 text-xs text-gray-500 flex items-center gap-4 flex-wrap">
+                                  <div className="mt-1 text-xs text-zinc-500 flex items-center gap-4 flex-wrap">
                                     <span>
                                       Submitted:{" "}
                                       {formatDate(report.submitted_at)}
@@ -2463,7 +2463,7 @@ export function ReportApprovalWorkflow({
                                     )}
                                   </div>
                                   {report.review_comments && (
-                                    <div className="mt-1 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1">
+                                    <div className="mt-1 text-xs text-zinc-700 bg-zinc-50 border border-zinc-200 rounded px-2 py-1">
                                       {report.review_comments}
                                     </div>
                                   )}
@@ -2612,7 +2612,7 @@ export function ReportApprovalWorkflow({
                     className="space-y-2"
                   >
                     {hasMoreReports && (
-                      <div className="flex justify-center py-3 mb-2 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
+                      <div className="flex justify-center py-3 mb-2 rounded-md border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-dark-200">
                         <Button
                           variant="outline"
                           onClick={() => fetchReports(reportsOffset)}
@@ -2656,7 +2656,7 @@ export function ReportApprovalWorkflow({
                             })()}
                             {getStatusBadge(report.status)}
                           </div>
-                          <div className="mt-1 text-xs text-gray-500 flex items-center gap-4 flex-wrap">
+                          <div className="mt-1 text-xs text-zinc-500 flex items-center gap-4 flex-wrap">
                             <span>
                               Submitted: {formatDate(report.submitted_at)}
                             </span>

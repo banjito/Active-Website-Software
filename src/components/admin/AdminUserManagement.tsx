@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Role, ROLES, isSuperUser } from '@/lib/roles';
-import { useAuth } from '@/lib/AuthContext';
-import { Button } from '../ui/Button';
-import { Edit, CheckCircle, XCircle, AlertCircle, RefreshCw, KeyRound } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Role, ROLES, isSuperUser } from "@/lib/roles";
+import { useAuth } from "@/lib/AuthContext";
+import { Button } from "../ui/Button";
+import {
+  Edit,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
+  KeyRound,
+} from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface UserData {
   id: string;
@@ -26,14 +33,24 @@ export default function AdminUserManagement() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordLoadingUserId, setPasswordLoadingUserId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [updateSuccessUserId, setUpdateSuccessUserId] = useState<string | null>(null); 
-  const [updateErrorUserId, setUpdateErrorUserId] = useState<string | null>(null); 
-  const [passwordSuccessUserId, setPasswordSuccessUserId] = useState<string | null>(null);
-  const [passwordErrorUserId, setPasswordErrorUserId] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoadingUserId, setPasswordLoadingUserId] = useState<
+    string | null
+  >(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [updateSuccessUserId, setUpdateSuccessUserId] = useState<string | null>(
+    null,
+  );
+  const [updateErrorUserId, setUpdateErrorUserId] = useState<string | null>(
+    null,
+  );
+  const [passwordSuccessUserId, setPasswordSuccessUserId] = useState<
+    string | null
+  >(null);
+  const [passwordErrorUserId, setPasswordErrorUserId] = useState<string | null>(
+    null,
+  );
 
   const canChangePasswords = isSuperUser(currentUser?.email);
 
@@ -47,20 +64,34 @@ export default function AdminUserManagement() {
       setError(null);
 
       console.log("[fetchUsers] Fetching users via RPC...");
-      
+
       // Call the admin_get_users RPC function from common schema
       const { data: adminData, error: adminError } = await supabase
-        .schema('common')
-        .rpc('admin_get_users');
-      
+        .schema("common")
+        .rpc("admin_get_users");
+
       if (adminError) {
-        console.error('[fetchUsers] Error fetching users from RPC:', adminError);
-        
+        console.error(
+          "[fetchUsers] Error fetching users from RPC:",
+          adminError,
+        );
+
         // Provide helpful error message based on the error
-        if (adminError.message.includes('Access denied') || adminError.message.includes('Admin role required')) {
-          setError('Access denied: Admin role required. Please ensure your user account has Admin role in user metadata.');
-        } else if (adminError.message.includes('function common.admin_get_users() does not exist')) {
-          setError('Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.');
+        if (
+          adminError.message.includes("Access denied") ||
+          adminError.message.includes("Admin role required")
+        ) {
+          setError(
+            "Access denied: Admin role required. Please ensure your user account has Admin role in user metadata.",
+          );
+        } else if (
+          adminError.message.includes(
+            "function common.admin_get_users() does not exist",
+          )
+        ) {
+          setError(
+            "Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.",
+          );
         } else {
           setError(`Failed to load users: ${adminError.message}`);
         }
@@ -73,9 +104,12 @@ export default function AdminUserManagement() {
           id: user.id,
           email: user.email,
           created_at: user.created_at,
-          user_metadata: user.raw_user_meta_data || {}
+          user_metadata: user.raw_user_meta_data || {},
         }));
-        console.log("[fetchUsers] Mapped data sample (first user):", JSON.stringify(mappedUsers[0], null, 2));
+        console.log(
+          "[fetchUsers] Mapped data sample (first user):",
+          JSON.stringify(mappedUsers[0], null, 2),
+        );
         setUsers(mappedUsers);
       } else {
         console.log("[fetchUsers] No data returned from RPC.");
@@ -83,7 +117,7 @@ export default function AdminUserManagement() {
       }
     } catch (err) {
       const error = err as Error;
-      console.error('Error fetching users:', err);
+      console.error("Error fetching users:", err);
       setError(`Failed to load users: ${error.message}`);
     } finally {
       setLoading(false);
@@ -91,7 +125,9 @@ export default function AdminUserManagement() {
   }
 
   async function updateUserRole(userId: string, role: Role) {
-    console.log(`[updateUserRole] Attempting to update user ${userId} to role ${role}`);
+    console.log(
+      `[updateUserRole] Attempting to update user ${userId} to role ${role}`,
+    );
     try {
       setError(null);
       setUpdateSuccessUserId(null);
@@ -99,20 +135,29 @@ export default function AdminUserManagement() {
 
       // Call the admin_update_user_role RPC function from common schema
       const { error } = await supabase
-        .schema('common')
-        .rpc('admin_update_user_role', {
+        .schema("common")
+        .rpc("admin_update_user_role", {
           user_id: userId,
-          new_role: role
+          new_role: role,
         });
 
       if (error) {
-        console.error('[updateUserRole] Error response from RPC:', error);
-        
+        console.error("[updateUserRole] Error response from RPC:", error);
+
         // Provide helpful error message based on the error
-        if (error.message.includes('Access denied') || error.message.includes('Admin role required')) {
-          setError('Access denied: Admin role required to update user roles.');
-        } else if (error.message.includes('function common.admin_update_user_role() does not exist')) {
-          setError('Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.');
+        if (
+          error.message.includes("Access denied") ||
+          error.message.includes("Admin role required")
+        ) {
+          setError("Access denied: Admin role required to update user roles.");
+        } else if (
+          error.message.includes(
+            "function common.admin_update_user_role() does not exist",
+          )
+        ) {
+          setError(
+            "Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.",
+          );
         } else {
           setError(`Failed to update role for ${userId}: ${error.message}`);
         }
@@ -120,15 +165,15 @@ export default function AdminUserManagement() {
         return;
       }
 
-      console.log('[updateUserRole] RPC call succeeded.');
-      
+      console.log("[updateUserRole] RPC call succeeded.");
+
       // Update local state optimistically ONLY if RPC succeeds
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
           user.id === userId
             ? { ...user, user_metadata: { ...user.user_metadata, role } }
-            : user
-        )
+            : user,
+        ),
       );
 
       setEditingUser(null);
@@ -137,22 +182,29 @@ export default function AdminUserManagement() {
       // Set success feedback for this user
       setUpdateSuccessUserId(userId);
       setTimeout(() => setUpdateSuccessUserId(null), 3000); // Clear after 3 seconds
-
-    } catch (err: any) { // Catch specific error
-      console.error('Error updating user role:', err);
+    } catch (err: any) {
+      // Catch specific error
+      console.error("Error updating user role:", err);
       // Set specific error feedback for this user
       setUpdateErrorUserId(userId);
-      setError(`Failed to update role for ${userId}: ${err.message || 'Unknown error'}`);
+      setError(
+        `Failed to update role for ${userId}: ${err.message || "Unknown error"}`,
+      );
     }
   }
 
-  const handleStartEdit = (userId: string, currentRole: string | Role | undefined) => {
+  const handleStartEdit = (
+    userId: string,
+    currentRole: string | Role | undefined,
+  ) => {
     setEditingUser(userId);
     setPasswordUserId(null);
-    setNewPassword('');
-    setConfirmPassword('');
+    setNewPassword("");
+    setConfirmPassword("");
     // Ensure we set a valid Role type or null
-    const validRole = Object.keys(ROLES).includes(currentRole as string) ? currentRole as Role : null;
+    const validRole = Object.keys(ROLES).includes(currentRole as string)
+      ? (currentRole as Role)
+      : null;
     setSelectedRole(validRole);
     setUpdateErrorUserId(null); // Clear specific error when starting edit
   };
@@ -167,8 +219,8 @@ export default function AdminUserManagement() {
     setEditingUser(null);
     setSelectedRole(null);
     setPasswordUserId(userId);
-    setNewPassword('');
-    setConfirmPassword('');
+    setNewPassword("");
+    setConfirmPassword("");
     setPasswordErrorUserId(null);
     setPasswordSuccessUserId(null);
     setError(null);
@@ -176,8 +228,8 @@ export default function AdminUserManagement() {
 
   const handleCancelPasswordEdit = () => {
     setPasswordUserId(null);
-    setNewPassword('');
-    setConfirmPassword('');
+    setNewPassword("");
+    setConfirmPassword("");
     setPasswordErrorUserId(null);
   };
 
@@ -187,13 +239,13 @@ export default function AdminUserManagement() {
     setPasswordErrorUserId(null);
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       setPasswordErrorUserId(userId);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setPasswordErrorUserId(userId);
       return;
     }
@@ -201,29 +253,33 @@ export default function AdminUserManagement() {
     try {
       setPasswordLoadingUserId(userId);
 
-      const { error } = await supabase.functions.invoke('admin-update-user-password', {
-        body: {
-          userId,
-          newPassword,
+      const { error } = await supabase.functions.invoke(
+        "admin-update-user-password",
+        {
+          body: {
+            userId,
+            newPassword,
+          },
         },
-      });
+      );
 
       if (error) {
         throw error;
       }
 
       setPasswordUserId(null);
-      setNewPassword('');
-      setConfirmPassword('');
+      setNewPassword("");
+      setConfirmPassword("");
       setPasswordSuccessUserId(userId);
       setTimeout(() => setPasswordSuccessUserId(null), 3000);
     } catch (err) {
-      let message = err instanceof Error ? err.message : 'Could not change password';
+      let message =
+        err instanceof Error ? err.message : "Could not change password";
 
       if (
         err &&
-        typeof err === 'object' &&
-        'context' in err &&
+        typeof err === "object" &&
+        "context" in err &&
         err.context instanceof Response
       ) {
         try {
@@ -236,8 +292,8 @@ export default function AdminUserManagement() {
         }
       }
 
-      if (message.toLowerCase().includes('access denied')) {
-        setError('Only super admins can change passwords.');
+      if (message.toLowerCase().includes("access denied")) {
+        setError("Only super admins can change passwords.");
       } else {
         setError(message);
       }
@@ -251,28 +307,32 @@ export default function AdminUserManagement() {
     if (selectedRole) {
       updateUserRole(userId, selectedRole);
     } else {
-        setError(`Cannot save: No role selected for user ${userId}`);
-        setUpdateErrorUserId(userId);
+      setError(`Cannot save: No role selected for user ${userId}`);
+      setUpdateErrorUserId(userId);
     }
   };
 
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter((user) => {
     const searchLower = searchQuery.toLowerCase();
-    const email = user.email?.toLowerCase() || '';
-    const name = user.user_metadata?.name?.toLowerCase() || '';
-    const role = (user.user_metadata?.role as string)?.toLowerCase() || ''; // Treat role as string for search
+    const email = user.email?.toLowerCase() || "";
+    const name = user.user_metadata?.name?.toLowerCase() || "";
+    const role = (user.user_metadata?.role as string)?.toLowerCase() || ""; // Treat role as string for search
 
-    return email.includes(searchLower) ||
-           name.includes(searchLower) ||
-           role.includes(searchLower);
+    return (
+      email.includes(searchLower) ||
+      name.includes(searchLower) ||
+      role.includes(searchLower)
+    );
   });
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
-          <p className="text-gray-600 dark:text-white mt-1">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            User Management
+          </h2>
+          <p className="text-zinc-600 dark:text-white mt-1">
             Manage user accounts and assign roles.
           </p>
         </div>
@@ -284,7 +344,7 @@ export default function AdminUserManagement() {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           {/* Placeholder for Invite User functionality */}
@@ -297,8 +357,8 @@ export default function AdminUserManagement() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -309,162 +369,187 @@ export default function AdminUserManagement() {
           placeholder="Search users by name, email, or role..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+          className="w-full px-4 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
         />
       </div>
 
       {/* Users List */}
-      <div className="border border-gray-200 dark:border-dark-300 rounded-lg overflow-hidden shadow-sm">
-        <div className="bg-gray-50 dark:bg-dark-150 px-6 py-3 border-b border-gray-200 dark:border-dark-300 flex items-center justify-between">
-          <h3 className="text-base font-medium text-gray-700 dark:text-gray-200">All Users ({filteredUsers.length})</h3>
+      <div className="border border-zinc-200 dark:border-dark-300 rounded-lg overflow-hidden shadow-sm">
+        <div className="bg-zinc-50 dark:bg-dark-150 px-6 py-3 border-b border-zinc-200 dark:border-dark-300 flex items-center justify-between">
+          <h3 className="text-base font-medium text-zinc-700 dark:text-zinc-200">
+            All Users ({filteredUsers.length})
+          </h3>
         </div>
 
         {loading ? (
-          <div className="bg-white dark:bg-dark-150 p-6 text-center text-gray-500 dark:text-white">
+          <div className="bg-white dark:bg-dark-150 p-6 text-center text-zinc-500 dark:text-white">
             <LoadingSpinner size="md" />
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="bg-white dark:bg-dark-150 p-6 text-center text-gray-500 dark:text-white">
-            {searchQuery ? 'No users found matching your search.' : 'No users found.'}
+          <div className="bg-white dark:bg-dark-150 p-6 text-center text-zinc-500 dark:text-white">
+            {searchQuery
+              ? "No users found matching your search."
+              : "No users found."}
           </div>
         ) : (
-          <div className="divide-y divide-gray-200 dark:divide-dark-300">
+          <div className="divide-y divide-zinc-200 dark:divide-dark-300">
             {filteredUsers.map((user) => (
-              <div key={user.id} className="px-6 py-4 flex flex-col gap-4 bg-white dark:bg-dark-150 hover:bg-gray-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150">
+              <div
+                key={user.id}
+                className="px-6 py-4 flex flex-col gap-4 bg-white dark:bg-dark-150 hover:bg-zinc-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150"
+              >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
-                  {/* Profile Image/Initial */}
-                  <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {user.user_metadata?.profileImage ? (
-                      <img
-                        src={user.user_metadata.profileImage}
-                        alt={user.user_metadata?.name || 'User'}
-                        className="h-10 w-10 object-cover"
-                      />
-                    ) : (
-                      <span className="text-sm font-medium text-gray-600 dark:text-white">
-                        {user.user_metadata?.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    )}
-                  </div>
-                  {/* Name, Email, Status Icons */}
-                  <div className="ml-3 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate flex items-center">
-                      <span className="truncate">{user.user_metadata?.name || 'Unnamed User'}</span>
-                      {/* Success Indicator */}
-                      {updateSuccessUserId === user.id && (
-                        <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
+                  <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
+                    {/* Profile Image/Initial */}
+                    <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {user.user_metadata?.profileImage ? (
+                        <img
+                          src={user.user_metadata.profileImage}
+                          alt={user.user_metadata?.name || "User"}
+                          className="h-10 w-10 object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium text-zinc-600 dark:text-white">
+                          {user.user_metadata?.name?.[0]?.toUpperCase() ||
+                            user.email?.[0]?.toUpperCase() ||
+                            "?"}
+                        </span>
                       )}
-                      {passwordSuccessUserId === user.id && (
-                        <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
-                      )}
-                      {/* Error Indicator */}
-                      {(updateErrorUserId === user.id || passwordErrorUserId === user.id) && (
-                        <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-white truncate">{user.email}</p>
-                  </div>
-                </div>
-
-                {/* Role Display/Edit */}
-                {editingUser === user.id ? (
-                  <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0">
-                    <select
-                      value={selectedRole || ''} // Ensure value is controlled
-                      onChange={(e) => setSelectedRole(e.target.value as Role)}
-                      className="block w-full pl-3 pr-10 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                    >
-                      <option value="" disabled>Select a role</option>
-                      {Object.keys(ROLES).map((roleKey) => (
-                        <option key={roleKey} value={roleKey}>
-                          {roleKey} {/* Display the key (e.g., 'Admin', 'NETA Technician') */}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSaveRole(user.id)}
-                      disabled={!selectedRole}
-                      className="px-2 bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
-                      aria-label="Save Role"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleCancelEdit}
-                      className="px-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
-                      aria-label="Cancel Edit"
-                    >
-                      <XCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) :
-                  <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
-                    <div className="mr-2">
-                        {/* Role Display Span */}
-                      <span className={`
-                        inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
-                        ${user.user_metadata?.role === 'Admin'
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                          : user.user_metadata?.role?.includes('Technician')
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                            : 'bg-gray-100 text-gray-800 dark:bg-dark-300 dark:text-white'}
-                      `}>
-                        {user.user_metadata?.role || 'No Role'}
-                      </span>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleStartEdit(user.id, user.user_metadata?.role)}
-                      className="px-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
-                      aria-label="Edit Role"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {canChangePasswords && (
+                    {/* Name, Email, Status Icons */}
+                    <div className="ml-3 min-w-0">
+                      <p className="text-sm font-medium text-zinc-900 dark:text-white truncate flex items-center">
+                        <span className="truncate">
+                          {user.user_metadata?.name || "Unnamed User"}
+                        </span>
+                        {/* Success Indicator */}
+                        {updateSuccessUserId === user.id && (
+                          <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
+                        )}
+                        {passwordSuccessUserId === user.id && (
+                          <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
+                        )}
+                        {/* Error Indicator */}
+                        {(updateErrorUserId === user.id ||
+                          passwordErrorUserId === user.id) && (
+                          <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
+                        )}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-white truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Role Display/Edit */}
+                  {editingUser === user.id ? (
+                    <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0">
+                      <select
+                        value={selectedRole || ""} // Ensure value is controlled
+                        onChange={(e) =>
+                          setSelectedRole(e.target.value as Role)
+                        }
+                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                      >
+                        <option value="" disabled>
+                          Select a role
+                        </option>
+                        {Object.keys(ROLES).map((roleKey) => (
+                          <option key={roleKey} value={roleKey}>
+                            {roleKey}{" "}
+                            {/* Display the key (e.g., 'Admin', 'NETA Technician') */}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveRole(user.id)}
+                        disabled={!selectedRole}
+                        className="px-2 bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+                        aria-label="Save Role"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleStartPasswordEdit(user.id)}
-                        className="px-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
+                        onClick={handleCancelEdit}
+                        className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        aria-label="Cancel Edit"
                       >
-                        <KeyRound className="h-4 w-4" />
-                        <span className="ml-1">Change password</span>
+                        <XCircle className="h-4 w-4" />
                       </Button>
-                    )}
-                    {/* Placeholder for Delete User */}
-                    {/* <Button 
-                      size="sm" 
-                      variant="ghost" 
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
+                      <div className="mr-2">
+                        {/* Role Display Span */}
+                        <span
+                          className={`
+                        inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
+                        ${
+                          user.user_metadata?.role === "Admin"
+                            ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                            : user.user_metadata?.role?.includes("Technician")
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                              : "bg-zinc-100 text-zinc-800 dark:bg-dark-300 dark:text-white"
+                        }
+                      `}
+                        >
+                          {user.user_metadata?.role || "No Role"}
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          handleStartEdit(user.id, user.user_metadata?.role)
+                        }
+                        className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        aria-label="Edit Role"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      {canChangePasswords && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleStartPasswordEdit(user.id)}
+                          className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                          <span className="ml-1">Change password</span>
+                        </Button>
+                      )}
+                      {/* Placeholder for Delete User */}
+                      {/* <Button
+                      size="sm"
+                      variant="ghost"
                       className="px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
                       aria-label="Delete User"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button> */}
-                  </div>
-}
+                    </div>
+                  )}
                 </div>
 
                 {canChangePasswords && passwordUserId === user.id && (
-                  <div className="rounded-md border border-gray-200 dark:border-dark-300 bg-gray-50 dark:bg-dark-100 p-4">
+                  <div className="rounded-md border border-zinc-200 dark:border-dark-300 bg-zinc-50 dark:bg-dark-100 p-4">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="New password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -474,14 +559,16 @@ export default function AdminUserManagement() {
                         disabled={passwordLoadingUserId === user.id}
                         className="bg-[#f26722] hover:bg-[#d95d1f] text-white"
                       >
-                        {passwordLoadingUserId === user.id ? 'Saving...' : 'Save password'}
+                        {passwordLoadingUserId === user.id
+                          ? "Saving..."
+                          : "Save password"}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={handleCancelPasswordEdit}
                         disabled={passwordLoadingUserId === user.id}
-                        className="text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
+                        className="text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
                       >
                         Cancel
                       </Button>

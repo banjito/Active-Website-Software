@@ -115,7 +115,7 @@ function getCategoryBadgeColor(category: string) {
     case "training":
       return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      return "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200";
   }
 }
 
@@ -312,7 +312,7 @@ export function Announcements() {
       case "scheduled":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       case "expired":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300";
       default:
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
     }
@@ -593,7 +593,7 @@ export function Announcements() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <Megaphone className="h-6 w-6 text-[#f26722]" />
             Announcements
           </h1>
@@ -609,7 +609,7 @@ export function Announcements() {
 
       {/* Filter tabs + search */}
       <div className="flex items-center gap-3">
-        <div className="flex space-x-1 bg-gray-100 dark:bg-dark-150 rounded-lg p-1 w-fit">
+        <div className="flex space-x-1 bg-zinc-100 dark:bg-dark-150 rounded-lg p-1 w-fit">
           {(["all", "published", "scheduled", "draft"] as const).map(
             (status) => (
               <button
@@ -617,12 +617,12 @@ export function Announcements() {
                 onClick={() => setFilterStatus(status)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   filterStatus === status
-                    ? "bg-white dark:bg-neutral-800 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    ? "bg-white dark:bg-neutral-800 text-zinc-900 dark:text-white shadow-sm"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
-                <span className="ml-1.5 text-xs text-gray-400">
+                <span className="ml-1.5 text-xs text-zinc-400">
                   {status === "all"
                     ? announcements.length
                     : announcements.filter((a) => getStatus(a) === status)
@@ -633,13 +633,13 @@ export function Announcements() {
           )}
         </div>
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search…"
-            className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
           />
         </div>
       </div>
@@ -647,11 +647,11 @@ export function Announcements() {
       {/* Announcements list */}
       {filteredAnnouncements.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-dark-150 rounded-lg shadow">
-          <Megaphone className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+          <Megaphone className="h-12 w-12 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
+          <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
             No announcements
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {filterStatus === "all"
               ? "Get started by creating your first announcement."
               : `No ${filterStatus} announcements found.`}
@@ -693,7 +693,7 @@ export function Announcements() {
                       {a.is_pinned && (
                         <Pin className="h-3.5 w-3.5 text-[#f26722] flex-shrink-0" />
                       )}
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                      <h3 className="text-base font-semibold text-zinc-900 dark:text-white truncate">
                         {a.title}
                       </h3>
                       <span
@@ -708,7 +708,7 @@ export function Announcements() {
                           ?.label || a.category}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 mt-1">
                       {a.excerpt || stripSystemLinks(a.content)}
                     </p>
                     {a.content.includes("📘 [View Help Guide]") && (
@@ -731,7 +731,7 @@ export function Announcements() {
                         {extractAttachmentUrls(a.content).length > 1 ? "s" : ""}
                       </span>
                     )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                       <span>By {a.author_name}</span>
                       <span>
                         Created {format(new Date(a.created_at), "MMM d, yyyy")}
@@ -766,7 +766,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => togglePin(a)}
-                        className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-gray-400"}`}
+                        className={`p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-zinc-400"}`}
                       >
                         {a.is_pinned ? (
                           <PinOff className="h-4 w-4" />
@@ -784,7 +784,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => togglePublish(a)}
-                        className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_published ? "text-green-600" : "text-gray-400"}`}
+                        className={`p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${a.is_published ? "text-green-600" : "text-zinc-400"}`}
                       >
                         <Globe
                           className={`h-4 w-4 ${a.is_published ? "" : "opacity-50"}`}
@@ -817,7 +817,7 @@ export function Announcements() {
                             setDocumentViewerOpen(true);
                           }
                         }}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-[#f26722] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 rounded-md text-zinc-400 hover:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -829,7 +829,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => openEditForm(a)}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -844,7 +844,7 @@ export function Announcements() {
                           setDeleteId(a.id);
                           setDeleteConfirmOpen(true);
                         }}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 rounded-md text-zinc-400 hover:text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -860,7 +860,7 @@ export function Announcements() {
       {/* Floating tooltip */}
       {tooltip && (
         <span
-          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-gray-900"
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-zinc-900"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -881,12 +881,12 @@ export function Announcements() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-2xl rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
                 {isEditing ? "Edit Announcement" : "New Announcement"}
               </Dialog.Title>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -894,7 +894,7 @@ export function Announcements() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                   Title *
                 </label>
                 <input
@@ -904,13 +904,13 @@ export function Announcements() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Announcement title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                   Excerpt
                 </label>
                 <input
@@ -922,13 +922,13 @@ export function Announcements() {
                       excerpt: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Short summary shown on the portal (optional)"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                   Content *
                 </label>
                 <textarea
@@ -941,14 +941,14 @@ export function Announcements() {
                       content: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Full announcement content..."
                 />
               </div>
 
-              <div className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
+              <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3">
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-white">
                     Image attachments
                   </label>
                   <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#f26722] rounded-md cursor-pointer hover:bg-[#f26722]/90">
@@ -968,7 +968,7 @@ export function Announcements() {
                   </label>
                 </div>
                 {attachments.length === 0 ? (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     Attach screenshots/images to appear with this announcement.
                   </p>
                 ) : (
@@ -976,12 +976,12 @@ export function Announcements() {
                     {attachments.map((attachment, idx) => (
                       <div
                         key={attachment.url}
-                        className="relative border border-gray-200 dark:border-gray-700 rounded overflow-hidden bg-gray-50 dark:bg-dark-200"
+                        className="relative border border-zinc-200 dark:border-zinc-700 rounded overflow-hidden bg-zinc-50 dark:bg-dark-200"
                       >
                         <img
                           src={attachment.url}
                           alt={attachment.name || `Attachment ${idx + 1}`}
-                          className="w-full h-28 object-contain bg-gray-100 dark:bg-dark-300"
+                          className="w-full h-28 object-contain bg-zinc-100 dark:bg-dark-300"
                         />
                         <button
                           type="button"
@@ -1003,7 +1003,7 @@ export function Announcements() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Category
                   </label>
                   <select
@@ -1014,7 +1014,7 @@ export function Announcements() {
                         category: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -1025,7 +1025,7 @@ export function Announcements() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Publish Date
                   </label>
                   <input
@@ -1037,9 +1037,9 @@ export function Announcements() {
                         published_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                     Leave empty to publish immediately when toggled on
                   </p>
                 </div>
@@ -1047,7 +1047,7 @@ export function Announcements() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
                     Expiration Date
                   </label>
                   <input
@@ -1059,9 +1059,9 @@ export function Announcements() {
                         expires_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                     Leave empty for no expiration
                   </p>
                 </div>
@@ -1078,11 +1078,11 @@ export function Announcements() {
                           is_published: e.target.checked,
                         }))
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
                     />
                     <label
                       htmlFor="is_published"
-                      className="ml-2 text-sm text-gray-700 dark:text-white"
+                      className="ml-2 text-sm text-zinc-700 dark:text-white"
                     >
                       Publish this announcement
                     </label>
@@ -1098,11 +1098,11 @@ export function Announcements() {
                           is_pinned: e.target.checked,
                         }))
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
                     />
                     <label
                       htmlFor="is_pinned"
-                      className="ml-2 text-sm text-gray-700 dark:text-white"
+                      className="ml-2 text-sm text-zinc-700 dark:text-white"
                     >
                       Pin to top
                     </label>
@@ -1111,7 +1111,7 @@ export function Announcements() {
               </div>
 
               {/* Link Document or Help Guide */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
                 <div className="flex items-center gap-3 mb-3">
                   <button
                     type="button"
@@ -1126,7 +1126,7 @@ export function Announcements() {
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                       showDocPicker
                         ? "bg-[#f26722]"
-                        : "bg-gray-300 dark:bg-gray-600"
+                        : "bg-zinc-300 dark:bg-zinc-600"
                     }`}
                   >
                     <span
@@ -1134,7 +1134,7 @@ export function Announcements() {
                     />
                   </button>
                   <label
-                    className="text-sm font-medium flex items-center gap-1.5 cursor-pointer text-gray-700 dark:text-white"
+                    className="text-sm font-medium flex items-center gap-1.5 cursor-pointer text-zinc-700 dark:text-white"
                     onClick={() => {
                       setShowDocPicker(!showDocPicker);
                       if (showDocPicker)
@@ -1164,7 +1164,7 @@ export function Announcements() {
                         className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                           linkType === "document"
                             ? "bg-[#f26722] text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600"
                         }`}
                       >
                         <FileText className="h-3.5 w-3.5 inline mr-1.5 align-middle" />
@@ -1182,7 +1182,7 @@ export function Announcements() {
                         className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                           linkType === "guide"
                             ? "bg-[#f26722] text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600"
                         }`}
                       >
                         <BookOpen className="h-3.5 w-3.5 inline mr-1.5 align-middle" />
@@ -1193,12 +1193,12 @@ export function Announcements() {
                     {linkType === "document" ? (
                       <>
                         {availableDocs.length === 0 ? (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             No document acknowledgments available. Create one in
                             Compliance &rarr; Document Acknowledgment first.
                           </p>
                         ) : (
-                          <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+                          <div className="space-y-1 max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md p-2">
                             {availableDocs.map((doc) => (
                               <button
                                 key={doc.id}
@@ -1212,7 +1212,7 @@ export function Announcements() {
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors ${
                                   formData.linked_document_url === doc.file_url
                                     ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
-                                    : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                    : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                                 }`}
                               >
                                 <FileText className="h-4 w-4 flex-shrink-0" />
@@ -1220,7 +1220,7 @@ export function Announcements() {
                                   <p className="font-medium truncate">
                                     {doc.name}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                     {doc.form_type}
                                   </p>
                                 </div>
@@ -1247,12 +1247,12 @@ export function Announcements() {
                     ) : (
                       <>
                         {availableGuides.length === 0 ? (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             No help guides available. Create one in the Help
                             Center first.
                           </p>
                         ) : (
-                          <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+                          <div className="space-y-1 max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md p-2">
                             {availableGuides.map((guide) => {
                               const guidePath = `/help-center/guide/${guide.id}`;
                               const isSelected =
@@ -1270,7 +1270,7 @@ export function Announcements() {
                                   className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors ${
                                     isSelected
                                       ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
-                                      : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                                   }`}
                                 >
                                   <BookOpen className="h-4 w-4 flex-shrink-0" />
@@ -1279,7 +1279,7 @@ export function Announcements() {
                                       {guide.title}
                                     </p>
                                     {guide.description && (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                      <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1">
                                         {guide.description}
                                       </p>
                                     )}
@@ -1308,11 +1308,11 @@ export function Announcements() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-200"
+                  className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-200"
                 >
                   Cancel
                 </button>
@@ -1347,17 +1347,17 @@ export function Announcements() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-sm rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
-            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
               Delete Announcement
             </Dialog.Title>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Are you sure you want to delete this announcement? This action
               cannot be undone.
             </p>
             <div className="mt-5 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-200"
+                className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-200"
               >
                 Cancel
               </button>
@@ -1385,8 +1385,8 @@ export function Announcements() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-5xl rounded-lg bg-white dark:bg-neutral-900 shadow-xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="flex justify-between items-center p-4 border-b border-zinc-200 dark:border-zinc-700">
+              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white flex items-center gap-2">
                 <FileText className="h-5 w-5 text-[#f26722]" />
                 {documentViewerTitle || "Document"}
               </Dialog.Title>
@@ -1396,7 +1396,7 @@ export function Announcements() {
                   setDocumentViewerUrl(null);
                   setDocumentViewerTitle("");
                 }}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1409,19 +1409,19 @@ export function Announcements() {
                   className="w-full h-[80vh] border-0"
                 />
               ) : (
-                <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+                <div className="flex items-center justify-center h-64 text-zinc-500 dark:text-zinc-400">
                   No document available.
                 </div>
               )}
             </div>
-            <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end p-4 border-t border-zinc-200 dark:border-zinc-700">
               <button
                 onClick={() => {
                   setDocumentViewerOpen(false);
                   setDocumentViewerUrl(null);
                   setDocumentViewerTitle("");
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-200"
+                className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-200"
               >
                 Close
               </button>

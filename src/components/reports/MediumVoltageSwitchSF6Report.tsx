@@ -591,7 +591,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         th, td { border: 1px solid black !important; padding: 2px 3px !important; font-size: 9px !important; text-align: center !important; }
 
         /* Remove colored backgrounds */
-        .bg-gray-50, .dark\\:bg-dark-200, .bg-[#f26722] { background: white !important; }
+        .bg-zinc-50, .dark\\:bg-dark-200, .bg-[#f26722] { background: white !important; }
 
         /* Page setup */
         html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1.1 !important; }
@@ -1409,7 +1409,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           onPrint={() => window.print()}
         />
         {/* Print header */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
           <div
             style={{
               width: "120px",
@@ -1467,14 +1467,14 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Job Information */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             Job Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden">
             <div>
               <label className="form-label">Customer:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.customer}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("customer", e.target.value)}
@@ -1483,7 +1483,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Address:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={maskCustomerAddress(formData.address)}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("address", e.target.value)}
@@ -1492,7 +1492,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Job #:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.jobNumber}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("jobNumber", e.target.value)}
@@ -1502,7 +1502,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
               <label className="form-label">Date:</label>
               <input
                 type="date"
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.date}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("date", e.target.value)}
@@ -1511,7 +1511,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Technicians:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.technicians}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("technicians", e.target.value)}
@@ -1520,7 +1520,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Identifier:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.identifier}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("identifier", e.target.value)}
@@ -1529,7 +1529,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Substation:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.substation}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("substation", e.target.value)}
@@ -1538,7 +1538,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <div>
               <label className="form-label">Eqpt. Location:</label>
               <input
-                className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.eqptLocation}
                 readOnly={!isEditMode}
                 onChange={(e) => handleChange("eqptLocation", e.target.value)}
@@ -1549,7 +1549,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 <label className="form-label">Temp (°F):</label>
                 <input
                   type="number"
-                  className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.temperature}
                   readOnly={!isEditMode}
                   onChange={(e) =>
@@ -1561,7 +1561,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 <label className="form-label">Humidity (%):</label>
                 <input
                   type="number"
-                  className={`form-input text-sm ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input text-sm ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.humidity || ""}
                   readOnly={!isEditMode}
                   onChange={(e) =>
@@ -1584,10 +1584,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       : 0
                   }
                   readOnly
-                  className="form-input text-sm w-24 bg-gray-100 dark:bg-dark-150"
+                  className="form-input text-sm w-24 bg-zinc-100 dark:bg-dark-150"
                 />
                 <span className="mx-3 form-label">TCF:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-zinc-900 dark:text-white">
                   {Number.isFinite(tcf) ? tcf : ""}
                 </span>
               </div>
@@ -1619,7 +1619,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Nameplate Data */}
         <div className="mb-6">
-          <h2 className="section-nameplate-data text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="section-nameplate-data text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             Nameplate Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:hidden">
@@ -1819,7 +1819,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         {cells.slice(row * 6, row * 6 + 6).map((c, idx) => (
                           <td
                             key={idx}
-                            className="px-2 py-1 align-top border border-gray-300 dark:border-gray-600"
+                            className="px-2 py-1 align-top border border-zinc-300 dark:border-zinc-600"
                           >
                             <div className="font-semibold">{c.label}</div>
                             <div>{c.value}</div>
@@ -1837,7 +1837,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* VFI Data */}
         <div className="mb-6">
-          <h2 className="section-vfi-data text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="section-vfi-data text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             VFI Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:hidden">
@@ -1945,7 +1945,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         {cells.slice(row * 3, row * 3 + 3).map((c, idx) => (
                           <td
                             key={idx}
-                            className="px-2 py-1 align-top border border-gray-300 dark:border-gray-600"
+                            className="px-2 py-1 align-top border border-zinc-300 dark:border-zinc-600"
                           >
                             <div className="font-semibold">{c.label}</div>
                             <div>{c.value}</div>
@@ -1963,11 +1963,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Visual and Mechanical Inspection + Counter Readings */}
         <div className="mb-6">
-          <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             Visual and Mechanical Inspection
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed">
               <colgroup>
                 <col style={{ width: "12%" }} />
                 <col style={{ width: "58%" }} />
@@ -1976,30 +1976,30 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     NETA Section
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Description
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Result
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Comments
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {INSPECTION_ITEMS.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {item.id}
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
                       {item.description}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
@@ -2012,7 +2012,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {RESULT_OPTIONS.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2024,7 +2024,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     <td className="px-3 py-2">
                       <input
                         type="text"
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         readOnly={!isEditMode}
                       />
                     </td>
@@ -2036,19 +2036,19 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           <div className="overflow-x-auto mt-4">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   <th
                     colSpan={3}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Counter Readings
                   </th>
                 </tr>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   {["Identifier", "As Found", "As Left"].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-left border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-left border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2059,11 +2059,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.counterReadings.map((row, i) => (
                   <tr
                     key={`${row.identifier}-${i}`}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <input
-                        className={`form-input text-xs ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.identifier}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2071,9 +2071,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         }
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <input
-                        className={`form-input text-xs ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.asFound}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2081,9 +2081,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         }
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <input
-                        className={`form-input text-xs ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.asLeft}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2100,12 +2100,12 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Electrical Tests - Measured IR */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">
             Electrical Tests - Measured Insulation Resistance Values
           </h2>
           <div className="flex justify-end mb-2">
             <div className="w-40">
-              <label className="text-sm font-medium text-gray-700 dark:text-white">
+              <label className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Voltage:
               </label>
               <select
@@ -2143,33 +2143,33 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 <col style={{ width: "5%" }} />
               </colgroup>
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   <th
                     rowSpan={2}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Way Section
                   </th>
                   <th
                     colSpan={6}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Way Closed
                   </th>
                   <th
                     colSpan={3}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Line to Load (Way Open)
                   </th>
                   <th
                     rowSpan={2}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Units
                   </th>
                 </tr>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   {[
                     "A-G",
                     "B-G",
@@ -2183,7 +2183,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2194,11 +2194,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.insulationMeasured.rows.map((row, i) => (
                   <tr
                     key={row.waySection}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.waySection}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2226,10 +2226,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     ).map((key) => (
                       <td
                         key={String(key)}
-                        className="border border-gray-300 dark:border-gray-600 px-1 py-1"
+                        className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
                       >
                         <input
-                          className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={(row as any)[key] as string}
                           readOnly={!isEditMode}
                           onChange={(e) =>
@@ -2243,7 +2243,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         />
                       </td>
                     ))}
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <select
                         className="form-select text-xs text-center w-full"
                         value={row.units}
@@ -2275,13 +2275,13 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Electrical Tests - Temperature Corrected IR */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">
             Electrical Tests - Temperature Corrected Insulation Resistance
             Values
           </h2>
           <div className="flex justify-end mb-2">
             <div className="w-40">
-              <label className="text-sm font-medium text-gray-700 dark:text-white">
+              <label className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Voltage:
               </label>
               <select
@@ -2319,33 +2319,33 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 <col style={{ width: "5%" }} />
               </colgroup>
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   <th
                     rowSpan={2}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Way Section
                   </th>
                   <th
                     colSpan={6}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Way Closed
                   </th>
                   <th
                     colSpan={3}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Line to Load (Way Open)
                   </th>
                   <th
                     rowSpan={2}
-                    className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                    className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                   >
                     Units
                   </th>
                 </tr>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   {[
                     "A-G",
                     "B-G",
@@ -2359,7 +2359,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2370,11 +2370,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.insulationCorrected.rows.map((row, i) => (
                   <tr
                     key={row.waySection}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.waySection}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2402,10 +2402,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     ).map((key) => (
                       <td
                         key={String(key)}
-                        className="border border-gray-300 dark:border-gray-600 px-1 py-1"
+                        className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
                       >
                         <input
-                          className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={(row as any)[key] as string}
                           readOnly={!isEditMode}
                           onChange={(e) =>
@@ -2419,7 +2419,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         />
                       </td>
                     ))}
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <select
                         className="form-select text-xs text-center w-full"
                         value={row.units}
@@ -2451,14 +2451,14 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Electrical Tests - Contact Resistance */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">
             Electrical Tests - Contact Resistance
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
-                  <th className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
+                  <th className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600">
                     Way Section
                   </th>
                   {[
@@ -2472,7 +2472,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2483,11 +2483,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.contactResistance.rows.map((row, i) => (
                   <tr
                     key={row.waySection}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.waySection}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2511,10 +2511,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     ).map((key) => (
                       <td
                         key={String(key)}
-                        className="border border-gray-300 dark:border-gray-600 px-1 py-1"
+                        className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
                       >
                         <input
-                          className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={(row as any)[key] as string}
                           readOnly={!isEditMode}
                           onChange={(e) =>
@@ -2523,7 +2523,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         />
                       </td>
                     ))}
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <select
                         className="form-select text-xs text-center w-full"
                         value={row.units}
@@ -2550,12 +2550,12 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Electrical Tests - Dielectric Withstand */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">
             Electrical Tests - Dielectric Withstand
           </h2>
           <div className="flex justify-end mb-2">
             <div className="w-40">
-              <label className="text-sm font-medium text-gray-700 dark:text-white">
+              <label className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Voltage:
               </label>
               <select
@@ -2575,11 +2575,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           <div className="overflow-x-auto mb-4">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   {["Way Section", "A-G", "B-G", "C-G", "Units"].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2590,11 +2590,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.dielectricWithstand.rows.map((row, i) => (
                   <tr
                     key={row.waySection}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.waySection}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2610,10 +2610,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       (key) => (
                         <td
                           key={String(key)}
-                          className="border border-gray-300 dark:border-gray-600 px-1 py-1"
+                          className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
                         >
                           <input
-                            className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             value={(row as any)[key] as string}
                             readOnly={!isEditMode}
                             onChange={(e) =>
@@ -2623,7 +2623,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         </td>
                       ),
                     )}
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <select
                         className="form-select text-xs text-center w-full"
                         value={row.units}
@@ -2646,12 +2646,12 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             </table>
           </div>
 
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold mb-2 text-zinc-900 dark:text-white">
             Vacuum Integrity (VFI Open)
           </h3>
           <div className="flex justify-end mb-2">
             <div className="w-40">
-              <label className="text-sm font-medium text-gray-700 dark:text-white">
+              <label className="text-sm font-medium text-zinc-700 dark:text-white">
                 Test Voltage:
               </label>
               <input
@@ -2664,11 +2664,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-dark-150">
+                <tr className="bg-zinc-50 dark:bg-dark-150">
                   {["VFI", "Serial Number", "A", "B", "C", "Units"].map((h) => (
                     <th
                       key={h}
-                      className="px-2 py-1 text-center border border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-center border border-zinc-300 dark:border-zinc-600"
                     >
                       {h}
                     </th>
@@ -2679,11 +2679,11 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                 {formData.dielectricVFI.rows.map((row, i) => (
                   <tr
                     key={`${row.vfiIdentifier}-${i}`}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-200"
+                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.vfiIdentifier}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2695,9 +2695,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         }
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <input
-                        className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         value={row.serialNumber}
                         readOnly={!isEditMode}
                         onChange={(e) =>
@@ -2713,10 +2713,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       (key) => (
                         <td
                           key={String(key)}
-                          className="border border-gray-300 dark:border-gray-600 px-1 py-1"
+                          className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
                         >
                           <input
-                            className={`form-input text-xs text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input text-xs text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             value={(row as any)[key] as string}
                             readOnly={!isEditMode}
                             onChange={(e) =>
@@ -2726,7 +2726,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                         </td>
                       ),
                     )}
-                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                       <select
                         className="form-select text-xs text-center w-full"
                         value={row.units}
@@ -2753,38 +2753,38 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div className="mb-6">
-          <h2 className="section-test-equipment text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="section-test-equipment text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             Test Equipment Used
           </h2>
 
           {/* Test Equipment table - visible on screen and print */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300 dark:border-gray-700 print:border-black">
+            <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
               <thead>
                 <tr>
-                  <th className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 bg-gray-50 dark:bg-dark-150 print:bg-gray-50 font-bold text-center text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
                     Equipment
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 bg-gray-50 dark:bg-dark-150 print:bg-gray-50 font-bold text-center text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
                     Model
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 bg-gray-50 dark:bg-dark-150 print:bg-gray-50 font-bold text-center text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
                     Serial Number
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 bg-gray-50 dark:bg-dark-150 print:bg-gray-50 font-bold text-center text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
                     AMP ID
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 bg-gray-50 dark:bg-dark-150 print:bg-gray-50 font-bold text-center text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
                     Cal Date
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 font-semibold text-gray-900 dark:text-white">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
                     Megohmmeter
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <EquipmentAutocomplete
                       value={formData.equipment.megohmmeter.model}
                       onChange={(value) =>
@@ -2831,9 +2831,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       className="w-full border-0 bg-transparent"
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.megohmmeter.serial}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2845,9 +2845,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.megohmmeter.ampId}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2859,9 +2859,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.megohmmeter.calDate}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2875,10 +2875,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 font-semibold text-gray-900 dark:text-white">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
                     Low Resistance Ohmmeter
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <EquipmentAutocomplete
                       value={formData.equipment.lowResOhmmeter.model}
                       onChange={(value) =>
@@ -2925,9 +2925,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       className="w-full border-0 bg-transparent"
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.lowResOhmmeter.serial}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2939,9 +2939,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.lowResOhmmeter.ampId}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2953,9 +2953,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.lowResOhmmeter.calDate}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2969,12 +2969,12 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1 font-semibold text-gray-900 dark:text-white">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
                     Hipot
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.hipot.model}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2982,9 +2982,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.hipot.serial}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -2992,9 +2992,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.hipot.ampId}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3002,9 +3002,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-gray-300 dark:border-gray-700 print:border-black px-2 py-1">
+                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment.hipot.calDate}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3026,12 +3026,12 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         <div
           className={`mb-6 print:mb-2 print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <h2 className="section-comments text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="section-comments text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
             Comments
           </h2>
           <textarea
             rows={10}
-            className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+            className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             value={formData.comments}
             onChange={(e) => handleChange("comments", e.target.value)}
             readOnly={!isEditMode}

@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { PageLayout } from '@/components/ui/PageLayout';
-import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
-import { Badge } from '@/components/ui/Badge';
-import { Clock, CalendarClock, Users, Award, Layers } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { useAuth } from '@/lib/AuthContext';
-import { useDivision } from '@/lib/DivisionContext';
-import { useParams, useNavigate } from 'react-router-dom';
-import { PortalType, TechnicianAssignment } from '@/lib/types/scheduling';
-import { TechnicianCalendar } from '@/components/scheduling/TechnicianCalendar';
-import { TechnicianListedView } from '@/components/scheduling/TechnicianListedView';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import dayjs from 'dayjs';
+import React, { useEffect, useState } from "react";
+import { PageLayout } from "@/components/ui/PageLayout";
+import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
+import { Badge } from "@/components/ui/Badge";
+import { Clock, CalendarClock, Users, Award, Layers } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import { useAuth } from "@/lib/AuthContext";
+import { useDivision } from "@/lib/DivisionContext";
+import { useParams, useNavigate } from "react-router-dom";
+import { PortalType, TechnicianAssignment } from "@/lib/types/scheduling";
+import { TechnicianCalendar } from "@/components/scheduling/TechnicianCalendar";
+import { TechnicianListedView } from "@/components/scheduling/TechnicianListedView";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import dayjs from "dayjs";
 
 interface TechCalendarProps {
   portalType: PortalType;
@@ -28,11 +33,12 @@ export default function SchedulingPage() {
   const { user } = useAuth();
   const { division, setDivision } = useDivision();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<string>('listed');
-  const [portalType, setPortalType] = useState<PortalType>('neta');
-  const [selectedAssignment, setSelectedAssignment] = useState<TechnicianAssignment | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("listed");
+  const [portalType, setPortalType] = useState<PortalType>("neta");
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<TechnicianAssignment | null>(null);
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
-  
+
   useEffect(() => {
     if (params.division && params.division !== division) {
       setDivision(params.division as string);
@@ -41,36 +47,44 @@ export default function SchedulingPage() {
 
   useEffect(() => {
     if (division) {
-      if (['north_alabama', 'tennessee', 'georgia', 'international'].includes(division)) {
-        setPortalType('neta');
-      } else if (['calibration', 'armadillo'].includes(division)) {
-        setPortalType('lab');
-      } else if (division === 'scavenger') {
-        setPortalType('scavenger');
+      if (
+        ["north_alabama", "tennessee", "georgia", "international"].includes(
+          division,
+        )
+      ) {
+        setPortalType("neta");
+      } else if (["calibration", "armadillo"].includes(division)) {
+        setPortalType("lab");
+      } else if (division === "scavenger") {
+        setPortalType("scavenger");
       }
     }
   }, [division]);
 
   // Allow any authenticated user to access and edit the scheduler
-  const canAccessScheduler = !!user; 
+  const canAccessScheduler = !!user;
 
   useEffect(() => {
     if (!user) {
-      console.warn('User not logged in.');
-      navigate('/portal');
+      console.warn("User not logged in.");
+      navigate("/portal");
     }
   }, [user, navigate]);
 
   // All authenticated users may access scheduler; no additional role redirect
 
   if (!division || !user || !canAccessScheduler) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   const formattedDivision = division
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
   const handleAssignmentClick = (assignment: TechnicianAssignment) => {
     setSelectedAssignment(assignment);
@@ -86,43 +100,45 @@ export default function SchedulingPage() {
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;
   };
-  
+
   const formatDisplayName = (name?: string, email?: string): string => {
     // Always prioritize email-derived name (firstname.lastname format)
     const derived = deriveNameFromEmail(email);
     if (derived) return derived;
-    
+
     // Fallback to provided name or email
-    const n = (name || '').trim();
-    return n || email || 'Unknown';
+    const n = (name || "").trim();
+    return n || email || "Unknown";
   };
 
   // Mock data for the dashboard cards
   const dashboardCards = [
     {
-      title: 'Technicians',
-      value: '12',
+      title: "Technicians",
+      value: "12",
       icon: <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
-      bgColor: 'bg-blue-100 dark:bg-blue-900/20'
+      bgColor: "bg-blue-100 dark:bg-blue-900/20",
     },
     {
-      title: 'Scheduled Today',
-      value: '6',
+      title: "Scheduled Today",
+      value: "6",
       icon: <Clock className="h-6 w-6 text-green-600 dark:text-green-400" />,
-      bgColor: 'bg-green-100 dark:bg-green-900/20'
+      bgColor: "bg-green-100 dark:bg-green-900/20",
     },
     {
-      title: 'Pending Approvals',
-      value: '3',
-      icon: <CalendarClock className="h-6 w-6 text-amber-600 dark:text-amber-400" />,
-      bgColor: 'bg-amber-100 dark:bg-amber-900/20'
+      title: "Pending Approvals",
+      value: "3",
+      icon: (
+        <CalendarClock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+      ),
+      bgColor: "bg-amber-100 dark:bg-amber-900/20",
     },
     {
-      title: 'Jobs This Week',
-      value: '8',
+      title: "Jobs This Week",
+      value: "8",
       icon: <Layers className="h-6 w-6 text-purple-600 dark:text-purple-400" />,
-      bgColor: 'bg-purple-100 dark:bg-purple-900/20'
-    }
+      bgColor: "bg-purple-100 dark:bg-purple-900/20",
+    },
   ];
 
   return (
@@ -131,25 +147,24 @@ export default function SchedulingPage() {
       subtitle="Manage technician scheduling and job assignments"
     >
       <div className="container mx-auto px-4 py-6">
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList>
             <TabsTrigger value="listed">Listed View</TabsTrigger>
             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="calendar" className="mt-6">
-            <TechnicianCalendar 
+            <TechnicianCalendar
               portalType={portalType}
               division={division}
               showAllTechnicians={true}
               onAssignmentClick={handleAssignmentClick}
             />
           </TabsContent>
-          
+
           <TabsContent value="listed" className="mt-6">
-            <TechnicianListedView 
-              portalType={portalType} 
+            <TechnicianListedView
+              portalType={portalType}
               division={division}
               days={7}
               onAssignmentClick={handleAssignmentClick}
@@ -158,67 +173,97 @@ export default function SchedulingPage() {
         </Tabs>
 
         {/* Assignment Details Dialog */}
-        <Dialog open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
+        <Dialog
+          open={showAssignmentDialog}
+          onOpenChange={setShowAssignmentDialog}
+        >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Assignment Details</DialogTitle>
             </DialogHeader>
-            
+
             {selectedAssignment && (
               <div className="space-y-4">
                 {/* Job Information */}
-                <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Job Information</h3>
+                <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                    Job Information
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Job Number</label>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {selectedAssignment.job?.job_number || 'N/A'}
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Job Number
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white">
+                        {selectedAssignment.job?.job_number || "N/A"}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Job Title</label>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {selectedAssignment.job?.title || 'N/A'}
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Job Title
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white">
+                        {selectedAssignment.job?.title || "N/A"}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Assignment Information */}
-                <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Assignment Details</h3>
+                <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                    Assignment Details
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Assigned Technician</label>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {formatDisplayName(selectedAssignment.user?.user_metadata?.name, selectedAssignment.user?.email)}
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Assigned Technician
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white">
+                        {formatDisplayName(
+                          selectedAssignment.user?.user_metadata?.name,
+                          selectedAssignment.user?.email,
+                        )}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Date</label>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {dayjs(selectedAssignment.assignment_date).format('MMMM D, YYYY')}
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Date
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white">
+                        {dayjs(selectedAssignment.assignment_date).format(
+                          "MMMM D, YYYY",
+                        )}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Time</label>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Time
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white">
                         {(() => {
-                          const isAllDay = selectedAssignment.start_time?.startsWith('00:00') && 
-                                          (selectedAssignment.end_time?.startsWith('23:59') || selectedAssignment.end_time?.startsWith('24:00'));
-                          const isUnknown = selectedAssignment.start_time?.slice(0, 5) === selectedAssignment.end_time?.slice(0, 5);
-                          
-                          if (isAllDay) return 'All Day';
-                          if (isUnknown) return 'Unknown Hours';
+                          const isAllDay =
+                            selectedAssignment.start_time?.startsWith(
+                              "00:00",
+                            ) &&
+                            (selectedAssignment.end_time?.startsWith("23:59") ||
+                              selectedAssignment.end_time?.startsWith("24:00"));
+                          const isUnknown =
+                            selectedAssignment.start_time?.slice(0, 5) ===
+                            selectedAssignment.end_time?.slice(0, 5);
+
+                          if (isAllDay) return "All Day";
+                          if (isUnknown) return "Unknown Hours";
                           return `${selectedAssignment.start_time?.slice(0, 5)} - ${selectedAssignment.end_time?.slice(0, 5)}`;
                         })()}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400">Status</label>
-                      <p className="font-medium text-gray-900 dark:text-white capitalize">
-                        {selectedAssignment.status || 'scheduled'}
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Status
+                      </label>
+                      <p className="font-medium text-zinc-900 dark:text-white capitalize">
+                        {selectedAssignment.status || "scheduled"}
                       </p>
                     </div>
                   </div>
@@ -226,9 +271,11 @@ export default function SchedulingPage() {
 
                 {/* Notes */}
                 {selectedAssignment.notes && (
-                  <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Notes</h3>
-                    <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">
+                  <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                      Notes
+                    </h3>
+                    <p className="text-sm text-zinc-900 dark:text-white whitespace-pre-wrap">
                       {selectedAssignment.notes}
                     </p>
                   </div>
@@ -250,4 +297,4 @@ export default function SchedulingPage() {
       </div>
     </PageLayout>
   );
-} 
+}

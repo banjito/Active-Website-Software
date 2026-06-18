@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { formatRelativeSafe } from '@/lib/formatRelativeSafe';
-import type { CommentWithAuthor, CommunityCommentRow } from '@/lib/communityTypes';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { loadAuthorsForUserIds } from '@/lib/communityProfiles';
+import React, { useCallback, useEffect, useState } from "react";
+import { MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { formatRelativeSafe } from "@/lib/formatRelativeSafe";
+import type {
+  CommentWithAuthor,
+  CommunityCommentRow,
+} from "@/lib/communityTypes";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { loadAuthorsForUserIds } from "@/lib/communityProfiles";
 
 const PREVIEW = 3;
 
@@ -15,34 +18,42 @@ type Props = {
   onLocalCommentPosted: () => void;
 };
 
-export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentCount, onLocalCommentPosted }) => {
+export const CommentThread: React.FC<Props> = ({
+  postId,
+  currentUserId,
+  commentCount,
+  onLocalCommentPosted,
+}) => {
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [comments, setComments] = useState<CommentWithAuthor[]>([]);
   const [loading, setLoading] = useState(false);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const loadComments = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .schema('common')
-        .from('post_comments')
-        .select('id, post_id, user_id, body, created_at')
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true });
+        .schema("common")
+        .from("post_comments")
+        .select("id, post_id, user_id, body, created_at")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true });
       if (error) throw error;
       const rows = (data || []) as CommunityCommentRow[];
       const authors = await loadAuthorsForUserIds(rows.map((r) => r.user_id));
       setComments(
         rows.map((r) => ({
           ...r,
-          author: authors.get(r.user_id) || { id: r.user_id, displayName: 'Member' },
-        }))
+          author: authors.get(r.user_id) || {
+            id: r.user_id,
+            displayName: "Member",
+          },
+        })),
       );
     } catch (e) {
-      console.error('Failed to load comments', e);
+      console.error("Failed to load comments", e);
       setComments([]);
     } finally {
       setLoading(false);
@@ -59,17 +70,25 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
     const channel = supabase
       .channel(`post_comments:${postId}`)
       .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'common', table: 'post_comments', filter: `post_id=eq.${postId}` },
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "common",
+          table: "post_comments",
+          filter: `post_id=eq.${postId}`,
+        },
         async (payload) => {
           const row = payload.new as CommunityCommentRow;
           const authors = await loadAuthorsForUserIds([row.user_id]);
-          const author = authors.get(row.user_id) || { id: row.user_id, displayName: 'Member' };
+          const author = authors.get(row.user_id) || {
+            id: row.user_id,
+            displayName: "Member",
+          };
           setComments((prev) => {
             if (prev.some((c) => c.id === row.id)) return prev;
             return [...prev, { ...row, author }];
           });
-        }
+        },
       )
       .subscribe();
     return () => {
@@ -83,23 +102,26 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
     setSubmitting(true);
     try {
       const { data, error } = await supabase
-        .schema('common')
-        .from('post_comments')
+        .schema("common")
+        .from("post_comments")
         .insert({ post_id: postId, user_id: currentUserId, body })
-        .select('id, post_id, user_id, body, created_at')
+        .select("id, post_id, user_id, body, created_at")
         .single();
       if (error) throw error;
       const row = data as CommunityCommentRow;
       const authors = await loadAuthorsForUserIds([row.user_id]);
-      const author = authors.get(row.user_id) || { id: row.user_id, displayName: 'Member' };
+      const author = authors.get(row.user_id) || {
+        id: row.user_id,
+        displayName: "Member",
+      };
       setComments((prev) => {
         if (prev.some((c) => c.id === row.id)) return prev;
         return [...prev, { ...row, author }];
       });
-      setText('');
+      setText("");
       onLocalCommentPosted();
     } catch (e) {
-      console.error('Comment failed', e);
+      console.error("Comment failed", e);
     } finally {
       setSubmitting(false);
     }
@@ -109,35 +131,52 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
   const hidden = Math.max(0, comments.length - PREVIEW);
 
   return (
-    <div className="mt-2 border-t border-gray-100 dark:border-dark-200 pt-2">
+    <div className="mt-2 border-t border-zinc-100 dark:border-dark-200 pt-2">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
       >
         <MessageCircle className="h-4 w-4" />
-        {commentCount === 0 ? 'Comment' : `${commentCount} comment${commentCount === 1 ? '' : 's'}`}
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {commentCount === 0
+          ? "Comment"
+          : `${commentCount} comment${commentCount === 1 ? "" : "s"}`}
+        {open ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
       </button>
 
       {open && (
         <div className="mt-3 space-y-3">
           {loading ? (
-            <div className="flex justify-center py-4"><LoadingSpinner size="md" /></div>
+            <div className="flex justify-center py-4">
+              <LoadingSpinner size="md" />
+            </div>
           ) : comments.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No comments yet.
+            </p>
           ) : (
             <>
               <ul className="space-y-2">
                 {visible.map((c) => (
-                  <li key={c.id} className="rounded-md bg-gray-50 dark:bg-dark-200/80 px-3 py-2">
+                  <li
+                    key={c.id}
+                    className="rounded-md bg-zinc-50 dark:bg-dark-200/80 px-3 py-2"
+                  >
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">{c.author.displayName}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                      <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                        {c.author.displayName}
+                      </span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
                         {formatRelativeSafe(c.created_at)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap break-words">{c.body}</p>
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1 whitespace-pre-wrap break-words">
+                      {c.body}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -168,11 +207,13 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
                 onClick={() => void submit()}
                 className="self-end px-3 py-1.5 rounded-md text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Posting…' : 'Reply'}
+                {submitting ? "Posting…" : "Reply"}
               </button>
             </div>
           ) : (
-            <p className="text-xs text-gray-500 dark:text-gray-400">Sign in to comment.</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Sign in to comment.
+            </p>
           )}
         </div>
       )}

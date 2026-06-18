@@ -1,15 +1,22 @@
-import React from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { FileText, Upload } from 'lucide-react';
-import { Button } from '../../../components/ui/Button';
+import React from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { FileText, Upload } from "lucide-react";
+import { Button } from "../../../components/ui/Button";
 
 export const ResumeParsing: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Resume Parsing</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+            Resume Parsing
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
             Auto-capture applicant data from resumes
           </p>
         </div>
@@ -22,9 +29,11 @@ export const ResumeParsing: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Resume Parsing</h3>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <FileText className="mx-auto h-12 w-12 text-zinc-400" />
+            <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              Resume Parsing
+            </h3>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
               Automated resume parsing and data extraction features coming soon
             </p>
           </div>

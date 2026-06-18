@@ -1,12 +1,24 @@
-import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Button } from '@/components/ui/Button';
-import { Separator } from '@/components/ui/Separator';
-import { Badge } from '@/components/ui/Badge';
-import { MoreHorizontal, Edit, Trash, ClipboardCheck } from 'lucide-react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/DropdownMenu';
-import { format } from 'date-fns';
-import { Equipment } from '@/lib/interfaces/equipment';
+import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { Button } from "@/components/ui/Button";
+import { Separator } from "@/components/ui/Separator";
+import { Badge } from "@/components/ui/Badge";
+import { MoreHorizontal, Edit, Trash, ClipboardCheck } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/DropdownMenu";
+import { format } from "date-fns";
+import { Equipment } from "@/lib/interfaces/equipment";
 
 interface EquipmentTableProps {
   equipment: any[];
@@ -16,44 +28,49 @@ interface EquipmentTableProps {
   onViewDetails: (equipment: any) => void;
 }
 
-export function EquipmentTable({ equipment, onEdit, onDelete, onAssign, onViewDetails }: EquipmentTableProps) {
-  
+export function EquipmentTable({
+  equipment,
+  onEdit,
+  onDelete,
+  onAssign,
+  onViewDetails,
+}: EquipmentTableProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800';
-      case 'assigned':
-        return 'bg-blue-100 text-blue-800';
-      case 'maintenance':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'retired':
-        return 'bg-gray-100 text-gray-800';
+      case "available":
+        return "bg-green-100 text-green-800";
+      case "assigned":
+        return "bg-blue-100 text-blue-800";
+      case "maintenance":
+        return "bg-yellow-100 text-yellow-800";
+      case "retired":
+        return "bg-zinc-100 text-zinc-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-zinc-100 text-zinc-800";
     }
   };
-  
+
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'available':
-        return 'Available';
-      case 'assigned':
-        return 'Assigned';
-      case 'maintenance':
-        return 'In Maintenance';
-      case 'retired':
-        return 'Retired';
+      case "available":
+        return "Available";
+      case "assigned":
+        return "Assigned";
+      case "maintenance":
+        return "In Maintenance";
+      case "retired":
+        return "Retired";
       default:
         return status;
     }
   };
-  
+
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy');
+      return format(new Date(dateString), "MMM dd, yyyy");
     } catch (error) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
@@ -81,9 +98,9 @@ export function EquipmentTable({ equipment, onEdit, onDelete, onAssign, onViewDe
             </TableRow>
           ) : (
             equipment.map((item) => (
-              <TableRow 
+              <TableRow
                 key={item.id}
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer hover:bg-zinc-50"
                 onClick={() => onViewDetails(item)}
               >
                 <TableCell className="font-medium">{item.name}</TableCell>
@@ -93,9 +110,9 @@ export function EquipmentTable({ equipment, onEdit, onDelete, onAssign, onViewDe
                     {getStatusLabel(item.status)}
                   </Badge>
                 </TableCell>
-                <TableCell>{item.location || 'N/A'}</TableCell>
-                <TableCell>{item.customer?.name || 'N/A'}</TableCell>
-                <TableCell>{item.asset?.name || 'N/A'}</TableCell>
+                <TableCell>{item.location || "N/A"}</TableCell>
+                <TableCell>{item.customer?.name || "N/A"}</TableCell>
+                <TableCell>{item.asset?.name || "N/A"}</TableCell>
                 <TableCell>{formatDate(item.last_maintenance_date)}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
@@ -109,16 +126,16 @@ export function EquipmentTable({ equipment, onEdit, onDelete, onAssign, onViewDe
                         <Edit className="mr-2 h-4 w-4" />
                         <span>Edit</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => onAssign(item)}
-                        disabled={item.status !== 'available'}
+                        disabled={item.status !== "available"}
                       >
                         <ClipboardCheck className="mr-2 h-4 w-4" />
                         <span>Assign</span>
                       </DropdownMenuItem>
                       <Separator />
-                      <DropdownMenuItem 
-                        onClick={() => onDelete(item)} 
+                      <DropdownMenuItem
+                        onClick={() => onDelete(item)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash className="mr-2 h-4 w-4" />
@@ -134,4 +151,4 @@ export function EquipmentTable({ equipment, onEdit, onDelete, onAssign, onViewDe
       </Table>
     </div>
   );
-} 
+}

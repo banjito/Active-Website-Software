@@ -389,7 +389,7 @@ export default function ContactDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">
+        <div className="text-lg text-zinc-600">
           <LoadingSpinner size="md" />
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function ContactDetail() {
   if (!contact) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Contact not found</div>
+        <div className="text-lg text-zinc-600">Contact not found</div>
       </div>
     );
   }
@@ -410,14 +410,14 @@ export default function ContactDetail() {
         <div className="flex items-center">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mr-4"
+            className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-700 mr-4"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </button>
           <div className="flex items-center">
             <Users className="h-8 w-8 text-[#f26722]" />
-            <h1 className="ml-3 text-2xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="ml-3 text-2xl font-semibold text-zinc-900 dark:text-white">
               {contact.first_name} {contact.last_name}
             </h1>
           </div>
@@ -464,17 +464,17 @@ export default function ContactDetail() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-dark-150 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
               Delete Contact
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">
               Are you sure you want to delete {contact.first_name}{" "}
               {contact.last_name}? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                className="px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded"
               >
                 Cancel
               </button>
@@ -490,10 +490,10 @@ export default function ContactDetail() {
       )}
 
       {/* Tabs */}
-      <div className="flex space-x-1 mb-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex space-x-1 mb-6 border-b border-zinc-200 dark:border-zinc-700">
         <button
           onClick={() => setActiveTab("info")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "info" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "info" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <Users className="h-4 w-4" /> Info
@@ -501,12 +501,12 @@ export default function ContactDetail() {
         </button>
         <button
           onClick={() => setActiveTab("interactions")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "interactions" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "interactions" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <MessageSquare className="h-4 w-4" /> Interactions{" "}
             {notes.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300">
+              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-zinc-200 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300">
                 {notes.length}
               </span>
             )}
@@ -518,7 +518,7 @@ export default function ContactDetail() {
         <>
           {isEditing ? (
             <div className="bg-white dark:bg-dark-150 rounded-lg p-6 mb-8">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
                 Edit Contact Information
               </h2>
               <form
@@ -530,7 +530,7 @@ export default function ContactDetail() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       First Name
                     </label>
                     <input
@@ -542,12 +542,12 @@ export default function ContactDetail() {
                           first_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Last Name
                     </label>
                     <input
@@ -559,12 +559,12 @@ export default function ContactDetail() {
                           last_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Email
                     </label>
                     <input
@@ -576,12 +576,12 @@ export default function ContactDetail() {
                           email: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Phone
                     </label>
                     <input
@@ -593,11 +593,11 @@ export default function ContactDetail() {
                           phone: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Position
                     </label>
                     <input
@@ -609,7 +609,7 @@ export default function ContactDetail() {
                           position: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div className="flex items-center">
@@ -623,17 +623,17 @@ export default function ContactDetail() {
                           is_primary: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
                     />
                     <label
                       htmlFor="is_primary"
-                      className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300"
                     >
                       Primary Contact
                     </label>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                       Divisions
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -658,7 +658,7 @@ export default function ContactDetail() {
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                               isActive
                                 ? "bg-[#f26722] text-white"
-                                : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600"
+                                : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
                             }`}
                           >
                             {div.label}
@@ -666,7 +666,7 @@ export default function ContactDetail() {
                         );
                       })}
                     </div>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                       Leave empty to inherit divisions from the associated
                       customer.
                     </p>
@@ -687,7 +687,7 @@ export default function ContactDetail() {
                         divisions: contact.divisions || [],
                       });
                     }}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    className="px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded"
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 inline mr-1" />
@@ -706,15 +706,15 @@ export default function ContactDetail() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white dark:bg-dark-150 border border-gray-200 rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              <div className="bg-white dark:bg-dark-150 border border-zinc-200 rounded-lg p-6">
+                <h2 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
                   Contact Information
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start">
                     <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-white">
+                      <p className="text-sm font-medium text-zinc-500 dark:text-white">
                         Email
                       </p>
                       <a
@@ -728,7 +728,7 @@ export default function ContactDetail() {
                   <div className="flex items-start">
                     <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-white">
+                      <p className="text-sm font-medium text-zinc-500 dark:text-white">
                         Phone
                       </p>
                       {contact.phone ? (
@@ -739,7 +739,7 @@ export default function ContactDetail() {
                           {contact.phone}
                         </a>
                       ) : (
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-zinc-900 dark:text-white">
                           -
                         </p>
                       )}
@@ -748,10 +748,10 @@ export default function ContactDetail() {
                   <div className="flex items-start">
                     <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-white">
+                      <p className="text-sm font-medium text-zinc-500 dark:text-white">
                         Position
                       </p>
-                      <p className="text-sm text-gray-900 dark:text-white">
+                      <p className="text-sm text-zinc-900 dark:text-white">
                         {contact.position || "-"}
                       </p>
                     </div>
@@ -759,10 +759,10 @@ export default function ContactDetail() {
                   <div className="flex items-start">
                     <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-white">
+                      <p className="text-sm font-medium text-zinc-500 dark:text-white">
                         Created
                       </p>
-                      <p className="text-sm text-gray-900 dark:text-white">
+                      <p className="text-sm text-zinc-900 dark:text-white">
                         {format(new Date(contact.created_at), "MMM d, yyyy")}
                       </p>
                     </div>
@@ -771,7 +771,7 @@ export default function ContactDetail() {
                     <div className="flex items-start">
                       <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
                       <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-500 dark:text-white">
+                        <p className="text-sm font-medium text-zinc-500 dark:text-white">
                           Divisions
                         </p>
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -795,8 +795,8 @@ export default function ContactDetail() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-dark-150 border border-gray-2 rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              <div className="bg-white dark:bg-dark-150 border border-zinc-2 rounded-lg p-6">
+                <h2 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
                   Company Information
                 </h2>
                 {customer ? (
@@ -816,13 +816,13 @@ export default function ContactDetail() {
                     return (
                       <Link
                         to={toPath}
-                        className="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="block hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg transition-colors"
                       >
                         <div className="space-y-4">
                           <div className="flex items-start">
                             <Building2 className="h-5 w-5 text-[#f26722] mt-0.5" />
                             <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-500 dark:text-white">
+                              <p className="text-sm font-medium text-zinc-500 dark:text-white">
                                 Company
                               </p>
                               <p className="text-sm text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
@@ -835,7 +835,7 @@ export default function ContactDetail() {
                     );
                   })()
                 ) : (
-                  <p className="text-sm text-gray-500 dark:text-white">
+                  <p className="text-sm text-zinc-500 dark:text-white">
                     No company information available
                   </p>
                 )}
@@ -882,7 +882,7 @@ export default function ContactDetail() {
           return (
             <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
                   Interactions
                 </h2>
                 <button
@@ -903,12 +903,12 @@ export default function ContactDetail() {
               </div>
 
               {/* Filter tabs */}
-              <div className="flex space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex space-x-4 mb-6 border-b border-zinc-200 dark:border-zinc-700">
                 {(["all", "call", "email", "in_person"] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setNoteFilter(f)}
-                    className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}
+                    className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
                   >
                     {f === "all"
                       ? "All"
@@ -923,13 +923,13 @@ export default function ContactDetail() {
 
               {/* Log form */}
               {showNoteForm && (
-                <div className="mb-6 bg-gray-50 dark:bg-dark-200 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                <div className="mb-6 bg-zinc-50 dark:bg-dark-200 rounded-lg p-4 border border-zinc-200 dark:border-zinc-600">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
                     {editingNoteId ? "Edit Interaction" : "Log Interaction"}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                         Type
                       </label>
                       <select
@@ -940,7 +940,7 @@ export default function ContactDetail() {
                             note_type: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                       >
                         <option value="call">Call</option>
                         <option value="email">Email</option>
@@ -948,7 +948,7 @@ export default function ContactDetail() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                         Date / Time
                       </label>
                       <input
@@ -960,12 +960,12 @@ export default function ContactDetail() {
                             occurred_at: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                       />
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                       Notes
                     </label>
                     <textarea
@@ -978,7 +978,7 @@ export default function ContactDetail() {
                         }))
                       }
                       placeholder="What happened during this interaction..."
-                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div className="flex justify-end gap-2">
@@ -987,7 +987,7 @@ export default function ContactDetail() {
                         setShowNoteForm(false);
                         setEditingNoteId(null);
                       }}
-                      className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                      className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded"
                     >
                       Cancel
                     </button>
@@ -1008,11 +1008,11 @@ export default function ContactDetail() {
 
               {/* Timeline */}
               {notesLoading ? (
-                <div className="py-12 text-center text-gray-500">
+                <div className="py-12 text-center text-zinc-500">
                   <LoadingSpinner size="md" />
                 </div>
               ) : filteredNotes.length === 0 ? (
-                <div className="py-12 text-center text-gray-500">
+                <div className="py-12 text-center text-zinc-500">
                   <p className="text-sm">No interactions logged yet.</p>
                   <p className="text-xs mt-1">
                     Click "Log Interaction" to add one.
@@ -1023,23 +1023,23 @@ export default function ContactDetail() {
                   {filteredNotes.map((note, idx) => (
                     <div key={note.id} className="relative">
                       {idx < filteredNotes.length - 1 && (
-                        <div className="absolute top-0 left-6 h-full w-0.5 bg-gray-200 dark:bg-gray-700" />
+                        <div className="absolute top-0 left-6 h-full w-0.5 bg-zinc-200 dark:bg-zinc-700" />
                       )}
                       <div className="flex items-start relative">
                         <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                           <div
-                            className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-gray-800`}
+                            className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-zinc-800`}
                           >
                             {noteTypeIcon(note.note_type)}
                           </div>
                         </div>
-                        <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg border border-gray-200 dark:border-gray-600 w-full">
+                        <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg border border-zinc-200 dark:border-zinc-600 w-full">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                              <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
                                 {noteTypeLabel(note.note_type)}
                               </h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                 {format(
                                   new Date(note.occurred_at),
                                   "MMM d, yyyy 'at' h:mm a",
@@ -1052,7 +1052,7 @@ export default function ContactDetail() {
                               {noteTypeLabel(note.note_type)}
                             </span>
                           </div>
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap">
                             {note.context}
                           </p>
                           <div className="mt-3 flex justify-between items-center">
@@ -1064,7 +1064,7 @@ export default function ContactDetail() {
                                 )}
                                 size={24}
                               />
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                 Logged by: {note.author_email}
                               </p>
                             </div>
@@ -1089,7 +1089,7 @@ export default function ContactDetail() {
                               </button>
                               <button
                                 onClick={() => handleDeleteNote(note.id)}
-                                className="text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 flex items-center gap-0.5"
+                                className="text-sm text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 flex items-center gap-0.5"
                               >
                                 <Trash2 className="h-3 w-3" /> Delete
                               </button>
@@ -1102,7 +1102,7 @@ export default function ContactDetail() {
                 </div>
               )}
 
-              <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
                 {filteredNotes.length} interaction
                 {filteredNotes.length !== 1 ? "s" : ""}
               </div>

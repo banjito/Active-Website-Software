@@ -811,7 +811,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const jobInfo = (
     <section className="mb-6 job-info-section">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Job Details
       </h2>
       {/* On-screen form - hidden in print (copied styling from MediumVoltageCableVLFTest.jsx) */}
@@ -819,10 +819,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         {/* Left Column */}
         <div>
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Customer
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={maskCustomerName(form.customer)}
@@ -834,10 +834,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Site Address
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={maskCustomerAddress(form.address)}
@@ -849,10 +849,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               User
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.user}
@@ -864,10 +864,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Date
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="date"
                 value={form.date}
@@ -879,10 +879,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Identifier
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.identifier}
@@ -897,10 +897,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         {/* Right Column */}
         <div>
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Job #
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.jobNumber}
@@ -912,10 +912,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Technicians
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.technicians}
@@ -927,11 +927,11 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex items-center">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Temp.
             </label>
             <div className="flex-1 flex items-center">
-              <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+              <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -977,7 +977,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
               <span className="mx-2">{form.temperature.celsius as any}</span>
               <span className="mx-2">°C</span>
               <span className="mx-5">TCF</span>
-              <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+              <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                 <input
                   type="text"
                   value={(Number(form.temperature.tcf) || 0).toFixed(3)}
@@ -989,11 +989,11 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Humidity
             </label>
             <div className="flex items-center flex-1">
-              <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+              <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                 <input
                   type="number"
                   value={form.temperature.humidity as any}
@@ -1007,10 +1007,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Substation
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.substation}
@@ -1022,10 +1022,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </div>
 
           <div className="mb-4 flex">
-            <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+            <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
               Eqpt. Location
             </label>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+            <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
               <input
                 type="text"
                 value={form.eqptLocation}
@@ -1061,7 +1061,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const nameplate = (
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Nameplate Data
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
@@ -1211,7 +1211,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       </div>
       {/* Print-only Nameplate table with all fields */}
       <div className="hidden print:block">
-        <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] mv-center-table">
+        <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem] mv-center-table">
           <colgroup>
             <col style={{ width: "20%" }} />
             <col style={{ width: "20%" }} />
@@ -1221,45 +1221,45 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </colgroup>
           <tbody>
             <tr>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Manufacturer</div>
                 <div>{form.nameplate.manufacturer || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Catalog No.</div>
                 <div>{form.nameplate.catalogNumber || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Serial Number</div>
                 <div>{form.nameplate.serialNumber || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Type</div>
                 <div>{form.nameplate.type || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Mfg Date</div>
                 <div>{form.nameplate.mfgDate || ""}</div>
               </td>
             </tr>
             <tr>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Rated Voltage (kV)</div>
                 <div>{form.nameplate.ratedVoltageKv || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Operating Voltage (kV)</div>
                 <div>{form.nameplate.operatingVoltageKv || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Ampacity (A)</div>
                 <div>{form.nameplate.ampacity || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">I.C. Rating (kA)</div>
                 <div>{form.nameplate.icRatingKa || ""}</div>
               </td>
-              <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+              <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                 <div className="font-semibold">Impulse (BIL)</div>
                 <div>{form.nameplate.impulseBil || ""}</div>
               </td>
@@ -1273,7 +1273,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const visual = (
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Visual and Mechanical Inspection
       </h2>
 
@@ -1286,13 +1286,13 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         </colgroup>
         <thead>
           <tr>
-            <th className="border border-gray-300 dark:border-gray-700 p-2 text-left">
+            <th className="border border-zinc-300 dark:border-zinc-700 p-2 text-left">
               NETA Section
             </th>
-            <th className="border border-gray-300 dark:border-gray-700 p-2 text-left">
+            <th className="border border-zinc-300 dark:border-zinc-700 p-2 text-left">
               Description
             </th>
-            <th className="border border-gray-300 dark:border-gray-700 p-2 text-center">
+            <th className="border border-zinc-300 dark:border-zinc-700 p-2 text-center">
               Results
             </th>
           </tr>
@@ -1300,13 +1300,13 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         <tbody>
           {form.visual.map((row, idx) => (
             <tr key={row.neta}>
-              <td className="border border-gray-300 dark:border-gray-700 p-2 align-top">
+              <td className="border border-zinc-300 dark:border-zinc-700 p-2 align-top">
                 {row.neta}
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 p-2 align-top">
+              <td className="border border-zinc-300 dark:border-zinc-700 p-2 align-top">
                 {row.description}
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 p-2 align-top">
+              <td className="border border-zinc-300 dark:border-zinc-700 p-2 align-top">
                 <select
                   className="form-select"
                   value={row.result}
@@ -1347,19 +1347,19 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         <thead>
           <tr>
             <th
-              className="border border-black p-1 text-left bg-gray-100"
+              className="border border-black p-1 text-left bg-zinc-100"
               style={{ backgroundColor: "#f0f0f0" }}
             >
               NETA Section
             </th>
             <th
-              className="border border-black p-1 text-left bg-gray-100"
+              className="border border-black p-1 text-left bg-zinc-100"
               style={{ backgroundColor: "#f0f0f0" }}
             >
               Description
             </th>
             <th
-              className="border border-black p-1 text-center bg-gray-100"
+              className="border border-black p-1 text-center bg-zinc-100"
               style={{ backgroundColor: "#f0f0f0" }}
             >
               Results
@@ -1386,12 +1386,12 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const fuseData = (
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Fuse Data
       </h2>
       {/* Unified 3x2 grid table (screen + print). Each cell: label + input/value */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 dark:border-gray-700 mv-center-table">
+        <table className="min-w-full border border-zinc-300 dark:border-zinc-700 mv-center-table">
           <colgroup>
             <col style={{ width: "33.33%" }} />
             <col style={{ width: "33.33%" }} />
@@ -1399,7 +1399,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </colgroup>
           <tbody>
             <tr>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">
                   Manufacturer
                 </div>
@@ -1413,10 +1413,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">
                   Catalog No.
                 </div>
@@ -1433,10 +1433,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">Class</div>
                 <input
                   type="text"
@@ -1448,12 +1448,12 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
             <tr>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">
                   Rated Voltage (kV)
                 </div>
@@ -1470,10 +1470,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">
                   Ampacity (A)
                 </div>
@@ -1487,10 +1487,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
-              <td className="p-2 align-top border border-gray-300 dark:border-gray-700 print:text-center">
+              <td className="p-2 align-top border border-zinc-300 dark:border-zinc-700 print:text-center">
                 <div className="font-semibold print:text-center">
                   I.C. Rating (kA)
                 </div>
@@ -1504,7 +1504,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
@@ -1518,7 +1518,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     title: string,
     key: "contactAsFound" | "contactAsLeft",
   ) => (
-    <div className="border border-gray-300 dark:border-gray-700 p-3">
+    <div className="border border-zinc-300 dark:border-zinc-700 p-3">
       <div className="font-semibold mb-2">{title}</div>
       <table className="w-full border-collapse text-sm">
         <thead>
@@ -1583,7 +1583,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const electrical = (
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Electrical Tests
       </h2>
       {/* Screen layout (hidden when printing) */}
@@ -1594,7 +1594,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 print:hidden">
         {/* Insulation Resistance */}
-        <div className="border border-gray-300 dark:border-gray-700 p-3">
+        <div className="border border-zinc-300 dark:border-zinc-700 p-3">
           <div className="font-semibold mb-2">Insulation Resistance</div>
           <div className="mb-2 flex items-center gap-2 text-sm">
             <span>Test Voltage</span>
@@ -1637,7 +1637,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   <td className="border p-2">
                     <div className="flex items-center gap-2">
                       <span>{r.label}</span>
-                      <span className="text-xs text-gray-600">
+                      <span className="text-xs text-zinc-600">
                         {r.position}
                       </span>
                     </div>
@@ -1677,7 +1677,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         </div>
 
         {/* Temperature Corrected */}
-        <div className="border border-gray-300 dark:border-gray-700 p-3">
+        <div className="border border-zinc-300 dark:border-zinc-700 p-3">
           <div className="font-semibold mb-2">Temperature Corrected</div>
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -1721,10 +1721,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       {/* Print layout: four boxed squares (2x2 grid) */}
       <div className="hidden print:grid grid-cols-2 gap-2 mt-2">
         {/* Contact Resistance (As Found) */}
-        <table className="w-full border border-gray-300 print:border-black">
+        <table className="w-full border border-zinc-300 print:border-black">
           <thead>
             <tr>
-              <th colSpan={5} className="border p-2 text-left bg-gray-50">
+              <th colSpan={5} className="border p-2 text-left bg-zinc-50">
                 Contact Resistance (As Found)
               </th>
             </tr>
@@ -1758,10 +1758,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         </table>
 
         {/* Contact Resistance (As Left) */}
-        <table className="w-full border border-gray-300 print:border-black">
+        <table className="w-full border border-zinc-300 print:border-black">
           <thead>
             <tr>
-              <th colSpan={5} className="border p-2 text-left bg-gray-50">
+              <th colSpan={5} className="border p-2 text-left bg-zinc-50">
                 Contact Resistance (As Left)
               </th>
             </tr>
@@ -1795,7 +1795,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         </table>
 
         {/* Insulation Resistance */}
-        <table className="w-full border border-gray-300 print:border-black">
+        <table className="w-full border border-zinc-300 print:border-black">
           <colgroup>
             <col style={{ width: "40%" }} />
             <col style={{ width: "20%" }} />
@@ -1804,7 +1804,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </colgroup>
           <thead>
             <tr>
-              <th colSpan={4} className="border p-2 text-left bg-gray-50">
+              <th colSpan={4} className="border p-2 text-left bg-zinc-50">
                 Insulation Resistance
               </th>
             </tr>
@@ -1839,10 +1839,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         </table>
 
         {/* Temperature Corrected */}
-        <table className="w-full border border-gray-300 print:border-black">
+        <table className="w-full border border-zinc-300 print:border-black">
           <thead>
             <tr>
-              <th colSpan={3} className="border p-2 text-left bg-gray-50">
+              <th colSpan={3} className="border p-2 text-left bg-zinc-50">
                 Temperature Corrected
               </th>
             </tr>
@@ -1872,12 +1872,12 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
       {/* Dielectric */}
       <div className="mt-4">
-        <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700">
           <thead>
             <tr>
               <th
                 colSpan={6}
-                className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center"
+                className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center"
               >
                 Dielectric Withstand Phase to Ground
               </th>
@@ -1885,10 +1885,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 Test Voltage
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <input
                   className="form-input"
                   value={form.dielectric.testVoltage}
@@ -1904,24 +1904,24 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   readOnly={!isEditMode}
                 />
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center font-semibold">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center font-semibold">
                 P1
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center font-semibold">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center font-semibold">
                 P2
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center font-semibold">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center font-semibold">
                 P3
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 font-semibold">
                 Units
               </td>
             </tr>
             <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 Test Duration
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <input
                   className="form-input"
                   value={form.dielectric.duration}
@@ -1934,7 +1934,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   readOnly={!isEditMode}
                 />
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <input
                   className="form-input"
                   value={form.dielectric.p1}
@@ -1947,7 +1947,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   readOnly={!isEditMode}
                 />
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <input
                   className="form-input"
                   value={form.dielectric.p2}
@@ -1960,7 +1960,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   readOnly={!isEditMode}
                 />
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <input
                   className="form-input"
                   value={form.dielectric.p3}
@@ -1973,7 +1973,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   readOnly={!isEditMode}
                 />
               </td>
-              <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+              <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1">
                 <select
                   className="form-select"
                   value={form.dielectric.units}
@@ -1999,7 +1999,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const equipment = (
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Test Equipment Used
       </h2>
       {/* On-screen form - hidden in print */}
@@ -2100,7 +2100,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
       {/* Print-only compact Test Equipment table */}
       <div className="hidden print:block">
-        <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] mv-center-table test-eqpt-print">
+        <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem] mv-center-table test-eqpt-print">
           <colgroup>
             <col style={{ width: "33.33%" }} />
             <col style={{ width: "33.33%" }} />
@@ -2115,17 +2115,17 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
               ] as const
             ).map(([label, key]) => (
               <tr key={key}>
-                <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+                <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                   <div className="font-semibold">{label}</div>
                   <div>{(form.equipmentUsed as any)[key]?.name || ""}</div>
                 </td>
-                <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+                <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                   <div className="font-semibold">Serial Number</div>
                   <div>
                     {(form.equipmentUsed as any)[key]?.serialNumber || ""}
                   </div>
                 </td>
-                <td className="p-2 align-middle text-center border border-gray-300 print:border-black">
+                <td className="p-2 align-middle text-center border border-zinc-300 print:border-black">
                   <div className="font-semibold">AMP ID</div>
                   <div>{(form.equipmentUsed as any)[key]?.ampId || ""}</div>
                 </td>
@@ -2142,7 +2142,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       className={`mb-6 print:break-inside-avoid ${!form.comments?.trim() ? "print:hidden" : ""}`}
     >
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+      <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
         Comments
       </h2>
       <textarea
@@ -2154,10 +2154,10 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       />
       {form.comments?.trim() && (
         <div className="hidden print:block">
-          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+          <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
             <tbody>
               <tr>
-                <td className="p-2 align-top border border-gray-300 print:border-black">
+                <td className="p-2 align-top border border-zinc-300 print:border-black">
                   <div className="mt-0 whitespace-pre-wrap">
                     {form.comments}
                   </div>
@@ -2183,7 +2183,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"

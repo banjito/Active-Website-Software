@@ -1,26 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  CheckCircle, 
-  XCircle, 
-  RefreshCw, 
+import React, { useEffect, useState } from "react";
+import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import {
+  CheckCircle,
+  XCircle,
+  RefreshCw,
   ExternalLink,
   AlertTriangle,
   Clock,
   Building2,
   Key,
   Unplug,
-  Download
-} from 'lucide-react';
-import { getQuickBooksStatus, disconnectQuickBooks, getQuickBooksCompanyInfo, getQuickBooksOAuthUrl } from '@/services/quickbooksService';
+  Download,
+} from "lucide-react";
+import {
+  getQuickBooksStatus,
+  disconnectQuickBooks,
+  getQuickBooksCompanyInfo,
+  getQuickBooksOAuthUrl,
+} from "@/services/quickbooksService";
 
 interface QuickBooksIntegration {
   id: string;
   realm_id: string | null;
   company_name: string | null;
-  environment: 'sandbox' | 'production';
+  environment: "sandbox" | "production";
   expires_at: string;
   created_at: string;
 }
@@ -51,16 +56,18 @@ export const IntegrationsSettings: React.FC = () => {
         connected: qbStatus.connected,
         integration: qbStatus.integration,
       });
-      
+
       // If connected and no company name, try to fetch it
       if (qbStatus.connected && !qbStatus.integration?.company_name) {
         fetchCompanyInfo();
       }
     } catch (error: any) {
-      console.error('Error checking QuickBooks status:', error);
+      console.error("Error checking QuickBooks status:", error);
       setStatus({
         connected: false,
-        error: error?.message || 'Failed to check connection status. The Edge Function may not be deployed.',
+        error:
+          error?.message ||
+          "Failed to check connection status. The Edge Function may not be deployed.",
       });
     } finally {
       setLoading(false);
@@ -79,7 +86,7 @@ export const IntegrationsSettings: React.FC = () => {
         integration: qbStatus.integration,
       });
     } catch (error: any) {
-      console.error('Error fetching company info:', error);
+      console.error("Error fetching company info:", error);
     } finally {
       setFetchingData(false);
     }
@@ -95,18 +102,24 @@ export const IntegrationsSettings: React.FC = () => {
     try {
       const authUrl = await getQuickBooksOAuthUrl();
       if (!authUrl) {
-        alert('Failed to get QuickBooks authorization URL. Please ensure QuickBooks is configured on the server.');
+        alert(
+          "Failed to get QuickBooks authorization URL. Please ensure QuickBooks is configured on the server.",
+        );
         return;
       }
       window.location.href = authUrl;
     } catch (error) {
-      console.error('Error connecting to QuickBooks:', error);
-      alert('An error occurred while connecting to QuickBooks.');
+      console.error("Error connecting to QuickBooks:", error);
+      alert("An error occurred while connecting to QuickBooks.");
     }
   };
 
   const handleDisconnect = async () => {
-    if (!confirm('Are you sure you want to disconnect QuickBooks? You will need to reconnect to use QuickBooks features.')) {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect QuickBooks? You will need to reconnect to use QuickBooks features.",
+      )
+    ) {
       return;
     }
 
@@ -116,20 +129,20 @@ export const IntegrationsSettings: React.FC = () => {
       if (success) {
         setStatus({ connected: false });
       } else {
-        alert('Failed to disconnect QuickBooks. Please try again.');
+        alert("Failed to disconnect QuickBooks. Please try again.");
       }
     } catch (error) {
-      console.error('Error disconnecting QuickBooks:', error);
-      alert('An error occurred while disconnecting QuickBooks.');
+      console.error("Error disconnecting QuickBooks:", error);
+      alert("An error occurred while disconnecting QuickBooks.");
     } finally {
       setDisconnecting(false);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
+    return new Date(dateString).toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
     });
   };
 
@@ -140,7 +153,8 @@ export const IntegrationsSettings: React.FC = () => {
   const isTokenExpiringSoon = (expiresAt: string) => {
     const expiresDate = new Date(expiresAt);
     const now = new Date();
-    const hoursUntilExpiry = (expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const hoursUntilExpiry =
+      (expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     return hoursUntilExpiry > 0 && hoursUntilExpiry < 24;
   };
 
@@ -162,17 +176,19 @@ export const IntegrationsSettings: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Integrations</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Manage external service connections
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={handleRefresh} 
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
           disabled={refreshing}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -188,17 +204,19 @@ export const IntegrationsSettings: React.FC = () => {
               </div>
               <div>
                 <CardTitle>QuickBooks Online</CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   Sync invoices, estimates, and customers
                 </p>
               </div>
             </div>
             {/* Connection Status Badge */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-              status.connected 
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-            }`}>
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+                status.connected
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
               {status.connected ? (
                 <>
                   <CheckCircle className="h-4 w-4" />
@@ -218,14 +236,16 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Connection Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                     <Building2 className="h-4 w-4" />
                     Company
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium">
-                      {status.integration.company_name || companyInfo?.CompanyName || 'Not available'}
+                      {status.integration.company_name ||
+                        companyInfo?.CompanyName ||
+                        "Not available"}
                     </p>
                     {!status.integration.company_name && !companyInfo && (
                       <Button
@@ -245,18 +265,18 @@ export const IntegrationsSettings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                     <Key className="h-4 w-4" />
                     Realm ID
                   </div>
                   <p className="font-mono text-sm">
-                    {status.integration.realm_id || 'Not available'}
+                    {status.integration.realm_id || "Not available"}
                   </p>
                 </div>
 
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                     <Clock className="h-4 w-4" />
                     Connected On
                   </div>
@@ -265,14 +285,16 @@ export const IntegrationsSettings: React.FC = () => {
                   </p>
                 </div>
 
-                <div className={`p-4 rounded-lg ${
-                  isTokenExpired(status.integration.expires_at)
-                    ? 'bg-red-50 dark:bg-red-900/20'
-                    : isTokenExpiringSoon(status.integration.expires_at)
-                    ? 'bg-yellow-50 dark:bg-yellow-900/20'
-                    : 'bg-gray-50 dark:bg-gray-800'
-                }`}>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div
+                  className={`p-4 rounded-lg ${
+                    isTokenExpired(status.integration.expires_at)
+                      ? "bg-red-50 dark:bg-red-900/20"
+                      : isTokenExpiringSoon(status.integration.expires_at)
+                        ? "bg-yellow-50 dark:bg-yellow-900/20"
+                        : "bg-zinc-50 dark:bg-zinc-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                     <Clock className="h-4 w-4" />
                     Token Expires
                   </div>
@@ -286,25 +308,31 @@ export const IntegrationsSettings: React.FC = () => {
                         Expired
                       </span>
                     )}
-                    {isTokenExpiringSoon(status.integration.expires_at) && !isTokenExpired(status.integration.expires_at) && (
-                      <span className="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        Expiring soon
-                      </span>
-                    )}
+                    {isTokenExpiringSoon(status.integration.expires_at) &&
+                      !isTokenExpired(status.integration.expires_at) && (
+                        <span className="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          Expiring soon
+                        </span>
+                      )}
                   </div>
                 </div>
               </div>
 
               {/* Environment Badge */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">Environment:</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                  status.integration.environment === 'production'
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
-                }`}>
-                  {status.integration.environment.charAt(0).toUpperCase() + status.integration.environment.slice(1)}
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Environment:
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    status.integration.environment === "production"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
+                  }`}
+                >
+                  {status.integration.environment.charAt(0).toUpperCase() +
+                    status.integration.environment.slice(1)}
                 </span>
               </div>
 
@@ -316,8 +344,10 @@ export const IntegrationsSettings: React.FC = () => {
                   disabled={fetchingData}
                   className="flex items-center gap-2"
                 >
-                  <Download className={`h-4 w-4 ${fetchingData ? 'animate-spin' : ''}`} />
-                  {fetchingData ? 'Syncing...' : 'Sync Company Info'}
+                  <Download
+                    className={`h-4 w-4 ${fetchingData ? "animate-spin" : ""}`}
+                  />
+                  {fetchingData ? "Syncing..." : "Sync Company Info"}
                 </Button>
                 <Button
                   variant="outline"
@@ -326,7 +356,7 @@ export const IntegrationsSettings: React.FC = () => {
                   className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
                 >
                   <Unplug className="h-4 w-4" />
-                  {disconnecting ? 'Disconnecting...' : 'Disconnect'}
+                  {disconnecting ? "Disconnecting..." : "Disconnect"}
                 </Button>
                 <a
                   href="https://quickbooks.intuit.com"
@@ -343,15 +373,18 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Not Connected State */}
               <div className="py-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <XCircle className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 mx-auto mb-4 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+                  <XCircle className="h-8 w-8 text-zinc-400" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">QuickBooks Not Connected</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                  Connect your QuickBooks Online account to sync invoices, estimates, customers, and more with your jobs.
+                <h3 className="text-lg font-medium mb-2">
+                  QuickBooks Not Connected
+                </h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 max-w-md mx-auto">
+                  Connect your QuickBooks Online account to sync invoices,
+                  estimates, customers, and more with your jobs.
                 </p>
-                
-                <Button 
+
+                <Button
                   onClick={handleConnect}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
@@ -388,45 +421,59 @@ export const IntegrationsSettings: React.FC = () => {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
-                <p className="text-sm font-medium">QB_CLIENT_ID (Server-side)</p>
-                <p className="text-xs text-gray-500">Set as Supabase secret for the Edge Function</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs">
-                ?
-              </div>
-              <div>
-                <p className="text-sm font-medium">QB_CLIENT_SECRET (Server-side)</p>
-                <p className="text-xs text-gray-500">Set as Supabase secret for the Edge Function</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs">
-                ?
-              </div>
-              <div>
-                <p className="text-sm font-medium">Edge Function Deployed</p>
-                <p className="text-xs text-gray-500">
-                  Run: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">supabase functions deploy quickbooks-oauth</code>
+                <p className="text-sm font-medium">
+                  QB_CLIENT_ID (Server-side)
+                </p>
+                <p className="text-xs text-zinc-500">
+                  Set as Supabase secret for the Edge Function
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+                ?
+              </div>
+              <div>
+                <p className="text-sm font-medium">
+                  QB_CLIENT_SECRET (Server-side)
+                </p>
+                <p className="text-xs text-zinc-500">
+                  Set as Supabase secret for the Edge Function
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+                ?
+              </div>
+              <div>
+                <p className="text-sm font-medium">Edge Function Deployed</p>
+                <p className="text-xs text-zinc-500">
+                  Run:{" "}
+                  <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                    supabase functions deploy quickbooks-oauth
+                  </code>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
                 <p className="text-sm font-medium">Database Table Created</p>
-                <p className="text-xs text-gray-500">
-                  <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">common.quickbooks_integrations</code> table
+                <p className="text-xs text-zinc-500">
+                  <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                    common.quickbooks_integrations
+                  </code>{" "}
+                  table
                 </p>
               </div>
             </div>
@@ -438,4 +485,3 @@ export const IntegrationsSettings: React.FC = () => {
 };
 
 export default IntegrationsSettings;
-

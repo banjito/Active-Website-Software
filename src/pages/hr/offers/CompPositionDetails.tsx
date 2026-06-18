@@ -1,16 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Select } from '../../../components/ui/Select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { DollarSign, Briefcase, Building, Edit, Eye, Plus, Save } from 'lucide-react';
-import { offersService, Offer, CreateOfferInput } from '../../../services/hr/offersService';
-import { candidatesService, Candidate } from '../../../services/hr/candidatesService';
-import { useAuth } from '../../../lib/AuthContext';
-import { toast } from '../../../components/ui/toast';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import { Select } from "../../../components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  DollarSign,
+  Briefcase,
+  Building,
+  Edit,
+  Eye,
+  Plus,
+  Save,
+} from "lucide-react";
+import {
+  offersService,
+  Offer,
+  CreateOfferInput,
+} from "../../../services/hr/offersService";
+import {
+  candidatesService,
+  Candidate,
+} from "../../../services/hr/candidatesService";
+import { useAuth } from "../../../lib/AuthContext";
+import { toast } from "../../../components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export const CompPositionDetails: React.FC = () => {
   const { user } = useAuth();
@@ -22,20 +49,20 @@ export const CompPositionDetails: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [formData, setFormData] = useState<Partial<CreateOfferInput>>({
-    candidate_id: '',
-    position_title: '',
-    department: '',
-    employment_type: 'full-time',
-    start_date: '',
-    location: '',
-    reporting_manager: '',
+    candidate_id: "",
+    position_title: "",
+    department: "",
+    employment_type: "full-time",
+    start_date: "",
+    location: "",
+    reporting_manager: "",
     base_salary: undefined,
-    salary_currency: 'USD',
-    pay_frequency: 'annual',
+    salary_currency: "USD",
+    pay_frequency: "annual",
     bonus_amount: undefined,
-    bonus_description: '',
-    equity_compensation: '',
-    benefits_summary: '',
+    bonus_description: "",
+    equity_compensation: "",
+    benefits_summary: "",
   });
 
   useEffect(() => {
@@ -50,33 +77,48 @@ export const CompPositionDetails: React.FC = () => {
         candidatesService.getAll(),
       ]);
       setOffers(offersData);
-      setCandidates(candidatesData.filter(c => ['offer', 'interview', 'offer_sent', 'offer_accepted'].includes(c.status)));
+      setCandidates(
+        candidatesData.filter((c) =>
+          ["offer", "interview", "offer_sent", "offer_accepted"].includes(
+            c.status,
+          ),
+        ),
+      );
     } catch (error: any) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load data. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load data. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? (value ? parseFloat(value) : undefined) : value,
+      [name]:
+        type === "number" ? (value ? parseFloat(value) : undefined) : value,
     }));
   };
 
   const handleCreate = async () => {
-    if (!formData.candidate_id || !formData.position_title || !formData.department) {
+    if (
+      !formData.candidate_id ||
+      !formData.position_title ||
+      !formData.department
+    ) {
       toast({
-        title: 'Error',
-        description: 'Candidate, position title, and department are required',
-        variant: 'destructive',
+        title: "Error",
+        description: "Candidate, position title, and department are required",
+        variant: "destructive",
       });
       return;
     }
@@ -86,24 +128,27 @@ export const CompPositionDetails: React.FC = () => {
     try {
       // Clean up date fields - convert empty strings to undefined
       const cleanedFormData: CreateOfferInput = {
-        ...formData as CreateOfferInput,
-        start_date: formData.start_date && formData.start_date.trim() ? formData.start_date : undefined,
+        ...(formData as CreateOfferInput),
+        start_date:
+          formData.start_date && formData.start_date.trim()
+            ? formData.start_date
+            : undefined,
       };
-      
+
       await offersService.create(cleanedFormData, user.id);
       toast({
-        title: 'Success',
-        description: 'Compensation and position details created successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Compensation and position details created successfully",
+        variant: "success",
       });
       setIsCreateModalOpen(false);
       resetForm();
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create offer details',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to create offer details",
+        variant: "destructive",
       });
     }
   };
@@ -115,14 +160,17 @@ export const CompPositionDetails: React.FC = () => {
       // Clean up date fields - convert empty strings to undefined
       const cleanedFormData: Partial<CreateOfferInput> = {
         ...formData,
-        start_date: formData.start_date && formData.start_date.trim() ? formData.start_date : undefined,
+        start_date:
+          formData.start_date && formData.start_date.trim()
+            ? formData.start_date
+            : undefined,
       };
-      
+
       await offersService.update(selectedOffer.id, cleanedFormData);
       toast({
-        title: 'Success',
-        description: 'Compensation and position details updated successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Compensation and position details updated successfully",
+        variant: "success",
       });
       setIsEditModalOpen(false);
       setSelectedOffer(null);
@@ -130,29 +178,29 @@ export const CompPositionDetails: React.FC = () => {
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update offer details',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to update offer details",
+        variant: "destructive",
       });
     }
   };
 
   const resetForm = () => {
     setFormData({
-      candidate_id: '',
-      position_title: '',
-      department: '',
-      employment_type: 'full-time',
-      start_date: '',
-      location: '',
-      reporting_manager: '',
+      candidate_id: "",
+      position_title: "",
+      department: "",
+      employment_type: "full-time",
+      start_date: "",
+      location: "",
+      reporting_manager: "",
       base_salary: undefined,
-      salary_currency: 'USD',
-      pay_frequency: 'annual',
+      salary_currency: "USD",
+      pay_frequency: "annual",
       bonus_amount: undefined,
-      bonus_description: '',
-      equity_compensation: '',
-      benefits_summary: '',
+      bonus_description: "",
+      equity_compensation: "",
+      benefits_summary: "",
     });
   };
 
@@ -196,8 +244,10 @@ export const CompPositionDetails: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compensation & Position Details</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+            Compensation & Position Details
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
             Set up pay, title, department, and other position details for offers
           </p>
         </div>
@@ -224,9 +274,11 @@ export const CompPositionDetails: React.FC = () => {
         <CardContent>
           {offers.length === 0 ? (
             <div className="text-center py-12">
-              <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No offers</h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <Briefcase className="mx-auto h-12 w-12 text-zinc-400" />
+              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+                No offers
+              </h3>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                 Create your first offer with compensation and position details
               </p>
             </div>
@@ -235,21 +287,26 @@ export const CompPositionDetails: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {offer.candidate ? `${offer.candidate.first_name} ${offer.candidate.last_name}` : 'Unknown Candidate'}
+                    <div className="font-medium text-zinc-900 dark:text-white">
+                      {offer.candidate
+                        ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
+                        : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {offer.base_salary ? `$${offer.base_salary.toLocaleString()}` : 'Salary not set'} 
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                      {offer.base_salary
+                        ? `$${offer.base_salary.toLocaleString()}`
+                        : "Salary not set"}
                       {offer.pay_frequency && ` / ${offer.pay_frequency}`}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      Employment Type: {offer.employment_type} | Location: {offer.location || 'N/A'}
+                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                      Employment Type: {offer.employment_type} | Location:{" "}
+                      {offer.location || "N/A"}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -276,19 +333,27 @@ export const CompPositionDetails: React.FC = () => {
       </Card>
 
       {/* Create/Edit Modal */}
-      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateModalOpen(false);
-          setIsEditModalOpen(false);
-          setSelectedOffer(null);
-          resetForm();
-        }
-      }}>
+      <Dialog
+        open={isCreateModalOpen || isEditModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateModalOpen(false);
+            setIsEditModalOpen(false);
+            setSelectedOffer(null);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditModalOpen ? 'Edit' : 'Create'} Compensation & Position Details</DialogTitle>
+            <DialogTitle>
+              {isEditModalOpen ? "Edit" : "Create"} Compensation & Position
+              Details
+            </DialogTitle>
             <DialogDescription>
-              {isEditModalOpen ? 'Update compensation and position details' : 'Set up pay, title, department, and other details'}
+              {isEditModalOpen
+                ? "Update compensation and position details"
+                : "Set up pay, title, department, and other details"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -298,12 +363,17 @@ export const CompPositionDetails: React.FC = () => {
               value={formData.candidate_id}
               onChange={(e) => {
                 handleInputChange(e);
-                const candidate = candidates.find(c => c.id === e.target.value);
+                const candidate = candidates.find(
+                  (c) => c.id === e.target.value,
+                );
                 if (candidate && !formData.position_title) {
-                  setFormData(prev => ({ ...prev, position_title: candidate.position_applied }));
+                  setFormData((prev) => ({
+                    ...prev,
+                    position_title: candidate.position_applied,
+                  }));
                 }
               }}
-              options={candidates.map(c => ({
+              options={candidates.map((c) => ({
                 value: c.id,
                 label: `${c.first_name} ${c.last_name} - ${c.position_applied}`,
               }))}
@@ -334,10 +404,10 @@ export const CompPositionDetails: React.FC = () => {
                 value={formData.employment_type}
                 onChange={handleInputChange}
                 options={[
-                  { value: 'full-time', label: 'Full-Time' },
-                  { value: 'part-time', label: 'Part-Time' },
-                  { value: 'contract', label: 'Contract' },
-                  { value: 'temporary', label: 'Temporary' },
+                  { value: "full-time", label: "Full-Time" },
+                  { value: "part-time", label: "Part-Time" },
+                  { value: "contract", label: "Contract" },
+                  { value: "temporary", label: "Temporary" },
                 ]}
                 required
               />
@@ -364,14 +434,16 @@ export const CompPositionDetails: React.FC = () => {
             />
 
             <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Compensation Details</h3>
-              
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+                Compensation Details
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   label="Base Salary"
                   name="base_salary"
                   type="number"
-                  value={formData.base_salary?.toString() || ''}
+                  value={formData.base_salary?.toString() || ""}
                   onChange={handleInputChange}
                 />
                 <Select
@@ -380,11 +452,11 @@ export const CompPositionDetails: React.FC = () => {
                   value={formData.pay_frequency}
                   onChange={handleInputChange}
                   options={[
-                    { value: 'hourly', label: 'Hourly' },
-                    { value: 'weekly', label: 'Weekly' },
-                    { value: 'bi-weekly', label: 'Bi-Weekly' },
-                    { value: 'monthly', label: 'Monthly' },
-                    { value: 'annual', label: 'Annual' },
+                    { value: "hourly", label: "Hourly" },
+                    { value: "weekly", label: "Weekly" },
+                    { value: "bi-weekly", label: "Bi-Weekly" },
+                    { value: "monthly", label: "Monthly" },
+                    { value: "annual", label: "Annual" },
                   ]}
                 />
                 <Input
@@ -400,7 +472,7 @@ export const CompPositionDetails: React.FC = () => {
                   label="Bonus Amount"
                   name="bonus_amount"
                   type="number"
-                  value={formData.bonus_amount?.toString() || ''}
+                  value={formData.bonus_amount?.toString() || ""}
                   onChange={handleInputChange}
                 />
                 <Textarea
@@ -433,19 +505,22 @@ export const CompPositionDetails: React.FC = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsCreateModalOpen(false);
-              setIsEditModalOpen(false);
-              setSelectedOffer(null);
-              resetForm();
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+                setSelectedOffer(null);
+                resetForm();
+              }}
+            >
               Cancel
             </Button>
             <Button
               onClick={isEditModalOpen ? handleUpdate : handleCreate}
               className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
             >
-              {isEditModalOpen ? 'Update' : 'Create'}
+              {isEditModalOpen ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -459,83 +534,141 @@ export const CompPositionDetails: React.FC = () => {
             <DialogDescription>
               {selectedOffer && selectedOffer.candidate
                 ? `View details for ${selectedOffer.candidate.first_name} ${selectedOffer.candidate.last_name}`
-                : 'View offer details'}
+                : "View offer details"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             {selectedOffer && (
               <>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Position Details</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">
+                    Position Details
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Position Title:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.position_title}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Department:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.department}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Employment Type:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.employment_type}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Location:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.location || 'N/A'}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Start Date:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">
-                        {selectedOffer.start_date ? new Date(selectedOffer.start_date).toLocaleDateString() : 'N/A'}
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Position Title:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.position_title}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Reporting Manager:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.reporting_manager || 'N/A'}</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Department:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.department}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Employment Type:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.employment_type}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Location:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.location || "N/A"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Start Date:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.start_date
+                          ? new Date(
+                              selectedOffer.start_date,
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Reporting Manager:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.reporting_manager || "N/A"}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Compensation Details</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">
+                    Compensation Details
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Base Salary:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">
-                        {selectedOffer.base_salary ? `$${selectedOffer.base_salary.toLocaleString()}` : 'N/A'}
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Base Salary:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.base_salary
+                          ? `$${selectedOffer.base_salary.toLocaleString()}`
+                          : "N/A"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Pay Frequency:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.pay_frequency || 'N/A'}</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Pay Frequency:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.pay_frequency || "N/A"}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Currency:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedOffer.salary_currency}</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Currency:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.salary_currency}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Bonus Amount:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">
-                        {selectedOffer.bonus_amount ? `$${selectedOffer.bonus_amount.toLocaleString()}` : 'N/A'}
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Bonus Amount:
+                      </span>
+                      <span className="ml-2 text-zinc-900 dark:text-white">
+                        {selectedOffer.bonus_amount
+                          ? `$${selectedOffer.bonus_amount.toLocaleString()}`
+                          : "N/A"}
                       </span>
                     </div>
                     {selectedOffer.bonus_description && (
                       <div className="col-span-2">
-                        <span className="text-gray-600 dark:text-gray-400">Bonus Description:</span>
-                        <p className="mt-1 text-gray-900 dark:text-white">{selectedOffer.bonus_description}</p>
+                        <span className="text-zinc-600 dark:text-zinc-400">
+                          Bonus Description:
+                        </span>
+                        <p className="mt-1 text-zinc-900 dark:text-white">
+                          {selectedOffer.bonus_description}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.equity_compensation && (
                       <div className="col-span-2">
-                        <span className="text-gray-600 dark:text-gray-400">Equity Compensation:</span>
-                        <p className="mt-1 text-gray-900 dark:text-white">{selectedOffer.equity_compensation}</p>
+                        <span className="text-zinc-600 dark:text-zinc-400">
+                          Equity Compensation:
+                        </span>
+                        <p className="mt-1 text-zinc-900 dark:text-white">
+                          {selectedOffer.equity_compensation}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.benefits_summary && (
                       <div className="col-span-2">
-                        <span className="text-gray-600 dark:text-gray-400">Benefits Summary:</span>
-                        <p className="mt-1 text-gray-900 dark:text-white whitespace-pre-wrap">{selectedOffer.benefits_summary}</p>
+                        <span className="text-zinc-600 dark:text-zinc-400">
+                          Benefits Summary:
+                        </span>
+                        <p className="mt-1 text-zinc-900 dark:text-white whitespace-pre-wrap">
+                          {selectedOffer.benefits_summary}
+                        </p>
                       </div>
                     )}
                   </div>

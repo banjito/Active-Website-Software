@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { SearchFilterPanel } from './SearchFilterPanel.tsx';
-import { RecentSearches } from './RecentSearches.tsx';
-import { SearchSuggestions } from './SearchSuggestions.tsx';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { SearchFilterPanel } from "./SearchFilterPanel.tsx";
+import { RecentSearches } from "./RecentSearches.tsx";
+import { SearchSuggestions } from "./SearchSuggestions.tsx";
 
 export interface GlobalSearchBarProps {
   onSearch: (query: string, filters: SearchFilters) => void;
@@ -21,33 +21,36 @@ export interface SearchFilters {
 const defaultFilters: SearchFilters = {
   entityTypes: [],
   divisions: [],
-  advancedMode: false
+  advancedMode: false,
 };
 
 export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   onSearch,
-  placeholder = 'Search across all portals...',
-  className = '',
+  placeholder = "Search across all portals...",
+  className = "",
 }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
         setShowRecentSearches(false);
       }
     }
-    
-    document.addEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -55,32 +58,35 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       // '/' key to focus search
-      if (event.key === '/' && document.activeElement !== containerRef.current) {
+      if (
+        event.key === "/" &&
+        document.activeElement !== containerRef.current
+      ) {
         event.preventDefault();
-        const inputElement = containerRef.current?.querySelector('input');
+        const inputElement = containerRef.current?.querySelector("input");
         if (inputElement) {
           inputElement.focus();
         }
       }
-      
+
       // Escape key to close dropdowns
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setShowSuggestions(false);
         setShowRecentSearches(false);
         setShowFilters(false);
       }
     }
-    
-    document.addEventListener('keydown', handleKeyDown);
+
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-    
+
     if (value.trim()) {
       setShowSuggestions(true);
       setShowRecentSearches(false);
@@ -99,7 +105,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   };
 
   const handleClearSearch = () => {
-    setQuery('');
+    setQuery("");
     setShowSuggestions(false);
     setShowRecentSearches(true);
   };
@@ -110,7 +116,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       onSearch(query, filters);
       // Store in recent searches (implementation details omitted)
       // Add to localStorage or state management...
-      
+
       // Close dropdowns
       setShowSuggestions(false);
       setShowRecentSearches(false);
@@ -135,10 +141,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className={`relative ${className}`}
-    >
+    <div ref={containerRef} className={`relative ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
         <Input
           leftIcon={<Search size={18} />}
@@ -148,7 +151,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="p-1 text-gray-500 hover:text-gray-700 dark:text-dark-400 dark:hover:text-dark-300"
+                  className="p-1 text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
                 >
                   <X size={16} />
                 </button>
@@ -156,9 +159,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="ml-1 p-1 text-gray-500 hover:text-gray-700 dark:text-dark-400 dark:hover:text-dark-300"
+                className="ml-1 p-1 text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
               >
-                {showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {showFilters ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
             </div>
           }
@@ -182,25 +189,20 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
       {/* Suggestions Dropdown */}
       {showSuggestions && query.trim() && (
-        <SearchSuggestions
-          query={query}
-          onSelect={handleSelectSuggestion}
-        />
+        <SearchSuggestions query={query} onSelect={handleSelectSuggestion} />
       )}
 
       {/* Recent Searches Dropdown */}
       {showRecentSearches && !query.trim() && (
-        <RecentSearches
-          onSelect={handleSelectRecentSearch}
-        />
+        <RecentSearches onSelect={handleSelectRecentSearch} />
       )}
 
       {/* Keyboard shortcut hint */}
-      <div className="absolute right-3 bottom-[-20px] text-xs text-gray-500 dark:text-dark-500">
+      <div className="absolute right-3 bottom-[-20px] text-xs text-zinc-500 dark:text-dark-500">
         Press / to search
       </div>
     </div>
   );
 };
 
-export default GlobalSearchBar; 
+export default GlobalSearchBar;

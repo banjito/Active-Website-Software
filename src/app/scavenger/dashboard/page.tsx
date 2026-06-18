@@ -1,7 +1,7 @@
-import React from 'react';
-import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { JobCreationForm } from '@/components/jobs/JobCreationForm';
+import React from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { JobCreationForm } from "@/components/jobs/JobCreationForm";
 
 export default function ScavengerDashboard() {
   const { user } = useAuth();
@@ -9,21 +9,23 @@ export default function ScavengerDashboard() {
 
   // Redirect to portal if user is not authenticated
   React.useEffect(() => {
-    if (!user || !user?.user_metadata?.divisions?.includes('Scavenger')) {
-      navigate('/portal');
+    if (!user || !user?.user_metadata?.divisions?.includes("Scavenger")) {
+      navigate("/portal");
     }
   }, [user, navigate]);
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold border-b border-gray-200 dark:border-gray-700 pb-3 text-gray-900 dark:text-white">Scavenger Division Dashboard</h1>
-      
+      <h1 className="text-2xl font-bold border-b border-zinc-200 dark:border-zinc-700 pb-3 text-zinc-900 dark:text-white">
+        Scavenger Division Dashboard
+      </h1>
+
       {/* Add JobCreationForm for NETA Technician jobs */}
       <JobCreationForm division="scavenger" />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Add Scavenger-specific components here */}
       </div>
     </div>
   );
-} 
+}

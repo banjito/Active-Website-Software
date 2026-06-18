@@ -568,7 +568,7 @@ export default function ExpenseTracking() {
               <div className="flex flex-wrap gap-4">
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
                     <Input
                       className="pl-9"
                       placeholder="Search expenses..."
@@ -659,7 +659,7 @@ export default function ExpenseTracking() {
                 <TableBody>
                   {filteredAndSortedExpenses.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-gray-500 py-4">
+                      <TableCell colSpan={7} className="text-center text-zinc-500 py-4">
                         No expenses found
                       </TableCell>
                     </TableRow>

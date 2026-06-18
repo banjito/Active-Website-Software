@@ -388,7 +388,7 @@ Try logging out and back in, or ask an admin to update your permissions.`);
           </button>
         </div>
         
-        <div className="p-4 bg-gray-100 rounded min-h-[100px] whitespace-pre-wrap">
+        <div className="p-4 bg-zinc-100 rounded min-h-[100px] whitespace-pre-wrap">
           {loading ? <LoadingSpinner size="md" /> : message || 'No data yet. Click one of the buttons above.'}
         </div>
       </div>

@@ -1,22 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, AlertCircle, Settings, Globe, Moon, Sun, PanelLeft, BookOpen, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Skeleton } from '../ui/Skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { Switch } from '../ui/Switch';
-import { Input } from '../ui/Input';
-import { SelectRoot, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
-import { Label } from '../ui/Label';
-import { Slider } from '../ui/Slider';
-import { Textarea } from '../ui/Textarea';
-import { Badge } from '../ui/Badge';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import {
+  Save,
+  RefreshCw,
+  AlertCircle,
+  Settings,
+  Globe,
+  Moon,
+  Sun,
+  PanelLeft,
+  BookOpen,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "../ui/Card";
+import { Button } from "../ui/Button";
+import { Skeleton } from "../ui/Skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
+import { Switch } from "../ui/Switch";
+import { Input } from "../ui/Input";
+import {
+  SelectRoot,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/Select";
+import { Label } from "../ui/Label";
+import { Slider } from "../ui/Slider";
+import { Textarea } from "../ui/Textarea";
+import { Badge } from "../ui/Badge";
+import { toast } from "react-hot-toast";
 
 interface PortalConfig {
   theme: {
-    mode: 'light' | 'dark' | 'system';
+    mode: "light" | "dark" | "system";
     primaryColor: string;
     accentColor: string;
     sidebarVisible: boolean;
@@ -50,9 +73,9 @@ export const PortalConfiguration: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<PortalConfig>({
     theme: {
-      mode: 'system',
-      primaryColor: '#f26722',
-      accentColor: '#4338ca',
+      mode: "system",
+      primaryColor: "#f26722",
+      accentColor: "#4338ca",
       sidebarVisible: true,
       compactMode: false,
     },
@@ -70,11 +93,11 @@ export const PortalConfiguration: React.FC = () => {
       mfaRequired: false,
     },
     content: {
-      welcomeMessage: 'Welcome to the portal dashboard',
-      footerText: '© 2023 Active Website Software',
-      termsUrl: '/terms',
-      privacyUrl: '/privacy',
-      helpUrl: '/help',
+      welcomeMessage: "Welcome to the portal dashboard",
+      footerText: "© 2023 Active Website Software",
+      termsUrl: "/terms",
+      privacyUrl: "/privacy",
+      helpUrl: "/help",
     },
   });
 
@@ -105,7 +128,7 @@ export const PortalConfiguration: React.FC = () => {
         // In a real app, you would update your database
         // const { error } = await supabase.from('portal_config').upsert(config);
         // if (error) throw error;
-        toast.success('Portal configuration saved successfully');
+        toast.success("Portal configuration saved successfully");
         setSaving(false);
       }, 1500);
     } catch (err: any) {
@@ -119,7 +142,7 @@ export const PortalConfiguration: React.FC = () => {
     fetchConfiguration();
   }, []);
 
-  const handleThemeChange = (key: keyof PortalConfig['theme'], value: any) => {
+  const handleThemeChange = (key: keyof PortalConfig["theme"], value: any) => {
     setConfig({
       ...config,
       theme: {
@@ -129,7 +152,10 @@ export const PortalConfiguration: React.FC = () => {
     });
   };
 
-  const handleFeaturesChange = (key: keyof PortalConfig['features'], value: boolean) => {
+  const handleFeaturesChange = (
+    key: keyof PortalConfig["features"],
+    value: boolean,
+  ) => {
     setConfig({
       ...config,
       features: {
@@ -139,7 +165,10 @@ export const PortalConfiguration: React.FC = () => {
     });
   };
 
-  const handleSecurityChange = (key: keyof PortalConfig['security'], value: any) => {
+  const handleSecurityChange = (
+    key: keyof PortalConfig["security"],
+    value: any,
+  ) => {
     setConfig({
       ...config,
       security: {
@@ -149,7 +178,10 @@ export const PortalConfiguration: React.FC = () => {
     });
   };
 
-  const handleContentChange = (key: keyof PortalConfig['content'], value: string) => {
+  const handleContentChange = (
+    key: keyof PortalConfig["content"],
+    value: string,
+  ) => {
     setConfig({
       ...config,
       content: {
@@ -163,8 +195,10 @@ export const PortalConfiguration: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Portal Configuration</h2>
-          <p className="text-gray-600 dark:text-white mt-1">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            Portal Configuration
+          </h2>
+          <p className="text-zinc-600 dark:text-white mt-1">
             Customize the appearance and functionality of the portals.
           </p>
         </div>
@@ -176,7 +210,7 @@ export const PortalConfiguration: React.FC = () => {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           <Button
@@ -185,7 +219,7 @@ export const PortalConfiguration: React.FC = () => {
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
           >
             <Save className="h-4 w-4" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>
@@ -228,20 +262,25 @@ export const PortalConfiguration: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Theme Settings</CardTitle>
-                <CardDescription>Customize the look and feel of the portal</CardDescription>
+                <CardDescription>
+                  Customize the look and feel of the portal
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="theme-mode">Theme Mode</Label>
                   <SelectRoot
                     value={config.theme.mode}
-                    onValueChange={(value) => handleThemeChange('mode', value)}
+                    onValueChange={(value) => handleThemeChange("mode", value)}
                   >
                     <SelectTrigger id="theme-mode">
                       <SelectValue placeholder="Select theme mode" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light" className="flex items-center gap-2">
+                      <SelectItem
+                        value="light"
+                        className="flex items-center gap-2"
+                      >
                         <div className="flex items-center gap-2">
                           <Sun className="h-4 w-4" />
                           <span>Light</span>
@@ -270,17 +309,21 @@ export const PortalConfiguration: React.FC = () => {
                       id="primary-color"
                       type="color"
                       value={config.theme.primaryColor}
-                      onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                      onChange={(e) =>
+                        handleThemeChange("primaryColor", e.target.value)
+                      }
                       className="w-12 h-8 p-1"
                     />
                     <Input
                       type="text"
                       value={config.theme.primaryColor}
-                      onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                      onChange={(e) =>
+                        handleThemeChange("primaryColor", e.target.value)
+                      }
                       className="flex-grow"
                     />
-                    <div 
-                      className="h-8 w-8 rounded border" 
+                    <div
+                      className="h-8 w-8 rounded border"
                       style={{ backgroundColor: config.theme.primaryColor }}
                     ></div>
                   </div>
@@ -293,17 +336,21 @@ export const PortalConfiguration: React.FC = () => {
                       id="accent-color"
                       type="color"
                       value={config.theme.accentColor}
-                      onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                      onChange={(e) =>
+                        handleThemeChange("accentColor", e.target.value)
+                      }
                       className="w-12 h-8 p-1"
                     />
                     <Input
                       type="text"
                       value={config.theme.accentColor}
-                      onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                      onChange={(e) =>
+                        handleThemeChange("accentColor", e.target.value)
+                      }
                       className="flex-grow"
                     />
-                    <div 
-                      className="h-8 w-8 rounded border" 
+                    <div
+                      className="h-8 w-8 rounded border"
                       style={{ backgroundColor: config.theme.accentColor }}
                     ></div>
                   </div>
@@ -312,24 +359,32 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="sidebar-visible">Sidebar Visible</Label>
-                    <p className="text-sm text-gray-500">Show sidebar navigation by default</p>
+                    <p className="text-sm text-zinc-500">
+                      Show sidebar navigation by default
+                    </p>
                   </div>
                   <Switch
                     id="sidebar-visible"
                     checked={config.theme.sidebarVisible}
-                    onCheckedChange={(checked) => handleThemeChange('sidebarVisible', checked)}
+                    onCheckedChange={(checked) =>
+                      handleThemeChange("sidebarVisible", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="compact-mode">Compact Mode</Label>
-                    <p className="text-sm text-gray-500">Use more condensed layouts</p>
+                    <p className="text-sm text-zinc-500">
+                      Use more condensed layouts
+                    </p>
                   </div>
                   <Switch
                     id="compact-mode"
                     checked={config.theme.compactMode}
-                    onCheckedChange={(checked) => handleThemeChange('compactMode', checked)}
+                    onCheckedChange={(checked) =>
+                      handleThemeChange("compactMode", checked)
+                    }
                   />
                 </div>
               </CardContent>
@@ -340,70 +395,95 @@ export const PortalConfiguration: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Feature Settings</CardTitle>
-                <CardDescription>Enable or disable portal features</CardDescription>
+                <CardDescription>
+                  Enable or disable portal features
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="analytics-enabled">Analytics</Label>
-                    <p className="text-sm text-gray-500">Enable usage analytics and tracking</p>
+                    <p className="text-sm text-zinc-500">
+                      Enable usage analytics and tracking
+                    </p>
                   </div>
                   <Switch
                     id="analytics-enabled"
                     checked={config.features.analyticsEnabled}
-                    onCheckedChange={(checked) => handleFeaturesChange('analyticsEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      handleFeaturesChange("analyticsEnabled", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="documentation-enabled">Documentation</Label>
-                    <p className="text-sm text-gray-500">Enable access to documentation and help resources</p>
+                    <p className="text-sm text-zinc-500">
+                      Enable access to documentation and help resources
+                    </p>
                   </div>
                   <Switch
                     id="documentation-enabled"
                     checked={config.features.documentationEnabled}
-                    onCheckedChange={(checked) => handleFeaturesChange('documentationEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      handleFeaturesChange("documentationEnabled", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="notifications-enabled">Notifications</Label>
-                    <p className="text-sm text-gray-500">Enable in-app notifications</p>
+                    <p className="text-sm text-zinc-500">
+                      Enable in-app notifications
+                    </p>
                   </div>
                   <Switch
                     id="notifications-enabled"
                     checked={config.features.notificationsEnabled}
-                    onCheckedChange={(checked) => handleFeaturesChange('notificationsEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      handleFeaturesChange("notificationsEnabled", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="feedback-enabled">Feedback</Label>
-                    <p className="text-sm text-gray-500">Allow users to submit feedback</p>
+                    <p className="text-sm text-zinc-500">
+                      Allow users to submit feedback
+                    </p>
                   </div>
                   <Switch
                     id="feedback-enabled"
                     checked={config.features.feedbackEnabled}
-                    onCheckedChange={(checked) => handleFeaturesChange('feedbackEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      handleFeaturesChange("feedbackEnabled", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="chat-enabled">Support Chat</Label>
-                    <p className="text-sm text-gray-500">Enable support chat functionality</p>
+                    <p className="text-sm text-zinc-500">
+                      Enable support chat functionality
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-yellow-700 bg-yellow-50 border-yellow-200">
+                    <Badge
+                      variant="outline"
+                      className="text-yellow-700 bg-yellow-50 border-yellow-200"
+                    >
                       Beta
                     </Badge>
                     <Switch
                       id="chat-enabled"
                       checked={config.features.chatEnabled}
-                      onCheckedChange={(checked) => handleFeaturesChange('chatEnabled', checked)}
+                      onCheckedChange={(checked) =>
+                        handleFeaturesChange("chatEnabled", checked)
+                      }
                     />
                   </div>
                 </div>
@@ -415,22 +495,30 @@ export const PortalConfiguration: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Configure security options for the portal</CardDescription>
+                <CardDescription>
+                  Configure security options for the portal
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
-                    <span className="text-sm font-medium">{config.security.sessionTimeout} min</span>
+                    <Label htmlFor="session-timeout">
+                      Session Timeout (minutes)
+                    </Label>
+                    <span className="text-sm font-medium">
+                      {config.security.sessionTimeout} min
+                    </span>
                   </div>
                   <Slider
                     min={5}
                     max={120}
                     step={5}
                     value={config.security.sessionTimeout}
-                    onChange={(value) => handleSecurityChange('sessionTimeout', value)}
+                    onChange={(value) =>
+                      handleSecurityChange("sessionTimeout", value)
+                    }
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-zinc-500">
                     How long until user sessions expire due to inactivity
                   </p>
                 </div>
@@ -438,23 +526,33 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="inactivity-logout">Inactivity Logout</Label>
-                    <p className="text-sm text-gray-500">Automatically log out inactive users</p>
+                    <p className="text-sm text-zinc-500">
+                      Automatically log out inactive users
+                    </p>
                   </div>
                   <Switch
                     id="inactivity-logout"
                     checked={config.security.inactivityLogout}
-                    onCheckedChange={(checked) => handleSecurityChange('inactivityLogout', checked)}
+                    onCheckedChange={(checked) =>
+                      handleSecurityChange("inactivityLogout", checked)
+                    }
                   />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password-expiry">Password Expiry (days)</Label>
-                    <span className="text-sm font-medium">{config.security.passwordExpiry} days</span>
+                    <Label htmlFor="password-expiry">
+                      Password Expiry (days)
+                    </Label>
+                    <span className="text-sm font-medium">
+                      {config.security.passwordExpiry} days
+                    </span>
                   </div>
                   <SelectRoot
                     value={config.security.passwordExpiry.toString()}
-                    onValueChange={(value) => handleSecurityChange('passwordExpiry', parseInt(value))}
+                    onValueChange={(value) =>
+                      handleSecurityChange("passwordExpiry", parseInt(value))
+                    }
                   >
                     <SelectTrigger id="password-expiry">
                       <SelectValue placeholder="Select expiry period" />
@@ -471,13 +569,19 @@ export const PortalConfiguration: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="mfa-required">Require Two-Factor Authentication</Label>
-                    <p className="text-sm text-gray-500">Require MFA for all users</p>
+                    <Label htmlFor="mfa-required">
+                      Require Two-Factor Authentication
+                    </Label>
+                    <p className="text-sm text-zinc-500">
+                      Require MFA for all users
+                    </p>
                   </div>
                   <Switch
                     id="mfa-required"
                     checked={config.security.mfaRequired}
-                    onCheckedChange={(checked) => handleSecurityChange('mfaRequired', checked)}
+                    onCheckedChange={(checked) =>
+                      handleSecurityChange("mfaRequired", checked)
+                    }
                   />
                 </div>
               </CardContent>
@@ -488,7 +592,9 @@ export const PortalConfiguration: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Content Settings</CardTitle>
-                <CardDescription>Configure text content and links</CardDescription>
+                <CardDescription>
+                  Configure text content and links
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
@@ -496,11 +602,13 @@ export const PortalConfiguration: React.FC = () => {
                   <Textarea
                     id="welcome-message"
                     value={config.content.welcomeMessage}
-                    onChange={(e) => handleContentChange('welcomeMessage', e.target.value)}
+                    onChange={(e) =>
+                      handleContentChange("welcomeMessage", e.target.value)
+                    }
                     placeholder="Enter welcome message"
                     rows={2}
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-zinc-500">
                     Message displayed to users on the dashboard
                   </p>
                 </div>
@@ -510,7 +618,9 @@ export const PortalConfiguration: React.FC = () => {
                   <Input
                     id="footer-text"
                     value={config.content.footerText}
-                    onChange={(e) => handleContentChange('footerText', e.target.value)}
+                    onChange={(e) =>
+                      handleContentChange("footerText", e.target.value)
+                    }
                     placeholder="Enter footer text"
                   />
                 </div>
@@ -520,7 +630,9 @@ export const PortalConfiguration: React.FC = () => {
                   <Input
                     id="terms-url"
                     value={config.content.termsUrl}
-                    onChange={(e) => handleContentChange('termsUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleContentChange("termsUrl", e.target.value)
+                    }
                     placeholder="Enter terms URL"
                   />
                 </div>
@@ -530,7 +642,9 @@ export const PortalConfiguration: React.FC = () => {
                   <Input
                     id="privacy-url"
                     value={config.content.privacyUrl}
-                    onChange={(e) => handleContentChange('privacyUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleContentChange("privacyUrl", e.target.value)
+                    }
                     placeholder="Enter privacy policy URL"
                   />
                 </div>
@@ -540,7 +654,9 @@ export const PortalConfiguration: React.FC = () => {
                   <Input
                     id="help-url"
                     value={config.content.helpUrl}
-                    onChange={(e) => handleContentChange('helpUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleContentChange("helpUrl", e.target.value)
+                    }
                     placeholder="Enter help URL"
                   />
                 </div>
@@ -553,4 +669,4 @@ export const PortalConfiguration: React.FC = () => {
   );
 };
 
-export default PortalConfiguration; 
+export default PortalConfiguration;

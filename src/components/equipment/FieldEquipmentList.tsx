@@ -1643,7 +1643,7 @@ export default function FieldEquipmentList() {
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
               Field Equipment
             </h1>
             <div className="flex items-center gap-2">
@@ -1677,16 +1677,16 @@ export default function FieldEquipmentList() {
               </Button>
             </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-zinc-600 dark:text-zinc-400">
             {activeTab === "all" ? (
               <>
                 Total Equipment:{" "}
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="font-semibold text-zinc-900 dark:text-white">
                   {totalCount}
                 </span>
                 {(searchTerm || categoryFilter) &&
                   filteredEquipment.length !== totalCount && (
-                    <span className="ml-2 text-gray-500 dark:text-gray-500">
+                    <span className="ml-2 text-zinc-500 dark:text-zinc-500">
                       (Showing {filteredEquipment.length} of {totalCount})
                     </span>
                   )}
@@ -1698,11 +1698,11 @@ export default function FieldEquipmentList() {
                 {activeTab === "assigned" && "Assigned Equipment: "}
                 {activeTab === "unassigned" && "Unassigned Equipment: "}
                 {activeTab === "category" && "Equipment by Category: "}
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="font-semibold text-zinc-900 dark:text-white">
                   {filteredEquipment.length}
                 </span>
                 {(searchTerm || categoryFilter) && (
-                  <span className="ml-2 text-gray-500 dark:text-gray-500">
+                  <span className="ml-2 text-zinc-500 dark:text-zinc-500">
                     (filtered from {totalCount} total)
                   </span>
                 )}
@@ -1714,7 +1714,7 @@ export default function FieldEquipmentList() {
         {/* Search Bar and Service Filter */}
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <Input
               type="text"
               placeholder="Search equipment by name, AMP ID, serial number, category, location, or notes..."
@@ -1724,7 +1724,7 @@ export default function FieldEquipmentList() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+            <span className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
               Show:
             </span>
             <select
@@ -1732,20 +1732,20 @@ export default function FieldEquipmentList() {
               onChange={(e) =>
                 setServiceFilter(e.target.value as ServiceFilter)
               }
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All equipment</option>
               <option value="in_service">In service only</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+            <span className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
               Category:
             </span>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] min-w-[180px]"
+              className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] min-w-[180px]"
             >
               <option value="">All categories</option>
               <option value="__uncategorized__">Uncategorized</option>
@@ -1768,45 +1768,45 @@ export default function FieldEquipmentList() {
           }}
           className="mb-4"
         >
-          <TabsList className="inline-flex flex-wrap space-x-1 bg-gray-100 dark:bg-dark-150 p-1 rounded-lg">
+          <TabsList className="inline-flex flex-wrap space-x-1 bg-zinc-100 dark:bg-dark-150 p-1 rounded-lg">
             <TabsTrigger
               value="all"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <FileText className="h-4 w-4" />
               All
             </TabsTrigger>
             <TabsTrigger
               value="in-cal"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <AlertTriangle className="h-4 w-4" />
               In Cal
             </TabsTrigger>
             <TabsTrigger
               value="out-of-cal"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <ThumbsUp className="h-4 w-4" />
               Out of Cal
             </TabsTrigger>
             <TabsTrigger
               value="assigned"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <CheckCircle className="h-4 w-4" />
               Assigned
             </TabsTrigger>
             <TabsTrigger
               value="unassigned"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <XCircle className="h-4 w-4" />
               Unassigned
             </TabsTrigger>
             <TabsTrigger
               value="category"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Tag className="h-4 w-4" />
               Category
@@ -1816,29 +1816,29 @@ export default function FieldEquipmentList() {
 
         {/* Equipment Table */}
         {loading ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
             <LoadingSpinner size="md" />
           </div>
         ) : (
-          <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">
+          <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-dark-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-dark-200">
+                <thead className="bg-zinc-50 dark:bg-dark-200">
                   <tr>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                       onClick={() => handleSort("equipment_name")}
                     >
                       Equipment Name{renderSortIcon("equipment_name")}
                     </th>
                     {(activeTab === "all" || activeTab === "category") && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                         Status
                       </th>
                     )}
                     {activeTab === "all" && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("serial_number")}
                       >
                         Serial Number{renderSortIcon("serial_number")}
@@ -1846,7 +1846,7 @@ export default function FieldEquipmentList() {
                     )}
                     {activeTab !== "category" && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("amp_id")}
                       >
                         AMP ID{renderSortIcon("amp_id")}
@@ -1854,7 +1854,7 @@ export default function FieldEquipmentList() {
                     )}
                     {activeTab === "all" && allTabShowExtraColumns && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("calibration_date")}
                       >
                         In Cal Date{renderSortIcon("calibration_date")}
@@ -1863,13 +1863,13 @@ export default function FieldEquipmentList() {
                     {(activeTab === "in-cal" || activeTab === "out-of-cal") && (
                       <>
                         <th
-                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                           onClick={() => handleSort("calibration_date")}
                         >
                           Calibration Date{renderSortIcon("calibration_date")}
                         </th>
                         <th
-                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                           onClick={() => handleSort("calibration_due_date")}
                         >
                           Cal Due Date{renderSortIcon("calibration_due_date")}
@@ -1878,7 +1878,7 @@ export default function FieldEquipmentList() {
                     )}
                     {activeTab === "category" && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("category")}
                       >
                         Category{renderSortIcon("category")}
@@ -1886,26 +1886,26 @@ export default function FieldEquipmentList() {
                     )}
                     {(activeTab === "all" || activeTab === "category") && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("location")}
                       >
                         Location{renderSortIcon("location")}
                       </th>
                     )}
                     {activeTab === "all" && allTabShowExtraColumns && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                         Sub Components
                       </th>
                     )}
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                       onClick={() => handleSort("assigned_to")}
                     >
                       Assigned To{renderSortIcon("assigned_to")}
                     </th>
                     {activeTab !== "all" && activeTab !== "category" && (
                       <th
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => handleSort("notes")}
                       >
                         Notes{renderSortIcon("notes")}
@@ -1913,21 +1913,21 @@ export default function FieldEquipmentList() {
                     )}
                     {(activeTab === "all" || activeTab === "category") &&
                       (activeTab !== "all" || allTabShowExtraColumns) && (
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                           Tracking
                         </th>
                       )}
                     {activeTab === "all" && allTabShowExtraColumns && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                         Certificate
                       </th>
                     )}
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-dark-200">
                   {filteredEquipment.length === 0 ? (
                     <tr>
                       <td
@@ -1942,7 +1942,7 @@ export default function FieldEquipmentList() {
                                 ? 7
                                 : 5
                         }
-                        className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
+                        className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400"
                       >
                         {searchTerm
                           ? "No equipment found matching your search"
@@ -1969,7 +1969,7 @@ export default function FieldEquipmentList() {
                       return (
                         <tr
                           key={item.id}
-                          className={`hover:bg-gray-50 dark:hover:bg-dark-100 cursor-pointer ${
+                          className={`hover:bg-zinc-50 dark:hover:bg-dark-100 cursor-pointer ${
                             isPastDue ? "bg-red-50 dark:bg-red-900/20" : ""
                           }`}
                           onClick={(e) => {
@@ -1989,7 +1989,7 @@ export default function FieldEquipmentList() {
                         >
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              <span className="text-sm font-medium text-zinc-900 dark:text-white">
                                 {item.equipment_name}
                               </span>
                               {isPastDue && (
@@ -2016,31 +2016,31 @@ export default function FieldEquipmentList() {
                             </td>
                           )}
                           {activeTab === "all" && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {item.serial_number || "-"}
                             </td>
                           )}
                           {activeTab !== "category" && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {item.amp_id || "-"}
                             </td>
                           )}
                           {activeTab === "all" && allTabShowExtraColumns && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {formatLocalDate(item.calibration_date)}
                             </td>
                           )}
                           {(activeTab === "in-cal" ||
                             activeTab === "out-of-cal") && (
                             <>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                                 {formatLocalDate(item.calibration_date)}
                               </td>
                               <td
                                 className={`px-4 py-3 whitespace-nowrap text-sm ${
                                   isPastDue
                                     ? "font-semibold text-red-600 dark:text-red-400"
-                                    : "text-gray-500 dark:text-gray-400"
+                                    : "text-zinc-500 dark:text-zinc-400"
                                 }`}
                               >
                                 {formatLocalDate(item.calibration_due_date)}
@@ -2048,18 +2048,18 @@ export default function FieldEquipmentList() {
                             </>
                           )}
                           {activeTab === "category" && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {item.category || "Uncategorized"}
                             </td>
                           )}
                           {(activeTab === "all" ||
                             activeTab === "category") && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {item.location || "-"}
                             </td>
                           )}
                           {activeTab === "all" && allTabShowExtraColumns && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                               {item.sub_components &&
                               item.sub_components.length > 0
                                 ? `${item.sub_components.length} item${item.sub_components.length > 1 ? "s" : ""}`
@@ -2074,7 +2074,7 @@ export default function FieldEquipmentList() {
                               }}
                             >
                               <button
-                                className="flex items-center gap-2 px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-100 text-gray-700 dark:text-white"
+                                className="flex items-center gap-2 px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
                                 onClick={() =>
                                   setOpenUserSelectors((prev) => ({
                                     ...prev,
@@ -2143,11 +2143,11 @@ export default function FieldEquipmentList() {
                                     `flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border-b-2 transition-colors ${
                                       activeAssignTab === t
                                         ? "border-[#f26722] text-[#f26722]"
-                                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                        : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                                     }`;
                                   return (
-                                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
-                                      <div className="flex border-b border-gray-200 dark:border-gray-700">
+                                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-lg shadow-lg z-50">
+                                      <div className="flex border-b border-zinc-200 dark:border-zinc-700">
                                         <button
                                           type="button"
                                           className={tabButtonClass("user")}
@@ -2193,16 +2193,16 @@ export default function FieldEquipmentList() {
                                       </div>
                                       <div className="max-h-60 overflow-y-auto">
                                         <div
-                                          className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700"
+                                          className="px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700"
                                           onClick={() =>
                                             handleAssign(item.id, null, null)
                                           }
                                         >
                                           <div className="flex flex-col">
-                                            <span className="font-medium text-gray-900 dark:text-white">
+                                            <span className="font-medium text-zinc-900 dark:text-white">
                                               Unassign
                                             </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                               Remove assignment
                                             </span>
                                           </div>
@@ -2213,7 +2213,7 @@ export default function FieldEquipmentList() {
                                             {filteredUsers(item.id).map((u) => (
                                               <div
                                                 key={u.id}
-                                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                className="px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                                 onClick={() =>
                                                   handleAssign(
                                                     item.id,
@@ -2224,14 +2224,14 @@ export default function FieldEquipmentList() {
                                                 }
                                               >
                                                 <div className="flex flex-col">
-                                                  <span className="font-medium text-gray-900 dark:text-white">
+                                                  <span className="font-medium text-zinc-900 dark:text-white">
                                                     {displayUserName(u)}
                                                   </span>
-                                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                                     {u.email}
                                                   </span>
                                                   {u.user_metadata?.role && (
-                                                    <span className="text-xs text-gray-600 dark:text-gray-300">
+                                                    <span className="text-xs text-zinc-600 dark:text-zinc-300">
                                                       Role:{" "}
                                                       {u.user_metadata.role}
                                                     </span>
@@ -2241,7 +2241,7 @@ export default function FieldEquipmentList() {
                                             ))}
                                             {filteredUsers(item.id).length ===
                                               0 && (
-                                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                                              <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400">
                                                 No users found
                                               </div>
                                             )}
@@ -2254,7 +2254,7 @@ export default function FieldEquipmentList() {
                                               (site) => (
                                                 <div
                                                   key={site}
-                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                                   onClick={() =>
                                                     handleAssign(
                                                       item.id,
@@ -2265,8 +2265,8 @@ export default function FieldEquipmentList() {
                                                   }
                                                 >
                                                   <div className="flex items-center gap-2">
-                                                    <Briefcase className="h-4 w-4 text-gray-400" />
-                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                    <Briefcase className="h-4 w-4 text-zinc-400" />
+                                                    <span className="font-medium text-zinc-900 dark:text-white">
                                                       {site}
                                                     </span>
                                                   </div>
@@ -2276,7 +2276,7 @@ export default function FieldEquipmentList() {
                                                       e.stopPropagation();
                                                       deleteJobSite(site);
                                                     }}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                                     title="Remove from saved job sites"
                                                   >
                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -2293,7 +2293,7 @@ export default function FieldEquipmentList() {
                                                     .toLowerCase(),
                                               ) && (
                                                 <div
-                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-zinc-200 dark:border-zinc-700"
                                                   onClick={async () => {
                                                     const name =
                                                       searchValue.trim();
@@ -2325,7 +2325,7 @@ export default function FieldEquipmentList() {
                                             {filteredJobSites(item.id)
                                               .length === 0 &&
                                               !searchValue.trim() && (
-                                                <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                                                   No saved job sites yet. Type a
                                                   name above to add one.
                                                 </div>
@@ -2339,7 +2339,7 @@ export default function FieldEquipmentList() {
                                               (truckName) => (
                                                 <div
                                                   key={truckName}
-                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                                   onClick={() =>
                                                     handleAssign(
                                                       item.id,
@@ -2350,8 +2350,8 @@ export default function FieldEquipmentList() {
                                                   }
                                                 >
                                                   <div className="flex items-center gap-2">
-                                                    <TruckIcon className="h-4 w-4 text-gray-400" />
-                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                    <TruckIcon className="h-4 w-4 text-zinc-400" />
+                                                    <span className="font-medium text-zinc-900 dark:text-white">
                                                       {truckName}
                                                     </span>
                                                   </div>
@@ -2361,7 +2361,7 @@ export default function FieldEquipmentList() {
                                                       e.stopPropagation();
                                                       deleteTruck(truckName);
                                                     }}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                                     title="Remove from saved trucks"
                                                   >
                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -2378,7 +2378,7 @@ export default function FieldEquipmentList() {
                                                     .toLowerCase(),
                                               ) && (
                                                 <div
-                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-zinc-200 dark:border-zinc-700"
                                                   onClick={async () => {
                                                     const name =
                                                       searchValue.trim();
@@ -2410,7 +2410,7 @@ export default function FieldEquipmentList() {
                                             {filteredTrucks(item.id).length ===
                                               0 &&
                                               !searchValue.trim() && (
-                                                <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                                                   No saved trucks yet. Type a
                                                   name above to add one.
                                                 </div>
@@ -2418,9 +2418,9 @@ export default function FieldEquipmentList() {
                                           </>
                                         )}
                                       </div>
-                                      <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+                                      <div className="p-2 border-t border-zinc-200 dark:border-zinc-700">
                                         <button
-                                          className="w-full px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                                          className="w-full px-3 py-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
                                           onClick={() => {
                                             setOpenUserSelectors((prev) => ({
                                               ...prev,
@@ -2441,7 +2441,7 @@ export default function FieldEquipmentList() {
                             </div>
                           </td>
                           {activeTab !== "all" && activeTab !== "category" && (
-                            <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                            <td className="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
                               <div
                                 className="truncate"
                                 title={item.notes || ""}
@@ -2465,7 +2465,7 @@ export default function FieldEquipmentList() {
                                   Tracking
                                 </button>
                               ) : (
-                                <span className="text-gray-400 dark:text-gray-500 text-sm">
+                                <span className="text-zinc-400 dark:text-zinc-500 text-sm">
                                   -
                                 </span>
                               )}
@@ -2495,14 +2495,14 @@ export default function FieldEquipmentList() {
                                       link.target = "_blank";
                                       link.click();
                                     }}
-                                    className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                    className="text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
                                     title="Download Certificate"
                                   >
                                     <Download className="h-4 w-4" />
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-gray-400 dark:text-gray-500 text-sm">
+                                <span className="text-zinc-400 dark:text-zinc-500 text-sm">
                                   -
                                 </span>
                               )}
@@ -2523,19 +2523,19 @@ export default function FieldEquipmentList() {
                                     [item.id]: !prev[item.id],
                                   }))
                                 }
-                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-100 rounded-md transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-dark-100 rounded-md transition-colors"
                                 title="Actions"
                               >
                                 Actions
                                 <ChevronDown className="h-3.5 w-3.5" />
                               </button>
                               {openActionMenus[item.id] && (
-                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-40 py-1">
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg z-40 py-1">
                                   {item.checked_out_by ? (
                                     <button
                                       type="button"
                                       onClick={() => handleCheckIn(item.id)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-100"
                                     >
                                       <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                                       Check In
@@ -2544,13 +2544,13 @@ export default function FieldEquipmentList() {
                                     <button
                                       type="button"
                                       onClick={() => handleCheckOut(item.id)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-100"
                                     >
                                       <ArrowUp className="h-4 w-4 text-[#f26722]" />
                                       Check Out
                                     </button>
                                   )}
-                                  <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+                                  <div className="my-1 border-t border-zinc-200 dark:border-zinc-700" />
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -2560,7 +2560,7 @@ export default function FieldEquipmentList() {
                                       }));
                                       handleEdit(item);
                                     }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-100"
                                   >
                                     <Pencil className="h-4 w-4 text-[#f26722]" />
                                     Edit
@@ -2602,13 +2602,13 @@ export default function FieldEquipmentList() {
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-3xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
-                <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-zinc-200 dark:border-dark-200 flex-shrink-0">
+                <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-white">
                   {isEditMode ? "Edit Equipment" : "Add Equipment"}
                 </Dialog.Title>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -2621,7 +2621,7 @@ export default function FieldEquipmentList() {
               >
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Equipment Name *
                     </label>
                     <Input
@@ -2635,7 +2635,7 @@ export default function FieldEquipmentList() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       AMP ID
                     </label>
                     <Input
@@ -2648,7 +2648,7 @@ export default function FieldEquipmentList() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Serial Number
                     </label>
                     <Input
@@ -2661,7 +2661,7 @@ export default function FieldEquipmentList() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Category
                     </label>
                     <div className="relative" ref={categoryInputRef}>
@@ -2692,7 +2692,7 @@ export default function FieldEquipmentList() {
                         placeholder="Type to search or add new category"
                       />
                       {showCategoryDropdown && (
-                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                           {categories
                             .filter(
                               (cat) =>
@@ -2705,7 +2705,7 @@ export default function FieldEquipmentList() {
                               <div
                                 key={category}
                                 role="option"
-                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -2717,7 +2717,7 @@ export default function FieldEquipmentList() {
                                   setShowCategoryDropdown(false);
                                 }}
                               >
-                                <span className="text-sm text-gray-900 dark:text-white">
+                                <span className="text-sm text-zinc-900 dark:text-white">
                                   {category}
                                 </span>
                                 <button
@@ -2727,7 +2727,7 @@ export default function FieldEquipmentList() {
                                     e.stopPropagation();
                                     deleteCategory(category);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                   title="Remove from saved categories"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -2742,7 +2742,7 @@ export default function FieldEquipmentList() {
                             ) && (
                               <div
                                 role="option"
-                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                className="px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-t border-zinc-200 dark:border-zinc-700 bg-blue-50 dark:bg-blue-900/20"
                                 onMouseDown={async (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -2777,20 +2777,20 @@ export default function FieldEquipmentList() {
                                 .includes(categoryInput.toLowerCase()),
                           ).length === 0 &&
                             !categoryInput && (
-                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                              <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                                 No categories found. Type to create a new one.
                               </div>
                             )}
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       Select an existing category or type to create a new one
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Location
                     </label>
                     <div className="relative" ref={locationInputRef}>
@@ -2820,7 +2820,7 @@ export default function FieldEquipmentList() {
                         placeholder="Type to search or add new location"
                       />
                       {showLocationDropdown && (
-                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                           {locations
                             .filter(
                               (loc) =>
@@ -2833,7 +2833,7 @@ export default function FieldEquipmentList() {
                               <div
                                 key={location}
                                 role="option"
-                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -2845,7 +2845,7 @@ export default function FieldEquipmentList() {
                                   setShowLocationDropdown(false);
                                 }}
                               >
-                                <span className="text-sm text-gray-900 dark:text-white">
+                                <span className="text-sm text-zinc-900 dark:text-white">
                                   {location}
                                 </span>
                                 <button
@@ -2855,7 +2855,7 @@ export default function FieldEquipmentList() {
                                     e.stopPropagation();
                                     deleteLocation(location);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                   title="Remove from saved locations"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -2870,7 +2870,7 @@ export default function FieldEquipmentList() {
                             ) && (
                               <div
                                 role="option"
-                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                className="px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-t border-zinc-200 dark:border-zinc-700 bg-blue-50 dark:bg-blue-900/20"
                                 onMouseDown={async (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -2905,21 +2905,21 @@ export default function FieldEquipmentList() {
                                 .includes(locationInput.toLowerCase()),
                           ).length === 0 &&
                             !locationInput && (
-                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                              <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                                 No locations found. Type to create a new one.
                               </div>
                             )}
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       Select an existing location or type to create a new one
                     </p>
                   </div>
 
                   <div className="py-2">
                     <div className="flex items-center justify-between gap-4 mb-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         In service
                       </label>
                       <Switch
@@ -2933,7 +2933,7 @@ export default function FieldEquipmentList() {
                         checkedClassName="bg-[#f26722]"
                       />
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                       Out-of-service equipment is hidden from test report
                       equipment selection but remains in this list and can be
                       placed back in service.
@@ -2941,10 +2941,10 @@ export default function FieldEquipmentList() {
                   </div>
 
                   {/* Sub Components Section */}
-                  <div className="border border-gray-200 dark:border-gray-600 rounded-md">
+                  <div className="border border-zinc-200 dark:border-zinc-600 rounded-md">
                     <button
                       type="button"
-                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 rounded-md transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-dark-100 rounded-md transition-colors"
                       onClick={() =>
                         setSubComponentsExpanded(!subComponentsExpanded)
                       }
@@ -2969,7 +2969,7 @@ export default function FieldEquipmentList() {
                         {formSubComponents.length > 0 && (
                           <div className="space-y-2">
                             {/* Header row - same grid as data rows for alignment */}
-                            <div className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                            <div className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                               <span>Qty</span>
                               <span>Item</span>
                               <span>SN</span>
@@ -3032,7 +3032,7 @@ export default function FieldEquipmentList() {
                                     className="w-full text-sm"
                                   />
                                   {activeSubComponentDropdown === index && (
-                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
                                       {subComponentItems
                                         .filter(
                                           (item) =>
@@ -3044,7 +3044,7 @@ export default function FieldEquipmentList() {
                                         .map((item) => (
                                           <div
                                             key={item}
-                                            className="group flex items-center justify-between gap-2 px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                            className="group flex items-center justify-between gap-2 px-3 py-1.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
                                             onClick={() => {
                                               const updated = [
                                                 ...formSubComponents,
@@ -3059,7 +3059,7 @@ export default function FieldEquipmentList() {
                                               );
                                             }}
                                           >
-                                            <span className="text-sm text-gray-900 dark:text-white">
+                                            <span className="text-sm text-zinc-900 dark:text-white">
                                               {item}
                                             </span>
                                             <button
@@ -3068,7 +3068,7 @@ export default function FieldEquipmentList() {
                                                 e.stopPropagation();
                                                 deleteSubComponentItem(item);
                                               }}
-                                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                               title="Remove from saved items"
                                             >
                                               <Trash2 className="h-3.5 w-3.5" />
@@ -3082,7 +3082,7 @@ export default function FieldEquipmentList() {
                                             sc.item.toLowerCase(),
                                         ) && (
                                           <div
-                                            className="px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                            className="px-3 py-1.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-t border-zinc-200 dark:border-zinc-700 bg-blue-50 dark:bg-blue-900/20"
                                             onClick={async () => {
                                               const success =
                                                 await createSubComponentItem(
@@ -3108,7 +3108,7 @@ export default function FieldEquipmentList() {
                                             .includes(sc.item.toLowerCase()),
                                       ).length === 0 &&
                                         !sc.item && (
-                                          <div className="px-3 py-2 text-center text-gray-500 dark:text-gray-400 text-xs">
+                                          <div className="px-3 py-2 text-center text-zinc-500 dark:text-zinc-400 text-xs">
                                             No saved items. Type to add.
                                           </div>
                                         )}
@@ -3194,7 +3194,7 @@ export default function FieldEquipmentList() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Calibration Date
                       </label>
                       <Input
@@ -3207,7 +3207,7 @@ export default function FieldEquipmentList() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Calibration Due Date
                       </label>
                       <Input
@@ -3221,7 +3221,7 @@ export default function FieldEquipmentList() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Notes
                     </label>
                     <textarea
@@ -3233,14 +3233,14 @@ export default function FieldEquipmentList() {
                           notes: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       rows={3}
                       placeholder="Additional notes or comments..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Tracking URL
                     </label>
                     <Input
@@ -3251,22 +3251,22 @@ export default function FieldEquipmentList() {
                       className="w-full"
                       placeholder="https://example.com/tracking"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       Enter a URL to link to equipment tracking
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Calibration Certificate (PDF)
                     </label>
                     <div className="space-y-2">
                       {isEditMode &&
                         editingEquipmentCertificate &&
                         !selectedFile && (
-                          <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-200 rounded-md">
-                            <FileText className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400 flex-1">
+                          <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-dark-200 rounded-md">
+                            <FileText className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                            <span className="text-sm text-zinc-600 dark:text-zinc-400 flex-1">
                               Current certificate attached
                             </span>
                             <button
@@ -3323,7 +3323,7 @@ export default function FieldEquipmentList() {
                           </div>
                         )}
                       <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-50">
+                        <label className="flex items-center gap-2 px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-50">
                           <Upload className="h-4 w-4" />
                           {selectedFile
                             ? selectedFile.name
@@ -3374,11 +3374,11 @@ export default function FieldEquipmentList() {
                         )}
                       </div>
                       {uploadingFile && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           Uploading...
                         </p>
                       )}
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         {isEditMode &&
                         editingEquipmentCertificate &&
                         !selectedFile
@@ -3389,7 +3389,7 @@ export default function FieldEquipmentList() {
                   </div>
                 </div>
 
-                <div className="flex justify-between p-6 pt-4 border-t border-gray-200 dark:border-dark-200 flex-shrink-0">
+                <div className="flex justify-between p-6 pt-4 border-t border-zinc-200 dark:border-dark-200 flex-shrink-0">
                   <div>
                     {isEditMode && editingEquipmentId && (
                       <Button
@@ -3443,10 +3443,10 @@ export default function FieldEquipmentList() {
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-md rounded-lg bg-white dark:bg-dark-150 p-6 shadow-xl">
-              <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
                 Confirm Delete
               </Dialog.Title>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
                 Are you sure you want to delete this equipment? This action
                 cannot be undone.
               </p>
@@ -3474,13 +3474,13 @@ export default function FieldEquipmentList() {
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-2xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
-                <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-zinc-200 dark:border-dark-200 flex-shrink-0">
+                <Dialog.Title className="text-xl font-semibold text-zinc-900 dark:text-white">
                   Equipment Details
                 </Dialog.Title>
                 <button
                   onClick={() => setViewingEquipment(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -3491,10 +3491,10 @@ export default function FieldEquipmentList() {
                   <div className="space-y-6">
                     {/* Equipment Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                         Equipment Name
                       </label>
-                      <p className="text-base font-semibold text-gray-900 dark:text-white">
+                      <p className="text-base font-semibold text-zinc-900 dark:text-white">
                         {viewingEquipment.equipment_name}
                         {isCalibrationPastDue(
                           viewingEquipment.calibration_due_date,
@@ -3509,43 +3509,43 @@ export default function FieldEquipmentList() {
                     {/* Grid Layout for Details */}
                     <div className="grid grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           AMP ID
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
+                        <p className="text-base text-zinc-900 dark:text-white">
                           {viewingEquipment.amp_id || "-"}
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Serial Number
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
+                        <p className="text-base text-zinc-900 dark:text-white">
                           {viewingEquipment.serial_number || "-"}
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Category
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
+                        <p className="text-base text-zinc-900 dark:text-white">
                           {viewingEquipment.category || "-"}
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Location
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
+                        <p className="text-base text-zinc-900 dark:text-white">
                           {viewingEquipment.location || "-"}
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Status
                         </label>
                         <p className="text-base">
@@ -3564,21 +3564,21 @@ export default function FieldEquipmentList() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Assigned To
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
+                        <p className="text-base text-zinc-900 dark:text-white flex items-center gap-2">
                           {viewingEquipment.assigned_to ? (
                             <>
                               {viewingEquipment.assigned_type === "job_site" ? (
-                                <Briefcase className="h-4 w-4 text-gray-400" />
+                                <Briefcase className="h-4 w-4 text-zinc-400" />
                               ) : viewingEquipment.assigned_type === "truck" ? (
-                                <TruckIcon className="h-4 w-4 text-gray-400" />
+                                <TruckIcon className="h-4 w-4 text-zinc-400" />
                               ) : (
-                                <User className="h-4 w-4 text-gray-400" />
+                                <User className="h-4 w-4 text-zinc-400" />
                               )}
                               <span>{getAssignedLabel(viewingEquipment)}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                 (
                                 {getAssignedTypeLabel(
                                   viewingEquipment.assigned_type,
@@ -3593,12 +3593,12 @@ export default function FieldEquipmentList() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Checked Out
                         </label>
                         {viewingEquipment.checked_out_by ? (
                           <div className="space-y-2">
-                            <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
+                            <p className="text-base text-zinc-900 dark:text-white flex items-center gap-2">
                               <ArrowUp className="h-4 w-4 text-amber-500" />
                               <span>
                                 {getUserNameById(
@@ -3606,7 +3606,7 @@ export default function FieldEquipmentList() {
                                 )}
                               </span>
                               {viewingEquipment.checked_out_at && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                   ·{" "}
                                   {formatDateTime(
                                     viewingEquipment.checked_out_at,
@@ -3633,7 +3633,7 @@ export default function FieldEquipmentList() {
                           </div>
                         ) : (
                           <div className="space-y-2">
-                            <p className="text-base text-gray-500 dark:text-gray-400">
+                            <p className="text-base text-zinc-500 dark:text-zinc-400">
                               Not checked out
                             </p>
                             <button
@@ -3652,16 +3652,16 @@ export default function FieldEquipmentList() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Calibration Date
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
+                        <p className="text-base text-zinc-900 dark:text-white">
                           {formatLocalDate(viewingEquipment.calibration_date)}
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Calibration Due Date
                         </label>
                         <p
@@ -3670,7 +3670,7 @@ export default function FieldEquipmentList() {
                               viewingEquipment.calibration_due_date,
                             )
                               ? "font-semibold text-red-600 dark:text-red-400"
-                              : "text-gray-900 dark:text-white"
+                              : "text-zinc-900 dark:text-white"
                           }`}
                         >
                           {formatLocalDate(
@@ -3687,51 +3687,51 @@ export default function FieldEquipmentList() {
                       );
                       return (
                         <div>
-                          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                          <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                             Sub Components
                           </label>
                           {subList.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
                               No sub components
                             </p>
                           ) : (
-                            <div className="border border-gray-200 dark:border-dark-200 rounded-md overflow-hidden">
+                            <div className="border border-zinc-200 dark:border-dark-200 rounded-md overflow-hidden">
                               <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-dark-200">
+                                <thead className="bg-zinc-50 dark:bg-dark-200">
                                   <tr>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                                       QTY
                                     </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                                       Item
                                     </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                                       SN
                                     </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                                       Cal Date
                                     </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
                                       AMP ID
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-dark-200">
+                                <tbody className="divide-y divide-zinc-200 dark:divide-dark-200">
                                   {subList.map((sc, index) => (
                                     <tr key={index}>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                                         {sc.qty}
                                       </td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                                         {sc.item}
                                       </td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                                         {sc.serial_number || "-"}
                                       </td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                                         {sc.cal_date || "-"}
                                       </td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                                         {sc.amp_id || "-"}
                                       </td>
                                     </tr>
@@ -3747,10 +3747,10 @@ export default function FieldEquipmentList() {
                     {/* Notes */}
                     {viewingEquipment.notes && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">
                           Notes
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white whitespace-pre-wrap">
+                        <p className="text-base text-zinc-900 dark:text-white whitespace-pre-wrap">
                           {viewingEquipment.notes}
                         </p>
                       </div>
@@ -3759,7 +3759,7 @@ export default function FieldEquipmentList() {
                     {/* Tracking URL */}
                     {viewingEquipment.tracking_url && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                           Tracking
                         </label>
                         <div className="flex items-center gap-2">
@@ -3781,7 +3781,7 @@ export default function FieldEquipmentList() {
                     {/* Calibration Certificate */}
                     {viewingEquipment.calibration_certificate_url && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                        <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                           Calibration Certificate
                         </label>
                         <div className="flex items-center gap-2">
@@ -3805,7 +3805,7 @@ export default function FieldEquipmentList() {
                               link.target = "_blank";
                               link.click();
                             }}
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-md transition-colors"
                           >
                             <Download className="h-4 w-4" />
                             Download
@@ -3815,8 +3815,8 @@ export default function FieldEquipmentList() {
                     )}
 
                     {/* Timestamps */}
-                    <div className="pt-4 border-t border-gray-200 dark:border-dark-200">
-                      <div className="grid grid-cols-2 gap-6 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="pt-4 border-t border-zinc-200 dark:border-dark-200">
+                      <div className="grid grid-cols-2 gap-6 text-xs text-zinc-500 dark:text-zinc-400">
                         <div>
                           <span className="font-medium">Created:</span>{" "}
                           {new Date(
@@ -3835,7 +3835,7 @@ export default function FieldEquipmentList() {
                 )}
               </div>
 
-              <div className="flex justify-end p-6 pt-4 border-t border-gray-200 dark:border-dark-200 flex-shrink-0">
+              <div className="flex justify-end p-6 pt-4 border-t border-zinc-200 dark:border-dark-200 flex-shrink-0">
                 <div className="flex gap-2">
                   {viewingEquipment && (
                     <Button
@@ -3871,8 +3871,8 @@ export default function FieldEquipmentList() {
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-4xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
-                <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-dark-200 flex-shrink-0">
+                <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-white">
                   Equipment Tracking
                 </Dialog.Title>
                 <div className="flex items-center gap-2">
@@ -3897,11 +3897,11 @@ export default function FieldEquipmentList() {
                   </Button>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden p-4 bg-gray-100 dark:bg-dark-200">
+              <div className="flex-1 overflow-hidden p-4 bg-zinc-100 dark:bg-dark-200">
                 {viewingTrackingUrl && (
                   <iframe
                     src={viewingTrackingUrl}
-                    className="w-full h-full border border-gray-300 dark:border-gray-600 rounded shadow-lg bg-white"
+                    className="w-full h-full border border-zinc-300 dark:border-zinc-600 rounded shadow-lg bg-white"
                     title="Equipment Tracking"
                     style={{ minHeight: "600px" }}
                   />
@@ -3928,37 +3928,37 @@ export default function FieldEquipmentList() {
             <Dialog.Panel
               className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-lg"} bg-white dark:bg-dark-150 shadow-xl flex flex-col`}
             >
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
-                <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-dark-200 flex-shrink-0">
+                <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-white">
                   Calibration Certificate
                 </Dialog.Title>
                 <div className="flex items-center gap-2">
                   {/* Zoom Controls */}
-                  <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded-md">
+                  <div className="flex items-center gap-1 border border-zinc-300 dark:border-zinc-600 rounded-md">
                     <button
                       onClick={() =>
                         setPdfZoom((prev) => Math.max(50, prev - 25))
                       }
-                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300"
+                      className="p-1.5 hover:bg-zinc-100 dark:hover:bg-dark-100 text-zinc-700 dark:text-zinc-300"
                       title="Zoom Out"
                     >
                       <ZoomOut className="h-4 w-4" />
                     </button>
-                    <span className="px-2 text-sm text-gray-700 dark:text-gray-300 min-w-[3rem] text-center">
+                    <span className="px-2 text-sm text-zinc-700 dark:text-zinc-300 min-w-[3rem] text-center">
                       {pdfZoom}%
                     </span>
                     <button
                       onClick={() =>
                         setPdfZoom((prev) => Math.min(200, prev + 25))
                       }
-                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300"
+                      className="p-1.5 hover:bg-zinc-100 dark:hover:bg-dark-100 text-zinc-700 dark:text-zinc-300"
                       title="Zoom In"
                     >
                       <ZoomIn className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setPdfZoom(100)}
-                      className="px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300 border-l border-gray-300 dark:border-gray-600"
+                      className="px-2 py-1 text-xs hover:bg-zinc-100 dark:hover:bg-dark-100 text-zinc-700 dark:text-zinc-300 border-l border-zinc-300 dark:border-zinc-600"
                       title="Reset Zoom"
                     >
                       Reset
@@ -4012,12 +4012,12 @@ export default function FieldEquipmentList() {
                   </Button>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-dark-200">
+              <div className="flex-1 overflow-auto p-4 bg-zinc-100 dark:bg-dark-200">
                 {viewingCertificate && (
                   <div className="flex justify-center items-start min-h-full">
                     <iframe
                       src={`${viewingCertificate}#zoom=${pdfZoom}`}
-                      className="border border-gray-300 dark:border-gray-600 rounded shadow-lg bg-white"
+                      className="border border-zinc-300 dark:border-zinc-600 rounded shadow-lg bg-white"
                       title="Calibration Certificate"
                       style={{
                         width: `${pdfZoom}%`,

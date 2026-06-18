@@ -1,32 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { PageLayout } from '@/components/ui/PageLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Badge, Button, Input, Select, Textarea, toast } from '@/components/ui';
-import { Plus, PencilRuler, Book, FileCode, FileSymlink, Upload } from 'lucide-react';
-import { DesignApprovalWorkflow, DesignStatus } from '@/components/engineering/DesignApprovalWorkflow';
-import { TechnicalDocumentationLibrary } from '@/components/engineering/TechnicalDocumentationLibrary';
-import { useDivision } from '@/App';
-import { useAuth } from '@/lib/AuthContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
-import engineeringService from '@/lib/services/engineeringService';
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { PageLayout } from "@/components/ui/PageLayout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Badge, Button, Input, Select, Textarea, toast } from "@/components/ui";
+import {
+  Plus,
+  PencilRuler,
+  Book,
+  FileCode,
+  FileSymlink,
+  Upload,
+} from "lucide-react";
+import {
+  DesignApprovalWorkflow,
+  DesignStatus,
+} from "@/components/engineering/DesignApprovalWorkflow";
+import { TechnicalDocumentationLibrary } from "@/components/engineering/TechnicalDocumentationLibrary";
+import { useDivision } from "@/App";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/Dialog";
+import engineeringService from "@/lib/services/engineeringService";
 
 export default function EngineeringPage() {
   const { user } = useAuth();
   const { setDivision } = useDivision();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<string>('designs');
+  const [activeTab, setActiveTab] = useState<string>("designs");
   const [createDesignOpen, setCreateDesignOpen] = useState<boolean>(false);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
-  
+
   // Create design form state
   const [designForm, setDesignForm] = useState({
-    title: '',
-    description: '',
-    design_type: '',
-    project: '',
-    version: '1.0',
-    file_url: ''
+    title: "",
+    description: "",
+    design_type: "",
+    project: "",
+    version: "1.0",
+    file_url: "",
   });
   const [designTypes, setDesignTypes] = useState<string[]>([]);
   const [projects, setProjects] = useState<string[]>([]);
@@ -34,14 +50,14 @@ export default function EngineeringPage() {
 
   useEffect(() => {
     // Set the division context to engineering
-    setDivision('engineering');
-    
+    setDivision("engineering");
+
     // Get tab from URL if present
-    const tabParam = searchParams.get('tab');
+    const tabParam = searchParams.get("tab");
     if (tabParam) {
       setActiveTab(tabParam);
     }
-    
+
     // Fetch form options
     fetchFormOptions();
   }, [setDivision, searchParams]);
@@ -51,7 +67,7 @@ export default function EngineeringPage() {
     setActiveTab(value);
     setSearchParams({ tab: value });
   };
-  
+
   const fetchFormOptions = async () => {
     const typesResponse = await engineeringService.getDesignTypes();
     if (typesResponse.data) {
@@ -63,82 +79,90 @@ export default function EngineeringPage() {
       setProjects(projectsResponse.data);
     }
   };
-  
+
   const handleFormChange = (key: string, value: string) => {
-    setDesignForm(prev => ({
+    setDesignForm((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
-  
+
   const handleCreateDesign = async () => {
     if (!user) return;
-    
+
     if (!designForm.title || !designForm.design_type || !designForm.project) {
       toast({
-        title: 'Validation Error',
-        description: 'Title, design type, and project are required fields',
-        variant: 'destructive',
+        title: "Validation Error",
+        description: "Title, design type, and project are required fields",
+        variant: "destructive",
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     const designData = {
       ...designForm,
-      status: 'draft' as DesignStatus,
+      status: "draft" as DesignStatus,
       submitted_by_id: user.id,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
-    
+
     const response = await engineeringService.createDesign(designData);
-    
+
     setIsSubmitting(false);
-    
+
     if (response.error) {
       toast({
-        title: 'Error',
-        description: response.error ? String(response.error) : 'Failed to create design',
-        variant: 'destructive',
+        title: "Error",
+        description: response.error
+          ? String(response.error)
+          : "Failed to create design",
+        variant: "destructive",
       });
       return;
     }
-    
+
     toast({
-      title: 'Success',
-      description: 'Design created successfully',
-      variant: 'success',
+      title: "Success",
+      description: "Design created successfully",
+      variant: "success",
     });
-    
+
     setCreateDesignOpen(false);
     // Reset form
     setDesignForm({
-      title: '',
-      description: '',
-      design_type: '',
-      project: '',
-      version: '1.0',
-      file_url: ''
+      title: "",
+      description: "",
+      design_type: "",
+      project: "",
+      version: "1.0",
+      file_url: "",
     });
-    
+
     // If we're on the designs tab, update the refresh trigger
     // This will trigger a re-fetch in the DesignApprovalWorkflow component
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   // Placeholder components for tabs that are not yet implemented
   const StandardsComplianceUpdates = () => (
     <div className="p-8 text-center">
-      <h3 className="text-xl font-medium mb-4">Standards & Compliance Updates</h3>
-      <p className="text-muted-foreground">This feature will be implemented soon.</p>
+      <h3 className="text-xl font-medium mb-4">
+        Standards & Compliance Updates
+      </h3>
+      <p className="text-muted-foreground">
+        This feature will be implemented soon.
+      </p>
     </div>
   );
 
   const DrawingRepository = () => (
     <div className="p-8 text-center">
       <h3 className="text-xl font-medium mb-4">Drawing Repository</h3>
-      <p className="text-muted-foreground">This feature will be implemented soon.</p>
+      <p className="text-muted-foreground">
+        This feature will be implemented soon.
+      </p>
     </div>
   );
 
@@ -148,13 +172,13 @@ export default function EngineeringPage() {
       subtitle="Design management, technical documentation, and standards compliance"
       actions={
         <div className="flex items-center gap-2">
-          {activeTab === 'designs' && (
+          {activeTab === "designs" && (
             <Button onClick={() => setCreateDesignOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Design
             </Button>
           )}
-          {activeTab === 'documentation' && (
+          {activeTab === "documentation" && (
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Upload Document
@@ -164,10 +188,10 @@ export default function EngineeringPage() {
         </div>
       }
     >
-      <Tabs 
-        defaultValue="designs" 
-        value={activeTab} 
-        onValueChange={handleTabChange} 
+      <Tabs
+        defaultValue="designs"
+        value={activeTab}
+        onValueChange={handleTabChange}
         className="w-full"
       >
         <TabsList className="mb-6">
@@ -175,7 +199,10 @@ export default function EngineeringPage() {
             <PencilRuler className="h-4 w-4" />
             <span>Design Approval</span>
           </TabsTrigger>
-          <TabsTrigger value="documentation" className="flex items-center gap-2">
+          <TabsTrigger
+            value="documentation"
+            className="flex items-center gap-2"
+          >
             <Book className="h-4 w-4" />
             <span>Technical Documentation</span>
           </TabsTrigger>
@@ -217,69 +244,76 @@ export default function EngineeringPage() {
               label="Title"
               placeholder="Enter design title"
               value={designForm.title}
-              onChange={(e) => handleFormChange('title', e.target.value)}
+              onChange={(e) => handleFormChange("title", e.target.value)}
               required
             />
-            
+
             <Textarea
               label="Description"
               placeholder="Enter design description"
               value={designForm.description}
-              onChange={(e) => handleFormChange('description', e.target.value)}
+              onChange={(e) => handleFormChange("description", e.target.value)}
               rows={3}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
                 label="Design Type"
                 value={designForm.design_type}
-                onChange={(e) => handleFormChange('design_type', e.target.value)}
+                onChange={(e) =>
+                  handleFormChange("design_type", e.target.value)
+                }
                 options={[
-                  { value: '', label: 'Select Design Type' },
-                  ...designTypes.map(type => ({ value: type, label: type }))
+                  { value: "", label: "Select Design Type" },
+                  ...designTypes.map((type) => ({ value: type, label: type })),
                 ]}
                 required
               />
-              
+
               <Select
                 label="Project"
                 value={designForm.project}
-                onChange={(e) => handleFormChange('project', e.target.value)}
+                onChange={(e) => handleFormChange("project", e.target.value)}
                 options={[
-                  { value: '', label: 'Select Project' },
-                  ...projects.map(project => ({ value: project, label: project }))
+                  { value: "", label: "Select Project" },
+                  ...projects.map((project) => ({
+                    value: project,
+                    label: project,
+                  })),
                 ]}
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Version"
                 placeholder="1.0"
                 value={designForm.version}
-                onChange={(e) => handleFormChange('version', e.target.value)}
+                onChange={(e) => handleFormChange("version", e.target.value)}
               />
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Attachment
                 </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md border-gray-300 dark:border-gray-600">
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md border-zinc-300 dark:border-zinc-600">
                   <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600 dark:text-white">
+                    <Upload className="mx-auto h-12 w-12 text-zinc-400" />
+                    <div className="flex text-sm text-zinc-600 dark:text-white">
                       <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 focus-within:outline-none">
                         <span>Upload a file</span>
                         <input
                           type="file"
                           className="sr-only"
-                          onChange={() => console.log('File upload not implemented')}
+                          onChange={() =>
+                            console.log("File upload not implemented")
+                          }
                         />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-white">
+                    <p className="text-xs text-zinc-500 dark:text-white">
                       PDF, CAD, or image files up to 10MB
                     </p>
                   </div>
@@ -288,21 +322,18 @@ export default function EngineeringPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setCreateDesignOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateDesign}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creating...' : 'Create Design'}
+            <Button onClick={handleCreateDesign} disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Design"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </PageLayout>
   );
-} 
+}

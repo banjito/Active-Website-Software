@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { SearchIcon } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import { SearchIcon } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface SearchSuggestionsProps {
   query: string;
@@ -12,49 +12,49 @@ interface SearchSuggestionsProps {
 // In a real implementation, this would likely be fetched from an API
 const getMockSuggestions = (query: string): string[] => {
   if (!query || query.length < 2) return [];
-  
+
   // Mock suggestions based on common entities
   const allSuggestions = [
     // Customers
-    'customer:ABC Corporation',
-    'customer:XYZ Industries',
-    'customer:Acme Systems',
-    'customer:Global Technologies',
+    "customer:ABC Corporation",
+    "customer:XYZ Industries",
+    "customer:Acme Systems",
+    "customer:Global Technologies",
     // Jobs
-    'job:Annual Testing Alabama',
-    'job:Switchgear Installation Tennessee',
-    'job:Circuit Breaker Maintenance',
-    'job:Transformer Testing International',
+    "job:Annual Testing Alabama",
+    "job:Switchgear Installation Tennessee",
+    "job:Circuit Breaker Maintenance",
+    "job:Transformer Testing International",
     // Contacts
-    'contact:John Smith',
-    'contact:Jane Doe',
-    'contact:Robert Johnson',
-    'contact:Sarah Williams',
+    "contact:John Smith",
+    "contact:Jane Doe",
+    "contact:Robert Johnson",
+    "contact:Sarah Williams",
     // Opportunities
-    'opportunity:New Equipment Sale',
-    'opportunity:Service Contract Renewal',
-    'opportunity:Testing Service Expansion',
+    "opportunity:New Equipment Sale",
+    "opportunity:Service Contract Renewal",
+    "opportunity:Testing Service Expansion",
     // Assets
-    'asset:Transformer TR-1001',
-    'asset:Circuit Breaker CB-324',
-    'asset:Switchgear SG-555',
+    "asset:Transformer TR-1001",
+    "asset:Circuit Breaker CB-324",
+    "asset:Switchgear SG-555",
     // Reports
-    'report:Annual Maintenance Report',
-    'report:Equipment Testing Results',
-    'report:Safety Inspection',
+    "report:Annual Maintenance Report",
+    "report:Equipment Testing Results",
+    "report:Safety Inspection",
   ];
-  
+
   // Filter suggestions that contain the query (case-insensitive)
   const lowerQuery = query.toLowerCase();
   return allSuggestions
-    .filter(suggestion => suggestion.toLowerCase().includes(lowerQuery))
+    .filter((suggestion) => suggestion.toLowerCase().includes(lowerQuery))
     .slice(0, 10); // Limit to 10 results
 };
 
-export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ 
-  query, 
-  onSelect, 
-  maxSuggestions = 7 
+export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
+  query,
+  onSelect,
+  maxSuggestions = 7,
 }) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,14 +68,14 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
 
     // Simulate API call with loading state
     setLoading(true);
-    
+
     // In a real implementation, this would be an API call
     const timer = setTimeout(() => {
       const results = getMockSuggestions(query);
       setSuggestions(results.slice(0, maxSuggestions));
       setLoading(false);
     }, 300); // Debounce time
-    
+
     return () => clearTimeout(timer);
   }, [query, maxSuggestions]);
 
@@ -87,14 +87,14 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   // Format the suggestion to highlight the matched part
   const formatSuggestion = (suggestion: string) => {
     // Simple formatting: Handle types (e.g., "customer:ABC Corporation")
-    const parts = suggestion.split(':');
+    const parts = suggestion.split(":");
     if (parts.length > 1) {
       return (
         <>
-          <span className="text-xs text-gray-500 dark:text-dark-400 mr-1">
+          <span className="text-xs text-zinc-500 dark:text-dark-400 mr-1">
             {parts[0]}:
           </span>
-          <span>{parts.slice(1).join(':')}</span>
+          <span>{parts.slice(1).join(":")}</span>
         </>
       );
     }
@@ -107,11 +107,13 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   }
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-gray-200 dark:border-dark-300">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-200 dark:border-dark-300">
       {loading ? (
         <div className="p-3 text-center">
           <LoadingSpinner size="xs" />
-          <span className="ml-2 text-sm text-gray-500 dark:text-dark-400">Searching...</span>
+          <span className="ml-2 text-sm text-zinc-500 dark:text-dark-400">
+            Searching...
+          </span>
         </div>
       ) : (
         <div className="p-1">
@@ -119,22 +121,25 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
             <div
               key={index}
               onClick={() => handleSelectSuggestion(suggestion)}
-              className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
+              className="flex items-center px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
             >
-              <SearchIcon size={16} className="text-gray-400 dark:text-dark-500 mr-2" />
-              <span className="text-sm text-gray-800 dark:text-dark-200">
+              <SearchIcon
+                size={16}
+                className="text-zinc-400 dark:text-dark-500 mr-2"
+              />
+              <span className="text-sm text-zinc-800 dark:text-dark-200">
                 {formatSuggestion(suggestion)}
               </span>
             </div>
           ))}
-          
+
           {/* Show search by query option */}
           <div
             onClick={() => handleSelectSuggestion(query)}
-            className="flex items-center px-3 py-2 mt-1 hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer rounded-md border-t border-gray-200 dark:border-dark-300"
+            className="flex items-center px-3 py-2 mt-1 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer rounded-md border-t border-zinc-200 dark:border-dark-300"
           >
             <SearchIcon size={16} className="text-[#f26722] mr-2" />
-            <span className="text-sm text-gray-800 dark:text-dark-200">
+            <span className="text-sm text-zinc-800 dark:text-dark-200">
               Search for "{query}"
             </span>
           </div>
@@ -144,4 +149,4 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   );
 };
 
-export default SearchSuggestions; 
+export default SearchSuggestions;

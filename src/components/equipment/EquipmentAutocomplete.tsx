@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Search, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { formatLocalDateShort } from '@/utils/dateUtils';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { Search, X } from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { formatLocalDateShort } from "@/utils/dateUtils";
 
 interface FieldEquipment {
   id: string;
@@ -29,8 +29,8 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   value,
   onChange,
   onSelect,
-  placeholder = 'Type equipment name...',
-  className = '',
+  placeholder = "Type equipment name...",
+  className = "",
   disabled = false,
   readOnly = false,
   excludeEquipmentIds,
@@ -42,7 +42,11 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   // Calculate dropdown position relative to viewport
   const updateDropdownPosition = useCallback(() => {
@@ -58,8 +62,8 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
 
   // Sync searchQuery with value prop. Skip clearing when value is empty right after onSelect so parent's stale render doesn't wipe the displayed name.
   useEffect(() => {
-    const next = value ?? '';
-    if (next === '' && justSelectedRef.current) {
+    const next = value ?? "";
+    if (next === "" && justSelectedRef.current) {
       justSelectedRef.current = false;
       return;
     }
@@ -77,17 +81,22 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         // Also check if click is inside the portal dropdown
-        const dropdown = document.getElementById('equipment-autocomplete-portal');
+        const dropdown = document.getElementById(
+          "equipment-autocomplete-portal",
+        );
         if (dropdown && dropdown.contains(event.target as Node)) return;
         setShowSuggestions(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -96,11 +105,11 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
     if (!showSuggestions) return;
     updateDropdownPosition();
     const handleReposition = () => updateDropdownPosition();
-    window.addEventListener('scroll', handleReposition, true);
-    window.addEventListener('resize', handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+    window.addEventListener("resize", handleReposition);
     return () => {
-      window.removeEventListener('scroll', handleReposition, true);
-      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+      window.removeEventListener("resize", handleReposition);
     };
   }, [showSuggestions, updateDropdownPosition]);
 
@@ -124,12 +133,16 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
       try {
         const like = `%${searchQuery.toLowerCase()}%`;
         const { data, error } = await supabase
-          .schema('neta_ops')
-          .from('field_equipment')
-          .select('id, equipment_name, amp_id, serial_number, calibration_date, calibration_due_date')
-          .or(`equipment_name.ilike.${like},amp_id.ilike.${like},serial_number.ilike.${like}`)
+          .schema("neta_ops")
+          .from("field_equipment")
+          .select(
+            "id, equipment_name, amp_id, serial_number, calibration_date, calibration_due_date",
+          )
+          .or(
+            `equipment_name.ilike.${like},amp_id.ilike.${like},serial_number.ilike.${like}`,
+          )
           .limit(10)
-          .order('equipment_name', { ascending: true });
+          .order("equipment_name", { ascending: true });
 
         if (error) throw error;
         let list = (data || []) as FieldEquipment[];
@@ -139,7 +152,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
         setSuggestions(list);
         setShowSuggestions(true);
       } catch (error) {
-        console.error('Error searching equipment:', error);
+        console.error("Error searching equipment:", error);
         setSuggestions([]);
       } finally {
         setLoading(false);
@@ -175,7 +188,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 print:hidden" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400 print:hidden" />
         <input
           ref={inputRef}
           type="text"
@@ -191,71 +204,78 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           readOnly={readOnly}
           autoComplete="off"
           spellCheck={false}
-          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? 'bg-gray-100 dark:bg-dark-150 cursor-not-allowed' : ''}`}
+          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button
             type="button"
             onClick={() => {
-              setSearchQuery('');
-              onChange('');
+              setSearchQuery("");
+              onChange("");
               setShowSuggestions(false);
               inputRef.current?.focus();
             }}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 print:hidden"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 print:hidden"
           >
             <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {showSuggestions && suggestions.length > 0 && !readOnly && dropdownPos && createPortal(
-        <div
-          id="equipment-autocomplete-portal"
-          style={{
-            position: 'absolute',
-            top: dropdownPos.top,
-            left: dropdownPos.left,
-            width: dropdownPos.width,
-            zIndex: 99999,
-          }}
-          className="bg-white dark:bg-dark-150 border border-gray-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-        >
-          {loading && (
-            <div className="p-3 text-center text-sm text-gray-500 dark:text-gray-400">
-              Searching...
-            </div>
-          )}
-          {!loading && suggestions.map((equipment) => (
-            <div
-              key={equipment.id}
-              onClick={() => handleSelectEquipment(equipment)}
-              className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-100 cursor-pointer border-b border-gray-100 dark:border-dark-200 last:border-b-0"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-white">
-                    {equipment.equipment_name}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
-                    {equipment.amp_id && (
-                      <div>AMP ID: {equipment.amp_id}</div>
-                    )}
-                    {equipment.serial_number && (
-                      <div>Serial: {equipment.serial_number}</div>
-                    )}
-                    {equipment.calibration_date && (
-                      <div>Cal Date: {formatLocalDateShort(equipment.calibration_date)}</div>
-                    )}
+      {showSuggestions &&
+        suggestions.length > 0 &&
+        !readOnly &&
+        dropdownPos &&
+        createPortal(
+          <div
+            id="equipment-autocomplete-portal"
+            style={{
+              position: "absolute",
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 99999,
+            }}
+            className="bg-white dark:bg-dark-150 border border-zinc-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          >
+            {loading && (
+              <div className="p-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                Searching...
+              </div>
+            )}
+            {!loading &&
+              suggestions.map((equipment) => (
+                <div
+                  key={equipment.id}
+                  onClick={() => handleSelectEquipment(equipment)}
+                  className="px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-100 cursor-pointer border-b border-zinc-100 dark:border-dark-200 last:border-b-0"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-zinc-900 dark:text-white">
+                        {equipment.equipment_name}
+                      </div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 space-y-0.5">
+                        {equipment.amp_id && (
+                          <div>AMP ID: {equipment.amp_id}</div>
+                        )}
+                        {equipment.serial_number && (
+                          <div>Serial: {equipment.serial_number}</div>
+                        )}
+                        {equipment.calibration_date && (
+                          <div>
+                            Cal Date:{" "}
+                            {formatLocalDateShort(equipment.calibration_date)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>,
-        document.body
-      )}
+              ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
-

@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { supabase } from '@/lib/supabase';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { SignatureProfileManager } from './SignatureProfileManager';
+import React, { useState, useEffect } from "react";
+import { Users, Settings } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import { supabase } from "@/lib/supabase";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SignatureProfileManager } from "./SignatureProfileManager";
 
 interface SignatureProfile {
   id: string;
@@ -22,12 +29,9 @@ interface SignatureProfileSelectorProps {
   onSelectionChange: (selectedIds: Set<string>) => void;
 }
 
-export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> = ({
-  open,
-  onOpenChange,
-  selectedProfileIds,
-  onSelectionChange,
-}) => {
+export const SignatureProfileSelector: React.FC<
+  SignatureProfileSelectorProps
+> = ({ open, onOpenChange, selectedProfileIds, onSelectionChange }) => {
   const [profiles, setProfiles] = useState<SignatureProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isManagerOpen, setIsManagerOpen] = useState(false);
@@ -42,15 +46,15 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('signature_profiles')
-        .select('id, name, title, email, phone, section_title')
-        .order('name', { ascending: true });
-      
+        .schema("neta_ops")
+        .from("signature_profiles")
+        .select("id, name, title, email, phone, section_title")
+        .order("name", { ascending: true });
+
       if (error) throw error;
       setProfiles((data || []) as SignatureProfile[]);
     } catch (e: any) {
-      console.error('Error loading profiles:', e);
+      console.error("Error loading profiles:", e);
     } finally {
       setLoading(false);
     }
@@ -67,7 +71,7 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
   };
 
   const handleSelectAll = () => {
-    const allIds = new Set(profiles.map(p => p.id));
+    const allIds = new Set(profiles.map((p) => p.id));
     onSelectionChange(allIds);
   };
 
@@ -76,14 +80,17 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
   };
 
   // Group profiles by section title
-  const profilesBySection = profiles.reduce((acc, profile) => {
-    const section = profile.section_title || 'Reviewed By';
-    if (!acc[section]) {
-      acc[section] = [];
-    }
-    acc[section].push(profile);
-    return acc;
-  }, {} as Record<string, SignatureProfile[]>);
+  const profilesBySection = profiles.reduce(
+    (acc, profile) => {
+      const section = profile.section_title || "Reviewed By";
+      if (!acc[section]) {
+        acc[section] = [];
+      }
+      acc[section].push(profile);
+      return acc;
+    },
+    {} as Record<string, SignatureProfile[]>,
+  );
 
   const sections = Object.keys(profilesBySection).sort();
 
@@ -94,7 +101,8 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
           <DialogHeader>
             <DialogTitle>Select Signatures</DialogTitle>
             <DialogDescription>
-              Choose which signatures to include in the executive summary. You can select multiple.
+              Choose which signatures to include in the executive summary. You
+              can select multiple.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -127,47 +135,57 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {/* Profile checkboxes grouped by section */}
             <div className="max-h-[50vh] overflow-auto space-y-4 px-4 pb-4">
               {loading ? (
-                <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+                <div className="flex justify-center py-6">
+                  <LoadingSpinner size="md" />
+                </div>
               ) : profiles.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                   <p>No signature profiles yet.</p>
-                  <Button onClick={() => setIsManagerOpen(true)} variant="outline" className="mt-4">
+                  <Button
+                    onClick={() => setIsManagerOpen(true)}
+                    variant="outline"
+                    className="mt-4"
+                  >
                     <Users className="h-4 w-4 mr-2" />
                     Create Profile
                   </Button>
                 </div>
               ) : (
-                sections.map(section => (
+                sections.map((section) => (
                   <div key={section} className="space-y-2">
-                    <div className="font-medium text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-1">
+                    <div className="font-medium text-sm text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700 pb-1">
                       {section}
                     </div>
-                    {profilesBySection[section].map(profile => {
+                    {profilesBySection[section].map((profile) => {
                       const isSelected = selectedProfileIds.has(profile.id);
                       return (
                         <label
                           key={profile.id}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-dark-100 rounded cursor-pointer"
+                          className="flex items-center gap-2 p-2 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded cursor-pointer"
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggle(profile.id)}
-                            className="rounded border-gray-300 dark:border-gray-600"
+                            className="rounded border-zinc-300 dark:border-zinc-600"
                           />
                           <div className="flex-1">
-                            <div className="text-gray-900 dark:text-white font-medium">{profile.name}</div>
+                            <div className="text-zinc-900 dark:text-white font-medium">
+                              {profile.name}
+                            </div>
                             {profile.title && (
-                              <div className="text-xs text-gray-600 dark:text-gray-400">{profile.title}</div>
+                              <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                                {profile.title}
+                              </div>
                             )}
                             {(profile.email || profile.phone) && (
-                              <div className="text-xs text-gray-500 dark:text-gray-500">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-500">
                                 {profile.email}
-                                {profile.email && profile.phone && ' • '}
+                                {profile.email && profile.phone && " • "}
                                 {profile.phone}
                               </div>
                             )}
@@ -181,7 +199,10 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => onOpenChange(false)} className="bg-[#f26722] hover:bg-[#e55611] text-white">
+            <Button
+              onClick={() => onOpenChange(false)}
+              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            >
               Done
             </Button>
           </DialogFooter>

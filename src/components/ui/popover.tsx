@@ -14,15 +14,15 @@ const PopoverContent = React.forwardRef<
       ref={ref}
       align={align}
       sideOffset={sideOffset}
-      className={`z-50 w-72 rounded-md border bg-white p-4 shadow-md outline-none 
-                data-[state=open]:animate-in data-[state=closed]:animate-out 
-                data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
-                data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
-                dark:border-gray-800 dark:bg-gray-950 ${className}`}
+      className={`z-50 w-72 rounded-md border bg-white p-4 shadow-md outline-none
+                data-[state=open]:animate-in data-[state=closed]:animate-out
+                data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0
+                data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95
+                dark:border-zinc-800 dark:bg-zinc-950 ${className}`}
       {...props}
     />
   </PopoverPrimitive.Portal>
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent }; 
+export { Popover, PopoverTrigger, PopoverContent };

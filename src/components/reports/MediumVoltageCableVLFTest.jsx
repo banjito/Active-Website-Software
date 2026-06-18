@@ -2002,7 +2002,7 @@ const MediumVoltageCableVLFTest = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -2054,7 +2054,7 @@ const MediumVoltageCableVLFTest = () => {
       </div>
       {/* End Print Header */}
 
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
+      <div className="p-6 flex justify-center bg-zinc-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-2">
           {/* Header with title and buttons */}
           <ReportHeader
@@ -2087,7 +2087,7 @@ const MediumVoltageCableVLFTest = () => {
           {/* Job Information */}
           <section className="mb-6 job-info-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Job Details
             </h2>
             {/* On-screen form - hidden in print */}
@@ -2095,10 +2095,10 @@ const MediumVoltageCableVLFTest = () => {
               {/* Left Column */}
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.customerName}
@@ -2112,10 +2112,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.siteAddress}
@@ -2129,10 +2129,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.contactPerson}
@@ -2146,10 +2146,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="date"
                       value={formData.testDate}
@@ -2161,10 +2161,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.identifier || ""}
@@ -2183,10 +2183,10 @@ const MediumVoltageCableVLFTest = () => {
               {/* Right Column */}
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.jobNumber || ""}
@@ -2200,10 +2200,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.testedBy}
@@ -2215,11 +2215,11 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature?.fahrenheit || 68}
@@ -2237,7 +2237,7 @@ const MediumVoltageCableVLFTest = () => {
                     <span className="mx-2">°C</span>
 
                     <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={formData.temperature?.tcf.toFixed(3) || "1.000"}
@@ -2249,11 +2249,11 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature?.humidity || 0}
@@ -2272,10 +2272,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.location || ""}
@@ -2287,10 +2287,10 @@ const MediumVoltageCableVLFTest = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.equipmentLocation || ""}
@@ -2333,14 +2333,14 @@ const MediumVoltageCableVLFTest = () => {
           {/* Cable Information */}
           <section className="mb-6 nameplate-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Cable & Termination Data
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-1 gap-6 print:hidden cable-termination-onscreen">
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Tested From
                   </label>
                   <input
@@ -2353,14 +2353,14 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300"></label>
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Manufacturer
                   </label>
                   <input
@@ -2373,11 +2373,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Cable Operating Voltage (kV)
                   </label>
                   <input
@@ -2390,11 +2390,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Cable Rated Voltage (kV)
                   </label>
                   <input
@@ -2407,11 +2407,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Cable Type
                   </label>
                   <input
@@ -2419,11 +2419,11 @@ const MediumVoltageCableVLFTest = () => {
                     value={formData.cableType || ""}
                     onChange={(e) => handleChange("cableType", e.target.value)}
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Length (ft)
                   </label>
                   <input
@@ -2433,11 +2433,11 @@ const MediumVoltageCableVLFTest = () => {
                       handleChange("cableLength", e.target.value)
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Conductor Size
                   </label>
                   <input
@@ -2450,11 +2450,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Insulation Type
                   </label>
                   <input
@@ -2467,11 +2467,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Conductor Material
                   </label>
                   <input
@@ -2484,11 +2484,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Insulation Thickness
                   </label>
                   <input
@@ -2501,12 +2501,12 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     From
                   </label>
                   <input
@@ -2519,11 +2519,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     To
                   </label>
                   <input
@@ -2536,12 +2536,12 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Termination Data
                   </label>
                   <input
@@ -2554,11 +2554,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Termination Data
                   </label>
                   <input
@@ -2571,12 +2571,12 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Rated Voltage (kV)
                   </label>
                   <input
@@ -2589,11 +2589,11 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Rated Voltage (kV)
                   </label>
                   <input
@@ -2606,7 +2606,7 @@ const MediumVoltageCableVLFTest = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
               </div>
@@ -2614,7 +2614,7 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black cable-termination-print-table">
+              <table className="w-full border border-zinc-300 print:border-black cable-termination-print-table">
                 <colgroup>
                   <col style={{ width: "20%" }} />
                   <col style={{ width: "20%" }} />
@@ -2624,75 +2624,75 @@ const MediumVoltageCableVLFTest = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Tested From</div>
                       <div>{formData.cableInfo?.testedFrom || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Manufacturer</div>
                       <div>{formData.cableInfo?.manufacturer || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Cable Type</div>
                       <div>{formData.cableType || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Conductor Size</div>
                       <div>{formData.cableInfo?.size || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">From</div>
                       <div>{formData.cableInfo?.from || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">
                         Cable Operating Voltage (kV)
                       </div>
                       <div>{formData.cableInfo?.operatingVoltage || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">
                         Cable Rated Voltage (kV)
                       </div>
                       <div>{formData.cableInfo?.voltageRating || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Length (ft)</div>
                       <div>{formData.cableLength || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Insulation Type</div>
                       <div>{formData.cableInfo?.insulation || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Conductor Material</div>
                       <div>{formData.cableInfo?.conductorMaterial || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Insulation Thickness</div>
                       <div>{formData.cableInfo?.insulationThickness || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Termination Data</div>
                       <div>
                         {formData.terminationData?.terminationData || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Termination Data 2</div>
                       <div>
                         {formData.terminationData?.terminationData2 || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Rated Voltage (kV)</div>
                       <div>{formData.terminationData?.ratedVoltage || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       <div className="font-semibold">Rated Voltage 2 (kV)</div>
                       <div>{formData.terminationData?.ratedVoltage2 || ""}</div>
                     </td>
@@ -2705,12 +2705,12 @@ const MediumVoltageCableVLFTest = () => {
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6 visual-mechanical-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               7.3.3.A Visual and Mechanical Inspection
             </h2>
             <div className="grid grid-cols-1 gap-4 print:hidden">
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.1 Inspect exposed sections of cables and connectors
                   for physical damage and evidence of degradation and corona.
                 </label>
@@ -2726,7 +2726,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2737,7 +2737,7 @@ const MediumVoltageCableVLFTest = () => {
               </div>
 
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.2 Inspect terminations and splices for physical
                   damage, evidence of overheating, and corona.
                 </label>
@@ -2753,7 +2753,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2764,7 +2764,7 @@ const MediumVoltageCableVLFTest = () => {
               </div>
 
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.3.1 Use of a low-resistance ohmmeter in accordance
                   with Section 7.3.3.B.1.
                 </label>
@@ -2780,7 +2780,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2791,7 +2791,7 @@ const MediumVoltageCableVLFTest = () => {
               </div>
 
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.4 Inspect shield grounding, cable support.
                 </label>
                 <select
@@ -2806,7 +2806,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2817,7 +2817,7 @@ const MediumVoltageCableVLFTest = () => {
               </div>
 
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.5 Verify that visible cable bends are not less than
                   ICEA and/or manufacturer's minimum allowable bending radius.
                 </label>
@@ -2833,7 +2833,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2844,7 +2844,7 @@ const MediumVoltageCableVLFTest = () => {
               </div>
 
               <div className="flex items-center">
-                <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="w-3/4 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   7.3.3.A.7 If cables are terminated through window-type current
                   transformers, inspect to verify neutral and ground conductors
                   are correctly placed and shields are correctly terminated for
@@ -2862,7 +2862,7 @@ const MediumVoltageCableVLFTest = () => {
                     })
                   }
                   disabled={!isEditMode}
-                  className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`w-1/4 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 >
                   {Object.values(InspectionResult).map((result) => (
                     <option key={result} value={result}>
@@ -2875,31 +2875,31 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Print-only standardized table layout for Visual & Mechanical */}
             <div className="hidden print:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 vm-standard table-fixed">
                 <colgroup>
                   <col style={{ width: "5%" }} />
                   <col style={{ width: "70%" }} />
                   <col style={{ width: "25%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-200">
+                <thead className="bg-zinc-50 dark:bg-dark-200">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.1
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       Inspect exposed sections of cables and connectors for
                       physical damage and evidence of degradation and corona.
                     </td>
@@ -2917,7 +2917,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2928,10 +2928,10 @@ const MediumVoltageCableVLFTest = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.2
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       Inspect terminations and splices for physical damage,
                       evidence of overheating, and corona.
                     </td>
@@ -2949,7 +2949,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2960,10 +2960,10 @@ const MediumVoltageCableVLFTest = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.3.1
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       Use of a low-resistance ohmmeter in accordance with
                       Section 7.3.3.B.1.
                     </td>
@@ -2980,7 +2980,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2991,10 +2991,10 @@ const MediumVoltageCableVLFTest = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.4
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       Inspect shield grounding, cable support.
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -3010,7 +3010,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -3021,10 +3021,10 @@ const MediumVoltageCableVLFTest = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.5
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       Verify that visible cable bends are not less than ICEA
                       and/or manufacturer's minimum allowable bending radius.
                     </td>
@@ -3041,7 +3041,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -3052,10 +3052,10 @@ const MediumVoltageCableVLFTest = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.7
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
                       If cables are terminated through window-type current
                       transformers, inspect to verify neutral and ground
                       conductors are correctly placed and shields are correctly
@@ -3075,7 +3075,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -3093,31 +3093,31 @@ const MediumVoltageCableVLFTest = () => {
           {/* Electrical Tests - Shield Continuity */}
           <section className="mb-6 shield-continuity-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Electrical Tests - Shield Continuity
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="overflow-x-auto print:hidden shield-continuity-onscreen">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       A Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       B Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       C Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseA}
@@ -3128,10 +3128,10 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseB}
@@ -3142,10 +3142,10 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseC}
@@ -3156,10 +3156,10 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <select
                         value={formData.shieldContinuity.unit}
                         onChange={(e) =>
@@ -3169,7 +3169,7 @@ const MediumVoltageCableVLFTest = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {continuityUnits.map((unit) => (
                           <option
@@ -3189,35 +3189,35 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black">
+              <table className="w-full border border-zinc-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       A Phase
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       B Phase
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       C Phase
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       Units
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.shieldContinuity.phaseA || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.shieldContinuity.phaseB || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.shieldContinuity.phaseC || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.shieldContinuity.unit || ""}
                     </td>
                   </tr>
@@ -3229,11 +3229,11 @@ const MediumVoltageCableVLFTest = () => {
           {/* Electrical Tests - Insulation Resistance Values */}
           <section className="mb-6 insulation-resistance-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Electrical Tests - Insulation Resistance Values
             </h2>
             <div className="mb-4 flex items-center">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mr-2">
                 Test Voltage:
               </label>
               <select
@@ -3245,7 +3245,7 @@ const MediumVoltageCableVLFTest = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                className={`w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
               >
                 {insulationTestVoltages.map((option) => (
                   <option
@@ -3257,59 +3257,59 @@ const MediumVoltageCableVLFTest = () => {
                   </option>
                 ))}
               </select>
-              <span className="ml-2 text-gray-900 dark:text-white">V</span>
+              <span className="ml-2 text-zinc-900 dark:text-white">V</span>
             </div>
 
             <div className="overflow-x-auto print:hidden ir-screen">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase"></th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={3}
                     >
                       Insulation Resistance
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={3}
                     >
                       Temperature Corrected
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       Pre-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.ag}
@@ -3321,10 +3321,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.bg}
@@ -3336,10 +3336,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.cg}
@@ -3351,42 +3351,42 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       Post-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.ag}
@@ -3398,10 +3398,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.bg}
@@ -3413,10 +3413,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.cg}
@@ -3428,34 +3428,34 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
@@ -3465,7 +3465,7 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Print-only standardized layout for Insulation Resistance Values */}
             <div className="hidden print:block overflow-x-auto ir-print">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 table-fixed">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700 table-fixed">
                 <colgroup>
                   <col style={{ width: "5%" }} />
                   <col style={{ width: "15%" }} />
@@ -3478,52 +3478,52 @@ const MediumVoltageCableVLFTest = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase"></th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={3}
                     >
                       Insulation Resistance
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={3}
                     >
                       Temperature Corrected
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       Pre-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.ag}
@@ -3535,10 +3535,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.bg}
@@ -3550,10 +3550,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.cg}
@@ -3565,42 +3565,42 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       Post-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.ag}
@@ -3612,10 +3612,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.bg}
@@ -3627,10 +3627,10 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.cg}
@@ -3642,34 +3642,34 @@ const MediumVoltageCableVLFTest = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-1 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-100 dark:text-white bg-zinc-100 dark:bg-dark-200"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-1 py-1 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
@@ -3679,7 +3679,7 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Add unit dropdown at the bottom of the table */}
             <div className="mt-2 flex justify-end items-center print:hidden">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mr-2">
                 Units:
               </label>
               <select
@@ -3691,7 +3691,7 @@ const MediumVoltageCableVLFTest = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                className={`w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
               >
                 {insulationUnits.map((unit) => (
                   <option
@@ -3709,42 +3709,42 @@ const MediumVoltageCableVLFTest = () => {
           {/* Electrical Tests Withstand Test */}
           <section className="mb-6 withstand-test-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Electrical Tests Withstand Test
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       Time(min)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       kVAC
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={2}
                     >
                       A Phase
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={2}
                     >
                       B Phase
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"
                       colSpan={2}
                     >
                       C Phase
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3765,7 +3765,7 @@ const MediumVoltageCableVLFTest = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3778,10 +3778,10 @@ const MediumVoltageCableVLFTest = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 tracking-wider">
                       nF
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3802,7 +3802,7 @@ const MediumVoltageCableVLFTest = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3815,10 +3815,10 @@ const MediumVoltageCableVLFTest = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 tracking-wider">
                       nF
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3839,7 +3839,7 @@ const MediumVoltageCableVLFTest = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3852,7 +3852,7 @@ const MediumVoltageCableVLFTest = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 tracking-wider">
                       nF
                     </th>
                   </tr>
@@ -3860,7 +3860,7 @@ const MediumVoltageCableVLFTest = () => {
                 <tbody>
                   {formData.withstandTest?.readings.map((reading, index) => (
                     <tr key={index}>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.timeMinutes}
@@ -3872,10 +3872,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         {isMTSRoute ? (
                           <div className="flex items-center gap-1">
                             <input
@@ -3889,7 +3889,7 @@ const MediumVoltageCableVLFTest = () => {
                                 )
                               }
                               readOnly={!isEditMode}
-                              className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                              className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                             />
                             {isEditMode && (
                               <div className="relative">
@@ -3900,17 +3900,17 @@ const MediumVoltageCableVLFTest = () => {
                                       openKvacIndex === index ? null : index,
                                     )
                                   }
-                                  className="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-dark-100 text-gray-700 dark:text-white"
+                                  className="px-2 py-1 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-dark-100 text-zinc-700 dark:text-white"
                                   aria-label="Select kVAC"
                                 >
                                   ▼
                                 </button>
                                 {openKvacIndex === index && (
-                                  <div className="absolute right-0 z-10 mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-700 rounded shadow-md max-h-48 overflow-auto">
+                                  <div className="absolute right-0 z-10 mt-1 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded shadow-md max-h-48 overflow-auto">
                                     {mtsKVACOptions.map((v) => (
                                       <div
                                         key={v}
-                                        className="px-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-100"
+                                        className="px-2 py-1 cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-100"
                                         onClick={() => {
                                           handleWithstandTestChange(
                                             index,
@@ -3941,11 +3941,11 @@ const MediumVoltageCableVLFTest = () => {
                             }
                             readOnly={!isEditMode}
                             list="kvac-options-ats"
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseA?.mA || ""}
@@ -3959,10 +3959,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseA?.nF || ""}
@@ -3976,10 +3976,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseB?.mA || ""}
@@ -3993,10 +3993,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseB?.nF || ""}
@@ -4010,10 +4010,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseC?.mA || ""}
@@ -4027,10 +4027,10 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseC?.nF || ""}
@@ -4044,7 +4044,7 @@ const MediumVoltageCableVLFTest = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
                     </tr>
@@ -4082,13 +4082,13 @@ const MediumVoltageCableVLFTest = () => {
           {/* Add Tan Delta Test Section */}
           <section className="mb-6 tan-delta-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Tan Delta (Power Factor) Test
             </h2>
 
             {/* System Voltage Line to Ground */}
             <div className="flex items-center mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 w-64">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 w-64">
                 System Voltage Line to Ground (kV RMS)
               </label>
               <input
@@ -4105,8 +4105,8 @@ const MediumVoltageCableVLFTest = () => {
                   updateChartData(newTanDeltaTest.values || []);
                 }}
                 readOnly={!isEditMode}
-                className={`w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
-                  !isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""
+                className={`w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
+                  !isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""
                 }`}
               />
               <span className="ml-2">kV</span>
@@ -4114,65 +4114,65 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Tan Delta Test Table */}
             <div className="overflow-x-auto mb-6">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
-                  <tr className="bg-gray-100 dark:bg-dark-200">
+                  <tr className="bg-zinc-100 dark:bg-dark-200">
                     <th
                       colSpan="8"
-                      className="text-center border border-gray-300 dark:border-gray-700 px-3 py-2"
+                      className="text-center border border-zinc-300 dark:border-zinc-700 px-3 py-2"
                     >
                       Tan Delta Test
                     </th>
                   </tr>
-                  <tr className="bg-gray-100 dark:bg-dark-200">
+                  <tr className="bg-zinc-100 dark:bg-dark-200">
                     <th
                       rowSpan="2"
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"
                     >
                       Voltage Steps
                     </th>
                     <th
                       rowSpan="2"
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"
                     >
                       kV
                     </th>
                     <th
                       colSpan="2"
-                      className="text-center border border-gray-300 dark:border-gray-700 px-3 py-2 text-blue-600"
+                      className="text-center border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-blue-600"
                     >
                       A Phase
                     </th>
                     <th
                       colSpan="2"
-                      className="text-center border border-gray-300 dark:border-gray-700 px-3 py-2 text-red-600"
+                      className="text-center border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-red-600"
                     >
                       B Phase
                     </th>
                     <th
                       colSpan="2"
-                      className="text-center border border-gray-300 dark:border-gray-700 px-3 py-2 text-green-600"
+                      className="text-center border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-green-600"
                     >
                       C Phase
                     </th>
                   </tr>
-                  <tr className="bg-gray-100 dark:bg-dark-200">
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                  <tr className="bg-zinc-100 dark:bg-dark-200">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       TD [E-3]
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       Std. Dev
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       TD [E-3]
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       Std. Dev
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       TD [E-3]
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                       Std. Dev
                     </th>
                   </tr>
@@ -4205,10 +4205,10 @@ const MediumVoltageCableVLFTest = () => {
                         className={
                           rowIndex % 2 === 0
                             ? "bg-white dark:bg-dark-150"
-                            : "bg-gray-50 dark:bg-dark-100"
+                            : "bg-zinc-50 dark:bg-dark-100"
                         }
                       >
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="text"
                             value={
@@ -4229,10 +4229,10 @@ const MediumVoltageCableVLFTest = () => {
                               updateChartData(newValues);
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="0.001"
@@ -4259,10 +4259,10 @@ const MediumVoltageCableVLFTest = () => {
                               updateChartData(newValues);
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="0.1"
@@ -4286,10 +4286,10 @@ const MediumVoltageCableVLFTest = () => {
                               updateChartData(newValues);
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="1"
@@ -4311,10 +4311,10 @@ const MediumVoltageCableVLFTest = () => {
                               });
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="0.1"
@@ -4338,10 +4338,10 @@ const MediumVoltageCableVLFTest = () => {
                               updateChartData(newValues);
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="1"
@@ -4363,10 +4363,10 @@ const MediumVoltageCableVLFTest = () => {
                               });
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="0.1"
@@ -4390,10 +4390,10 @@ const MediumVoltageCableVLFTest = () => {
                               updateChartData(newValues);
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2">
                           <input
                             type="number"
                             step="1"
@@ -4415,7 +4415,7 @@ const MediumVoltageCableVLFTest = () => {
                               });
                             }}
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           />
                         </td>
                       </tr>
@@ -4445,7 +4445,7 @@ const MediumVoltageCableVLFTest = () => {
 
             {/* Tan Delta Test Result */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 Tan Delta Test Result
               </label>
               <select
@@ -4457,7 +4457,7 @@ const MediumVoltageCableVLFTest = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
               >
                 <option value="">Select Result</option>
                 <option value="PASS">PASS</option>
@@ -4470,20 +4470,20 @@ const MediumVoltageCableVLFTest = () => {
           {/* Test Results, Equipment Used, Recommendations Sections */}
           <section className="mb-6 results-recommendations-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Test Results & Recommendations
             </h2>
 
             <div className="grid grid-cols-1 gap-6">
               {/* Test Equipment */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
                   Equipment Used
                 </h3>
                 {/* On-screen form - hidden in print */}
                 <div className="grid grid-cols-4 gap-4 print:hidden test-eqpt-onscreen">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Ohmmeter
                     </label>
                     <EquipmentAutocomplete
@@ -4506,11 +4506,11 @@ const MediumVoltageCableVLFTest = () => {
                         });
                       }}
                       readOnly={!isEditMode}
-                      className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm"
+                      className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Serial Number
                     </label>
                     <input
@@ -4523,11 +4523,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       AMP ID
                     </label>
                     <input
@@ -4540,11 +4540,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Cal Date
                     </label>
                     <input
@@ -4557,11 +4557,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Megohmmeter
                     </label>
                     <EquipmentAutocomplete
@@ -4584,11 +4584,11 @@ const MediumVoltageCableVLFTest = () => {
                         });
                       }}
                       readOnly={!isEditMode}
-                      className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm"
+                      className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Serial Number
                     </label>
                     <input
@@ -4601,11 +4601,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       AMP ID
                     </label>
                     <input
@@ -4618,11 +4618,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Cal Date
                     </label>
                     <input
@@ -4635,11 +4635,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       VLF Test Set
                     </label>
                     <EquipmentAutocomplete
@@ -4662,11 +4662,11 @@ const MediumVoltageCableVLFTest = () => {
                         });
                       }}
                       readOnly={!isEditMode}
-                      className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm"
+                      className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Serial Number
                     </label>
                     <input
@@ -4679,11 +4679,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       AMP ID
                     </label>
                     <input
@@ -4696,11 +4696,11 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Cal Date
                     </label>
                     <input
@@ -4713,14 +4713,14 @@ const MediumVoltageCableVLFTest = () => {
                         })
                       }
                       readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                      className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     />
                   </div>
                 </div>
 
                 {/* Print-only table */}
                 <div className="hidden print:block">
-                  <table className="w-full border border-gray-300 print:border-black">
+                  <table className="w-full border border-zinc-300 print:border-black">
                     <colgroup>
                       <col style={{ width: "20%" }} />
                       <col style={{ width: "25%" }} />
@@ -4730,72 +4730,72 @@ const MediumVoltageCableVLFTest = () => {
                     </colgroup>
                     <thead>
                       <tr>
-                        <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                        <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                           Equipment
                         </th>
-                        <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                        <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                           Make/Model
                         </th>
-                        <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                        <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                           Serial Number
                         </th>
-                        <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                        <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                           AMP ID
                         </th>
-                        <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                        <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                           Cal Date
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                        <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                           Ohmmeter
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.ohmmeter || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.ohmSerialNumber || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.ohmAmpId || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.ohmCalDate || ""}
                         </td>
                       </tr>
                       <tr>
-                        <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                        <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                           Megohmmeter
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.megohmmeter || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.megohmSerialNumber || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.megohmAmpId || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.megohmCalDate || ""}
                         </td>
                       </tr>
                       <tr>
-                        <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                        <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                           VLF Test Set
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.vlfHipot || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.vlfSerialNumber || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.vlfAmpId || ""}
                         </td>
-                        <td className="p-2 border border-gray-300 print:border-black">
+                        <td className="p-2 border border-zinc-300 print:border-black">
                           {formData.equipment?.vlfCalDate || ""}
                         </td>
                       </tr>
@@ -4806,7 +4806,7 @@ const MediumVoltageCableVLFTest = () => {
 
               {/* Conclusion */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
                   Conclusion
                 </h3>
                 {/* On-screen form - hidden in print */}
@@ -4816,7 +4816,7 @@ const MediumVoltageCableVLFTest = () => {
                     onChange={(e) => handleChange("conclusion", e.target.value)}
                     readOnly={!isEditMode}
                     rows={4}
-                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     placeholder="Enter test conclusion"
                   />
                 </div>
@@ -4824,13 +4824,13 @@ const MediumVoltageCableVLFTest = () => {
                 {/* Print-only table */}
                 <div className="hidden print:block">
                   <table
-                    className="w-full border border-gray-300 print:border-black print-comment-table"
+                    className="w-full border border-zinc-300 print:border-black print-comment-table"
                     style={{ tableLayout: "fixed", width: "100%" }}
                   >
                     <tbody>
                       <tr>
                         <td
-                          className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top"
+                          className="p-2 border border-zinc-300 print:border-black min-h-[100px] align-top"
                           style={{
                             wordWrap: "break-word",
                             overflowWrap: "break-word",
@@ -4847,7 +4847,7 @@ const MediumVoltageCableVLFTest = () => {
 
               {/* Recommendations */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
                   Recommendations
                 </h3>
                 {/* On-screen form - hidden in print */}
@@ -4859,7 +4859,7 @@ const MediumVoltageCableVLFTest = () => {
                     }
                     readOnly={!isEditMode}
                     rows={4}
-                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     placeholder="Enter recommendations"
                   />
                 </div>
@@ -4867,13 +4867,13 @@ const MediumVoltageCableVLFTest = () => {
                 {/* Print-only table */}
                 <div className="hidden print:block">
                   <table
-                    className="w-full border border-gray-300 print:border-black print-comment-table"
+                    className="w-full border border-zinc-300 print:border-black print-comment-table"
                     style={{ tableLayout: "fixed", width: "100%" }}
                   >
                     <tbody>
                       <tr>
                         <td
-                          className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top"
+                          className="p-2 border border-zinc-300 print:border-black min-h-[100px] align-top"
                           style={{
                             wordWrap: "break-word",
                             overflowWrap: "break-word",
@@ -4893,7 +4893,7 @@ const MediumVoltageCableVLFTest = () => {
               <div
                 className={`print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
               >
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
                   Additional Comments
                 </h3>
                 {/* On-screen form - hidden in print */}
@@ -4903,7 +4903,7 @@ const MediumVoltageCableVLFTest = () => {
                     onChange={(e) => handleChange("comments", e.target.value)}
                     readOnly={!isEditMode}
                     rows={4}
-                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                     placeholder="Enter any additional comments"
                   />
                 </div>
@@ -4911,13 +4911,13 @@ const MediumVoltageCableVLFTest = () => {
                 {formData.comments?.trim() && (
                   <div className="hidden print:block">
                     <table
-                      className="w-full border border-gray-300 print:border-black print-comment-table"
+                      className="w-full border border-zinc-300 print:border-black print-comment-table"
                       style={{ tableLayout: "fixed", width: "100%" }}
                     >
                       <tbody>
                         <tr>
                           <td
-                            className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top"
+                            className="p-2 border border-zinc-300 print:border-black min-h-[100px] align-top"
                             style={{
                               wordWrap: "break-word",
                               overflowWrap: "break-word",

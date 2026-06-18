@@ -632,19 +632,19 @@ const JobHazardAnalysisForm: React.FC = () => {
 
   const readOnly = !isEditing || isLocked;
 
-  const inputClass = `w-full border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white rounded-sm ${
-    readOnly ? "bg-gray-50 dark:bg-dark-200 cursor-default" : ""
+  const inputClass = `w-full border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-zinc-900 dark:text-white rounded-sm ${
+    readOnly ? "bg-zinc-50 dark:bg-dark-200 cursor-default" : ""
   }`;
-  const textareaClass = `w-full border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white rounded-sm resize-y ${
-    readOnly ? "bg-gray-50 dark:bg-dark-200 cursor-default" : ""
+  const textareaClass = `w-full border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-zinc-900 dark:text-white rounded-sm resize-y ${
+    readOnly ? "bg-zinc-50 dark:bg-dark-200 cursor-default" : ""
   }`;
-  const selectClass = `w-full border border-gray-300 dark:border-gray-600 px-1 py-1 text-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white rounded-sm ${
-    readOnly ? "bg-gray-50 dark:bg-dark-200 cursor-default" : ""
+  const selectClass = `w-full border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-sm bg-white dark:bg-dark-150 text-zinc-900 dark:text-white rounded-sm ${
+    readOnly ? "bg-zinc-50 dark:bg-dark-200 cursor-default" : ""
   }`;
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-gray-600 dark:text-gray-300">
+      <div className="p-8 text-center text-zinc-600 dark:text-zinc-300">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -691,7 +691,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
                   : assetStatus === "ready_for_review"
                     ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-                    : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                    : "bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
               }`}
             >
               {assetStatus.replace(/_/g, " ")}
@@ -766,7 +766,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                     }
                     readOnly={readOnly}
                     placeholder="E / H / M / L"
-                    className={`w-full bg-transparent text-center font-bold border-none focus:outline-none placeholder:font-normal placeholder:text-gray-500`}
+                    className={`w-full bg-transparent text-center font-bold border-none focus:outline-none placeholder:font-normal placeholder:text-zinc-500`}
                   />
                 </td>
               </tr>
@@ -1017,7 +1017,7 @@ const JobHazardAnalysisForm: React.FC = () => {
         <div className="border border-black bg-white text-black">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-zinc-100">
                 <th className="border border-black p-1 w-[15%] text-left">
                   Job Steps
                 </th>
@@ -1080,7 +1080,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                       }
                       readOnly={readOnly}
                       placeholder="E / H / M / L"
-                      className="w-full bg-transparent text-center font-bold border-none focus:outline-none placeholder:font-normal placeholder:text-gray-500"
+                      className="w-full bg-transparent text-center font-bold border-none focus:outline-none placeholder:font-normal placeholder:text-zinc-500"
                     />
                   </td>
                   {!readOnly && (
@@ -1119,7 +1119,7 @@ const JobHazardAnalysisForm: React.FC = () => {
         <div className="border border-black bg-white text-black">
           <table className="w-full border-collapse text-sm table-fixed">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-zinc-100">
                 <th className="border border-black p-1 text-left">
                   Equipment to be Used
                 </th>
@@ -1175,7 +1175,7 @@ const JobHazardAnalysisForm: React.FC = () => {
               <button
                 type="button"
                 onClick={addEtiRow}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-zinc-300 rounded hover:bg-zinc-100"
               >
                 <Plus className="h-4 w-4" /> Add row
               </button>
@@ -1294,7 +1294,7 @@ const JobHazardAnalysisForm: React.FC = () => {
             </div>
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50">
+                <tr className="bg-zinc-50">
                   <th className="border border-black p-1 w-[8%] text-center">
                     #
                   </th>
@@ -1373,13 +1373,13 @@ const JobHazardAnalysisForm: React.FC = () => {
               <div className="text-sm font-medium">
                 The below listed employees completed the work to be performed:
               </div>
-              <div className="text-xs italic text-gray-600">
+              <div className="text-xs italic text-zinc-600">
                 Check box to acknowledge that all tools used are accounted for.
               </div>
             </div>
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50">
+                <tr className="bg-zinc-50">
                   <th className="border border-black p-1 w-[8%] text-center">
                     #
                   </th>

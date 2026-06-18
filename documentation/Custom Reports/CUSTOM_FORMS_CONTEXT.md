@@ -452,7 +452,7 @@ handleFieldChange(cellId, column.field.id, value);
 .form-label    /* Standard label */
 
 /* Read-only fields */
-bg-gray-100 dark:bg-dark-200  /* Read-only background */
+bg-zinc-100 dark:bg-dark-200  /* Read-only background */
 
 /* Brand color */
 bg-[#f26722] hover:bg-[#e55611]  /* AMP orange */
@@ -548,4 +548,3 @@ npm run lint
 **Ready to continue tomorrow!** 🚀
 
 Start with creating `CustomFormFiller.tsx` - it's the bridge between templates and actual job data.
-

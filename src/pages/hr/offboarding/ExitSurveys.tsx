@@ -1,19 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Card, { CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { 
-  FileText, Plus, Edit, Trash2, Eye, Search, MessageSquare, 
-  Loader2, Clock, CheckCircle, Send, BarChart3, Link2, Copy, Paperclip, Upload, X
-} from 'lucide-react';
-import { toast } from '../../../components/ui/toast';
-import { supabase } from '../../../lib/supabase';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { onboardingService } from '../../../services/hr/onboardingService';
+import React, { useState, useEffect, useCallback } from "react";
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  FileText,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Search,
+  MessageSquare,
+  Loader2,
+  Clock,
+  CheckCircle,
+  Send,
+  BarChart3,
+  Link2,
+  Copy,
+  Paperclip,
+  Upload,
+  X,
+} from "lucide-react";
+import { toast } from "../../../components/ui/toast";
+import { supabase } from "../../../lib/supabase";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { onboardingService } from "../../../services/hr/onboardingService";
 
-const ASSIGNMENTS_STORAGE_KEY = 'hr_exit_survey_assignments';
+const ASSIGNMENTS_STORAGE_KEY = "hr_exit_survey_assignments";
 
 function generateToken(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
@@ -22,7 +48,13 @@ function generateToken(): string {
 export interface ExitSurveyQuestion {
   id: string;
   prompt: string;
-  type: 'text' | 'textarea' | 'scale_1_5' | 'scale_1_10' | 'yes_no' | 'multiple_choice';
+  type:
+    | "text"
+    | "textarea"
+    | "scale_1_5"
+    | "scale_1_10"
+    | "yes_no"
+    | "multiple_choice";
   required: boolean;
   order: number;
   options?: string[];
@@ -39,7 +71,7 @@ export interface ExitSurvey {
   name: string;
   description?: string;
   questions: ExitSurveyQuestion[];
-  status: 'draft' | 'active' | 'archived';
+  status: "draft" | "active" | "archived";
   is_optional: boolean;
   is_template?: boolean;
   attached_documents?: ExitSurveyAttachedDoc[];
@@ -83,25 +115,40 @@ interface EmployeeOption {
 }
 
 const QUESTION_TYPE_OPTIONS = [
-  { value: 'text', label: 'Short Text' },
-  { value: 'textarea', label: 'Long Text' },
-  { value: 'scale_1_5', label: 'Rating (1-5)' },
-  { value: 'scale_1_10', label: 'Rating (1-10)' },
-  { value: 'yes_no', label: 'Yes / No' },
-  { value: 'multiple_choice', label: 'Multiple Choice' },
+  { value: "text", label: "Short Text" },
+  { value: "textarea", label: "Long Text" },
+  { value: "scale_1_5", label: "Rating (1-5)" },
+  { value: "scale_1_10", label: "Rating (1-10)" },
+  { value: "yes_no", label: "Yes / No" },
+  { value: "multiple_choice", label: "Multiple Choice" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-  { value: 'active', label: 'Active', color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-  { value: 'archived', label: 'Archived', color: 'text-gray-500 bg-gray-100 dark:bg-gray-800' },
+  {
+    value: "draft",
+    label: "Draft",
+    color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20",
+  },
+  {
+    value: "active",
+    label: "Active",
+    color: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  },
+  {
+    value: "archived",
+    label: "Archived",
+    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+  },
 ];
 
-const defaultSurvey = (): Omit<ExitSurvey, 'id' | 'created_at' | 'updated_at'> => ({
-  name: '',
-  description: '',
+const defaultSurvey = (): Omit<
+  ExitSurvey,
+  "id" | "created_at" | "updated_at"
+> => ({
+  name: "",
+  description: "",
   questions: [],
-  status: 'draft',
+  status: "draft",
   is_optional: true,
   is_template: false,
   attached_documents: [],
@@ -112,8 +159,8 @@ export const ExitSurveys: React.FC = () => {
   const [responses, setResponses] = useState<ExitSurveyResponse[]>([]);
   const [assignments, setAssignments] = useState<ExitSurveyAssignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -124,11 +171,13 @@ export const ExitSurveys: React.FC = () => {
   const [surveyToSend, setSurveyToSend] = useState<ExitSurvey | null>(null);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [sendEmployeeId, setSendEmployeeId] = useState<string>('');
-  const [sendEmployeeSearch, setSendEmployeeSearch] = useState('');
+  const [sendEmployeeId, setSendEmployeeId] = useState<string>("");
+  const [sendEmployeeSearch, setSendEmployeeSearch] = useState("");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [formData, setFormData] = useState(defaultSurvey());
-  const [availableDocs, setAvailableDocs] = useState<{ id: string; name: string; file_url: string | null }[]>([]);
+  const [availableDocs, setAvailableDocs] = useState<
+    { id: string; name: string; file_url: string | null }[]
+  >([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
   const [docUploading, setDocUploading] = useState(false);
 
@@ -143,11 +192,14 @@ export const ExitSurveys: React.FC = () => {
       try {
         const forms = await onboardingService.getESignForms({});
         const docs = (forms || [])
-          .filter((f: any) => f.status !== 'archived')
+          .filter((f: any) => f.status !== "archived")
           .map((f: any) => {
             const custom = f.custom_fields?.attached_documents;
-            const fileUrl = Array.isArray(custom) && custom[0]?.file_url ? custom[0].file_url : null;
-            return { id: f.id, name: f.name || 'Document', file_url: fileUrl };
+            const fileUrl =
+              Array.isArray(custom) && custom[0]?.file_url
+                ? custom[0].file_url
+                : null;
+            return { id: f.id, name: f.name || "Document", file_url: fileUrl };
           })
           .filter((d: any) => d.file_url);
         if (!cancelled) setAvailableDocs(docs);
@@ -155,7 +207,9 @@ export const ExitSurveys: React.FC = () => {
         if (!cancelled) setAvailableDocs([]);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isCreateModalOpen, isEditModalOpen]);
 
   const addAttachedDoc = (doc: ExitSurveyAttachedDoc) => {
@@ -168,25 +222,39 @@ export const ExitSurveys: React.FC = () => {
   const removeAttachedDoc = (index: number) => {
     setFormData((p) => ({
       ...p,
-      attached_documents: (p.attached_documents ?? []).filter((_, i) => i !== index),
+      attached_documents: (p.attached_documents ?? []).filter(
+        (_, i) => i !== index,
+      ),
     }));
   };
 
   const handleUploadDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    e.target.value = '';
+    e.target.value = "";
     if (!file) return;
     setDocUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'pdf';
+      const ext = file.name.split(".").pop() || "pdf";
       const path = `exit-surveys/${Date.now()}_${Math.random().toString(36).slice(2, 10)}.${ext}`;
-      const { error } = await supabase.storage.from('documents').upload(path, file, { cacheControl: '3600', upsert: false });
+      const { error } = await supabase.storage
+        .from("documents")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
       if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("documents").getPublicUrl(path);
       addAttachedDoc({ name: file.name, file_url: publicUrl, file_path: path });
-      toast({ title: 'Added', description: 'Document attached to survey.', variant: 'success' });
+      toast({
+        title: "Added",
+        description: "Document attached to survey.",
+        variant: "success",
+      });
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err?.message || 'Could not upload file.', variant: 'destructive' });
+      toast({
+        title: "Upload failed",
+        description: err?.message || "Could not upload file.",
+        variant: "destructive",
+      });
     } finally {
       setDocUploading(false);
     }
@@ -195,14 +263,18 @@ export const ExitSurveys: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const storedSurveys = localStorage.getItem('hr_exit_surveys');
-      const storedResponses = localStorage.getItem('hr_exit_survey_responses');
+      const storedSurveys = localStorage.getItem("hr_exit_surveys");
+      const storedResponses = localStorage.getItem("hr_exit_survey_responses");
       const storedAssignments = localStorage.getItem(ASSIGNMENTS_STORAGE_KEY);
       setSurveys(storedSurveys ? JSON.parse(storedSurveys) : []);
       setResponses(storedResponses ? JSON.parse(storedResponses) : []);
       setAssignments(storedAssignments ? JSON.parse(storedAssignments) : []);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to load surveys', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to load surveys",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -216,62 +288,93 @@ export const ExitSurveys: React.FC = () => {
   const fetchEmployees = useCallback(async () => {
     setLoadingEmployees(true);
     try {
-      let { data: usersData, error } = await supabase.schema('common').rpc('admin_get_users');
+      let { data: usersData, error } = await supabase
+        .schema("common")
+        .rpc("admin_get_users");
       if (error) {
-        const fallback = await supabase.rpc('admin_get_users');
+        const fallback = await supabase.rpc("admin_get_users");
         usersData = fallback.data;
         error = fallback.error;
       }
       const users: any[] = usersData || [];
-      const { data: profilesData } = await supabase.schema('common').from('profiles').select('id, full_name');
+      const { data: profilesData } = await supabase
+        .schema("common")
+        .from("profiles")
+        .select("id, full_name");
       const profilesMap: Record<string, { full_name?: string }> = {};
-      (profilesData || []).forEach((p: any) => { profilesMap[p.id] = p; });
-      const list: EmployeeOption[] = users.map((u: any) => ({
-        id: u.id,
-        name: profilesMap[u.id]?.full_name || u.raw_user_meta_data?.name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
-        email: u.email || '',
-      })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      (profilesData || []).forEach((p: any) => {
+        profilesMap[p.id] = p;
+      });
+      const list: EmployeeOption[] = users
+        .map((u: any) => ({
+          id: u.id,
+          name:
+            profilesMap[u.id]?.full_name ||
+            u.raw_user_meta_data?.name ||
+            u.user_metadata?.name ||
+            u.email?.split("@")[0] ||
+            "Unknown",
+          email: u.email || "",
+        }))
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
       setEmployees(list);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to load employees', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to load employees",
+        variant: "destructive",
+      });
     } finally {
       setLoadingEmployees(false);
     }
   }, []);
 
   const saveSurveys = (list: ExitSurvey[]) => {
-    localStorage.setItem('hr_exit_surveys', JSON.stringify(list));
+    localStorage.setItem("hr_exit_surveys", JSON.stringify(list));
     setSurveys(list);
   };
 
   const filteredSurveys = surveys.filter((s) => {
-    if (filterStatus !== 'all' && s.status !== filterStatus) return false;
+    if (filterStatus !== "all" && s.status !== filterStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q);
+      return (
+        s.name.toLowerCase().includes(q) ||
+        (s.description || "").toLowerCase().includes(q)
+      );
     }
     return true;
   });
 
-  const getResponseCount = (surveyId: string) => responses.filter((r) => r.survey_id === surveyId).length;
+  const getResponseCount = (surveyId: string) =>
+    responses.filter((r) => r.survey_id === surveyId).length;
 
   const addQuestion = () => {
     setFormData((prev) => ({
       ...prev,
-      questions: [...prev.questions, {
-        id: `q_${Date.now()}`,
-        prompt: '',
-        type: 'text',
-        required: false,
-        order: prev.questions.length,
-      }],
+      questions: [
+        ...prev.questions,
+        {
+          id: `q_${Date.now()}`,
+          prompt: "",
+          type: "text",
+          required: false,
+          order: prev.questions.length,
+        },
+      ],
     }));
   };
 
-  const updateQuestion = (index: number, field: keyof ExitSurveyQuestion, value: any) => {
+  const updateQuestion = (
+    index: number,
+    field: keyof ExitSurveyQuestion,
+    value: any,
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      questions: prev.questions.map((q, i) => (i === index ? { ...q, [field]: value } : q)),
+      questions: prev.questions.map((q, i) =>
+        i === index ? { ...q, [field]: value } : q,
+      ),
     }));
   };
 
@@ -291,7 +394,7 @@ export const ExitSurveys: React.FC = () => {
     setSelectedSurvey(s);
     setFormData({
       name: s.name,
-      description: s.description || '',
+      description: s.description || "",
       questions: s.questions.map((q) => ({ ...q })),
       status: s.status,
       is_optional: s.is_optional,
@@ -313,7 +416,11 @@ export const ExitSurveys: React.FC = () => {
 
   const handleCreate = () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Survey name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Survey name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const now = new Date().toISOString();
@@ -325,33 +432,39 @@ export const ExitSurveys: React.FC = () => {
     };
     saveSurveys([...surveys, newS]);
     setIsCreateModalOpen(false);
-    toast({ title: 'Created', description: 'Exit survey created.' });
+    toast({ title: "Created", description: "Exit survey created." });
   };
 
   const handleUpdate = () => {
     if (!selectedSurvey || !formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Survey name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Survey name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const updated = surveys.map((s) =>
-      s.id === selectedSurvey.id ? { ...s, ...formData, updated_at: new Date().toISOString() } : s
+      s.id === selectedSurvey.id
+        ? { ...s, ...formData, updated_at: new Date().toISOString() }
+        : s,
     );
     saveSurveys(updated);
     setIsEditModalOpen(false);
     setSelectedSurvey(null);
-    toast({ title: 'Updated', description: 'Survey updated.' });
+    toast({ title: "Updated", description: "Survey updated." });
   };
 
   const handleDelete = (s: ExitSurvey) => {
-    if (!confirm('Delete this survey?')) return;
+    if (!confirm("Delete this survey?")) return;
     saveSurveys(surveys.filter((x) => x.id !== s.id));
-    toast({ title: 'Deleted', description: 'Survey removed.' });
+    toast({ title: "Deleted", description: "Survey removed." });
   };
 
   const openSendModal = (s: ExitSurvey) => {
     setSurveyToSend(s);
-    setSendEmployeeId('');
-    setSendEmployeeSearch('');
+    setSendEmployeeId("");
+    setSendEmployeeSearch("");
     setGeneratedLink(null);
     setIsSendModalOpen(true);
     fetchEmployees();
@@ -359,7 +472,11 @@ export const ExitSurveys: React.FC = () => {
 
   const handleCreateLink = () => {
     if (!surveyToSend || !sendEmployeeId) {
-      toast({ title: 'Select employee', description: 'Choose an employee to send this survey to.', variant: 'destructive' });
+      toast({
+        title: "Select employee",
+        description: "Choose an employee to send this survey to.",
+        variant: "destructive",
+      });
       return;
     }
     const employee = employees.find((e) => e.id === sendEmployeeId);
@@ -372,7 +489,9 @@ export const ExitSurveys: React.FC = () => {
       survey_description: surveyToSend.description,
       questions: surveyToSend.questions.map((q) => ({ ...q })),
       is_optional: surveyToSend.is_optional,
-      attached_documents: surveyToSend.attached_documents ? [...surveyToSend.attached_documents] : [],
+      attached_documents: surveyToSend.attached_documents
+        ? [...surveyToSend.attached_documents]
+        : [],
       employee_id: employee.id,
       employee_name: employee.name,
       employee_email: employee.email,
@@ -381,60 +500,83 @@ export const ExitSurveys: React.FC = () => {
     };
     const next = [...assignments, assignment];
     saveAssignments(next);
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const link = `${baseUrl}/exit-survey/${token}`;
     setGeneratedLink(link);
-    toast({ title: 'Link created', description: 'Copy the link and send it to the employee (e.g. by email).' });
+    toast({
+      title: "Link created",
+      description: "Copy the link and send it to the employee (e.g. by email).",
+    });
   };
 
   const copyLinkToClipboard = () => {
     if (!generatedLink) return;
-    navigator.clipboard.writeText(generatedLink).then(() => {
-      toast({ title: 'Copied', description: 'Link copied to clipboard.' });
-    }).catch(() => {
-      toast({ title: 'Copy failed', description: 'Please select and copy the link manually.', variant: 'destructive' });
-    });
+    navigator.clipboard
+      .writeText(generatedLink)
+      .then(() => {
+        toast({ title: "Copied", description: "Link copied to clipboard." });
+      })
+      .catch(() => {
+        toast({
+          title: "Copy failed",
+          description: "Please select and copy the link manually.",
+          variant: "destructive",
+        });
+      });
   };
 
   const closeSendModal = () => {
     setIsSendModalOpen(false);
     setSurveyToSend(null);
-    setSendEmployeeId('');
+    setSendEmployeeId("");
     setGeneratedLink(null);
   };
 
-  const getAssignmentCount = (surveyId: string) => assignments.filter((a) => a.survey_id === surveyId).length;
-  const getCompletedCount = (surveyId: string) => assignments.filter((a) => a.survey_id === surveyId && a.completed_at).length;
+  const getAssignmentCount = (surveyId: string) =>
+    assignments.filter((a) => a.survey_id === surveyId).length;
+  const getCompletedCount = (surveyId: string) =>
+    assignments.filter((a) => a.survey_id === surveyId && a.completed_at)
+      .length;
 
   const getStatusBadge = (status: string) => {
     const opt = STATUS_OPTIONS.find((o) => o.value === status);
     if (!opt) return null;
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}>
-        {status === 'active' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+      >
+        {status === "active" ? (
+          <CheckCircle className="h-3 w-3" />
+        ) : (
+          <Clock className="h-3 w-3" />
+        )}
         {opt.label}
       </span>
     );
   };
 
-  const formatResponseValue = (val: string | number | string[] | undefined): string => {
-    if (val === undefined || val === '') return '—';
-    if (Array.isArray(val)) return val.join(', ') || '—';
+  const formatResponseValue = (
+    val: string | number | string[] | undefined,
+  ): string => {
+    if (val === undefined || val === "") return "—";
+    if (Array.isArray(val)) return val.join(", ") || "—";
     return String(val);
   };
 
-  const surveyResponses = selectedSurvey ? responses.filter((r) => r.survey_id === selectedSurvey.id) : [];
+  const surveyResponses = selectedSurvey
+    ? responses.filter((r) => r.survey_id === selectedSurvey.id)
+    : [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
             <MessageSquare className="h-6 w-6 text-[#f26722]" />
             Exit Surveys
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             Collect optional feedback from departing employees
           </p>
         </div>
@@ -449,9 +591,13 @@ export const ExitSurveys: React.FC = () => {
         <div className="flex items-start gap-3">
           <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Exit surveys are optional</p>
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+              Exit surveys are optional
+            </p>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-0.5">
-              Employees may choose to skip or submit anonymously. To see how people filled out a survey, click the <strong>Responses</strong> (chart) icon on that survey’s row.
+              Employees may choose to skip or submit anonymously. To see how
+              people filled out a survey, click the <strong>Responses</strong>{" "}
+              (chart) icon on that survey’s row.
             </p>
           </div>
         </div>
@@ -462,7 +608,7 @@ export const ExitSurveys: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <Input
                 placeholder="Search surveys..."
                 value={search}
@@ -471,15 +617,15 @@ export const ExitSurveys: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              {['all', 'draft', 'active', 'archived'].map((status) => (
+              {["all", "draft", "active", "archived"].map((status) => (
                 <Button
                   key={status}
-                  variant={filterStatus === status ? 'default' : 'outline'}
+                  variant={filterStatus === status ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilterStatus(status)}
                   className="capitalize"
                 >
-                  {status === 'all' ? 'All' : status}
+                  {status === "all" ? "All" : status}
                 </Button>
               ))}
             </div>
@@ -501,12 +647,16 @@ export const ExitSurveys: React.FC = () => {
             </div>
           ) : filteredSurveys.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-gray-500 dark:text-gray-400 font-medium">No surveys found</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                {search || filterStatus !== 'all' ? 'Try adjusting your filters' : 'Create your first exit survey'}
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                No surveys found
               </p>
-              {!search && filterStatus === 'all' && (
+              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                {search || filterStatus !== "all"
+                  ? "Try adjusting your filters"
+                  : "Create your first exit survey"}
+              </p>
+              {!search && filterStatus === "all" && (
                 <Button variant="outline" className="mt-4" onClick={openCreate}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Survey
@@ -517,35 +667,40 @@ export const ExitSurveys: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Survey
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Questions
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Sent
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Responses
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                   {filteredSurveys.map((s) => (
-                    <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr
+                      key={s.id}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
+                          <p className="font-medium text-zinc-900 dark:text-white">
+                            {s.name}
+                          </p>
                           {s.description && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
                               {s.description}
                             </p>
                           )}
@@ -564,14 +719,17 @@ export const ExitSurveys: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
-                          <FileText className="h-4 w-4 text-gray-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
+                          <FileText className="h-4 w-4 text-zinc-400" />
                           {s.questions.length}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300" title={`${getCompletedCount(s.id)} of ${getAssignmentCount(s.id)} completed`}>
-                          <Send className="h-4 w-4 text-gray-400" />
+                        <span
+                          className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300"
+                          title={`${getCompletedCount(s.id)} of ${getAssignmentCount(s.id)} completed`}
+                        >
+                          <Send className="h-4 w-4 text-zinc-400" />
                           {getAssignmentCount(s.id)} sent
                         </span>
                       </td>
@@ -579,49 +737,52 @@ export const ExitSurveys: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openResponses(s)}
-                          className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-[#f26722] hover:underline"
+                          className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:text-[#f26722] hover:underline"
                           title="View who filled it out and their answers"
                         >
-                          <BarChart3 className="h-4 w-4 text-gray-400" />
-                          {getResponseCount(s.id)} response{getResponseCount(s.id) !== 1 ? 's' : ''}
+                          <BarChart3 className="h-4 w-4 text-zinc-400" />
+                          {getResponseCount(s.id)} response
+                          {getResponseCount(s.id) !== 1 ? "s" : ""}
                         </button>
                       </td>
-                      <td className="px-6 py-4">
-                        {getStatusBadge(s.status)}
-                      </td>
+                      <td className="px-6 py-4">{getStatusBadge(s.status)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="outline" size="sm" onClick={() => openSendModal(s)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openSendModal(s)}
+                          >
                             <Send className="h-3.5 w-3.5 mr-1" />
                             Send
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openView(s)}
                             title="Preview"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openResponses(s)}
                             title="Responses"
                           >
                             <BarChart3 className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openEdit(s)}
                             title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(s)}
                             title="Delete"
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -640,54 +801,72 @@ export const ExitSurveys: React.FC = () => {
       </Card>
 
       {/* Create/Edit Modal */}
-      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateModalOpen(false);
-          setIsEditModalOpen(false);
-          setSelectedSurvey(null);
-        }
-      }}>
+      <Dialog
+        open={isCreateModalOpen || isEditModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateModalOpen(false);
+            setIsEditModalOpen(false);
+            setSelectedSurvey(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditModalOpen ? 'Edit Survey' : 'New Exit Survey'}</DialogTitle>
-            <DialogDescription>Configure the questions for departing employees.</DialogDescription>
+            <DialogTitle>
+              {isEditModalOpen ? "Edit Survey" : "New Exit Survey"}
+            </DialogTitle>
+            <DialogDescription>
+              Configure the questions for departing employees.
+            </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Survey Name *
                 </label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, name: e.target.value }))
+                  }
                   placeholder="e.g. Employee Exit Feedback"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Description
                 </label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, description: e.target.value }))
+                  }
                   placeholder="Brief description shown to employees"
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Status
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value as any }))}
-                  className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      status: e.target.value as any,
+                    }))
+                  }
+                  className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -696,44 +875,73 @@ export const ExitSurveys: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.is_template ?? false}
-                    onChange={(e) => setFormData((p) => ({ ...p, is_template: e.target.checked }))}
-                    className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        is_template: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Save as template</span>
+                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Save as template
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.is_optional}
-                    onChange={(e) => setFormData((p) => ({ ...p, is_optional: e.target.checked }))}
-                    className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        is_optional: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Optional (recommended)</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    Optional (recommended)
+                  </span>
                 </label>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Templates are reusable surveys you can send to individual employees via unique links.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Templates are reusable surveys you can send to individual
+                employees via unique links.
               </p>
             </div>
 
             {/* Attached documents */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                   <Paperclip className="h-4 w-4 text-[#f26722]" />
                   Attached documents (optional)
                 </label>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                Add policy PDFs, handbooks, or e-sign documents for the employee to view when taking the survey.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                Add policy PDFs, handbooks, or e-sign documents for the employee
+                to view when taking the survey.
               </p>
               {(formData.attached_documents ?? []).length > 0 && (
                 <ul className="space-y-2 mb-3">
                   {(formData.attached_documents ?? []).map((doc, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2 py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                      <span className="text-sm truncate flex-1" title={doc.name}>{doc.name}</span>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeAttachedDoc(i)}>
-                        <X className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                    <li
+                      key={i}
+                      className="flex items-center justify-between gap-2 py-2 px-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                    >
+                      <span
+                        className="text-sm truncate flex-1"
+                        title={doc.name}
+                      >
+                        {doc.name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeAttachedDoc(i)}
+                      >
+                        <X className="h-4 w-4 text-zinc-400 hover:text-red-500" />
                       </Button>
                     </li>
                   ))}
@@ -750,22 +958,39 @@ export const ExitSurveys: React.FC = () => {
                   <Link2 className="h-3.5 w-3.5 mr-1.5" />
                   Add from document library
                 </Button>
-                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <input type="file" accept=".pdf,.doc,.docx" className="sr-only" onChange={handleUploadDoc} disabled={docUploading} />
-                  {docUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                  {docUploading ? 'Uploading…' : 'Upload new document'}
+                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-zinc-300 dark:border-zinc-600 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="sr-only"
+                    onChange={handleUploadDoc}
+                    disabled={docUploading}
+                  />
+                  {docUploading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="h-3.5 w-3.5" />
+                  )}
+                  {docUploading ? "Uploading…" : "Upload new document"}
                 </label>
               </div>
               {showDocPicker && availableDocs.length > 0 && (
-                <div className="mt-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg max-h-40 overflow-y-auto">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Select a document to attach</p>
+                <div className="mt-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg max-h-40 overflow-y-auto">
+                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                    Select a document to attach
+                  </p>
                   <div className="space-y-1">
                     {availableDocs.map((d) => (
                       <button
                         key={d.id}
                         type="button"
-                        onClick={() => addAttachedDoc({ name: d.name, file_url: d.file_url! })}
-                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-[#f26722]/10 text-gray-700 dark:text-gray-300"
+                        onClick={() =>
+                          addAttachedDoc({
+                            name: d.name,
+                            file_url: d.file_url!,
+                          })
+                        }
+                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-[#f26722]/10 text-zinc-700 dark:text-zinc-300"
                       >
                         {d.name}
                       </button>
@@ -778,51 +1003,76 @@ export const ExitSurveys: React.FC = () => {
             {/* Questions Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Questions ({formData.questions.length})
                 </label>
-                <Button type="button" variant="outline" size="sm" onClick={addQuestion}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addQuestion}
+                >
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   Add Question
                 </Button>
               </div>
               {formData.questions.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
-                  <FileText className="h-8 w-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                  <p className="text-sm text-gray-500">No questions yet. Add questions to collect feedback.</p>
+                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
+                  <FileText className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
+                  <p className="text-sm text-zinc-500">
+                    No questions yet. Add questions to collect feedback.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {formData.questions.map((q, i) => (
-                    <div key={q.id} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div
+                      key={q.id}
+                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                    >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <Input
                           value={q.prompt}
-                          onChange={(e) => updateQuestion(i, 'prompt', e.target.value)}
+                          onChange={(e) =>
+                            updateQuestion(i, "prompt", e.target.value)
+                          }
                           placeholder="Question text"
                           className="sm:col-span-2"
                         />
                         <select
                           value={q.type}
-                          onChange={(e) => updateQuestion(i, 'type', e.target.value)}
-                          className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          onChange={(e) =>
+                            updateQuestion(i, "type", e.target.value)
+                          }
+                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                         >
                           {QUESTION_TYPE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <label className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={q.required}
-                            onChange={(e) => updateQuestion(i, 'required', e.target.checked)}
-                            className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                            onChange={(e) =>
+                              updateQuestion(i, "required", e.target.checked)
+                            }
+                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Required</span>
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                            Required
+                          </span>
                         </label>
                       </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeQuestion(i)}>
-                        <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeQuestion(i)}
+                      >
+                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -832,11 +1082,17 @@ export const ExitSurveys: React.FC = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button onClick={isEditModalOpen ? handleUpdate : handleCreate}>
-              {isEditModalOpen ? 'Save Changes' : 'Create Survey'}
+              {isEditModalOpen ? "Save Changes" : "Create Survey"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -847,7 +1103,9 @@ export const ExitSurveys: React.FC = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{selectedSurvey?.name}</DialogTitle>
-            <DialogDescription>{selectedSurvey?.description || 'No description provided'}</DialogDescription>
+            <DialogDescription>
+              {selectedSurvey?.description || "No description provided"}
+            </DialogDescription>
           </DialogHeader>
           {selectedSurvey && (
             <div className="space-y-6 py-4">
@@ -867,12 +1125,16 @@ export const ExitSurveys: React.FC = () => {
 
               {(selectedSurvey.attached_documents?.length ?? 0) > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                    Attached documents ({selectedSurvey.attached_documents!.length})
+                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                    Attached documents (
+                    {selectedSurvey.attached_documents!.length})
                   </h4>
                   <ul className="space-y-1">
                     {selectedSurvey.attached_documents!.map((d, i) => (
-                      <li key={i} className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <li
+                        key={i}
+                        className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2"
+                      >
                         <FileText className="h-4 w-4 text-[#f26722]" />
                         {d.name}
                       </li>
@@ -881,23 +1143,33 @@ export const ExitSurveys: React.FC = () => {
                 </div>
               )}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3">
                   Questions ({selectedSurvey.questions.length})
                 </h4>
                 {selectedSurvey.questions.length === 0 ? (
-                  <p className="text-sm text-gray-500">No questions defined</p>
+                  <p className="text-sm text-zinc-500">No questions defined</p>
                 ) : (
                   <ol className="space-y-3">
                     {selectedSurvey.questions.map((q, i) => (
                       <li key={q.id} className="flex gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-400">
                           {i + 1}
                         </span>
                         <div>
-                          <p className="text-sm text-gray-900 dark:text-white">{q.prompt}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {QUESTION_TYPE_OPTIONS.find((o) => o.value === q.type)?.label}
-                            {q.required && <span className="ml-2 text-amber-600">Required</span>}
+                          <p className="text-sm text-zinc-900 dark:text-white">
+                            {q.prompt}
+                          </p>
+                          <p className="text-xs text-zinc-500 mt-0.5">
+                            {
+                              QUESTION_TYPE_OPTIONS.find(
+                                (o) => o.value === q.type,
+                              )?.label
+                            }
+                            {q.required && (
+                              <span className="ml-2 text-amber-600">
+                                Required
+                              </span>
+                            )}
                           </p>
                         </div>
                       </li>
@@ -908,8 +1180,15 @@ export const ExitSurveys: React.FC = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
-            <Button onClick={() => { setIsViewModalOpen(false); if (selectedSurvey) openEdit(selectedSurvey); }}>
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setIsViewModalOpen(false);
+                if (selectedSurvey) openEdit(selectedSurvey);
+              }}
+            >
               Edit
             </Button>
           </DialogFooter>
@@ -917,7 +1196,10 @@ export const ExitSurveys: React.FC = () => {
       </Dialog>
 
       {/* Responses Modal — who filled it out, when, and question-by-question answers */}
-      <Dialog open={isResponsesModalOpen} onOpenChange={setIsResponsesModalOpen}>
+      <Dialog
+        open={isResponsesModalOpen}
+        onOpenChange={setIsResponsesModalOpen}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Survey Responses</DialogTitle>
@@ -927,22 +1209,33 @@ export const ExitSurveys: React.FC = () => {
           </DialogHeader>
           {surveyResponses.length === 0 ? (
             <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-gray-500 dark:text-gray-400">No responses yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                Responses will appear here as employees complete the survey via their unique link.
+              <BarChart3 className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
+              <p className="text-zinc-500 dark:text-zinc-400">
+                No responses yet
+              </p>
+              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                Responses will appear here as employees complete the survey via
+                their unique link.
               </p>
             </div>
           ) : (
             <div className="space-y-6 py-4">
               {surveyResponses.map((r) => (
-                <div key={r.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {r.employee_name || 'Anonymous'}
+                <div
+                  key={r.id}
+                  className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4"
+                >
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-700">
+                    <span className="font-medium text-zinc-900 dark:text-white">
+                      {r.employee_name || "Anonymous"}
                     </span>
-                    <span className="text-sm text-gray-500">
-                      Submitted {new Date(r.submitted_at).toLocaleDateString()} at {new Date(r.submitted_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    <span className="text-sm text-zinc-500">
+                      Submitted {new Date(r.submitted_at).toLocaleDateString()}{" "}
+                      at{" "}
+                      {new Date(r.submitted_at).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                   <div className="space-y-3">
@@ -954,8 +1247,12 @@ export const ExitSurveys: React.FC = () => {
                         const display = formatResponseValue(val);
                         return (
                           <div key={q.id} className="text-sm">
-                            <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5">{q.prompt}</p>
-                            <p className="text-gray-600 dark:text-gray-400 pl-0">{display}</p>
+                            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-0.5">
+                              {q.prompt}
+                            </p>
+                            <p className="text-zinc-600 dark:text-zinc-400 pl-0">
+                              {display}
+                            </p>
                           </div>
                         );
                       })}
@@ -965,29 +1262,40 @@ export const ExitSurveys: React.FC = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsResponsesModalOpen(false)}>Close</Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsResponsesModalOpen(false)}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Send Survey Modal — create individual link for one employee */}
-      <Dialog open={isSendModalOpen} onOpenChange={(open) => !open && closeSendModal()}>
+      <Dialog
+        open={isSendModalOpen}
+        onOpenChange={(open) => !open && closeSendModal()}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Send survey to employee</DialogTitle>
             <DialogDescription>
-              {surveyToSend?.name}. Select an employee to generate their unique survey link. Copy the link and share it (e.g. by email). Links work when opened in this app; for links opened from another device, integrate with your backend to load the survey by token.
+              {surveyToSend?.name}. Select an employee to generate their unique
+              survey link. Copy the link and share it (e.g. by email). Links
+              work when opened in this app; for links opened from another
+              device, integrate with your backend to load the survey by token.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {!generatedLink ? (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                     Employee
                   </label>
                   {loadingEmployees ? (
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-sm text-zinc-500">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <LoadingSpinner size="md" />
                     </div>
@@ -1002,11 +1310,20 @@ export const ExitSurveys: React.FC = () => {
                       <select
                         value={sendEmployeeId}
                         onChange={(e) => setSendEmployeeId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                        className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                       >
                         <option value="">Select an employee</option>
                         {employees
-                          .filter((e) => !sendEmployeeSearch.trim() || e.name.toLowerCase().includes(sendEmployeeSearch.toLowerCase()) || e.email.toLowerCase().includes(sendEmployeeSearch.toLowerCase()))
+                          .filter(
+                            (e) =>
+                              !sendEmployeeSearch.trim() ||
+                              e.name
+                                .toLowerCase()
+                                .includes(sendEmployeeSearch.toLowerCase()) ||
+                              e.email
+                                .toLowerCase()
+                                .includes(sendEmployeeSearch.toLowerCase()),
+                          )
                           .map((e) => (
                             <option key={e.id} value={e.id}>
                               {e.name} — {e.email}
@@ -1017,8 +1334,13 @@ export const ExitSurveys: React.FC = () => {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={closeSendModal}>Cancel</Button>
-                  <Button onClick={handleCreateLink} disabled={!sendEmployeeId || loadingEmployees}>
+                  <Button variant="outline" onClick={closeSendModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateLink}
+                    disabled={!sendEmployeeId || loadingEmployees}
+                  >
                     <Link2 className="h-4 w-4 mr-2" />
                     Create link
                   </Button>
@@ -1026,21 +1348,33 @@ export const ExitSurveys: React.FC = () => {
               </>
             ) : (
               <>
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-3 border border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Individual survey link</p>
-                  <p className="text-sm text-gray-900 dark:text-white break-all font-mono">{generatedLink}</p>
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 p-3 border border-zinc-200 dark:border-zinc-700">
+                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                    Individual survey link
+                  </p>
+                  <p className="text-sm text-zinc-900 dark:text-white break-all font-mono">
+                    {generatedLink}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button onClick={copyLinkToClipboard} className="flex-1">
                     <Copy className="h-4 w-4 mr-2" />
                     Copy link
                   </Button>
-                  <Button variant="outline" onClick={() => { setGeneratedLink(null); setSendEmployeeId(''); }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setGeneratedLink(null);
+                      setSendEmployeeId("");
+                    }}
+                  >
                     Create another link
                   </Button>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={closeSendModal}>Done</Button>
+                  <Button variant="outline" onClick={closeSendModal}>
+                    Done
+                  </Button>
                 </DialogFooter>
               </>
             )}

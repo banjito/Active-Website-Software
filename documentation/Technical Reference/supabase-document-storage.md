@@ -449,7 +449,7 @@ export function DocumentList({ division, category }: DocumentListProps) {
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
   
   if (documents.length === 0) {
-    return <div className="p-4 text-center text-gray-500">No documents found</div>;
+    return <div className="p-4 text-center text-zinc-500">No documents found</div>;
   }
 
   return (
@@ -457,13 +457,13 @@ export function DocumentList({ division, category }: DocumentListProps) {
       {documents.map((doc) => (
         <div key={doc.id} className="border rounded-md p-4 flex justify-between items-center">
           <div className="flex items-center">
-            <FileText className="h-6 w-6 mr-3 text-gray-400" />
+            <FileText className="h-6 w-6 mr-3 text-zinc-400" />
             <div>
               <h3 className="font-medium">{doc.title}</h3>
               {doc.description && (
-                <p className="text-sm text-gray-500">{doc.description}</p>
+                <p className="text-sm text-zinc-500">{doc.description}</p>
               )}
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-zinc-400 mt-1">
                 {new Date(doc.created_at).toLocaleDateString()} • 
                 {(doc.file_size / 1024).toFixed(0)} KB
               </div>
@@ -531,7 +531,7 @@ export default function DocumentsPage() {
       </div>
       
       {showUpload && (
-        <div className="mb-8 p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
+        <div className="mb-8 p-6 border rounded-lg bg-zinc-50 dark:bg-zinc-800">
           <h2 className="text-lg font-semibold mb-4">Upload New Document</h2>
           <DocumentUpload 
             division={division || 'general'} 
@@ -684,4 +684,4 @@ src/
         └── page.tsx
 ```
 
-This structure helps organize your document-related code and provides a good foundation for implementing document management in your AMPOS application. 
+This structure helps organize your document-related code and provides a good foundation for implementing document management in your AMPOS application.

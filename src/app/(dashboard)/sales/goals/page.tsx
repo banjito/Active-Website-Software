@@ -9,7 +9,7 @@ export default function GoalsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
             Sales Goals
           </h1>
         </div>

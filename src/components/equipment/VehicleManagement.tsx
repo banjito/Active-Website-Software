@@ -15,7 +15,7 @@ export default function VehicleManagement({ division, portal }: VehicleManagemen
             <h2 className="text-xl font-semibold">Vehicle Management</h2>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 mb-4">
+            <p className="text-zinc-600 mb-4">
               This module is under development. Soon, you'll be able to manage vehicles, track maintenance, and assign vehicles to technicians.
             </p>
             <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">

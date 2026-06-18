@@ -1081,7 +1081,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1134,16 +1134,16 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.customerName}
@@ -1153,10 +1153,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={maskCustomerAddress(formData.customerLocation)}
@@ -1166,10 +1166,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.userName}
@@ -1185,10 +1185,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="date"
                       value={formData.date}
@@ -1201,10 +1201,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.identifier}
@@ -1222,10 +1222,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               </div>
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.jobNumber}
@@ -1235,10 +1235,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.technicians}
@@ -1254,11 +1254,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature.fahrenheit}
@@ -1271,7 +1271,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     <span className="mx-2">{formData.temperature.celsius}</span>
                     <span className="mx-2">°C</span>
                     <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={formData.temperature.tcf.toFixed(3)}
@@ -1282,11 +1282,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature.humidity || 0}
@@ -1307,10 +1307,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.substation}
@@ -1326,10 +1326,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.eqptLocation}
@@ -1370,14 +1370,14 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Nameplate */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             <div className="grid grid-cols-3 gap-4 print:hidden">
               <div>
                 <label className="form-label">Manufacturer</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.manufacturer}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1394,7 +1394,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Catalog No.</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.catalogNumber}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1411,7 +1411,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Serial Number</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.serialNumber}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1428,7 +1428,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Series</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.series}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1442,7 +1442,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Type</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.type}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1456,7 +1456,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">System Voltage (V)</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.systemVoltage}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1495,7 +1495,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   </select>
                 ) : (
                   <input
-                    className={`form-input bg-gray-100 dark:bg-dark-150`}
+                    className={`form-input bg-zinc-100 dark:bg-dark-150`}
                     value={formData.nameplate.ratedVoltage}
                     readOnly
                   />
@@ -1504,7 +1504,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Rated Current (A)</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.ratedCurrent}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1521,7 +1521,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">SCCR (kA)</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.aicRating}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1535,7 +1535,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               <div>
                 <label className="form-label">Phase Configuration</label>
                 <input
-                  className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   value={formData.nameplate.phaseConfiguration}
                   onChange={(e) =>
                     handleChange((p) => ({
@@ -1570,11 +1570,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Visual & Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "68%" }} />
@@ -1582,24 +1582,24 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                         {item.id}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
                         {item.description}
                       </td>
                       <td className="px-3 py-2">
@@ -1615,7 +1615,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {VISUAL_INSPECTION_OPTIONS.map((opt) => (
                               <option key={opt} value={opt}>
@@ -1638,7 +1638,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
             <div className="flex justify-between items-start mb-2 gap-4">
@@ -1660,7 +1660,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                       }))
                     }
                     disabled={!isEditing}
-                    className={`form-select ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-select ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   >
                     {INSULATION_RESISTANCE_TEST_VOLTAGES.map((v) => (
                       <option key={v} value={v}>
@@ -1680,10 +1680,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-24 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-24 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
-                <div className="border rounded-md px-3 py-2 bg-gray-50 dark:bg-dark-150">
+                <div className="border rounded-md px-3 py-2 bg-zinc-50 dark:bg-dark-150">
                   <div className="text-xs font-semibold mb-1">
                     Table 100.1 Criteria
                   </div>
@@ -1698,7 +1698,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         }))
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-20 h-7 py-1 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-20 h-7 py-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-xs ml-2">Units</span>
                     <select
@@ -1710,7 +1710,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         }))
                       }
                       disabled={!isEditing}
-                      className={`form-select w-20 h-7 py-1 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-select w-20 h-7 py-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     >
                       {INSULATION_RESISTANCE_UNITS.map((u) => (
                         <option key={u} value={u}>
@@ -1723,7 +1723,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed">
                 <colgroup>
                   <col style={{ width: "16%" }} />
                   <col style={{ width: "12%" }} />
@@ -1738,40 +1738,40 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Test Points
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"
                       colSpan={3}
                     >
                       Measured Values
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"
                       colSpan={3}
                     >
                       Temp. Corrected Values
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Units
                     </th>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"
                       colSpan={2}
                     >
                       Table 100.1 Criteria
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase">
                       Results
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
                     {["P1 (P1-P2)", "P2 (P2-P3)", "P3 (P3-P1)"].map((h) => (
                       <th
                         key={h}
-                        className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium"
+                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium"
                       >
                         {h}
                       </th>
@@ -1779,22 +1779,22 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     {["P1 (P1-P2)", "P2 (P2-P3)", "P3 (P3-P1)"].map((h) => (
                       <th
                         key={h}
-                        className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium"
+                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium"
                       >
                         {h}
                       </th>
                     ))}
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium">
                       Value
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium">
                       Units
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.insulationMeasured.map((row, i) => (
                     <tr key={i}>
                       <td className="px-3 py-2">
@@ -1802,7 +1802,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                           <input
                             value={row.section}
                             readOnly
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -1823,7 +1823,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -1837,7 +1837,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                             <input
                               value={(formData.tempCorrected[i] as any)[k]}
                               readOnly
-                              className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                              className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -1856,7 +1856,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -1889,7 +1889,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
                 Electrical - Contact Resistance Test for Torque Verification
               </h2>
               <div className="flex items-center gap-2">
@@ -1907,7 +1907,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className={`form-select ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-select ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   {(["Yes", "No"] as const).map((v) => (
                     <option key={v} value={v}>
@@ -1920,7 +1920,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
               {/* Resistance Measurements */}
               <div className="md:col-span-2 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed">
                   <colgroup>
                     <col style={{ width: "16%" }} />
                     <col style={{ width: "16%" }} />
@@ -1932,7 +1932,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   <thead>
                     <tr>
                       <th
-                        className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"
+                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase"
                         colSpan={6}
                       >
                         Resistance Measurements
@@ -1949,14 +1949,14 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                       ].map((h) => (
                         <th
                           key={h}
-                          className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                          className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                         >
                           {h}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                     <tr>
                       {(
                         [
@@ -1980,7 +1980,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -1999,7 +1999,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {CONTACT_RESISTANCE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -2019,17 +2019,17 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
               {/* Phase Value Deviation + Result */}
               <div className="overflow-x-auto">
-                <table className="phase-deviation-table min-w-full border-collapse border border-gray-200 dark:border-gray-700 table-fixed">
+                <table className="phase-deviation-table min-w-full border-collapse border border-zinc-200 dark:border-zinc-700 table-fixed">
                   <colgroup>
                     <col style={{ width: "50%" }} />
                     <col style={{ width: "50%" }} />
                   </colgroup>
                   <thead>
                     <tr>
-                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white">
+                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white">
                         Phase Value Deviation
                       </th>
-                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white">
+                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white">
                         Result
                       </th>
                     </tr>
@@ -2068,7 +2068,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {(
                               [
@@ -2114,7 +2114,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               disabled={!isEditing}
-                              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             >
                               {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
                                 (c) => (
@@ -2140,7 +2140,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Test Equipment */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-4 gap-4 print:hidden">
@@ -2366,7 +2366,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               </div>
             </div>
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -2375,35 +2375,35 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Equipment
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Serial Number
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       AMP ID
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {formData.testEquipment.lowResistanceOhmmeter.name}
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {
                         formData.testEquipment.lowResistanceOhmmeter
                           .serialNumber
                       }
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {formData.testEquipment.lowResistanceOhmmeter.ampId}
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {(() => {
                         const calDate =
                           formData.testEquipment.lowResistanceOhmmeter.calDate;
@@ -2424,16 +2424,16 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {formData.testEquipment.megohmmeter.name}
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {formData.testEquipment.megohmmeter.serialNumber}
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {formData.testEquipment.megohmmeter.ampId}
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       {(() => {
                         const calDate =
                           formData.testEquipment.megohmmeter.calDate;
@@ -2463,7 +2463,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <textarea
@@ -2473,14 +2473,14 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
               }
               rows={4}
               readOnly={!isEditing}
-              className={`form-textarea w-full resize-none ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

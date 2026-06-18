@@ -1,7 +1,7 @@
-import { Bell, Search, Plus } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/hr/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/hr/ui/avatar"
+import { Bell, Search, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/hr/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/hr/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,26 +9,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/hr/ui/dropdown-menu"
+} from "@/components/hr/ui/dropdown-menu";
 
 interface HeaderProps {
-  title: string
-  subtitle?: string
+  title: string;
+  subtitle?: string;
 }
 
 export function Header({ title, subtitle }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white shadow-sm">
+    <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-white shadow-sm">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-600 mt-0.5">{subtitle}</p>}
+        <h1 className="text-2xl font-semibold text-zinc-900">{title}</h1>
+        {subtitle && <p className="text-sm text-zinc-600 mt-0.5">{subtitle}</p>}
       </div>
 
       <div className="flex items-center gap-4">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input placeholder="Search employees..." className="w-64 pl-9 bg-gray-50 border-gray-300" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Input
+            placeholder="Search employees..."
+            className="w-64 pl-9 bg-zinc-50 border-zinc-300"
+          />
         </div>
 
         {/* Quick Add */}
@@ -68,5 +71,5 @@ export function Header({ title, subtitle }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

@@ -147,7 +147,7 @@ export function GoalList() {
                   <TableCell className="font-medium">
                     <div>
                       <div className="font-semibold">{goal.title}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{goal.description}</div>
+                      <div className="text-sm text-zinc-500 dark:text-zinc-400">{goal.description}</div>
                     </div>
                   </TableCell>
                   <TableCell>{goal.type}</TableCell>
@@ -159,7 +159,7 @@ export function GoalList() {
                           ? `$${goal.currentValue.toLocaleString()} of $${goal.targetValue.toLocaleString()}` 
                           : `${goal.currentValue} of ${goal.targetValue}`}
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-zinc-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full ${
                             status === 'On Track' || status === 'Completed' 
@@ -179,7 +179,7 @@ export function GoalList() {
                         <Calendar size={14} className="mr-1" />
                         {formatDate(goal.startDate)} - {formatDate(goal.endDate)}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         {daysRemaining > 0 
                           ? `${daysRemaining} days remaining` 
                           : 'Ended'}

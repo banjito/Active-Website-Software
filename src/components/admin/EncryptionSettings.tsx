@@ -1,16 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import Card from '../ui/Card';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Switch } from '../ui/Switch';
-import { Label } from '../ui/Label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
-import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectRoot } from '../ui/Select';
-import { AlertCircle, ShieldCheck, RefreshCw, LockKeyhole } from 'lucide-react';
-import { getEncryptionSettings, rotateEncryptionKey, isEncryptionInitialized } from '../../services/encryptionService';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { supabase } from '../../lib/supabase';
+import React, { useState, useEffect } from "react";
+import Card from "../ui/Card";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/Card";
+import { Button } from "../ui/Button";
+import { Switch } from "../ui/Switch";
+import { Label } from "../ui/Label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs";
+import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectRoot,
+} from "../ui/Select";
+import { AlertCircle, ShieldCheck, RefreshCw, LockKeyhole } from "lucide-react";
+import {
+  getEncryptionSettings,
+  rotateEncryptionKey,
+  isEncryptionInitialized,
+} from "../../services/encryptionService";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { supabase } from "../../lib/supabase";
 
 interface EncryptionStatus {
   created: string;
@@ -38,28 +54,28 @@ export const EncryptionSettings: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const encryptionSettings = await getEncryptionSettings();
       const isInitialized = isEncryptionInitialized();
-      
+
       if (encryptionSettings) {
         setStatus({
           ...encryptionSettings,
-          isInitialized
+          isInitialized,
         });
-        
+
         setRotationInterval(encryptionSettings.rotationIntervalDays || 90);
       } else {
         setStatus({
-          created: 'Not configured',
+          created: "Not configured",
           rotationIntervalDays: 90,
           previousKeysCount: 0,
-          isInitialized
+          isInitialized,
         });
       }
     } catch (err) {
-      console.error('Failed to load encryption status:', err);
-      setError('Failed to load encryption status. Please try again later.');
+      console.error("Failed to load encryption status:", err);
+      setError("Failed to load encryption status. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -69,17 +85,17 @@ export const EncryptionSettings: React.FC = () => {
     try {
       // Query to count tables with sensitive data flag
       const { data: tablesData, error: tablesError } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .filter('table_schema', 'in', '(common,public)');
-      
+        .from("information_schema.tables")
+        .select("table_name")
+        .filter("table_schema", "in", "(common,public)");
+
       if (tablesError) throw tablesError;
-      
+
       // Mock data for demonstration - in a real app, this would come from the database
-      setSensitiveTablesCount(4);  // Customers, employee_data, medical_records, payment_info
+      setSensitiveTablesCount(4); // Customers, employee_data, medical_records, payment_info
       setEncryptedFieldsCount(12); // Various PII and financial fields
     } catch (err) {
-      console.error('Failed to count sensitive tables:', err);
+      console.error("Failed to count sensitive tables:", err);
     }
   };
 
@@ -87,19 +103,19 @@ export const EncryptionSettings: React.FC = () => {
     try {
       setRotationInProgress(true);
       setError(null);
-      
+
       const success = await rotateEncryptionKey();
-      
+
       if (success) {
         await loadEncryptionStatus();
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
       } else {
-        setError('Failed to rotate encryption key. Please try again later.');
+        setError("Failed to rotate encryption key. Please try again later.");
       }
     } catch (err) {
-      console.error('Error rotating encryption key:', err);
-      setError('An unexpected error occurred during key rotation.');
+      console.error("Error rotating encryption key:", err);
+      setError("An unexpected error occurred during key rotation.");
     } finally {
       setRotationInProgress(false);
     }
@@ -110,9 +126,9 @@ export const EncryptionSettings: React.FC = () => {
     // In a real app, this would update the setting in the database
   };
 
-  // Dummy handler for the switches 
+  // Dummy handler for the switches
   const handleSwitchChange = (checked: boolean) => {
-    console.log('Switch changed:', checked);
+    console.log("Switch changed:", checked);
     // In a real app, this would update the configuration
   };
 
@@ -125,7 +141,9 @@ export const EncryptionSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex justify-center my-8">
-            <div className="text-gray-500"><LoadingSpinner size="md" /></div>
+            <div className="text-zinc-500">
+              <LoadingSpinner size="md" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -138,9 +156,11 @@ export const EncryptionSettings: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Encryption Settings</CardTitle>
-            <CardDescription>Manage field-level encryption for sensitive data</CardDescription>
+            <CardDescription>
+              Manage field-level encryption for sensitive data
+            </CardDescription>
           </div>
-          <LockKeyhole className="h-8 w-8 text-gray-500" />
+          <LockKeyhole className="h-8 w-8 text-zinc-500" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -153,7 +173,10 @@ export const EncryptionSettings: React.FC = () => {
         )}
 
         {showSuccessMessage && (
-          <Alert variant="default" className="bg-green-50 border-green-200 mb-4">
+          <Alert
+            variant="default"
+            className="bg-green-50 border-green-200 mb-4"
+          >
             <ShieldCheck className="h-4 w-4 text-green-600" />
             <AlertTitle className="text-green-600">Success</AlertTitle>
             <AlertDescription className="text-green-600">
@@ -174,10 +197,10 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-gray-900">
-                      {status?.isInitialized ? 'Active' : 'Inactive'}
+                    <div className="mb-2 text-2xl font-bold text-zinc-900">
+                      {status?.isInitialized ? "Active" : "Inactive"}
                     </div>
-                    <p className="text-sm text-gray-500">Encryption Status</p>
+                    <p className="text-sm text-zinc-500">Encryption Status</p>
                   </div>
                 </CardContent>
               </Card>
@@ -185,10 +208,10 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-gray-900">
+                    <div className="mb-2 text-2xl font-bold text-zinc-900">
                       {sensitiveTablesCount}
                     </div>
-                    <p className="text-sm text-gray-500">Protected Tables</p>
+                    <p className="text-sm text-zinc-500">Protected Tables</p>
                   </div>
                 </CardContent>
               </Card>
@@ -196,10 +219,10 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-gray-900">
+                    <div className="mb-2 text-2xl font-bold text-zinc-900">
                       {encryptedFieldsCount}
                     </div>
-                    <p className="text-sm text-gray-500">Encrypted Fields</p>
+                    <p className="text-sm text-zinc-500">Encrypted Fields</p>
                   </div>
                 </CardContent>
               </Card>
@@ -212,37 +235,49 @@ export const EncryptionSettings: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Current Key Created</Label>
+                    <Label className="text-sm font-medium text-zinc-500">
+                      Current Key Created
+                    </Label>
                     <div className="mt-1 text-sm font-medium">
-                      {status?.created !== 'Not configured'
-                        ? new Date(status?.created || '').toLocaleString()
-                        : 'Not configured'}
+                      {status?.created !== "Not configured"
+                        ? new Date(status?.created || "").toLocaleString()
+                        : "Not configured"}
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Rotation Interval</Label>
+                    <Label className="text-sm font-medium text-zinc-500">
+                      Rotation Interval
+                    </Label>
                     <div className="mt-1 text-sm font-medium">
                       {status?.rotationIntervalDays || 90} days
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Previous Keys</Label>
+                    <Label className="text-sm font-medium text-zinc-500">
+                      Previous Keys
+                    </Label>
                     <div className="mt-1 text-sm font-medium">
                       {status?.previousKeysCount || 0}
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Next Scheduled Rotation</Label>
+                    <Label className="text-sm font-medium text-zinc-500">
+                      Next Scheduled Rotation
+                    </Label>
                     <div className="mt-1 text-sm font-medium">
-                      {status?.created !== 'Not configured'
+                      {status?.created !== "Not configured"
                         ? new Date(
-                            new Date(status?.created || '').getTime() +
-                              (status?.rotationIntervalDays || 90) * 24 * 60 * 60 * 1000
+                            new Date(status?.created || "").getTime() +
+                              (status?.rotationIntervalDays || 90) *
+                                24 *
+                                60 *
+                                60 *
+                                1000,
                           ).toLocaleDateString()
-                        : 'Not scheduled'}
+                        : "Not scheduled"}
                     </div>
                   </div>
                 </div>
@@ -264,8 +299,9 @@ export const EncryptionSettings: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  <p className="mt-2 text-xs text-gray-500">
-                    Rotating the key creates a new encryption key while preserving the ability to decrypt existing data.
+                  <p className="mt-2 text-xs text-zinc-500">
+                    Rotating the key creates a new encryption key while
+                    preserving the ability to decrypt existing data.
                   </p>
                 </div>
               </CardContent>
@@ -279,9 +315,11 @@ export const EncryptionSettings: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="rotation-interval">Key Rotation Interval (days)</Label>
-                  <SelectRoot 
-                    defaultValue={rotationInterval.toString()} 
+                  <Label htmlFor="rotation-interval">
+                    Key Rotation Interval (days)
+                  </Label>
+                  <SelectRoot
+                    defaultValue={rotationInterval.toString()}
                     onValueChange={handleRotationIntervalChange}
                   >
                     <SelectTrigger>
@@ -295,39 +333,56 @@ export const EncryptionSettings: React.FC = () => {
                       <SelectItem value="365">365 days</SelectItem>
                     </SelectContent>
                   </SelectRoot>
-                  <p className="text-xs text-gray-500">
-                    How often the system should automatically rotate encryption keys
+                  <p className="text-xs text-zinc-500">
+                    How often the system should automatically rotate encryption
+                    keys
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="encrypt-pii">Encrypt Personal Information</Label>
-                    <p className="text-sm text-gray-500">
+                    <Label htmlFor="encrypt-pii">
+                      Encrypt Personal Information
+                    </Label>
+                    <p className="text-sm text-zinc-500">
                       Automatically encrypt PII (names, addresses, etc.)
                     </p>
                   </div>
-                  <Switch id="encrypt-pii" checked={true} onCheckedChange={handleSwitchChange} />
+                  <Switch
+                    id="encrypt-pii"
+                    checked={true}
+                    onCheckedChange={handleSwitchChange}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="encrypt-financial">Encrypt Financial Data</Label>
-                    <p className="text-sm text-gray-500">
+                    <Label htmlFor="encrypt-financial">
+                      Encrypt Financial Data
+                    </Label>
+                    <p className="text-sm text-zinc-500">
                       Automatically encrypt payment information
                     </p>
                   </div>
-                  <Switch id="encrypt-financial" checked={true} onCheckedChange={handleSwitchChange} />
+                  <Switch
+                    id="encrypt-financial"
+                    checked={true}
+                    onCheckedChange={handleSwitchChange}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="encrypt-health">Encrypt Health Data</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-zinc-500">
                       Automatically encrypt health-related information
                     </p>
                   </div>
-                  <Switch id="encrypt-health" checked={true} onCheckedChange={handleSwitchChange} />
+                  <Switch
+                    id="encrypt-health"
+                    checked={true}
+                    onCheckedChange={handleSwitchChange}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -338,67 +393,116 @@ export const EncryptionSettings: React.FC = () => {
               <CardHeader>
                 <CardTitle>Protected Field Configuration</CardTitle>
                 <CardDescription>
-                  Configure which fields contain sensitive data requiring encryption
+                  Configure which fields contain sensitive data requiring
+                  encryption
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="border rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b">
+                    <div className="bg-zinc-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Customer Data</h3>
                     </div>
                     <div className="p-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="customer-ssn">Social Security Number</Label>
-                        <Switch id="customer-ssn" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="customer-ssn">
+                          Social Security Number
+                        </Label>
+                        <Switch
+                          id="customer-ssn"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="customer-cc">Credit Card Information</Label>
-                        <Switch id="customer-cc" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="customer-cc">
+                          Credit Card Information
+                        </Label>
+                        <Switch
+                          id="customer-cc"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="customer-address">Home Address</Label>
-                        <Switch id="customer-address" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Switch
+                          id="customer-address"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                     </div>
                   </div>
 
                   <div className="border rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b">
+                    <div className="bg-zinc-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Employee Data</h3>
                     </div>
                     <div className="p-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="employee-ssn">Social Security Number</Label>
-                        <Switch id="employee-ssn" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="employee-ssn">
+                          Social Security Number
+                        </Label>
+                        <Switch
+                          id="employee-ssn"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="employee-salary">Salary Information</Label>
-                        <Switch id="employee-salary" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="employee-salary">
+                          Salary Information
+                        </Label>
+                        <Switch
+                          id="employee-salary"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="employee-health">Health Information</Label>
-                        <Switch id="employee-health" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="employee-health">
+                          Health Information
+                        </Label>
+                        <Switch
+                          id="employee-health"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                     </div>
                   </div>
 
                   <div className="border rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b">
+                    <div className="bg-zinc-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Payment Data</h3>
                     </div>
                     <div className="p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="payment-card">Card Numbers</Label>
-                        <Switch id="payment-card" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Switch
+                          id="payment-card"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="payment-bank">Bank Account Information</Label>
-                        <Switch id="payment-bank" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Label htmlFor="payment-bank">
+                          Bank Account Information
+                        </Label>
+                        <Switch
+                          id="payment-bank"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="payment-routing">Routing Numbers</Label>
-                        <Switch id="payment-routing" checked={true} onCheckedChange={handleSwitchChange} />
+                        <Switch
+                          id="payment-routing"
+                          checked={true}
+                          onCheckedChange={handleSwitchChange}
+                        />
                       </div>
                     </div>
                   </div>
@@ -410,4 +514,4 @@ export const EncryptionSettings: React.FC = () => {
       </CardContent>
     </Card>
   );
-}; 
+};

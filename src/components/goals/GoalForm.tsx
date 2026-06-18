@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { SalesGoal } from '../../types/sales';
-import { createGoal, updateGoal } from '../../services/goalService';
-import { addDays, addMonths, addYears, format } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { SalesGoal } from "../../types/sales";
+import { createGoal, updateGoal } from "../../services/goalService";
+import { addDays, addMonths, addYears, format } from "date-fns";
 
 export interface GoalFormProps {
   goalData?: SalesGoal;
@@ -11,103 +11,105 @@ export interface GoalFormProps {
 
 export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
   // Form state
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [type, setType] = useState<SalesGoal['type']>('Revenue');
-  const [scope, setScope] = useState<SalesGoal['scope']>('Individual');
-  const [targetValue, setTargetValue] = useState('');
-  const [currentValue, setCurrentValue] = useState('');
-  const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [endDate, setEndDate] = useState(format(addMonths(new Date(), 1), 'yyyy-MM-dd'));
-  const [period, setPeriod] = useState<SalesGoal['period']>('Monthly');
-  
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [type, setType] = useState<SalesGoal["type"]>("Revenue");
+  const [scope, setScope] = useState<SalesGoal["scope"]>("Individual");
+  const [targetValue, setTargetValue] = useState("");
+  const [currentValue, setCurrentValue] = useState("");
+  const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [endDate, setEndDate] = useState(
+    format(addMonths(new Date(), 1), "yyyy-MM-dd"),
+  );
+  const [period, setPeriod] = useState<SalesGoal["period"]>("Monthly");
+
   // Error handling
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState("");
 
   // Load data if editing an existing goal
   useEffect(() => {
     if (goalData) {
       setTitle(goalData.title);
-      setDescription(goalData.description || '');
+      setDescription(goalData.description || "");
       setType(goalData.type);
       setScope(goalData.scope);
       setTargetValue(goalData.targetValue.toString());
       setCurrentValue(goalData.currentValue.toString());
-      
+
       // Format dates for input fields
       const start = new Date(goalData.startDate);
       const end = new Date(goalData.endDate);
-      setStartDate(format(start, 'yyyy-MM-dd'));
-      setEndDate(format(end, 'yyyy-MM-dd'));
-      
+      setStartDate(format(start, "yyyy-MM-dd"));
+      setEndDate(format(end, "yyyy-MM-dd"));
+
       setPeriod(goalData.period);
     }
   }, [goalData]);
 
   // Handle period change to automatically adjust the end date
-  const handlePeriodChange = (newPeriod: SalesGoal['period']) => {
+  const handlePeriodChange = (newPeriod: SalesGoal["period"]) => {
     setPeriod(newPeriod);
-    
+
     // Update end date based on the new period
     const start = new Date(startDate);
     let end;
-    
+
     switch (newPeriod) {
-      case 'Monthly':
+      case "Monthly":
         end = addMonths(start, 1);
         break;
-      case 'Quarterly':
+      case "Quarterly":
         end = addMonths(start, 3);
         break;
-      case 'Yearly':
+      case "Yearly":
         end = addYears(start, 1);
         break;
       default:
         // 'Custom' period - don't auto-adjust
         return;
     }
-    
-    setEndDate(format(end, 'yyyy-MM-dd'));
+
+    setEndDate(format(end, "yyyy-MM-dd"));
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     const newErrors: Record<string, string> = {};
-    
-    if (!title.trim()) newErrors.title = 'Title is required';
+
+    if (!title.trim()) newErrors.title = "Title is required";
     if (!targetValue.trim()) {
-      newErrors.targetValue = 'Target value is required';
+      newErrors.targetValue = "Target value is required";
     } else if (isNaN(Number(targetValue)) || Number(targetValue) <= 0) {
-      newErrors.targetValue = 'Target value must be a positive number';
+      newErrors.targetValue = "Target value must be a positive number";
     }
-    
+
     if (!currentValue.trim()) {
-      newErrors.currentValue = 'Current value is required';
+      newErrors.currentValue = "Current value is required";
     } else if (isNaN(Number(currentValue)) || Number(currentValue) < 0) {
-      newErrors.currentValue = 'Current value must be a non-negative number';
+      newErrors.currentValue = "Current value must be a non-negative number";
     }
-    
-    if (!startDate) newErrors.startDate = 'Start date is required';
-    if (!endDate) newErrors.endDate = 'End date is required';
-    
+
+    if (!startDate) newErrors.startDate = "Start date is required";
+    if (!endDate) newErrors.endDate = "End date is required";
+
     if (new Date(endDate) <= new Date(startDate)) {
-      newErrors.endDate = 'End date must be after start date';
+      newErrors.endDate = "End date must be after start date";
     }
-    
+
     setErrors(newErrors);
-    
+
     // If there are validation errors, don't submit
     if (Object.keys(newErrors).length > 0) return;
-    
+
     try {
       setIsSubmitting(true);
-      setSubmitError('');
-      
+      setSubmitError("");
+
       const goalPayload = {
         title,
         description: description.trim() || undefined,
@@ -117,11 +119,11 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         currentValue: Number(currentValue),
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
-        period
+        period,
       };
-      
+
       let savedGoal;
-      
+
       if (goalData) {
         // Update existing goal
         savedGoal = await updateGoal(goalData.id, goalPayload);
@@ -129,17 +131,19 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         // Create new goal
         savedGoal = await createGoal(goalPayload);
       }
-      
+
       // Call onSave callback if provided
       if (onSave) {
         onSave(savedGoal);
       } else {
         // If no callback provided, redirect to goals list
-        window.location.href = '/sales/goals';
+        window.location.href = "/sales/goals";
       }
     } catch (err) {
-      console.error('Error saving goal:', err);
-      setSubmitError('An error occurred while saving the goal. Please try again.');
+      console.error("Error saving goal:", err);
+      setSubmitError(
+        "An error occurred while saving the goal. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -152,10 +156,13 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
           {submitError}
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Goal Title <span className="text-red-500">*</span>
           </label>
           <input
@@ -165,22 +172,27 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) => setTitle(e.target.value)}
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.title
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
-          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+          {errors.title && (
+            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+          )}
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="type"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Goal Type <span className="text-red-500">*</span>
           </label>
           <select
             id="type"
             value={type}
-            onChange={(e) => setType(e.target.value as SalesGoal['type'])}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            onChange={(e) => setType(e.target.value as SalesGoal["type"])}
+            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Revenue">Revenue</option>
             <option value="Deals">Deals</option>
@@ -191,14 +203,17 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="scope" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="scope"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Goal Scope <span className="text-red-500">*</span>
           </label>
           <select
             id="scope"
             value={scope}
-            onChange={(e) => setScope(e.target.value as SalesGoal['scope'])}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            onChange={(e) => setScope(e.target.value as SalesGoal["scope"])}
+            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Individual">Individual</option>
             <option value="Team">Team</option>
@@ -208,14 +223,19 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="period" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="period"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Time Period <span className="text-red-500">*</span>
           </label>
           <select
             id="period"
             value={period}
-            onChange={(e) => handlePeriodChange(e.target.value as SalesGoal['period'])}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            onChange={(e) =>
+              handlePeriodChange(e.target.value as SalesGoal["period"])
+            }
+            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Monthly">Monthly</option>
             <option value="Quarterly">Quarterly</option>
@@ -225,7 +245,10 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="targetValue"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Target Value <span className="text-red-500">*</span>
           </label>
           <input
@@ -235,15 +258,20 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) => setTargetValue(e.target.value)}
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.targetValue
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
-          {errors.targetValue && <p className="mt-1 text-sm text-red-600">{errors.targetValue}</p>}
+          {errors.targetValue && (
+            <p className="mt-1 text-sm text-red-600">{errors.targetValue}</p>
+          )}
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="currentValue" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="currentValue"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Current Value <span className="text-red-500">*</span>
           </label>
           <input
@@ -253,15 +281,20 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) => setCurrentValue(e.target.value)}
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.currentValue
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
-          {errors.currentValue && <p className="mt-1 text-sm text-red-600">{errors.currentValue}</p>}
+          {errors.currentValue && (
+            <p className="mt-1 text-sm text-red-600">{errors.currentValue}</p>
+          )}
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="startDate"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Start Date <span className="text-red-500">*</span>
           </label>
           <input
@@ -271,15 +304,20 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) => setStartDate(e.target.value)}
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.startDate
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
-          {errors.startDate && <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>}
+          {errors.startDate && (
+            <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
+          )}
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="endDate"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             End Date <span className="text-red-500">*</span>
           </label>
           <input
@@ -289,15 +327,20 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) => setEndDate(e.target.value)}
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.endDate
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
-          {errors.endDate && <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>}
+          {errors.endDate && (
+            <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
+          )}
         </div>
 
         <div className="sm:col-span-2 space-y-1">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-zinc-700 dark:text-white"
+          >
             Description
           </label>
           <textarea
@@ -305,7 +348,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           />
         </div>
       </div>
@@ -314,7 +357,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
+          className="inline-flex justify-center rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
         >
           Cancel
         </button>
@@ -323,13 +366,17 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
           disabled={isSubmitting}
           className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             isSubmitting
-              ? 'bg-indigo-400 cursor-not-allowed'
-              : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+              ? "bg-indigo-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
           }`}
         >
-          {isSubmitting ? 'Saving...' : goalData ? 'Update Goal' : 'Create Goal'}
+          {isSubmitting
+            ? "Saving..."
+            : goalData
+              ? "Update Goal"
+              : "Create Goal"}
         </button>
       </div>
     </form>
   );
-} 
+}

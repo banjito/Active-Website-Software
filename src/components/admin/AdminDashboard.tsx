@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link, Route } from 'react-router-dom';
-import { ShieldCheck, ChevronRight } from 'lucide-react';
-import Card, { CardContent } from '@/components/ui/Card';
-import { EncryptionSettings } from './EncryptionSettings';
+import React, { useState } from "react";
+import { Link, Route } from "react-router-dom";
+import { ShieldCheck, ChevronRight } from "lucide-react";
+import Card, { CardContent } from "@/components/ui/Card";
+import { EncryptionSettings } from "./EncryptionSettings";
 
 // This component shows the Admin Dashboard with various management cards
 const AdminDashboard: React.FC = () => {
@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
         {/* User Management Card (existing) */}
         {/* System Configuration Card (existing) */}
         {/* Other existing cards */}
-        
+
         {/* Data Encryption Card */}
         <Link to="/admin/encryption" className="block">
           <Card className="hover:shadow-md transition-shadow">
@@ -24,10 +24,12 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-medium">Data Encryption</h3>
-                    <p className="text-sm text-gray-500">Manage encryption for sensitive data</p>
+                    <p className="text-sm text-zinc-500">
+                      Manage encryption for sensitive data
+                    </p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+                <ChevronRight className="h-5 w-5 text-zinc-400" />
               </div>
             </CardContent>
           </Card>
@@ -42,4 +44,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

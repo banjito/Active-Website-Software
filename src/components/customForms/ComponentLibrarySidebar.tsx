@@ -88,17 +88,17 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#f26722] hover:shadow-md transition-all"
+      className="bg-white dark:bg-dark-100 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#f26722] hover:shadow-md transition-all"
     >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-dark-200 rounded flex items-center justify-center">
-          <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+        <div className="flex-shrink-0 w-8 h-8 bg-zinc-100 dark:bg-dark-200 rounded flex items-center justify-center">
+          <Icon className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          <h4 className="text-sm font-medium text-zinc-900 dark:text-white truncate">
             {component.name}
           </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
             {component.description}
           </p>
         </div>
@@ -147,10 +147,10 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({
           <Table2 className="w-4 h-4 text-[#f26722]" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          <h4 className="text-sm font-medium text-zinc-900 dark:text-white truncate">
             {saved.name}
           </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
             {saved.description ||
               (saved.section_config?.title as string) ||
               "Custom table or section"}
@@ -211,11 +211,11 @@ export const ComponentLibrarySidebar: React.FC<{
   );
 
   return (
-    <div className="w-80 min-w-[280px] shrink-0 bg-white dark:bg-dark-150 border-r dark:border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-80 min-w-[280px] shrink-0 bg-white dark:bg-dark-150 border-r dark:border-zinc-700 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b dark:border-gray-700">
+      <div className="p-4 border-b dark:border-zinc-700">
         <div className="flex items-center justify-between gap-3 mb-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
             Components
           </h2>
           {onHide && (
@@ -233,12 +233,12 @@ export const ComponentLibrarySidebar: React.FC<{
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search components..."
-            leftIcon={<Search className="w-4 h-4 text-gray-400" />}
+            leftIcon={<Search className="w-4 h-4 text-zinc-400" />}
             className="pl-10"
           />
         </div>
@@ -250,7 +250,7 @@ export const ComponentLibrarySidebar: React.FC<{
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
               selectedCategory === null
                 ? "bg-[#f26722] text-white"
-                : "bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200"
+                : "bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-200"
             }`}
           >
             All
@@ -262,7 +262,7 @@ export const ComponentLibrarySidebar: React.FC<{
               className={`px-3 py-1 text-xs font-medium rounded-full capitalize transition-colors ${
                 selectedCategory === category
                   ? "bg-[#f26722] text-white"
-                  : "bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200"
+                  : "bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-200"
               }`}
             >
               {category}
@@ -275,7 +275,7 @@ export const ComponentLibrarySidebar: React.FC<{
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {savedComponents.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Saved components
             </h3>
             <div className="space-y-2">
@@ -292,14 +292,14 @@ export const ComponentLibrarySidebar: React.FC<{
         {Object.entries(groupedComponents).length === 0 &&
         savedComponents.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
               No components found
             </p>
           </div>
         ) : Object.entries(groupedComponents).length > 0 ? (
           Object.entries(groupedComponents).map(([category, components]) => (
             <div key={category}>
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                 {category}
               </h3>
               <div className="space-y-2">
@@ -316,8 +316,8 @@ export const ComponentLibrarySidebar: React.FC<{
       </div>
 
       {/* Help Text */}
-      <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
-        <p className="text-xs text-gray-600 dark:text-gray-400">
+      <div className="p-4 border-t dark:border-zinc-700 bg-zinc-50 dark:bg-dark-200">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
           💡 <strong>Tip:</strong> Drag components to the canvas to add them to
           your form. You can reorder and customize them after adding.
         </p>

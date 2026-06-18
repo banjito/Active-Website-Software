@@ -81,7 +81,9 @@ const initialData: TanDeltaDataPoint[] = [
 
 const TanDeltaChart: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -386,7 +388,7 @@ const TanDeltaChart: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -439,13 +441,13 @@ const TanDeltaChart: React.FC = () => {
           {/* Test Parameters */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Parameters
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-params-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Test Date
                 </label>
                 <input
@@ -453,11 +455,11 @@ const TanDeltaChart: React.FC = () => {
                   value={testDate}
                   onChange={(e) => setTestDate(e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Cable Type
                 </label>
                 <input
@@ -465,24 +467,24 @@ const TanDeltaChart: React.FC = () => {
                   value={cableType}
                   onChange={(e) => setCableType(e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Status
                 </label>
                 <input
                   type="text"
                   value={status}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
             </div>
             {/* Print-only Test Parameters table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: "33.33%" }} />
                   <col style={{ width: "33.33%" }} />
@@ -490,15 +492,15 @@ const TanDeltaChart: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Test Date:</div>
                       <div className="mt-0">{testDate || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Cable Type:</div>
                       <div className="mt-0">{cableType || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Status:</div>
                       <div className="mt-0">{status}</div>
                     </td>
@@ -521,62 +523,62 @@ const TanDeltaChart: React.FC = () => {
           {/* Data Table - Always visible */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Test Data
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Voltage Steps
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       kV
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       A Phase
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       B Phase
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                     >
                       C Phase
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {data.map((row, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
@@ -591,10 +593,10 @@ const TanDeltaChart: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.voltageLabel}
                           </span>
                         )}
@@ -607,10 +609,10 @@ const TanDeltaChart: React.FC = () => {
                             onChange={(e) =>
                               handleDataChange(index, "kV", e.target.value)
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.kV}
                           </span>
                         )}
@@ -624,10 +626,10 @@ const TanDeltaChart: React.FC = () => {
                             onChange={(e) =>
                               handleDataChange(index, "phaseA", e.target.value)
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseA}
                           </span>
                         )}
@@ -647,10 +649,10 @@ const TanDeltaChart: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseAStdDev === null ? "" : row.phaseAStdDev}
                           </span>
                         )}
@@ -664,10 +666,10 @@ const TanDeltaChart: React.FC = () => {
                             onChange={(e) =>
                               handleDataChange(index, "phaseB", e.target.value)
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseB}
                           </span>
                         )}
@@ -687,10 +689,10 @@ const TanDeltaChart: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseBStdDev === null ? "" : row.phaseBStdDev}
                           </span>
                         )}
@@ -704,10 +706,10 @@ const TanDeltaChart: React.FC = () => {
                             onChange={(e) =>
                               handleDataChange(index, "phaseC", e.target.value)
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseC}
                           </span>
                         )}
@@ -727,10 +729,10 @@ const TanDeltaChart: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-gray-900 dark:text-white">
+                          <span className="text-zinc-900 dark:text-white">
                             {row.phaseCStdDev === null ? "" : row.phaseCStdDev}
                           </span>
                         )}
@@ -745,11 +747,11 @@ const TanDeltaChart: React.FC = () => {
           {/* Chart - Always visible below the table */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Chart
             </h2>
             <div
-              className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+              className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6"
               style={{ height: "400px" }}
             >
               <ResponsiveContainer>
@@ -821,13 +823,13 @@ const TanDeltaChart: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Megohmmeter
                   </label>
                   <input
@@ -837,20 +839,20 @@ const TanDeltaChart: React.FC = () => {
                       handleEquipmentChange("megohmeterSerial", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
                     type="text"
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     AMP ID
                   </label>
                   <input
@@ -860,11 +862,11 @@ const TanDeltaChart: React.FC = () => {
                       handleEquipmentChange("megohmmeterAmpId", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Cal Date
                   </label>
                   <input
@@ -877,13 +879,13 @@ const TanDeltaChart: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     VLF Hipot
                   </label>
                   <input
@@ -893,20 +895,20 @@ const TanDeltaChart: React.FC = () => {
                       handleEquipmentChange("vlfHipotSerial", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
                     type="text"
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     AMP ID
                   </label>
                   <input
@@ -916,11 +918,11 @@ const TanDeltaChart: React.FC = () => {
                       handleEquipmentChange("vlfHipotAmpId", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                     Cal Date
                   </label>
                   <input
@@ -930,14 +932,14 @@ const TanDeltaChart: React.FC = () => {
                       handleEquipmentChange("vlfHipotCalDate", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
             </div>
             {/* Print-only compact Test Equipment table (4 boxes wide, 2 rows) */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -946,25 +948,25 @@ const TanDeltaChart: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Megohmmeter:</div>
                       <div className="mt-0">
                         {equipment.megohmeterSerial || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {equipment.megohmeterAmpId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {equipment.megohmmeterAmpId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Cal Date:</div>
                       <div className="mt-0">
                         {equipment.megohmmeterCalDate || ""}
@@ -972,25 +974,25 @@ const TanDeltaChart: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">VLF Hipot:</div>
                       <div className="mt-0">
                         {equipment.vlfHipotSerial || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {equipment.vlfHipotSerial || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {equipment.vlfHipotAmpId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold">Cal Date:</div>
                       <div className="mt-0">
                         {equipment.vlfHipotCalDate || ""}
@@ -1007,7 +1009,7 @@ const TanDeltaChart: React.FC = () => {
             className={`mb-6 print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <div className="print:hidden comments-onscreen">
@@ -1017,15 +1019,15 @@ const TanDeltaChart: React.FC = () => {
                 readOnly={!isEditing}
                 rows={8}
                 placeholder="Enter any additional comments..."
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {comments}
                         </div>

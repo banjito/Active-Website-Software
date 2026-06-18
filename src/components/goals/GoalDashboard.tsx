@@ -196,7 +196,7 @@ const GoalDashboard: React.FC = () => {
           </div>
           <div className="px-4 pb-4">
             <div className="text-2xl font-bold">{summaryMetrics.averageProgress}%</div>
-            <div className="w-full bg-gray-200 h-2 rounded-full">
+            <div className="w-full bg-zinc-200 h-2 rounded-full">
               <div 
                 className="bg-blue-600 h-2 rounded-full" 
                 style={{ width: `${summaryMetrics.averageProgress}%` }}
@@ -233,13 +233,13 @@ const GoalDashboard: React.FC = () => {
                         <h3 className="text-lg font-semibold">{goal.title}</h3>
                         {getStatusBadge(status)}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-zinc-500">
                         {formatDate(goal.startDate)} - {formatDate(goal.endDate)}
                       </div>
                       
                       <div className="mt-4 space-y-2">
-                        <div className="text-sm text-gray-500">Progress</div>
-                        <div className="w-full bg-gray-200 h-2 rounded-full">
+                        <div className="text-sm text-zinc-500">Progress</div>
+                        <div className="w-full bg-zinc-200 h-2 rounded-full">
                           <div 
                             className="bg-blue-600 h-2 rounded-full" 
                             style={{ width: `${progress}%` }}
@@ -257,7 +257,7 @@ const GoalDashboard: React.FC = () => {
                       </div>
                       
                       {goal.description && (
-                        <div className="mt-2 text-sm text-gray-500 line-clamp-2">
+                        <div className="mt-2 text-sm text-zinc-500 line-clamp-2">
                           {goal.description}
                         </div>
                       )}
@@ -293,7 +293,7 @@ const GoalDashboard: React.FC = () => {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <span>{progress}%</span>
-                            <div className="w-20 bg-gray-200 h-2 rounded-full">
+                            <div className="w-20 bg-zinc-200 h-2 rounded-full">
                               <div 
                                 className="bg-blue-600 h-2 rounded-full" 
                                 style={{ width: `${progress}%` }}

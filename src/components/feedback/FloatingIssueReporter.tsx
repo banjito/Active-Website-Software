@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MessageSquareWarning } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/Button';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { MessageSquareWarning } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { Button } from "@/components/ui/Button";
 
 type UploadingFile = {
   file: File;
@@ -18,21 +18,27 @@ export const FloatingIssueReporter: React.FC = () => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [type, setType] = useState<'issue' | 'feature_request'>('issue');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [type, setType] = useState<"issue" | "feature_request">("issue");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<
+    "low" | "normal" | "high" | "urgent"
+  >("normal");
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [allUsers, setAllUsers] = useState<UserOption[]>([]);
   const [interestedParties, setInterestedParties] = useState<string[]>([]);
-  const [partySearch, setPartySearch] = useState('');
+  const [partySearch, setPartySearch] = useState("");
   const [showPartyDropdown, setShowPartyDropdown] = useState(false);
 
   const pageUrl = useMemo(() => {
-    try { return window.location.href; } catch { return ''; }
+    try {
+      return window.location.href;
+    } catch {
+      return "";
+    }
   }, []);
 
   useEffect(() => {
@@ -47,19 +53,25 @@ export const FloatingIssueReporter: React.FC = () => {
     (async () => {
       try {
         const { data: profiles } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('id, full_name, email');
+          .schema("common")
+          .from("profiles")
+          .select("id, full_name, email");
         if (profiles) {
           setAllUsers(
             profiles
               .filter((p: any) => p.id && (p.full_name || p.email))
-              .map((p: any) => ({ id: p.id, name: p.full_name || (p.email ? p.email.split('@')[0] : 'Unknown') }))
-              .sort((a: UserOption, b: UserOption) => a.name.localeCompare(b.name))
+              .map((p: any) => ({
+                id: p.id,
+                name:
+                  p.full_name || (p.email ? p.email.split("@")[0] : "Unknown"),
+              }))
+              .sort((a: UserOption, b: UserOption) =>
+                a.name.localeCompare(b.name),
+              ),
           );
         }
       } catch (err) {
-        console.error('Failed to load users for interested parties:', err);
+        console.error("Failed to load users for interested parties:", err);
       }
     })();
   }, [open, allUsers.length]);
@@ -68,10 +80,13 @@ export const FloatingIssueReporter: React.FC = () => {
     const selected = Array.from(e.target.files || []);
     const uploads: UploadingFile[] = selected.map((file) => ({
       file,
-      previewUrl: file.type && file.type.startsWith('image/') ? URL.createObjectURL(file) : ''
+      previewUrl:
+        file.type && file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : "",
     }));
     setFiles((prev) => [...prev, ...uploads]);
-    if (inputRef.current) inputRef.current.value = '';
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const removeFile = (idx: number) => {
@@ -79,20 +94,20 @@ export const FloatingIssueReporter: React.FC = () => {
   };
 
   const resetForm = () => {
-    setType('issue');
-    setTitle('');
-    setDescription('');
-    setPriority('normal');
+    setType("issue");
+    setTitle("");
+    setDescription("");
+    setPriority("normal");
     setFiles([]);
     setInterestedParties([]);
-    setPartySearch('');
+    setPartySearch("");
   };
 
   const handleSubmit = async () => {
     setError(null);
     setSuccess(null);
     if (!title.trim() || !description.trim()) {
-      setError('Title and description are required.');
+      setError("Title and description are required.");
       return;
     }
     setSubmitting(true);
@@ -101,17 +116,17 @@ export const FloatingIssueReporter: React.FC = () => {
 
       // 1) Create issue record
       const { data: issue, error: insertErr } = await supabase
-        .schema('common')
-        .from('issue_reports')
+        .schema("common")
+        .from("issue_reports")
         .insert({
           title: title.trim(),
           description: description.trim(),
           priority,
           type,
           page_url: pageUrl,
-          reporter_id: reporterId
+          reporter_id: reporterId,
         })
-        .select('*')
+        .select("*")
         .single();
 
       if (insertErr) throw insertErr;
@@ -119,9 +134,14 @@ export const FloatingIssueReporter: React.FC = () => {
       // 2) Insert interested parties
       if (issue && interestedParties.length > 0) {
         await supabase
-          .schema('common')
-          .from('issue_interested_parties')
-          .insert(interestedParties.map(uid => ({ issue_id: issue.id, user_id: uid })));
+          .schema("common")
+          .from("issue_interested_parties")
+          .insert(
+            interestedParties.map((uid) => ({
+              issue_id: issue.id,
+              user_id: uid,
+            })),
+          );
       }
 
       // 3) Notify about new issue creation (fire-and-forget)
@@ -129,47 +149,54 @@ export const FloatingIssueReporter: React.FC = () => {
         const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
         const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
         if (fnUrl && anonKey) {
-          fetch(`${fnUrl.replace(/\/rest\/v1.*$/, '')}/functions/v1/issue-resolved-notification`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
-            body: JSON.stringify({ issueId: issue.id, action: 'created' })
-          }).catch(() => {});
+          fetch(
+            `${fnUrl.replace(/\/rest\/v1.*$/, "")}/functions/v1/issue-resolved-notification`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${anonKey}`,
+              },
+              body: JSON.stringify({ issueId: issue.id, action: "created" }),
+            },
+          ).catch(() => {});
         }
       }
 
       // 4) Upload attachments (if any)
       if (issue && files.length > 0) {
         for (const uf of files) {
-          const fileExt = uf.file.name.split('.').pop();
+          const fileExt = uf.file.name.split(".").pop();
           const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
           const storagePath = `issues/${issue.id}/${fileName}`;
 
           const { error: upErr } = await supabase.storage
-            .from('documents')
+            .from("documents")
             .upload(storagePath, uf.file, { upsert: false });
           if (upErr) throw upErr;
 
           const { data: pub } = supabase.storage
-            .from('documents')
+            .from("documents")
             .getPublicUrl(storagePath);
 
-          await supabase
-            .schema('common')
-            .from('issue_attachments')
-            .insert({
-              issue_id: issue.id,
-              file_path: storagePath,
-              file_url: pub.publicUrl
-            });
+          await supabase.schema("common").from("issue_attachments").insert({
+            issue_id: issue.id,
+            file_path: storagePath,
+            file_url: pub.publicUrl,
+          });
         }
       }
 
-      setSuccess(type === 'feature_request' ? 'Feature request submitted. Thank you!' : 'Issue submitted. Thank you!');
+      setSuccess(
+        type === "feature_request"
+          ? "Feature request submitted. Thank you!"
+          : "Issue submitted. Thank you!",
+      );
       resetForm();
       setTimeout(() => setOpen(false), 1000);
     } catch (e: any) {
-      console.error('Issue submit error:', e);
-      setError(e?.message || 'Failed to submit issue');
+      console.error("Issue submit error:", e);
+      setError(e?.message || "Failed to submit issue");
     } finally {
       setSubmitting(false);
     }
@@ -191,14 +218,14 @@ export const FloatingIssueReporter: React.FC = () => {
       )}
 
       {open && (
-        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl p-4">
+        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-              {type === 'issue' ? 'Report an Issue' : 'Request a Feature'}
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+              {type === "issue" ? "Report an Issue" : "Request a Feature"}
             </h3>
             <button
               onClick={() => setOpen(false)}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+              className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-white"
               aria-label="Close"
             >
               ✕
@@ -210,7 +237,9 @@ export const FloatingIssueReporter: React.FC = () => {
               <label className="form-label block mb-1">Type</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as 'issue' | 'feature_request')}
+                onChange={(e) =>
+                  setType(e.target.value as "issue" | "feature_request")
+                }
                 className="form-select"
               >
                 <option value="issue">Issue</option>
@@ -251,45 +280,83 @@ export const FloatingIssueReporter: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="form-label block mb-1">Interested Parties</label>
+              <label className="form-label block mb-1">
+                Interested Parties
+              </label>
               <div className="relative">
                 <input
                   type="text"
                   value={partySearch}
-                  onChange={(e) => { setPartySearch(e.target.value); setShowPartyDropdown(true); }}
+                  onChange={(e) => {
+                    setPartySearch(e.target.value);
+                    setShowPartyDropdown(true);
+                  }}
                   onFocus={() => setShowPartyDropdown(true)}
                   className="form-input w-full"
                   placeholder="Search by name..."
                 />
                 {showPartyDropdown && partySearch.trim() && (
-                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-32 overflow-y-auto">
+                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg max-h-32 overflow-y-auto">
                     {allUsers
-                      .filter(u => u.id !== user?.id && !interestedParties.includes(u.id) && u.name.toLowerCase().includes(partySearch.toLowerCase()))
+                      .filter(
+                        (u) =>
+                          u.id !== user?.id &&
+                          !interestedParties.includes(u.id) &&
+                          u.name
+                            .toLowerCase()
+                            .includes(partySearch.toLowerCase()),
+                      )
                       .slice(0, 8)
-                      .map(u => (
+                      .map((u) => (
                         <button
                           key={u.id}
                           type="button"
-                          onClick={() => { setInterestedParties(prev => [...prev, u.id]); setPartySearch(''); setShowPartyDropdown(false); }}
-                          className="block w-full text-left px-3 py-1.5 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-100"
+                          onClick={() => {
+                            setInterestedParties((prev) => [...prev, u.id]);
+                            setPartySearch("");
+                            setShowPartyDropdown(false);
+                          }}
+                          className="block w-full text-left px-3 py-1.5 text-sm text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-dark-100"
                         >
                           {u.name}
                         </button>
                       ))}
-                    {allUsers.filter(u => u.id !== user?.id && !interestedParties.includes(u.id) && u.name.toLowerCase().includes(partySearch.toLowerCase())).length === 0 && (
-                      <div className="px-3 py-2 text-xs text-gray-500">No results</div>
+                    {allUsers.filter(
+                      (u) =>
+                        u.id !== user?.id &&
+                        !interestedParties.includes(u.id) &&
+                        u.name
+                          .toLowerCase()
+                          .includes(partySearch.toLowerCase()),
+                    ).length === 0 && (
+                      <div className="px-3 py-2 text-xs text-zinc-500">
+                        No results
+                      </div>
                     )}
                   </div>
                 )}
               </div>
               {interestedParties.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
-                  {interestedParties.map(uid => {
-                    const u = allUsers.find(a => a.id === uid);
+                  {interestedParties.map((uid) => {
+                    const u = allUsers.find((a) => a.id === uid);
                     return (
-                      <span key={uid} className="inline-flex items-center gap-1 bg-gray-100 dark:bg-dark-100 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">
-                        {u?.name || 'User'}
-                        <button type="button" onClick={() => setInterestedParties(prev => prev.filter(id => id !== uid))} className="text-gray-500 hover:text-red-500">✕</button>
+                      <span
+                        key={uid}
+                        className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-dark-100 text-zinc-800 dark:text-zinc-200 text-xs px-2 py-1 rounded-full"
+                      >
+                        {u?.name || "User"}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInterestedParties((prev) =>
+                              prev.filter((id) => id !== uid),
+                            )
+                          }
+                          className="text-zinc-500 hover:text-red-500"
+                        >
+                          ✕
+                        </button>
                       </span>
                     );
                   })}
@@ -313,9 +380,13 @@ export const FloatingIssueReporter: React.FC = () => {
                   {files.map((f, idx) => (
                     <div key={idx} className="relative group">
                       {f.previewUrl ? (
-                        <img src={f.previewUrl} alt={f.file.name} className="w-full h-16 object-cover rounded border border-gray-200 dark:border-gray-700" />
+                        <img
+                          src={f.previewUrl}
+                          alt={f.file.name}
+                          className="w-full h-16 object-cover rounded border border-zinc-200 dark:border-zinc-700"
+                        />
                       ) : (
-                        <div className="w-full h-16 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 text-xs text-gray-600 dark:text-gray-300 p-1 text-center">
+                        <div className="w-full h-16 flex items-center justify-center rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-100 text-xs text-zinc-600 dark:text-zinc-300 p-1 text-center">
                           <span className="line-clamp-2 break-all">
                             {f.file.name}
                           </span>
@@ -334,8 +405,8 @@ export const FloatingIssueReporter: React.FC = () => {
               )}
             </div>
 
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Page: {pageUrl || 'unknown'}
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              Page: {pageUrl || "unknown"}
             </div>
 
             {error && <div className="text-sm text-red-600">{error}</div>}
@@ -344,8 +415,11 @@ export const FloatingIssueReporter: React.FC = () => {
             <div className="flex items-center justify-end gap-2 pt-1">
               <Button
                 variant="secondary"
-                onClick={() => { resetForm(); setOpen(false); }}
-                className="bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600"
+                onClick={() => {
+                  resetForm();
+                  setOpen(false);
+                }}
+                className="bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
                 disabled={submitting}
               >
                 Cancel
@@ -355,7 +429,7 @@ export const FloatingIssueReporter: React.FC = () => {
                 disabled={submitting}
                 className="bg-[#f26722] hover:bg-[#e55611] text-white"
               >
-                {submitting ? 'Submitting...' : 'Submit'}
+                {submitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </div>
@@ -366,5 +440,3 @@ export const FloatingIssueReporter: React.FC = () => {
 };
 
 export default FloatingIssueReporter;
-
-

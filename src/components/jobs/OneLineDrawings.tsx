@@ -218,7 +218,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
             <LoadingSpinner size="md" />
           </div>
         </CardContent>
@@ -263,8 +263,8 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
         </CardHeader>
         <CardContent>
           {drawings.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <FileImage className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+              <FileImage className="h-12 w-12 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" />
               <p>No one-line drawings uploaded yet</p>
               <Button
                 onClick={() => setShowUploadDialog(true)}
@@ -287,19 +287,19 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-medium text-gray-900 dark:text-white">
+                          <h4 className="font-medium text-zinc-900 dark:text-white">
                             {currentDrawing.name}
                           </h4>
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">
                             Current
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-300">
                           Version {currentDrawing.version} •{" "}
                           {formatFileSize(currentDrawing.file_size)}
                         </p>
                         {currentDrawing.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                             {currentDrawing.description}
                           </p>
                         )}
@@ -339,23 +339,23 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                 .map((drawing) => (
                   <div
                     key={drawing.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                        <FileImage className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      <div className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded-lg">
+                        <FileImage className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
+                        <h4 className="font-medium text-zinc-900 dark:text-white">
                           {drawing.name}
                         </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-300">
                           Version {drawing.version} •{" "}
                           {formatFileSize(drawing.file_size)} •{" "}
                           {new Date(drawing.created_at).toLocaleDateString()}
                         </p>
                         {drawing.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                             {drawing.description}
                           </p>
                         )}
@@ -486,17 +486,17 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                 <img
                   src={previewDrawing.file_url}
                   alt={previewDrawing.name}
-                  className="w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="w-full h-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
                 />
               ) : previewDrawing.file_type === "application/pdf" ? (
                 <iframe
                   src={previewDrawing.file_url}
-                  className="w-full h-96 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  className="w-full h-96 border border-zinc-200 dark:border-zinc-700 rounded-lg"
                   title={previewDrawing.name}
                 />
               ) : (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <FileImage className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+                  <FileImage className="h-16 w-16 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" />
                   <p>Preview not available for this file type</p>
                   <Button
                     onClick={() => handleDownload(previewDrawing)}

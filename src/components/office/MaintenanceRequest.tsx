@@ -180,7 +180,7 @@ export default function MaintenanceRequest() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <Input
                   className="pl-9"
                   placeholder="Search requests..."
@@ -229,7 +229,7 @@ export default function MaintenanceRequest() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{request.title}</div>
-                        <div className="text-sm text-gray-500">{request.description}</div>
+                        <div className="text-sm text-zinc-500">{request.description}</div>
                       </div>
                     </TableCell>
                     <TableCell>{request.location}</TableCell>
@@ -247,7 +247,7 @@ export default function MaintenanceRequest() {
                       <div className="text-sm">
                         {format(new Date(request.submittedAt), 'MMM d, yyyy')}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-zinc-500">
                         {format(new Date(request.submittedAt), 'HH:mm')}
                       </div>
                     </TableCell>

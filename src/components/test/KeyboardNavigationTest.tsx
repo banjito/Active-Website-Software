@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 /**
  * Test component to demonstrate global keyboard navigation functionality
@@ -6,39 +6,51 @@ import React, { useState } from 'react';
  */
 export const KeyboardNavigationTest: React.FC = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    age: '',
-    birthDate: '',
-    country: '',
-    city: '',
-    notes: '',
-    category: '',
-    priority: '',
-    isActive: false
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    age: "",
+    birthDate: "",
+    country: "",
+    city: "",
+    notes: "",
+    category: "",
+    priority: "",
+    isActive: false,
   });
 
   const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 p-6">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
           Keyboard Navigation Test
         </h1>
-        
+
         <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
             How to Test:
           </h2>
           <ul className="text-blue-700 dark:text-blue-300 space-y-1">
             <li>• Click on any input field to focus it</li>
-            <li>• Use <kbd className="px-2 py-1 bg-gray-200 dark:bg-dark-150 rounded text-xs">Arrow Keys</kbd> to navigate in that direction</li>
-            <li>• Press <kbd className="px-2 py-1 bg-gray-200 dark:bg-dark-150 rounded text-xs">Enter</kbd> to move to the next field</li>
+            <li>
+              • Use{" "}
+              <kbd className="px-2 py-1 bg-zinc-200 dark:bg-dark-150 rounded text-xs">
+                Arrow Keys
+              </kbd>{" "}
+              to navigate in that direction
+            </li>
+            <li>
+              • Press{" "}
+              <kbd className="px-2 py-1 bg-zinc-200 dark:bg-dark-150 rounded text-xs">
+                Enter
+              </kbd>{" "}
+              to move to the next field
+            </li>
             <li>• Navigation works with text inputs, selects, and textareas</li>
             <li>• Readonly and disabled fields are automatically skipped</li>
           </ul>
@@ -47,46 +59,57 @@ export const KeyboardNavigationTest: React.FC = () => {
         <form className="space-y-6">
           {/* Row 1: Personal Information */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Personal Information</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Personal Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   First Name
                 </label>
                 <input
                   id="firstName"
                   type="text"
                   value={formData.firstName}
-                  onChange={(e) => handleChange('firstName', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("firstName", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter first name"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Last Name
                 </label>
                 <input
                   id="lastName"
                   type="text"
                   value={formData.lastName}
-                  onChange={(e) => handleChange('lastName', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("lastName", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter last name"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="age"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Age
                 </label>
                 <input
                   id="age"
                   type="number"
                   value={formData.age}
-                  onChange={(e) => handleChange('age', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("age", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter age"
                 />
               </div>
@@ -95,32 +118,40 @@ export const KeyboardNavigationTest: React.FC = () => {
 
           {/* Row 2: Contact Information */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Contact Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Email
                 </label>
                 <input
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter email address"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Phone
                 </label>
                 <input
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter phone number"
                 />
               </div>
@@ -129,17 +160,22 @@ export const KeyboardNavigationTest: React.FC = () => {
 
           {/* Row 3: Location and Date */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Location & Date</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Location & Date
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Country
                 </label>
                 <select
                   id="country"
                   value={formData.country}
-                  onChange={(e) => handleChange('country', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("country", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select country</option>
                   <option value="us">United States</option>
@@ -148,31 +184,37 @@ export const KeyboardNavigationTest: React.FC = () => {
                   <option value="au">Australia</option>
                 </select>
               </div>
-              
+
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="city"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   City
                 </label>
                 <input
                   id="city"
                   type="text"
                   value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("city", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter city"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="birthDate"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Birth Date
                 </label>
                 <input
                   id="birthDate"
                   type="date"
                   value={formData.birthDate}
-                  onChange={(e) => handleChange('birthDate', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("birthDate", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
             </div>
@@ -180,17 +222,22 @@ export const KeyboardNavigationTest: React.FC = () => {
 
           {/* Row 4: Category and Priority */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Settings</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Category
                 </label>
                 <select
                   id="category"
                   value={formData.category}
-                  onChange={(e) => handleChange('category', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("category", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select category</option>
                   <option value="personal">Personal</option>
@@ -198,16 +245,19 @@ export const KeyboardNavigationTest: React.FC = () => {
                   <option value="other">Other</option>
                 </select>
               </div>
-              
+
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="priority"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Priority
                 </label>
                 <select
                   id="priority"
                   value={formData.priority}
-                  onChange={(e) => handleChange('priority', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("priority", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select priority</option>
                   <option value="low">Low</option>
@@ -220,17 +270,22 @@ export const KeyboardNavigationTest: React.FC = () => {
 
           {/* Row 5: Notes (Textarea) */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Additional Information</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Additional Information
+            </h3>
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              <label
+                htmlFor="notes"
+                className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+              >
                 Notes
               </label>
               <textarea
                 id="notes"
                 value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
+                onChange={(e) => handleChange("notes", e.target.value)}
                 rows={4}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 placeholder="Enter any additional notes..."
               />
             </div>
@@ -238,10 +293,15 @@ export const KeyboardNavigationTest: React.FC = () => {
 
           {/* Readonly field example */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Readonly Example</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              Readonly Example
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="readonlyField" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="readonlyField"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Readonly Field (Skipped in Navigation)
                 </label>
                 <input
@@ -249,20 +309,23 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value="This field is readonly"
                   readOnly
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-gray-700 dark:text-white cursor-not-allowed"
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-white cursor-not-allowed"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="normalField" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                <label
+                  htmlFor="normalField"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                >
                   Normal Field (Navigable)
                 </label>
                 <input
                   id="normalField"
                   type="text"
                   value=""
-                  onChange={(e) => handleChange('normalField', e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  onChange={(e) => handleChange("normalField", e.target.value)}
+                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="This field is navigable"
                 />
               </div>
@@ -274,7 +337,7 @@ export const KeyboardNavigationTest: React.FC = () => {
             <button
               type="button"
               className="px-6 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-              onClick={() => console.log('Form data:', formData)}
+              onClick={() => console.log("Form data:", formData)}
             >
               Test Submit
             </button>
@@ -283,4 +346,4 @@ export const KeyboardNavigationTest: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};

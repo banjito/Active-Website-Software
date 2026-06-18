@@ -970,7 +970,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - visible only in print */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <div
           style={{
             width: "120px",
@@ -1025,7 +1025,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           {/* Job Information */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <JobInfoPrintTable
@@ -1073,7 +1073,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={maskCustomerName(formData.customer)}
                   onChange={(e) => handleChange("customer", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1083,7 +1083,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.jobNumber}
                   onChange={(e) => handleChange("jobNumber", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1095,7 +1095,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1107,7 +1107,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1117,7 +1117,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.user}
                   onChange={(e) => handleChange("user", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1158,7 +1158,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       }));
                     }}
                     readOnly={!isEditMode}
-                    className={`form-input w-24 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input w-24 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                   <span>°F</span>
                   <span>
@@ -1172,7 +1172,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     type="text"
                     value={(formData.temperature?.tcf ?? 1).toFixed(3)}
                     readOnly
-                    className="form-input w-20 bg-gray-100 dark:bg-dark-200"
+                    className="form-input w-20 bg-zinc-100 dark:bg-dark-200"
                   />
                 </div>
               </div>
@@ -1183,7 +1183,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1215,7 +1215,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditMode}
-                    className={`form-input w-24 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                    className={`form-input w-24 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                   />
                   <span>%</span>
                 </div>
@@ -1229,7 +1229,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.identifier}
                   onChange={(e) => handleChange("identifier", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1241,7 +1241,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.substation}
                   onChange={(e) => handleChange("substation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1253,7 +1253,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
             </div>
@@ -1262,7 +1262,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           {/* Device Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Data
             </h2>
             {/* On-screen grid */}
@@ -1282,7 +1282,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.manufacturer", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1300,7 +1300,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.type", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1318,7 +1318,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.catalogNumber", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1336,7 +1336,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.icRating", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1354,7 +1354,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.serialNumber", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1372,7 +1372,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.ratedVoltage", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1390,7 +1390,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.systemVoltage", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1408,7 +1408,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("deviceData.phaseConfig", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
             </div>
@@ -1472,7 +1472,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           {/* Fuse Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Fuse Data
             </h2>
             {/* On-screen grid */}
@@ -1492,7 +1492,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.manufacturer", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1510,7 +1510,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.catalogNumber", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1528,7 +1528,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.class", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1546,7 +1546,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.ampacity", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1564,7 +1564,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.icRating", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -1582,7 +1582,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                     handleChange("fuseData.voltageRating", e.target.value)
                   }
                   readOnly={!isEditMode}
-                  className={`form-input flex-1 ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                 />
               </div>
             </div>
@@ -1632,25 +1632,25 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   <col style={{ width: "65%" }} />
                   <col style={{ width: "20%" }} />
                 </colgroup>
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-dark-200">
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 text-left text-gray-900 dark:text-white w-40">
+                  <tr className="bg-zinc-50 dark:bg-dark-200">
+                    <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-left text-zinc-900 dark:text-white w-40">
                       Section
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 text-left text-gray-900 dark:text-white">
+                    <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-left text-zinc-900 dark:text-white">
                       Description
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 text-center text-gray-900 dark:text-white w-48">
+                    <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-center text-zinc-900 dark:text-white w-48">
                       Results
                     </th>
                   </tr>
@@ -1658,13 +1658,13 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 <tbody>
                   {VISUAL_INSPECTION_SECTIONS.map((sectionCode) => (
                     <tr key={sectionCode}>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         {sectionCode}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         {getVisualInspectionDescription(sectionCode)}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-center">
                         <div className="print:hidden">
                           <select
                             value={
@@ -1679,7 +1679,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditMode}
-                            className={`form-select w-full text-center ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                            className={`form-select w-full text-center ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                           >
                             {VISUAL_INSPECTION_OPTIONS.map((option) => (
                               <option key={option} value={option}>
@@ -1703,73 +1703,73 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           {/* Test Results */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Results
             </h2>
 
             {/* Insulation Resistance */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold mb-3 text-zinc-900 dark:text-white">
                 Insulation Resistance
               </h3>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-dark-200">
+                    <tr className="bg-zinc-50 dark:bg-dark-200">
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         Insulation Resistance
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         Pole 1 MΩ
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         Pole 2 MΩ
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         Pole 3 MΩ
                       </th>
                     </tr>
-                    <tr className="bg-gray-50 dark:bg-dark-200">
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"></th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"></th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                    <tr className="bg-zinc-50 dark:bg-dark-200">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"></th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"></th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Reading
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         20°C
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Reading
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         20°C
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Reading
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         20°C
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Test Voltage
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <select
                           value={formData.insulationResistance.testVoltage}
                           onChange={(e) =>
@@ -1779,7 +1779,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`form-select w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-select w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         >
                           {TEST_VOLTAGE_OPTIONS.map((option) => (
                             <option key={option} value={option}>
@@ -1789,18 +1789,18 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                         </select>
                       </td>
                       <td
-                        className="border border-gray-300 dark:border-gray-600 p-2"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2"
                         colSpan={6}
                       ></td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Pole to Pole
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Closed
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole1.poleToPole}
@@ -1811,16 +1811,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole1.poleToPole,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole2.poleToPole}
@@ -1831,16 +1831,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole2.poleToPole,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole3.poleToPole}
@@ -1851,10 +1851,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole3.poleToPole,
                           formData.temperature?.tcf ?? 1,
@@ -1862,13 +1862,13 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Pole to Frame
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Closed
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -1881,16 +1881,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole1.poleToFrame,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -1903,16 +1903,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole2.poleToFrame,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -1925,10 +1925,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole3.poleToFrame,
                           formData.temperature?.tcf ?? 1,
@@ -1936,13 +1936,13 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Line to Load
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Open
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole1.lineToLoad}
@@ -1953,16 +1953,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole1.lineToLoad,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole2.lineToLoad}
@@ -1973,16 +1973,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole2.lineToLoad,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole3.lineToLoad}
@@ -1993,10 +1993,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole3.lineToLoad,
                           formData.temperature?.tcf ?? 1,
@@ -2004,13 +2004,13 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Pole to Neutral
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Closed
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole1.poleToN1}
@@ -2021,16 +2021,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole1.poleToN1,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole2.poleToN1}
@@ -2041,16 +2041,16 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole2.poleToN1,
                           formData.temperature?.tcf ?? 1,
                         )}
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.insulationResistance.pole3.poleToN1}
@@ -2061,10 +2061,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-100 dark:bg-dark-200 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white">
                         {calculateCorrectedValue(
                           formData.insulationResistance.pole3.poleToN1,
                           formData.temperature?.tcf ?? 1,
@@ -2078,15 +2078,15 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
             {/* Pole Resistance */}
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold mb-3 text-zinc-900 dark:text-white">
                 Pole Resistance
               </h3>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-dark-200">
+                    <tr className="bg-zinc-50 dark:bg-dark-200">
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         rowSpan={2}
                       >
                         Pole Resistance
@@ -2095,63 +2095,63 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                         </div>
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         P1
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         P2
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         P3
                       </th>
                       <th
-                        className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white"
+                        className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white"
                         colSpan={2}
                       >
                         N
                       </th>
                     </tr>
-                    <tr className="bg-gray-50 dark:bg-dark-200">
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                    <tr className="bg-zinc-50 dark:bg-dark-200">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Found
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Left
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Found
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Left
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Found
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Left
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Found
                       </th>
-                      <th className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <th className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         As Left
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Switch
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p1AsFound}
@@ -2162,10 +2162,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p1AsLeft}
@@ -2176,10 +2176,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p2AsFound}
@@ -2190,10 +2190,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p2AsLeft}
@@ -2204,10 +2204,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p3AsFound}
@@ -2218,10 +2218,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.p3AsLeft}
@@ -2232,10 +2232,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.nAsFound}
@@ -2246,10 +2246,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={formData.poleResistance.nAsLeft}
@@ -2260,15 +2260,15 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Fuse
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2287,10 +2287,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2309,10 +2309,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2331,10 +2331,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2353,10 +2353,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2375,10 +2375,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2397,10 +2397,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2419,10 +2419,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2441,15 +2441,15 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-gray-900 dark:text-white">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2 text-zinc-900 dark:text-white">
                         Switch + Fuse
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2469,10 +2469,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2492,10 +2492,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2515,10 +2515,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2538,10 +2538,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2561,10 +2561,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2584,10 +2584,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2607,10 +2607,10 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                      <td className="border border-zinc-300 dark:border-zinc-600 p-2">
                         <input
                           type="text"
                           value={
@@ -2630,7 +2630,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                             }))
                           }
                           readOnly={!isEditMode}
-                          className={`form-input w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                          className={`form-input w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
                         />
                       </td>
                     </tr>
@@ -2645,7 +2645,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>
             <div className="print:hidden">
@@ -2654,7 +2654,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 onChange={(e) => handleChange("comments", e.target.value)}
                 readOnly={!isEditMode}
                 rows={6}
-                className={`form-textarea w-full ${!isEditMode ? "bg-gray-100 dark:bg-dark-200" : ""}`}
+                className={`form-textarea w-full ${!isEditMode ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (
@@ -2662,7 +2662,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 <table className="min-w-full border-collapse border border-black">
                   <thead>
                     <tr>
-                      <th className="px-3 py-1 bg-gray-50 text-center text-xs font-semibold text-black border border-black">
+                      <th className="px-3 py-1 bg-zinc-50 text-center text-xs font-semibold text-black border border-black">
                         Comments
                       </th>
                     </tr>

@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 import { X, Globe, Zap, ArrowRight, Briefcase, Check } from "lucide-react";
-import { Button } from './Button';
-import { supabase } from '@/lib/supabase';
+import { Button } from "./Button";
+import { supabase } from "@/lib/supabase";
 
 interface WelcomePopupProps {
   isOpen: boolean;
@@ -10,30 +10,30 @@ interface WelcomePopupProps {
   userEmail?: string;
 }
 
-export const WelcomePopup: React.FC<WelcomePopupProps> = ({ 
-  isOpen, 
-  onClose, 
-  isNewUser = true, 
-  userEmail 
+export const WelcomePopup: React.FC<WelcomePopupProps> = ({
+  isOpen,
+  onClose,
+  isNewUser = true,
+  userEmail,
 }) => {
   // Function to notify admin about new user - wrapped in useCallback to prevent dependency changes
   const notifyAdminOfNewUser = useCallback(async () => {
     if (!userEmail) return;
-    
+
     try {
       const { error } = await supabase
-      .schema('common')
-      .from('admin_notifications')
-      .insert({
-        type: 'new_user',
-        message: `New user registration: ${userEmail}`,
-        is_read: false,
-        metadata: { email: userEmail, timestamp: new Date().toISOString() }
-      });
-      
-      console.log('Admin notification sent for new user');
+        .schema("common")
+        .from("admin_notifications")
+        .insert({
+          type: "new_user",
+          message: `New user registration: ${userEmail}`,
+          is_read: false,
+          metadata: { email: userEmail, timestamp: new Date().toISOString() },
+        });
+
+      console.log("Admin notification sent for new user");
     } catch (error) {
-      console.error('Failed to notify admin of new user:', error);
+      console.error("Failed to notify admin of new user:", error);
     }
   }, [userEmail]);
 
@@ -56,7 +56,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
@@ -74,7 +74,9 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
           <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5 bg-cover bg-center" />
           <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10">
             <div className="flex items-center gap-4 mb-6">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-orange-500 dark:text-orange-400 tracking-tight">WELCOME</h1>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-orange-500 dark:text-orange-400 tracking-tight">
+                WELCOME
+              </h1>
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                 alt="AMP Logo"
@@ -93,17 +95,19 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
             <div className="flex justify-center mb-8">
               <div className="inline-flex items-center gap-2 px-6 py-3 bg-orange-50 dark:bg-dark-150 rounded-full border border-orange-200 dark:border-dark-300">
                 <Zap className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-                <span className="text-orange-600 dark:text-orange-400 font-semibold tracking-wide">GETTING STARTED</span>
+                <span className="text-orange-600 dark:text-orange-400 font-semibold tracking-wide">
+                  GETTING STARTED
+                </span>
               </div>
             </div>
 
             <div className="max-w-3xl mx-auto">
-              <div className="mb-6 p-6 bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-gray-100 dark:border-dark-300">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+              <div className="mb-6 p-6 bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-100 dark:border-dark-300">
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-3 flex items-center">
                   <Check className="w-5 h-5 mr-2 text-green-500" />
                   Your account has been created
                 </h3>
-                <p className="text-gray-600 dark:text-white mb-4">
+                <p className="text-zinc-600 dark:text-white mb-4">
                   {isNewUser
                     ? "Welcome to the AMP Portal System! Your account has been created and your admin has been notified."
                     : "Welcome back to the AMP Portal System!"}
@@ -115,9 +119,12 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <Globe className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Explore Our Portals</h4>
-                      <p className="text-sm text-gray-600 dark:text-white">
-                        Access a variety of specialized portals designed for different aspects of our operations.
+                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                        Explore Our Portals
+                      </h4>
+                      <p className="text-sm text-zinc-600 dark:text-white">
+                        Access a variety of specialized portals designed for
+                        different aspects of our operations.
                       </p>
                     </div>
                   </div>
@@ -127,9 +134,12 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <ArrowRight className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Complete Your Profile</h4>
-                      <p className="text-sm text-gray-600 dark:text-white">
-                        Enhance your experience by updating your profile information and preferences.
+                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                        Complete Your Profile
+                      </h4>
+                      <p className="text-sm text-zinc-600 dark:text-white">
+                        Enhance your experience by updating your profile
+                        information and preferences.
                       </p>
                     </div>
                   </div>
@@ -139,9 +149,12 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <Briefcase className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Access Your Tools</h4>
-                      <p className="text-sm text-gray-600 dark:text-white">
-                        Use our specialized tools and resources to enhance your productivity and efficiency.
+                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                        Access Your Tools
+                      </h4>
+                      <p className="text-sm text-zinc-600 dark:text-white">
+                        Use our specialized tools and resources to enhance your
+                        productivity and efficiency.
                       </p>
                     </div>
                   </div>
@@ -162,4 +175,4 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
       </div>
     </div>
   );
-}; 
+};

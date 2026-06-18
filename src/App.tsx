@@ -331,7 +331,7 @@ function ArmadilloRedirect() {
     window.location.href = 'https://armadillobase.vercel.app';
   }, []);
   return (
-    <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-gray-400">
+    <div className="min-h-screen flex items-center justify-center text-zinc-600 dark:text-zinc-400">
       Redirecting to Armadillo Base…
     </div>
   );
@@ -343,7 +343,7 @@ function NinetyRedirect() {
     window.open('https://www.ninety.io/', '_blank', 'noopener,noreferrer');
   }, []);
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-zinc-600 dark:text-zinc-400">
       <p>Opening Ninety in a new tab…</p>
       <a
         href="https://www.ninety.io/"
@@ -418,7 +418,7 @@ const DatabaseDebug: React.FC = () => {
         <div className="space-y-6">
           <div>
             <h2 className="text-lg font-semibold mb-2">Schema Information</h2>
-            <pre className="p-4 bg-gray-100 rounded overflow-auto max-h-40">
+            <pre className="p-4 bg-zinc-100 rounded overflow-auto max-h-40">
               {JSON.stringify(schemaInfo, null, 2)}
             </pre>
           </div>
@@ -426,25 +426,25 @@ const DatabaseDebug: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-2">Customers ({customers.length})</h2>
             {customers.length === 0 ? (
-              <p className="italic text-gray-500">No customers found in database.</p>
+              <p className="italic text-zinc-500">No customers found in database.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-zinc-200">
+                  <thead className="bg-zinc-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Company Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Created At</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-zinc-200">
                     {customers.map(customer => (
                       <tr key={customer.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.company_name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{customer.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{customer.company_name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{customer.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
                           {new Date(customer.created_at).toLocaleString()}
                         </td>
                       </tr>

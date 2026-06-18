@@ -1829,7 +1829,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         }
       `}</style>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-2 mb-2 relative">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-2 mb-2 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1898,7 +1898,7 @@ const MediumVoltageVLFReport: React.FC = () => {
           },
         }}
       />
-      <div className="p-6 print:p-0 print:m-0 flex justify-center bg-gray-50 dark:bg-dark-150 print:bg-white">
+      <div className="p-6 print:p-0 print:m-0 flex justify-center bg-zinc-50 dark:bg-dark-150 print:bg-white">
         <div className="max-w-7xl w-full space-y-6 print:space-y-0 print:m-0">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
@@ -1908,17 +1908,17 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Job Information - Hidden in print, we use JobInfoPrintTable above */}
           <section className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
               Job Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 job-info-onscreen">
               {/* Left Column */}
               <div className="md:col-span-2 space-y-2">
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={maskCustomerName(formData.customerName)}
@@ -1932,10 +1932,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.siteAddress}
@@ -1949,10 +1949,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     User
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.contactPerson}
@@ -1966,10 +1966,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="date"
                       value={formData.testDate}
@@ -1981,10 +1981,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.identifier || ""}
@@ -2003,10 +2003,10 @@ const MediumVoltageVLFReport: React.FC = () => {
               {/* Right Column */}
               <div className="md:col-span-2 space-y-2">
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.jobNumber || ""}
@@ -2020,10 +2020,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.testedBy}
@@ -2035,11 +2035,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature?.fahrenheit || 68}
@@ -2057,7 +2057,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     <span className="mx-2">°C</span>
 
                     <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={formData.temperature?.tcf.toFixed(3) || "1.000"}
@@ -2069,11 +2069,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature?.humidity || ""}
@@ -2095,10 +2095,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.location || ""}
@@ -2110,10 +2110,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </div>
 
                 <div className="mb-4 flex">
-                  <label className="inline-block w-20 font-medium text-gray-700 dark:text-white">
+                  <label className="inline-block w-20 font-medium text-zinc-700 dark:text-white">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.equipmentLocation || ""}
@@ -2132,13 +2132,13 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Cable Information */}
           <section className="mb-6 print:mb-0 cable-termination-section print:mt-0">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Cable & Termination Data
             </h2>
             <div className="grid grid-cols-1 gap-6 print:hidden cable-termination-onscreen">
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Tested From
                   </label>
                   <input
@@ -2151,14 +2151,14 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white"></label>
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white"></label>
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Manufacturer
                   </label>
                   <input
@@ -2171,11 +2171,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Cable Operating Voltage (kV)
                   </label>
                   <input
@@ -2188,11 +2188,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Cable Rated Voltage (kV)
                   </label>
                   <input
@@ -2205,11 +2205,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Cable Type
                   </label>
                   <input
@@ -2217,11 +2217,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     value={formData.cableType || ""}
                     onChange={(e) => handleChange("cableType", e.target.value)}
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Length (ft)
                   </label>
                   <input
@@ -2231,11 +2231,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       handleChange("cableLength", e.target.value)
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Conductor Size
                   </label>
                   <input
@@ -2248,11 +2248,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Insulation Type
                   </label>
                   <input
@@ -2265,11 +2265,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Conductor Material
                   </label>
                   <input
@@ -2282,11 +2282,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Insulation Thickness
                   </label>
                   <input
@@ -2299,12 +2299,12 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     From
                   </label>
                   <input
@@ -2317,11 +2317,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     To
                   </label>
                   <input
@@ -2334,12 +2334,12 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Termination Data
                   </label>
                   <input
@@ -2352,11 +2352,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Termination Data
                   </label>
                   <input
@@ -2369,12 +2369,12 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Rated Voltage (kV)
                   </label>
                   <input
@@ -2387,11 +2387,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="w-1/2 text-sm font-medium text-zinc-700 dark:text-white">
                     Rated Voltage (kV)
                   </label>
                   <input
@@ -2404,7 +2404,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2412,7 +2412,7 @@ const MediumVoltageVLFReport: React.FC = () => {
 
             {/* Print-only table — 4 cols × 4 rows = 16 cells, no trailing blanks */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black table-fixed">
+              <table className="w-full border border-zinc-300 print:border-black table-fixed">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -2421,19 +2421,19 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Tested From:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.testedFrom || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Manufacturer:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.manufacturer || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">
                         Cable Operating Voltage (kV):
                       </div>
@@ -2441,7 +2441,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         {formData.cableInfo?.operatingVoltage || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">
                         Cable Rated Voltage (kV):
                       </div>
@@ -2451,21 +2451,21 @@ const MediumVoltageVLFReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Cable Type:</div>
                       <div className="mt-1">{formData.cableType || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Length (ft):</div>
                       <div className="mt-1">{formData.cableLength || ""}</div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Conductor Size:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.size || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Insulation Type:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.insulation || ""}
@@ -2473,49 +2473,49 @@ const MediumVoltageVLFReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Conductor Material:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.conductorMaterial || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Insulation Thickness:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.insulationThickness || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">From:</div>
                       <div className="mt-1">
                         {formData.cableInfo?.from || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">To:</div>
                       <div className="mt-1">{formData.cableInfo?.to || ""}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Termination Data:</div>
                       <div className="mt-1">
                         {formData.terminationData?.terminationData || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Termination Data 2:</div>
                       <div className="mt-1">
                         {formData.terminationData?.terminationData2 || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Rated Voltage (kV):</div>
                       <div className="mt-1">
                         {formData.terminationData?.ratedVoltage || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black text-center">
+                    <td className="p-2 border border-zinc-300 print:border-black text-center">
                       <div className="font-semibold">Rated Voltage 2 (kV):</div>
                       <div className="mt-1">
                         {formData.terminationData?.ratedVoltage2 || ""}
@@ -2530,35 +2530,35 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6 print:mb-2 visual-mechanical-inspection">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               7.3.3.A Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard table-fixed">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 vm-standard table-fixed">
                 <colgroup>
                   <col style={{ width: "5%" }} />
                   <col style={{ width: "75%" }} />
                   <col style={{ width: "25%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.1
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Compare cable data with drawings and specifications.
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -2574,7 +2574,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2586,10 +2586,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.2
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Inspect exposed sections of cables for physical damage.
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -2605,7 +2605,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2617,10 +2617,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.3.1
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Use of a low-resistance ohmmeter in accordance with
                       Section 7.3.3.B.1.
                     </td>
@@ -2637,7 +2637,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2649,10 +2649,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.4
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Inspect compression-applied connectors for correct cable
                       match and indentation.
                     </td>
@@ -2670,7 +2670,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2682,10 +2682,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.5
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Inspect shield grounding, cable supports, and
                       terminations.
                     </td>
@@ -2703,7 +2703,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2715,10 +2715,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.6
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Verify that visible cable bends meet or exceed ICEA and
                       manufacturer's minimum published bending radius.
                     </td>
@@ -2735,7 +2735,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2747,10 +2747,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.8
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       If cables are terminated through window-type current
                       transformers, inspect to verify that neutral and ground
                       conductors are correctly placed and that shields are
@@ -2771,7 +2771,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2783,10 +2783,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.9
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Inspect for correct identification and arrangements.
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -2803,7 +2803,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2815,10 +2815,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       7.3.3.A.10
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-700 dark:text-white">
+                    <td className="px-3 py-2 text-sm text-zinc-700 dark:text-white">
                       Inspect cable jacket and insulation condition.
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -2834,7 +2834,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2852,30 +2852,30 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Electrical Tests - Shield Continuity */}
           <section className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Electrical Tests - Shield Continuity
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       A Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       B Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       C Phase
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseA}
@@ -2886,10 +2886,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseB}
@@ -2900,10 +2900,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.shieldContinuity.phaseC}
@@ -2914,10 +2914,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <select
                         value={formData.shieldContinuity.unit}
                         onChange={(e) =>
@@ -2927,7 +2927,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {continuityUnits.map((unit) => (
                           <option
@@ -2949,11 +2949,11 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Electrical Tests - Insulation Resistance Values */}
           <section className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance Values
             </h2>
             <div className="mb-4 flex items-center">
-              <label className="block text-sm font-medium text-gray-700 dark:text-white mr-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-white mr-2">
                 Test Voltage:
               </label>
               <select
@@ -2965,7 +2965,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationTestVoltages.map((option) => (
                   <option
@@ -2977,11 +2977,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <span className="ml-2 text-gray-900 dark:text-white">V</span>
+              <span className="ml-2 text-zinc-900 dark:text-white">V</span>
             </div>
 
             <div className="overflow-x-auto section-insulation-resistance">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 table-fixed">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700 table-fixed">
                 <colgroup>
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "14%" }} />
@@ -2994,54 +2994,54 @@ const MediumVoltageVLFReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase w-20">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase w-20">
                       {" "}
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={3}
                     >
                       Insulation Resistance
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={3}
                     >
                       Temperature Corrected
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider w-16">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider w-16">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       A-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       B-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       C-G
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       Pre-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.ag}
@@ -3053,10 +3053,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.bg}
@@ -3068,10 +3068,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTest.cg}
@@ -3083,42 +3083,42 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.preTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-2 py-2 whitespace-nowrap text-xs text-zinc-900 dark:text-white">
                       Post-Test
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.ag}
@@ -3130,10 +3130,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.bg}
@@ -3145,10 +3145,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTest.cg}
@@ -3160,34 +3160,34 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                       <input
                         type="text"
                         value={formData.insulationTest.postTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-150 dark:text-white bg-gray-100 dark:bg-dark-150"
+                        className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm dark:bg-dark-150 dark:text-white bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {formData.insulationTest.unit}
                     </td>
                   </tr>
@@ -3197,7 +3197,7 @@ const MediumVoltageVLFReport: React.FC = () => {
 
             {/* Add unit dropdown at the bottom of the table */}
             <div className="mt-2 flex justify-end items-center">
-              <label className="block text-sm font-medium text-gray-700 dark:text-white mr-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-white mr-2">
                 Units:
               </label>
               <select
@@ -3209,7 +3209,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationUnits.map((unit) => (
                   <option
@@ -3227,42 +3227,42 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Electrical Tests Withstand Test */}
           <section className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Electrical Tests Withstand Test
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Time(min)
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       kVAC
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={2}
                     >
                       A Phase
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={2}
                     >
                       B Phase
                     </th>
                     <th
-                      className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                       colSpan={2}
                     >
                       C Phase
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2"></th>
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3280,7 +3280,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3293,10 +3293,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white tracking-wider">
                       nF
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3314,7 +3314,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3327,10 +3327,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white tracking-wider">
                       nF
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       <select
                         onChange={(e) => {
                           const newReadings = [
@@ -3348,7 +3348,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3361,7 +3361,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         ))}
                       </select>
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white tracking-wider">
+                    <th className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white tracking-wider">
                       nF
                     </th>
                   </tr>
@@ -3369,7 +3369,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                 <tbody>
                   {formData.withstandTest?.readings.map((reading, index) => (
                     <tr key={index}>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.timeMinutes}
@@ -3381,10 +3381,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.kVAC}
@@ -3397,10 +3397,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                           }
                           readOnly={!isEditMode}
                           list="kvac-options-ats"
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseA?.mA || ""}
@@ -3414,10 +3414,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseA?.nF || ""}
@@ -3431,10 +3431,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseB?.mA || ""}
@@ -3448,10 +3448,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseB?.nF || ""}
@@ -3465,10 +3465,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseC?.mA || ""}
@@ -3482,10 +3482,10 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
+                      <td className="border border-zinc-300 dark:border-zinc-700 px-3 py-2 whitespace-nowrap">
                         <input
                           type="text"
                           value={reading.phaseC?.nF || ""}
@@ -3499,7 +3499,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     </tr>
@@ -3537,13 +3537,13 @@ const MediumVoltageVLFReport: React.FC = () => {
           {/* Test Equipment Used */}
           <section className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 print:hidden test-eqpt-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Ohmmeter
                 </label>
                 <input
@@ -3556,11 +3556,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number
                 </label>
                 <input
@@ -3573,11 +3573,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   AMP ID
                 </label>
                 <input
@@ -3594,11 +3594,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Cal Date
                 </label>
                 <input
@@ -3611,11 +3611,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Megohmmeter
                 </label>
                 <EquipmentAutocomplete
@@ -3651,11 +3651,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number
                 </label>
                 <input
@@ -3668,11 +3668,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   AMP ID
                 </label>
                 <input
@@ -3689,11 +3689,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Cal Date
                 </label>
                 <input
@@ -3706,11 +3706,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   VLF Hipot
                 </label>
                 <EquipmentAutocomplete
@@ -3746,11 +3746,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm"
+                  className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number
                 </label>
                 <input
@@ -3763,11 +3763,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   AMP ID
                 </label>
                 <input
@@ -3784,11 +3784,11 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Cal Date
                 </label>
                 <input
@@ -3801,88 +3801,88 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
 
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black">
+              <table className="w-full border border-zinc-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       Equipment
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       Make/Model
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       Serial Number
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       AMP ID
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                    <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                       Ohmmeter
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.ohmmeter || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.ohmSerialNumber || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.ohmmeterAmpId ||
                         formData.equipment?.ampId ||
                         ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.ohmmeterCalDate || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                    <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                       Megohmmeter
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.megohmmeter || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.megohmSerialNumber || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.megohmmeterAmpId ||
                         formData.equipment?.ampId ||
                         ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.megohmmeterCalDate || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                    <td className="p-2 border border-zinc-300 print:border-black font-semibold">
                       VLF Hipot
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.vlfHipot || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.vlfSerialNumber || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.vlfAmpId ||
                         formData.equipment?.ampId ||
                         ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.equipment?.vlfCalDate || ""}
                     </td>
                   </tr>
@@ -3896,7 +3896,7 @@ const MediumVoltageVLFReport: React.FC = () => {
             className={`mb-6 print:mb-2 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
-            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 print:mb-1 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             {/* On-screen form - hidden in print */}
@@ -3906,16 +3906,16 @@ const MediumVoltageVLFReport: React.FC = () => {
                 onChange={(e) => handleChange("comments", e.target.value)}
                 readOnly={!isEditMode}
                 rows={6}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical ${!isEditMode ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
 
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full border border-gray-300 print:border-black">
+                <table className="w-full border border-zinc-300 print:border-black">
                   <tbody>
                     <tr>
-                      <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                      <td className="p-2 border border-zinc-300 print:border-black min-h-[100px] align-top">
                         {formData.comments}
                       </td>
                     </tr>

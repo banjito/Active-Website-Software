@@ -1061,7 +1061,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
   // Print Header
   const printHeader = (
-    <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+    <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
       <img
         src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
         alt="AMP Logo"
@@ -1417,7 +1417,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
   if (loading)
     return (
-      <div className="p-4 text-center text-lg text-gray-700 dark:text-white">
+      <div className="p-4 text-center text-lg text-zinc-700 dark:text-white">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -1432,7 +1432,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       ({ ...initialInsulationRow } as any);
     return (
       <tr>
-        <td className="px-6 py-4 text-sm text-gray-700 dark:text-white whitespace-nowrap">
+        <td className="px-6 py-4 text-sm text-zinc-700 dark:text-white whitespace-nowrap">
           {title}
         </td>
         {(["p1", "p2", "p3"] as const).map((pole) => (
@@ -1449,7 +1449,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   )
                 }
                 readOnly={!isEditing}
-                className={`form-input w-full text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </td>
             <td className="px-3 py-4">
@@ -1457,7 +1457,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="text"
                 value={rowData[pole + "Corrected"] || ""}
                 readOnly
-                className="form-input w-full text-center bg-gray-100 dark:bg-dark-150"
+                className="form-input w-full text-center bg-zinc-100 dark:bg-dark-150"
               />
             </td>
           </React.Fragment>
@@ -1476,7 +1476,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   )
                 }
                 readOnly={!isEditing}
-                className={`form-input w-full text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </td>
             <td className="px-3 py-4">
@@ -1484,14 +1484,14 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="text"
                 value={rowData.neutralCorrected || ""}
                 readOnly
-                className="form-input w-full text-center bg-gray-100 dark:bg-dark-150"
+                className="form-input w-full text-center bg-zinc-100 dark:bg-dark-150"
               />
             </td>
           </React.Fragment>
         ) : (
           <>
-            <td className="px-3 py-4 bg-gray-50 dark:bg-dark-150"></td>
-            <td className="px-3 py-4 bg-gray-50 dark:bg-dark-150"></td>
+            <td className="px-3 py-4 bg-zinc-50 dark:bg-dark-150"></td>
+            <td className="px-3 py-4 bg-zinc-50 dark:bg-dark-150"></td>
           </>
         )}
         <td className="px-6 py-4">
@@ -1505,7 +1505,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               )
             }
             disabled={!isEditing}
-            className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
           >
             {insulationResistanceUnitsOptions.map((u) => (
               <option key={u} value={u}>
@@ -1521,7 +1521,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1567,7 +1567,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Job Information */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
             Job Information
           </h2>
 
@@ -1578,7 +1578,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="text"
                 value={formData.customerName}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
               />
             </div>
             {/* Force Address to be visible by spanning multiple columns */}
@@ -1588,7 +1588,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="text"
                 value={maskCustomerAddress(formData.customerLocation)}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
               />
             </div>
             <div>
@@ -1597,7 +1597,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="text"
                 value={formData.jobNumber}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
               />
             </div>
             <div>
@@ -1610,7 +1610,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange("technicians", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1623,7 +1623,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange("date", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1636,7 +1636,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange("identifier", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div className="flex items-center space-x-1">
@@ -1652,7 +1652,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                     handleFahrenheitChange(Number(e.target.value))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="ml-1 text-xs">°F</span>
               </div>
@@ -1669,7 +1669,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   value={formData.temperature.celsius}
                   onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="ml-1 text-xs">°C</span>
               </div>
@@ -1683,7 +1683,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 type="number"
                 value={formData.temperature.tcf}
                 readOnly
-                className="form-input bg-gray-100 dark:bg-dark-150 w-16"
+                className="form-input bg-zinc-100 dark:bg-dark-150 w-16"
               />
             </div>
             <div>
@@ -1701,7 +1701,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   )
                 }
                 readOnly={!isEditing}
-                className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
               <span className="ml-1 text-xs">%</span>
             </div>
@@ -1715,7 +1715,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange("substation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1728,7 +1728,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange("eqptLocation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div className="md:col-span-2">
@@ -1741,7 +1741,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.userName}
                 onChange={(e) => handleChange("userName", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
@@ -1764,7 +1764,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Nameplate Data */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">
             Nameplate Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-2 print:hidden nameplate-grid">
@@ -1780,7 +1780,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateManufacturer", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1795,7 +1795,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateModelType", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1810,7 +1810,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateCatalogNo", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1825,7 +1825,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateSerialNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1840,7 +1840,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateSystemVoltage", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1855,7 +1855,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateRatedVoltage", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1870,7 +1870,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   handleChange("nameplateRatedCurrent", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1883,7 +1883,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 value={formData.nameplateSCCR}
                 onChange={(e) => handleChange("nameplateSCCR", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
@@ -1942,25 +1942,25 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
             Visual and Mechanical Inspection
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+            <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600">
               <colgroup>
                 <col style={{ width: "15%" }} />
                 <col style={{ width: "65%" }} />
                 <col style={{ width: "20%" }} />
               </colgroup>
-              <thead className="bg-gray-50 dark:bg-dark-150">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
-                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                     NETA Section
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
                     Description
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white whitespace-nowrap">
                     Results
                   </th>
                 </tr>
@@ -1968,13 +1968,13 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               <tbody className="bg-white dark:bg-dark-150">
                 {formData.visualInspectionItems.map((item, index) => (
                   <tr key={item.netaSection}>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       {item.netaSection}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
                       {item.description}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                       <select
                         value={item.result}
                         onChange={(e) =>
@@ -1985,7 +1985,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {visualInspectionResultOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2004,7 +2004,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Electrical Tests - Insulation Resistance */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-resistance">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-resistance">
             Electrical Tests - Insulation Resistance
           </h2>
 
@@ -2022,7 +2022,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 handleChange("insulationTestVoltage", e.target.value)
               }
               disabled={!isEditing}
-              className={`form-select w-32 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+              className={`form-select w-32 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             >
               {testVoltageOptions.map((v) => (
                 <option key={v} value={v}>
@@ -2033,74 +2033,74 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-dark-150">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
                   <th
                     rowSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     Test Points
                   </th>
                   <th
                     colSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     P1
                   </th>
                   <th
                     colSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     P2
                   </th>
                   <th
                     colSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     P3
                   </th>
                   <th
                     colSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     Neutral
                   </th>
                   <th
                     rowSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     Units
                   </th>
                 </tr>
                 <tr>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     Reading
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     @20°C
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     Reading
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     @20°C
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     Reading
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     @20°C
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     Reading
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-white">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white">
                     @20°C
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {renderInsulationRow(
                   "poleToPoleNormalClosed",
                   "Pole to Pole (Normal Closed)",
@@ -2149,34 +2149,34 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Electrical Tests - Contact/Pole Resistance */}
         <div className="mb-6">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-contact-resistance">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-contact-resistance">
             Electrical Tests - Contact/Pole Resistance
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-dark-150">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     State
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     P1
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     P2
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     P3
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Neutral
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                     Units
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {(["normal", "emergency"] as const).map((state) => {
                   const stateObj = formData.contactResistance[state] || {
                     p1: "",
@@ -2187,7 +2187,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   };
                   return (
                     <tr key={state}>
-                      <td className="px-6 py-4 text-sm text-gray-700 dark:text-white whitespace-nowrap">
+                      <td className="px-6 py-4 text-sm text-zinc-700 dark:text-white whitespace-nowrap">
                         {state.charAt(0).toUpperCase() + state.slice(1)}
                       </td>
                       {(["p1", "p2", "p3", "neutral"] as const).map((pole) => (
@@ -2203,7 +2203,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       ))}
@@ -2218,7 +2218,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {contactResistanceUnitsOptions.map((u) => (
                             <option key={u} value={u}>
@@ -2238,7 +2238,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Test Equipment Used */}
         <div className="mb-6 print:hidden">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
           <div className="space-y-4">
@@ -2331,7 +2331,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2352,7 +2352,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2373,7 +2373,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                 </div>
@@ -2390,13 +2390,13 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           <table className="w-full border-collapse border border-black mb-6">
             <thead>
               <tr>
-                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">
+                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-zinc-100">
                   Equipment
                 </th>
-                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">
+                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-zinc-100">
                   Serial Number
                 </th>
-                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">
+                <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-zinc-100">
                   AMP ID
                 </th>
               </tr>
@@ -2435,7 +2435,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {/* Comments */}
         <div className="mb-6 print:hidden">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
+          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
             Comments
           </h2>
           <textarea
@@ -2443,7 +2443,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             onChange={(e) => handleChange("comments", e.target.value)}
             readOnly={!isEditing}
             rows={1}
-            className={`form-textarea w-full resize-none ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+            className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             placeholder="Enter comments here..."
           />
         </div>

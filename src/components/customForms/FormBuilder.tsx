@@ -841,9 +841,9 @@ export const FormBuilder: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-dark-200">
+    <div className="h-screen flex flex-col bg-zinc-50 dark:bg-dark-200">
       {/* Top Bar */}
-      <div className="bg-white dark:bg-dark-150 border-b dark:border-gray-700 px-3 md:px-6 py-3 md:py-4">
+      <div className="bg-white dark:bg-dark-150 border-b dark:border-zinc-700 px-3 md:px-6 py-3 md:py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
           <Button
             variant="ghost"
@@ -867,7 +867,7 @@ export const FormBuilder: React.FC = () => {
 
           <div className="grid flex-1 min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] lg:self-center">
             <div className="min-w-0 flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 Form title
               </label>
               <Input
@@ -885,7 +885,7 @@ export const FormBuilder: React.FC = () => {
               className="relative min-w-0 flex flex-col gap-1"
               ref={netaSectionInputRef}
             >
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 NETA section
               </label>
               <Input
@@ -914,12 +914,12 @@ export const FormBuilder: React.FC = () => {
                 placeholder="7.3.3, ATS, etc."
               />
               {showNetaSectionDropdown && (
-                <div className="absolute z-50 w-full mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-150">
+                <div className="absolute z-50 w-full mt-1 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-dark-150">
                   <div className="max-h-60 overflow-y-auto py-1">
                     {filteredNetaSections.map((section) => (
                       <div
                         key={section}
-                        className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100"
+                        className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100"
                         onClick={() => {
                           setNetaSectionInput(section);
                           setTemplate((prev) => ({
@@ -930,7 +930,7 @@ export const FormBuilder: React.FC = () => {
                           setShowNetaSectionDropdown(false);
                         }}
                       >
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        <span className="text-sm font-medium text-zinc-900 dark:text-white">
                           {section}
                         </span>
                         <button
@@ -939,7 +939,7 @@ export const FormBuilder: React.FC = () => {
                             e.stopPropagation();
                             deleteNetaSection(section);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                           title="Remove from saved sections"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -953,7 +953,7 @@ export const FormBuilder: React.FC = () => {
                           netaSectionInput.trim().toLowerCase(),
                       ) && (
                         <div
-                          className="px-3 py-2 cursor-pointer border-t border-gray-100 bg-orange-50 text-sm font-medium text-[#f26722] hover:bg-orange-100 dark:border-gray-700 dark:bg-orange-900/20"
+                          className="px-3 py-2 cursor-pointer border-t border-zinc-100 bg-orange-50 text-sm font-medium text-[#f26722] hover:bg-orange-100 dark:border-zinc-700 dark:bg-orange-900/20"
                           onClick={async () => {
                             const success = await createNetaSection(
                               netaSectionInput.trim(),
@@ -977,7 +977,7 @@ export const FormBuilder: React.FC = () => {
                       )}
                     {filteredNetaSections.length === 0 &&
                       !netaSectionInput.trim() && (
-                        <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                        <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                           No saved sections yet.
                         </div>
                       )}
@@ -1009,7 +1009,7 @@ export const FormBuilder: React.FC = () => {
               <Button
                 onClick={() => setShowPreview(!showPreview)}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={previewTooltipTitle}
                 leftIcon={
@@ -1036,7 +1036,7 @@ export const FormBuilder: React.FC = () => {
                 onClick={handleSaveTemplate}
                 disabled={isSaving || !isDirty}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={saveTooltipTitle}
                 leftIcon={<Save className="w-5 h-5" />}
@@ -1057,7 +1057,7 @@ export const FormBuilder: React.FC = () => {
                 onClick={handlePublishToggle}
                 disabled={!template.id}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={template.isPublished ? "Unpublish" : "Publish"}
                 leftIcon={
@@ -1125,10 +1125,10 @@ export const FormBuilder: React.FC = () => {
             {template.structure.sections.length === 0 && !showPreview && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center max-w-md px-4">
-                  <div className="text-gray-400 dark:text-gray-500 mb-4">
+                  <div className="text-zinc-400 dark:text-zinc-500 mb-4">
                     <LayoutPanelTop className="w-16 h-16 mx-auto" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
                     Start Building Your Form
                   </h3>
                   <Button
@@ -1310,7 +1310,7 @@ export const FormBuilder: React.FC = () => {
 
       {actionTooltip && (
         <div
-          className={`pointer-events-none fixed z-[100] rounded-full border ${actionTooltip.borderClass} bg-white px-3 py-1 text-xs font-medium text-gray-900 shadow-sm dark:bg-dark-150 dark:text-white`}
+          className={`pointer-events-none fixed z-[100] rounded-full border ${actionTooltip.borderClass} bg-white px-3 py-1 text-xs font-medium text-zinc-900 shadow-sm dark:bg-dark-150 dark:text-white`}
           style={{
             left: actionTooltip.x,
             top: actionTooltip.y,

@@ -1171,8 +1171,8 @@ export default function PortalLanding() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16">
             {isEditMode && (
-              <div className="flex items-center justify-between mb-4 p-3 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-700 dark:text-white">
+              <div className="flex items-center justify-between mb-4 p-3 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <span className="text-sm font-medium text-zinc-700 dark:text-white">
                   Welcome Section
                 </span>
                 <button
@@ -1180,7 +1180,7 @@ export default function PortalLanding() {
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                     portalPreferences.showWelcome
                       ? "bg-[#f26722]"
-                      : "bg-gray-300 dark:bg-gray-600"
+                      : "bg-zinc-300 dark:bg-zinc-600"
                   }`}
                 >
                   <span
@@ -1201,7 +1201,7 @@ export default function PortalLanding() {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="h-11 px-5 text-base rounded-md border-none text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
+                className="h-11 px-5 text-base rounded-md border-none text-zinc-600 hover:text-zinc-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
                 onClick={handleAbout}
               >
                 Learn More
@@ -1210,8 +1210,8 @@ export default function PortalLanding() {
                 onClick={() =>
                   window.open("/assets/offline-software.zip", "_blank")
                 }
-                className="inline-flex items-center justify-center h-11 px-5 !text-gray-600 rounded-md bg-transparent hover:bg-gray-800/15"
-                leftIcon={<Download className="h-5 w-5 text-gray-600" />}
+                className="inline-flex items-center justify-center h-11 px-5 !text-zinc-600 rounded-md bg-transparent hover:bg-zinc-800/15"
+                leftIcon={<Download className="h-5 w-5 text-zinc-600" />}
               >
                 Offline Software
               </Button>
@@ -1225,8 +1225,8 @@ export default function PortalLanding() {
         className={`max-w-[1400px] mx-auto mt-8 ${!portalPreferences.showAnnouncements && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <span className="text-sm font-medium text-zinc-700 dark:text-white">
               Announcements Section
             </span>
             <button
@@ -1237,7 +1237,7 @@ export default function PortalLanding() {
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                 portalPreferences.showAnnouncements
                   ? "bg-[#f26722]"
-                  : "bg-gray-300 dark:bg-gray-600"
+                  : "bg-zinc-300 dark:bg-zinc-600"
               }`}
             >
               <span
@@ -1257,7 +1257,7 @@ export default function PortalLanding() {
                 <Megaphone className="h-6 w-6 text-[#f26722]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
                   Announcements
                 </h2>
               </div>
@@ -1266,7 +1266,7 @@ export default function PortalLanding() {
               {portalAnnouncements.filter(
                 (a) => !userAnnouncementState[a.id]?.dismissed_at,
               ).length === 0 && portalAnnouncements.length > 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 py-4">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4">
                   No more new announcements. View all under{" "}
                   <Link
                     to="/hr/announcements"
@@ -1297,8 +1297,8 @@ export default function PortalLanding() {
                       key={a.id}
                       className={`bg-white dark:bg-dark-150 rounded-xl shadow-md border ${
                         a.is_pinned
-                          ? "border-l-4 border-l-[#f26722] border-t border-r border-b border-t-gray-200 border-r-gray-200 border-b-gray-200 dark:border-t-gray-700 dark:border-r-gray-700 dark:border-b-gray-700 ring-1 ring-[#f26722]/10"
-                          : "border-gray-200 dark:border-gray-700"
+                          ? "border-l-4 border-l-[#f26722] border-t border-r border-b border-t-zinc-200 border-r-zinc-200 border-b-zinc-200 dark:border-t-zinc-700 dark:border-r-zinc-700 dark:border-b-zinc-700 ring-1 ring-[#f26722]/10"
+                          : "border-zinc-200 dark:border-zinc-700"
                       } p-5 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-xl`}
                       onClick={() =>
                         setExpandedAnnouncementId(
@@ -1312,7 +1312,7 @@ export default function PortalLanding() {
                             {a.is_pinned && (
                               <Pin className="h-4 w-4 text-[#f26722] flex-shrink-0" />
                             )}
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">
                               {a.title}
                             </h3>
                             <span
@@ -1331,7 +1331,7 @@ export default function PortalLanding() {
                                             ? "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
                                             : a.category === "training"
                                               ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
-                                              : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                                              : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
                               }`}
                             >
                               {a.category.charAt(0).toUpperCase() +
@@ -1363,17 +1363,17 @@ export default function PortalLanding() {
                               ))}
                           </div>
                           {expandedAnnouncementId === a.id ? (
-                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-3 whitespace-pre-wrap leading-relaxed">
+                            <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-3 whitespace-pre-wrap leading-relaxed">
                               {stripAnnouncementSystemLinks(a.content)}
                             </p>
                           ) : (
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2 line-clamp-2">
                               {stripAnnouncementSystemLinks(
                                 a.excerpt || a.content,
                               )}
                             </p>
                           )}
-                          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-4 mt-3 text-xs text-zinc-500 dark:text-zinc-400">
                             <span className="font-medium">{a.author_name}</span>
                             <span>
                               {a.published_at
@@ -1466,12 +1466,12 @@ export default function PortalLanding() {
                                     href={url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="block border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden hover:opacity-90 transition-opacity"
+                                    className="block border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden hover:opacity-90 transition-opacity"
                                   >
                                     <img
                                       src={url}
                                       alt={`Announcement attachment ${idx + 1}`}
-                                      className="w-full h-32 object-contain bg-gray-100 dark:bg-dark-300"
+                                      className="w-full h-32 object-contain bg-zinc-100 dark:bg-dark-300"
                                       loading="lazy"
                                     />
                                   </a>
@@ -1507,7 +1507,7 @@ export default function PortalLanding() {
                             className={`p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                               canDismiss
                                 ? "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/30"
-                                : "opacity-40 cursor-not-allowed text-gray-500 dark:text-gray-400"
+                                : "opacity-40 cursor-not-allowed text-zinc-500 dark:text-zinc-400"
                             }`}
                             title={
                               !canDismiss
@@ -1555,7 +1555,7 @@ export default function PortalLanding() {
             </div>
           </div>
         ) : isEditMode ? (
-          <div className="px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <div className="px-4 sm:px-6 lg:px-8 py-6 text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-[#f26722]" />
             Announcements will appear here when published from HR &rarr;
             Announcements.
@@ -1582,7 +1582,7 @@ export default function PortalLanding() {
           <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
             {ackModalDocUrl && (
               <div
-                className="border rounded-lg overflow-hidden flex-1 min-h-0 bg-gray-100 dark:bg-gray-900"
+                className="border rounded-lg overflow-hidden flex-1 min-h-0 bg-zinc-100 dark:bg-zinc-900"
                 style={{ minHeight: "50vh" }}
               >
                 <iframe
@@ -1615,7 +1615,7 @@ export default function PortalLanding() {
                       ref={ackCanvasRef}
                       width={500}
                       height={120}
-                      className="border border-gray-300 dark:border-gray-600 rounded w-full cursor-crosshair touch-none"
+                      className="border border-zinc-300 dark:border-zinc-600 rounded w-full cursor-crosshair touch-none"
                       style={{ maxWidth: "100%", height: "120px" }}
                       onMouseDown={ackStartDrawing}
                       onMouseMove={ackDraw}
@@ -1663,8 +1663,8 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showReviewShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <span className="text-sm font-medium text-zinc-700 dark:text-white">
               Review Shortcuts Section
             </span>
             <button
@@ -1672,7 +1672,7 @@ export default function PortalLanding() {
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                 portalPreferences.showReviewShortcuts
                   ? "bg-[#f26722]"
-                  : "bg-gray-300 dark:bg-gray-600"
+                  : "bg-zinc-300 dark:bg-zinc-600"
               }`}
             >
               <span
@@ -1693,7 +1693,7 @@ export default function PortalLanding() {
             <div className="flex items-center gap-2">
               <label
                 htmlFor="default-review-shortcuts-toggle"
-                className="text-sm text-gray-600 dark:text-white"
+                className="text-sm text-zinc-600 dark:text-white"
               >
                 Default to {defaultToShowReview ? "show" : "hide"}:
               </label>
@@ -1703,7 +1703,7 @@ export default function PortalLanding() {
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                   defaultToShowReview
                     ? "bg-[#f26722]"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    : "bg-zinc-300 dark:bg-zinc-600"
                 }`}
               >
                 <span
@@ -1717,7 +1717,7 @@ export default function PortalLanding() {
               variant="ghost"
               size="sm"
               onClick={toggleReviewShortcuts}
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-white shrink-0"
               leftIcon={
                 showReviewShortcuts ? (
                   <ChevronUp className="h-4 w-4" />
@@ -1742,8 +1742,8 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showIssueShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <span className="text-sm font-medium text-zinc-700 dark:text-white">
               Issue Shortcuts Section
             </span>
             <button
@@ -1751,7 +1751,7 @@ export default function PortalLanding() {
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                 portalPreferences.showIssueShortcuts
                   ? "bg-[#f26722]"
-                  : "bg-gray-300 dark:bg-gray-600"
+                  : "bg-zinc-300 dark:bg-zinc-600"
               }`}
             >
               <span
@@ -1770,7 +1770,7 @@ export default function PortalLanding() {
             <div className="flex items-center gap-2">
               <label
                 htmlFor="default-issue-shortcuts-toggle"
-                className="text-sm text-gray-600 dark:text-white"
+                className="text-sm text-zinc-600 dark:text-white"
               >
                 Default to {defaultToShowIssue ? "show" : "hide"}:
               </label>
@@ -1780,7 +1780,7 @@ export default function PortalLanding() {
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                   defaultToShowIssue
                     ? "bg-[#f26722]"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    : "bg-zinc-300 dark:bg-zinc-600"
                 }`}
               >
                 <span
@@ -1794,7 +1794,7 @@ export default function PortalLanding() {
               variant="ghost"
               size="sm"
               onClick={toggleIssueShortcuts}
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-white shrink-0"
               leftIcon={
                 showIssueShortcuts ? (
                   <ChevronUp className="h-4 w-4" />
@@ -1819,8 +1819,8 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showApprovedShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <span className="text-sm font-medium text-zinc-700 dark:text-white">
               Approved Shortcuts Section
             </span>
             <button
@@ -1828,7 +1828,7 @@ export default function PortalLanding() {
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                 portalPreferences.showApprovedShortcuts
                   ? "bg-[#f26722]"
-                  : "bg-gray-300 dark:bg-gray-600"
+                  : "bg-zinc-300 dark:bg-zinc-600"
               }`}
             >
               <span
@@ -1847,7 +1847,7 @@ export default function PortalLanding() {
             <div className="flex items-center gap-2">
               <label
                 htmlFor="default-approved-shortcuts-toggle"
-                className="text-sm text-gray-600 dark:text-white"
+                className="text-sm text-zinc-600 dark:text-white"
               >
                 Default to {defaultToShowApproved ? "show" : "hide"}:
               </label>
@@ -1857,7 +1857,7 @@ export default function PortalLanding() {
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                   defaultToShowApproved
                     ? "bg-[#f26722]"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    : "bg-zinc-300 dark:bg-zinc-600"
                 }`}
               >
                 <span
@@ -1871,7 +1871,7 @@ export default function PortalLanding() {
               variant="ghost"
               size="sm"
               onClick={toggleApprovedShortcuts}
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-white shrink-0"
               leftIcon={
                 showApprovedShortcuts ? (
                   <ChevronUp className="h-4 w-4" />
@@ -1894,13 +1894,13 @@ export default function PortalLanding() {
       {/* Portal Section */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
         {isEditMode && (
-          <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
                   Portal Visibility Controls
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                   Toggle which portal cards you want to see. Hidden portals will
                   not be shown when you exit edit mode.
                 </p>
@@ -1914,7 +1914,7 @@ export default function PortalLanding() {
                 </button>
                 <button
                   onClick={handleDeselectAllPortals}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-dark-50 rounded-md transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-dark-50 rounded-md transition-colors"
                 >
                   Deselect All
                 </button>
@@ -1937,9 +1937,9 @@ export default function PortalLanding() {
               ].map((portalName) => (
                 <div
                   key={portalName}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-100 rounded-md"
+                  className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-dark-100 rounded-md"
                 >
-                  <span className="text-sm text-gray-700 dark:text-white">
+                  <span className="text-sm text-zinc-700 dark:text-white">
                     {portalName}
                   </span>
                   <button
@@ -1947,7 +1947,7 @@ export default function PortalLanding() {
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                       !isPortalHidden(portalName)
                         ? "bg-[#f26722]"
-                        : "bg-gray-300 dark:bg-gray-600"
+                        : "bg-zinc-300 dark:bg-zinc-600"
                     }`}
                   >
                     <span
@@ -1975,7 +1975,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-neta border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -1989,7 +1989,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Alabama Division
                     </CardTitle>
                   </div>
@@ -2007,7 +2007,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-neta border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2021,7 +2021,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Tennessee Division
                     </CardTitle>
                   </div>
@@ -2039,7 +2039,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-neta border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2053,7 +2053,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Georgia Division
                     </CardTitle>
                   </div>
@@ -2071,7 +2071,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-neta border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2085,7 +2085,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       International Division
                     </CardTitle>
                   </div>
@@ -2104,7 +2104,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2118,7 +2118,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Field Technician Portal
                     </CardTitle>
                   </div>
@@ -2136,7 +2136,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2150,7 +2150,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Global Portal
                     </CardTitle>
                   </div>
@@ -2168,7 +2168,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-armadillo border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-armadillo border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2182,7 +2182,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Armadillo Division
                     </CardTitle>
                   </div>
@@ -2200,7 +2200,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-scavenger border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-scavenger border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2214,7 +2214,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Scavenger Portal
                     </CardTitle>
                   </div>
@@ -2233,7 +2233,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2247,7 +2247,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Office Admins Portal
                     </CardTitle>
                   </div>
@@ -2266,7 +2266,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2280,7 +2280,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Sales Portal
                     </CardTitle>
                   </div>
@@ -2298,7 +2298,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2312,7 +2312,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Engineering Portal
                     </CardTitle>
                   </div>
@@ -2331,7 +2331,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2345,7 +2345,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       HR Portal
                     </CardTitle>
                   </div>
@@ -2363,7 +2363,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2372,12 +2372,12 @@ export default function PortalLanding() {
                     style={{ color: "#374151" }}
                   >
                     <Plane
-                      className="h-5 w-5 text-gray-500 dark:text-white"
+                      className="h-5 w-5 text-zinc-500 dark:text-white"
                       style={{ color: "#374151" }}
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Meetings
                     </CardTitle>
                   </div>
@@ -2395,7 +2395,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2409,7 +2409,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Features & Fixes
                     </CardTitle>
                   </div>
@@ -2427,7 +2427,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-zinc-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2441,7 +2441,7 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium text-zinc-900 dark:text-white">
                       Help Center
                     </CardTitle>
                   </div>
@@ -2464,7 +2464,7 @@ export default function PortalLanding() {
             disabled={isSigningOut}
             variant="outline"
             leftIcon={<LogOut className="h-4 w-4" />}
-            className="gap-2 border-2 border-gray-200 text-black hover:bg-red-700/90 hover:text-white"
+            className="gap-2 border-2 border-zinc-200 text-black hover:bg-red-700/90 hover:text-white"
           >
             {isSigningOut ? "Signing out..." : "Sign Out"}
           </Button>
@@ -2481,7 +2481,7 @@ export default function PortalLanding() {
             className="bg-white dark:bg-dark-150 rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the content
           >
-            <div className="text-gray-900 dark:text-dark-900 mb-4 text-center">
+            <div className="text-zinc-900 dark:text-dark-900 mb-4 text-center">
               {popupContent}
             </div>
             <div className="flex justify-center">

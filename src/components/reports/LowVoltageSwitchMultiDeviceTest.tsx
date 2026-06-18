@@ -1078,7 +1078,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="hidden print:flex items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+      <div className="hidden print:flex items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -2414,7 +2414,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
       {/* Main content wrapper - screen only */}
       {!isPrintMode && (
-        <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-150 print:hidden">
+        <div className="p-6 flex justify-center bg-zinc-50 dark:bg-dark-150 print:hidden">
           <div className="max-w-7xl w-full space-y-8">
             <ReportHeader
               title={`Low Voltage Switch - ${formData.sheetTitle || "Multi-Device"}`}
@@ -2444,7 +2444,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             />
             <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
               <div className="mb-4 flex items-center gap-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Sheet title
                 </label>
                 <input
@@ -2453,7 +2453,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   onChange={(e) => setField("sheetTitle", e.target.value)}
                   readOnly={!isEditing}
                   placeholder="Multi-Device"
-                  className={`form-input max-w-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150 cursor-default" : ""}`}
+                  className={`form-input max-w-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-default" : ""}`}
                 />
               </div>
               {/* Device Row Controls */}
@@ -2472,7 +2472,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   >
                     - Remove Last Row
                   </button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
                     ({formData.switches.length} device
                     {formData.switches.length > 1 ? "s" : ""})
                   </span>
@@ -2483,7 +2483,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Job Information */}
             <section className="mb-6 job-info-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Job Information
               </h2>
 
@@ -2494,7 +2494,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Customer:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={maskCustomerName(formData.customer)}
                     onChange={(e) => setField("customer", e.target.value)}
                     readOnly={!isEditing}
@@ -2503,7 +2503,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Job #:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.jobNumber}
                     onChange={(e) => setField("jobNumber", e.target.value)}
                     readOnly={!isEditing}
@@ -2512,7 +2512,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Technicians:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.technicians}
                     onChange={(e) => setField("technicians", e.target.value)}
                     readOnly={!isEditing}
@@ -2522,7 +2522,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   <label className="form-label">Date:</label>
                   <input
                     type="date"
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.date}
                     onChange={(e) => setField("date", e.target.value)}
                     readOnly={!isEditing}
@@ -2531,7 +2531,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Identifier:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.identifier}
                     onChange={(e) => setField("identifier", e.target.value)}
                     readOnly={!isEditing}
@@ -2550,7 +2550,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="ml-1 text-xs">°F</span>
                   </div>
@@ -2560,7 +2560,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       type="number"
                       value={formData.temperature.celsius}
                       readOnly
-                      className="form-input w-16 bg-gray-100 dark:bg-dark-150"
+                      className="form-input w-16 bg-zinc-100 dark:bg-dark-150"
                     />
                     <span className="ml-1 text-xs">°C</span>
                   </div>
@@ -2571,7 +2571,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     type="number"
                     value={formData.temperature.tcf}
                     readOnly
-                    className="form-input w-16 bg-gray-100 dark:bg-dark-150"
+                    className="form-input w-16 bg-zinc-100 dark:bg-dark-150"
                   />
                 </div>
                 <div>
@@ -2586,14 +2586,14 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="ml-1 text-xs">%</span>
                 </div>
                 <div>
                   <label className="form-label">Substation:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.substation}
                     onChange={(e) => setField("substation", e.target.value)}
                     readOnly={!isEditing}
@@ -2602,7 +2602,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Eqpt. Location:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.eqptLocation}
                     onChange={(e) => setField("eqptLocation", e.target.value)}
                     readOnly={!isEditing}
@@ -2611,7 +2611,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div className="md:col-span-2">
                   <label className="form-label">User:</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.user}
                     onChange={(e) => setField("user", e.target.value)}
                     readOnly={!isEditing}
@@ -2623,46 +2623,46 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Visual and Mechanical Inspection */}
             <section className="mb-6 visual-mechanical-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Visual and Mechanical Inspection
               </h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
                   <colgroup>
                     <col style={{ width: "12%" }} />
                     <col style={{ width: "70%" }} />
                     <col style={{ width: "18%" }} />
                   </colgroup>
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border border-gray-300 dark:border-gray-700">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border border-zinc-300 dark:border-zinc-700">
                         NETA Section
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border border-gray-300 dark:border-gray-700">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border border-zinc-300 dark:border-zinc-700">
                         Description
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border border-gray-300 dark:border-gray-700">
+                      <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border border-zinc-300 dark:border-zinc-700">
                         Result
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-100 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-dark-100 divide-y divide-zinc-200 dark:divide-zinc-700">
                     {formData.visualMechanical.map((item, idx) => (
                       <tr key={idx}>
-                        <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700">
+                        <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-700">
                           {item.id}
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words border border-gray-300 dark:border-gray-700">
+                        <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words border border-zinc-300 dark:border-zinc-700">
                           {item.description}
                         </td>
-                        <td className="px-3 py-2 border border-gray-300 dark:border-gray-700">
+                        <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-700">
                           <select
                             value={item.result}
                             onChange={(e) =>
                               handleVisualMechanicalChange(idx, e.target.value)
                             }
                             disabled={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                           >
                             {visualMechanicalOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2680,7 +2680,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Enclosure Data */}
             <section className="mb-6 enclosure-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Enclosure Data
               </h2>
 
@@ -2691,7 +2691,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Manufacturer</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.manufacturer}
                     onChange={(e) =>
                       setField("enclosure.manufacturer", e.target.value)
@@ -2702,7 +2702,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">System Voltage (V)</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.systemVoltage}
                     onChange={(e) =>
                       setField("enclosure.systemVoltage", e.target.value)
@@ -2713,7 +2713,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Catalog No.</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.catalogNo}
                     onChange={(e) =>
                       setField("enclosure.catalogNo", e.target.value)
@@ -2724,7 +2724,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Rated Voltage (V)</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.ratedVoltage}
                     onChange={(e) =>
                       setField("enclosure.ratedVoltage", e.target.value)
@@ -2735,7 +2735,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Serial Number</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.serialNumber}
                     onChange={(e) =>
                       setField("enclosure.serialNumber", e.target.value)
@@ -2746,7 +2746,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Rated Current (A)</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.ratedCurrent}
                     onChange={(e) =>
                       setField("enclosure.ratedCurrent", e.target.value)
@@ -2757,7 +2757,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Series</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.series}
                     onChange={(e) =>
                       setField("enclosure.series", e.target.value)
@@ -2768,7 +2768,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">SCCR (kA)</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.aicRating}
                     onChange={(e) =>
                       setField("enclosure.aicRating", e.target.value)
@@ -2779,7 +2779,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div>
                   <label className="form-label">Type</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.type}
                     onChange={(e) => setField("enclosure.type", e.target.value)}
                     readOnly={!isEditing}
@@ -2788,7 +2788,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div className="md:col-span-3">
                   <label className="form-label">Phase Configuration</label>
                   <input
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     value={formData.enclosure.phaseConfiguration}
                     onChange={(e) =>
                       setField("enclosure.phaseConfiguration", e.target.value)
@@ -2802,12 +2802,12 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Switch Data */}
             <section className="mb-6 switch-data-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Switch Data
               </h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300 dark:border-gray-700">
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                <table className="min-w-full border border-zinc-300 dark:border-zinc-700">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
                       <th className="px-2 py-2 border">
                         Position / Identifier
@@ -2819,10 +2819,10 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       <th className="px-2 py-2 border text-center" colSpan={2}>
                         <div>Rated</div>
                         <div className="grid grid-cols-2">
-                          <div className="border-t border-r border-gray-300 dark:border-gray-700 p-1">
+                          <div className="border-t border-r border-zinc-300 dark:border-zinc-700 p-1">
                             Amperage
                           </div>
-                          <div className="border-t border-gray-300 dark:border-gray-700 p-1">
+                          <div className="border-t border-zinc-300 dark:border-zinc-700 p-1">
                             Voltage
                           </div>
                         </div>
@@ -2844,7 +2844,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                             placeholder="Auto-populates to other tables"
                             title="Position auto-populates to Fuse, IR, and Contact tables"
                           />
@@ -2859,7 +2859,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2872,7 +2872,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2885,7 +2885,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2898,7 +2898,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2911,7 +2911,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2924,14 +2924,14 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-zinc-500 mt-1">
                   * Position/Identifier entered here will auto-populate to Fuse
                   Data, Insulation Resistance, and Contact Resistance tables
                 </p>
@@ -2941,12 +2941,12 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Fuse Data */}
             <section className="mb-6 fuse-data-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Fuse Data
               </h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300 dark:border-gray-700">
-                  <thead className="bg-gray-50 dark:bg-dark-150">
+                <table className="min-w-full border border-zinc-300 dark:border-zinc-700">
+                  <thead className="bg-zinc-50 dark:bg-dark-150">
                     <tr>
                       <th className="px-2 py-2 border">
                         Position / Identifier
@@ -2957,13 +2957,13 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       <th className="px-2 py-2 border text-center" colSpan={3}>
                         <div>Rated</div>
                         <div className="grid grid-cols-3">
-                          <div className="border-t border-r border-gray-300 dark:border-gray-700 p-1">
+                          <div className="border-t border-r border-zinc-300 dark:border-zinc-700 p-1">
                             Amperage
                           </div>
-                          <div className="border-t border-r border-gray-300 dark:border-gray-700 p-1">
+                          <div className="border-t border-r border-zinc-300 dark:border-zinc-700 p-1">
                             AIC
                           </div>
-                          <div className="border-t border-gray-300 dark:border-gray-700 p-1">
+                          <div className="border-t border-zinc-300 dark:border-zinc-700 p-1">
                             Voltage
                           </div>
                         </div>
@@ -2978,7 +2978,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-150"
+                            className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150"
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -2992,7 +2992,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3005,7 +3005,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3018,7 +3018,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3031,7 +3031,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3044,7 +3044,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3057,7 +3057,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -3071,7 +3071,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             <section className="mb-6 insulation-measured-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+                <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                   Electrical Tests - Measured Insulation Resistance Values
                 </h2>
                 <div className="mb-2 flex items-center gap-4">
@@ -3083,7 +3083,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         setField("irTestVoltage", e.target.value)
                       }
                       disabled={!isEditing}
-                      className={`w-28 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`w-28 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     >
                       {[
                         "250V",
@@ -3105,7 +3105,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       value={formData.irUnits}
                       onChange={(e) => setField("irUnits", e.target.value)}
                       disabled={!isEditing}
-                      className={`w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`w-20 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     >
                       {["MΩ", "GΩ", "TΩ"].map((u) => (
                         <option key={u} value={u}>
@@ -3124,7 +3124,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setApplyIrReading(null)}
-                            className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-dark-150 hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+                            className="px-2 py-1 rounded-md border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-dark-150 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sm"
                           >
                             Done
                           </button>
@@ -3143,35 +3143,35 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300 dark:border-gray-700 text-sm">
+                <table className="min-w-full border border-zinc-300 dark:border-zinc-700 text-sm">
                   <thead>
                     <tr>
                       <th
-                        className="border px-1 py-1 bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150"
                         rowSpan={2}
                       >
                         Position
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Pole to Pole (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Pole to Neutral (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={4}
                       >
                         Pole & Neutral to Ground (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Line to Load (open)
@@ -3186,7 +3186,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         </th>
                       )}
                     </tr>
-                    <tr className="bg-gray-50 dark:bg-dark-150 text-xs">
+                    <tr className="bg-zinc-50 dark:bg-dark-150 text-xs">
                       <th className="border px-1 py-1 text-center">P1-P2</th>
                       <th className="border px-1 py-1 text-center">P2-P3</th>
                       <th className="border px-1 py-1 text-center">P3-P1</th>
@@ -3231,7 +3231,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 0)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-150 text-sm ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150 text-sm ${applyIrReading ? "pointer-events-none" : ""}`}
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -3251,7 +3251,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 1)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3270,7 +3270,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 2)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3289,7 +3289,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 3)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3308,7 +3308,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 4)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3327,7 +3327,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 5)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3346,7 +3346,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 6)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3365,7 +3365,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 7)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3384,7 +3384,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 8)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3403,7 +3403,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 9)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3422,7 +3422,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 10)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3441,7 +3441,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 11)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3460,7 +3460,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 12)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3479,7 +3479,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 13)
                             }
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         {applyIrReading && (
@@ -3510,10 +3510,10 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                                     ? applyReadingToIrRow(idx)
                                     : clearIrRow(idx)
                                 }
-                                className="rounded border-gray-400 text-[#f26722] focus:ring-[#f26722]"
+                                className="rounded border-zinc-400 text-[#f26722] focus:ring-[#f26722]"
                                 title={`Apply ${applyIrReading} to this row`}
                               />
-                              <span className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="text-xs text-zinc-600 dark:text-zinc-400">
                                 Apply
                               </span>
                             </label>
@@ -3529,50 +3529,50 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
             <section className="mb-6 insulation-corrected-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Electrical Tests - Temperature Corrected Insulation Resistance
                 Values
               </h2>
-              <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+              <div className="mb-2 text-sm text-zinc-700 dark:text-zinc-300">
                 Corrected values are auto-calculated as Measured × TCF. Units:{" "}
                 {formData.irUnits}
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300 dark:border-gray-700 text-sm">
+                <table className="min-w-full border border-zinc-300 dark:border-zinc-700 text-sm">
                   <thead>
                     <tr>
                       <th
-                        className="border px-1 py-1 bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150"
                         rowSpan={2}
                       >
                         Position
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Pole to Pole (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Pole to Neutral (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={4}
                       >
                         Pole & Neutral to Ground (closed)
                       </th>
                       <th
-                        className="border px-1 py-1 text-center bg-gray-50 dark:bg-dark-150"
+                        className="border px-1 py-1 text-center bg-zinc-50 dark:bg-dark-150"
                         colSpan={3}
                       >
                         Line to Load (open)
                       </th>
                     </tr>
-                    <tr className="bg-gray-50 dark:bg-dark-150 text-xs">
+                    <tr className="bg-zinc-50 dark:bg-dark-150 text-xs">
                       <th className="border px-1 py-1 text-center">P1-P2</th>
                       <th className="border px-1 py-1 text-center">P2-P3</th>
                       <th className="border px-1 py-1 text-center">P3-P1</th>
@@ -3596,46 +3596,46 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-150 text-sm"
+                            className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150 text-sm"
                           />
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p1p2}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p2p3}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p3p1}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p1n}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p2n}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p3n}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p1g}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p2g}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.p3g}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.ng}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.l2l_p1}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.l2l_p2}
                         </td>
-                        <td className="border px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-sm">
+                        <td className="border px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-sm">
                           {row.l2l_p3}
                         </td>
                       </tr>
@@ -3649,7 +3649,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             <section className="mb-6 contact-resistance-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+                <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                   Electrical Tests - Contact Resistance
                 </h2>
                 <div className="mb-2 flex items-center">
@@ -3658,7 +3658,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     value={formData.contactUnits}
                     onChange={(e) => setField("contactUnits", e.target.value)}
                     disabled={!isEditing}
-                    className={`w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   >
                     {["mΩ", "µΩ"].map((u) => (
                       <option key={u} value={u}>
@@ -3669,7 +3669,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300 dark:border-gray-700">
+                <table className="min-w-full border border-zinc-300 dark:border-zinc-700">
                   <thead>
                     <tr>
                       <th className="border px-2 py-2" rowSpan={2}>
@@ -3685,7 +3685,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         Switch + Fuse
                       </th>
                     </tr>
-                    <tr className="bg-gray-50 dark:bg-dark-150">
+                    <tr className="bg-zinc-50 dark:bg-dark-150">
                       <th className="border px-2 py-2 text-center">P1</th>
                       <th className="border px-2 py-2 text-center">P2</th>
                       <th className="border px-2 py-2 text-center">P3</th>
@@ -3705,7 +3705,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-150"
+                            className="w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150"
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -3719,7 +3719,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3732,7 +3732,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3745,7 +3745,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3758,7 +3758,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3771,7 +3771,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3784,7 +3784,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3797,7 +3797,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3810,7 +3810,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3823,7 +3823,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -3836,7 +3836,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Test Equipment Used */}
             <section className="mb-6 test-equipment-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Test Equipment Used
               </h2>
 
@@ -3877,7 +3877,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       );
                     }}
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3888,7 +3888,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.meggerSerial", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3899,7 +3899,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.meggerAmpId", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3910,7 +3910,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.meggerCalDate", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3946,7 +3946,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       );
                     }}
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3957,7 +3957,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.lowResSerial", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3968,7 +3968,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.lowResAmpId", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3979,7 +3979,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       setField("equipment.lowResCalDate", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -3988,7 +3988,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             {/* Comments */}
             <section className="mb-6 comments-section print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Comments
               </h2>
 
@@ -3998,7 +3998,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => setField("comments", e.target.value)}
                 readOnly={!isEditing}
                 rows={4}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
+                className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
               />
             </section>
           </div>

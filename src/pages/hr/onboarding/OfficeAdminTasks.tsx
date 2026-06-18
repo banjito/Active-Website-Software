@@ -1,74 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Select } from '../../../components/ui/Select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { Briefcase, Plus, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { onboardingService, OfficeAdminTask } from '../../../services/hr/onboardingService';
-import { useAuth } from '../../../lib/AuthContext';
-import { toast } from '../../../components/ui/toast';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import { Select } from "../../../components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  Briefcase,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  onboardingService,
+  OfficeAdminTask,
+} from "../../../services/hr/onboardingService";
+import { useAuth } from "../../../lib/AuthContext";
+import { toast } from "../../../components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 const PAGE_SIZE = 15;
 
 const TASK_TYPE_OPTIONS = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'workspace', label: 'Workspace Setup' },
-  { value: 'supplies', label: 'Supplies' },
-  { value: 'access_badge', label: 'Access Badge' },
-  { value: 'phone', label: 'Phone / Desk Phone' },
-  { value: 'mail', label: 'Mail / Mailbox' },
-  { value: 'travel', label: 'Travel / Logistics' },
-  { value: 'custom', label: 'Custom' },
+  { value: "standard", label: "Standard" },
+  { value: "workspace", label: "Workspace Setup" },
+  { value: "supplies", label: "Supplies" },
+  { value: "access_badge", label: "Access Badge" },
+  { value: "phone", label: "Phone / Desk Phone" },
+  { value: "mail", label: "Mail / Mailbox" },
+  { value: "travel", label: "Travel / Logistics" },
+  { value: "custom", label: "Custom" },
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'urgent', label: 'Urgent' },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
 type FormState = {
   name: string;
   description: string;
-  task_type: OfficeAdminTask['task_type'];
-  status: OfficeAdminTask['status'];
-  priority: OfficeAdminTask['priority'];
+  task_type: OfficeAdminTask["task_type"];
+  status: OfficeAdminTask["status"];
+  priority: OfficeAdminTask["priority"];
   is_template: boolean;
   notes: string;
 };
 
 const EMPTY_FORM: FormState = {
-  name: '',
-  description: '',
-  task_type: 'standard',
-  status: 'pending',
-  priority: 'medium',
+  name: "",
+  description: "",
+  task_type: "standard",
+  status: "pending",
+  priority: "medium",
   is_template: true,
-  notes: '',
+  notes: "",
 };
 
 export const OfficeAdminTasks: React.FC = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<OfficeAdminTask[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "in_progress" | "completed"
+  >("all");
   const [page, setPage] = useState(1);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<OfficeAdminTask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<OfficeAdminTask | null>(
+    null,
+  );
   const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
 
   useEffect(() => {
@@ -80,21 +107,32 @@ export const OfficeAdminTasks: React.FC = () => {
       setLoading(true);
       // Show templates by default — per-person assigned copies are visible on the Office Admin Onboarding dashboard.
       const filters: any = { is_template: true };
-      if (filter !== 'all') filters.status = filter;
+      if (filter !== "all") filters.status = filter;
       const data = await onboardingService.getOfficeAdminTasks(filters);
       setTasks(data);
     } catch (error: any) {
-      console.error('Error fetching Office Admin tasks:', error);
-      toast({ title: 'Error', description: 'Failed to load tasks.', variant: 'destructive' });
+      console.error("Error fetching Office Admin tasks:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load tasks.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value, type } = e.target as any;
     const checked = (e.target as HTMLInputElement).checked;
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const resetForm = () => setFormData(EMPTY_FORM);
@@ -102,7 +140,11 @@ export const OfficeAdminTasks: React.FC = () => {
   const handleCreate = async () => {
     if (!user?.id) return;
     if (!formData.name.trim()) {
-      toast({ title: 'Missing name', description: 'Please enter a name.', variant: 'destructive' });
+      toast({
+        title: "Missing name",
+        description: "Please enter a name.",
+        variant: "destructive",
+      });
       return;
     }
     try {
@@ -110,37 +152,68 @@ export const OfficeAdminTasks: React.FC = () => {
         ...formData,
         created_by: user.id,
       } as any);
-      toast({ title: 'Success', description: 'Office Admin task created.', variant: 'success' });
+      toast({
+        title: "Success",
+        description: "Office Admin task created.",
+        variant: "success",
+      });
       setIsCreateModalOpen(false);
       resetForm();
       fetchData();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to create task', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create task",
+        variant: "destructive",
+      });
     }
   };
 
   const handleUpdate = async () => {
     if (!selectedTask) return;
     try {
-      await onboardingService.updateOfficeAdminTask(selectedTask.id, { ...formData });
-      toast({ title: 'Success', description: 'Task updated.', variant: 'success' });
+      await onboardingService.updateOfficeAdminTask(selectedTask.id, {
+        ...formData,
+      });
+      toast({
+        title: "Success",
+        description: "Task updated.",
+        variant: "success",
+      });
       setIsEditModalOpen(false);
       setSelectedTask(null);
       resetForm();
       fetchData();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to update task', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update task",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this task template? Already-assigned copies on employees are kept.')) return;
+    if (
+      !confirm(
+        "Delete this task template? Already-assigned copies on employees are kept.",
+      )
+    )
+      return;
     try {
       await onboardingService.deleteOfficeAdminTask(id);
-      toast({ title: 'Deleted', description: 'Task template deleted.', variant: 'success' });
+      toast({
+        title: "Deleted",
+        description: "Task template deleted.",
+        variant: "success",
+      });
       fetchData();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to delete task', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete task",
+        variant: "destructive",
+      });
     }
   };
 
@@ -148,12 +221,12 @@ export const OfficeAdminTasks: React.FC = () => {
     setSelectedTask(task);
     setFormData({
       name: task.name,
-      description: task.description || '',
+      description: task.description || "",
       task_type: task.task_type,
       status: task.status,
       priority: task.priority,
       is_template: task.is_template ?? true,
-      notes: task.notes || '',
+      notes: task.notes || "",
     });
     setIsEditModalOpen(true);
   };
@@ -165,55 +238,108 @@ export const OfficeAdminTasks: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+      pending:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      in_progress:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      completed:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      cancelled:
+        "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
     };
-    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status] || colors.pending}`}>{status.replace('_', ' ')}</span>;
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status] || colors.pending}`}
+      >
+        {status.replace("_", " ")}
+      </span>
+    );
   };
 
   const getPriorityBadge = (priority: string) => {
     const colors: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-      medium: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      low: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      medium: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      high: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      urgent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     };
-    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority] || colors.medium}`}>{priority}</span>;
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority] || colors.medium}`}
+      >
+        {priority}
+      </span>
+    );
   };
 
-  const filteredTasks = tasks.filter(t => filter === 'all' ? true : t.status === filter);
+  const filteredTasks = tasks.filter((t) =>
+    filter === "all" ? true : t.status === filter,
+  );
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / PAGE_SIZE));
-  const paginatedTasks = filteredTasks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginatedTasks = filteredTasks.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
   const renderFormFields = () => (
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium mb-2">Name *</label>
-        <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g., Set up desk and monitor" />
+        <Input
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          placeholder="e.g., Set up desk and monitor"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">Description</label>
-        <Textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Brief description of what needs to be done" rows={3} />
+        <Textarea
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+          placeholder="Brief description of what needs to be done"
+          rows={3}
+        />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2">Task Type</label>
-          <Select name="task_type" value={formData.task_type} onChange={handleInputChange} options={TASK_TYPE_OPTIONS} />
+          <Select
+            name="task_type"
+            value={formData.task_type}
+            onChange={handleInputChange}
+            options={TASK_TYPE_OPTIONS}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">Status</label>
-          <Select name="status" value={formData.status} onChange={handleInputChange} options={STATUS_OPTIONS} />
+          <Select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            options={STATUS_OPTIONS}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">Priority</label>
-          <Select name="priority" value={formData.priority} onChange={handleInputChange} options={PRIORITY_OPTIONS} />
+          <Select
+            name="priority"
+            value={formData.priority}
+            onChange={handleInputChange}
+            options={PRIORITY_OPTIONS}
+          />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">Notes</label>
-        <Textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={2} placeholder="Optional notes / instructions" />
+        <Textarea
+          name="notes"
+          value={formData.notes}
+          onChange={handleInputChange}
+          rows={2}
+          placeholder="Optional notes / instructions"
+        />
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -222,9 +348,12 @@ export const OfficeAdminTasks: React.FC = () => {
           name="is_template"
           checked={formData.is_template}
           onChange={handleInputChange}
-          className="h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+          className="h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
         />
-        <label htmlFor="office-admin-is-template" className="text-sm text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="office-admin-is-template"
+          className="text-sm text-zinc-700 dark:text-zinc-300"
+        >
           Save as template (reusable for assigning to new hires)
         </label>
       </div>
@@ -235,44 +364,69 @@ export const OfficeAdminTasks: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <Briefcase className="h-8 w-8 text-[#f26722]" />
             Office Admin Tasks
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Create and manage office admin task templates (workspace setup, supplies, badges, etc.) used when onboarding new hires.
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+            Create and manage office admin task templates (workspace setup,
+            supplies, badges, etc.) used when onboarding new hires.
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setIsCreateModalOpen(true); }} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">
+        <Button
+          onClick={() => {
+            resetForm();
+            setIsCreateModalOpen(true);
+          }}
+          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+        >
           <Plus className="h-4 w-4 mr-2" /> Create Task
         </Button>
       </div>
 
       <div className="flex gap-2">
-        {(['all', 'pending', 'in_progress', 'completed'] as const).map(s => (
-          <Button key={s} variant={filter === s ? 'default' : 'outline'} size="sm" onClick={() => { setFilter(s); setPage(1); }}>
-            {s === 'all' ? 'All' : s === 'in_progress' ? 'In Progress' : s.charAt(0).toUpperCase() + s.slice(1)}
+        {(["all", "pending", "in_progress", "completed"] as const).map((s) => (
+          <Button
+            key={s}
+            variant={filter === s ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter(s);
+              setPage(1);
+            }}
+          >
+            {s === "all"
+              ? "All"
+              : s === "in_progress"
+                ? "In Progress"
+                : s.charAt(0).toUpperCase() + s.slice(1)}
           </Button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
+        <div className="text-center py-12">
+          <LoadingSpinner size="md" />
+        </div>
       ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">No tasks found. Create a template to get started.</p>
+            <Briefcase className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
+            <p className="text-zinc-600 dark:text-zinc-400">
+              No tasks found. Create a template to get started.
+            </p>
           </CardContent>
         </Card>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedTasks.map(task => (
+            {paginatedTasks.map((task) => (
               <Card key={task.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">{task.name}</CardTitle>
-                  <CardDescription className="mt-1">{task.description || 'No description'}</CardDescription>
+                  <CardDescription className="mt-1">
+                    {task.description || "No description"}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4">
@@ -280,21 +434,37 @@ export const OfficeAdminTasks: React.FC = () => {
                       {getStatusBadge(task.status)}
                       {getPriorityBadge(task.priority)}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Type:</span> {task.task_type.replace('_', ' ')}
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <span className="font-medium">Type:</span>{" "}
+                      {task.task_type.replace("_", " ")}
                     </div>
                     {task.is_template && (
-                      <div className="text-xs inline-block px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] font-medium">Template</div>
+                      <div className="text-xs inline-block px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] font-medium">
+                        Template
+                      </div>
                     )}
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <Button variant="outline" size="sm" onClick={() => openViewModal(task)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openViewModal(task)}
+                    >
                       <Eye className="h-4 w-4 mr-1" /> View
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => openEditModal(task)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditModal(task)}
+                    >
                       <Edit className="h-4 w-4 mr-1" /> Edit
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-700">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(task.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -303,15 +473,25 @@ export const OfficeAdminTasks: React.FC = () => {
             ))}
           </div>
           {filteredTasks.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
                 Page {page} of {totalPages} ({filteredTasks.length} total)
               </span>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
                   <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
                   Next <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -325,18 +505,42 @@ export const OfficeAdminTasks: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Office Admin Task</DialogTitle>
-            <DialogDescription>Create a reusable task for office admin onboarding work.</DialogDescription>
+            <DialogDescription>
+              Create a reusable task for office admin onboarding work.
+            </DialogDescription>
           </DialogHeader>
           {renderFormFields()}
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsCreateModalOpen(false); resetForm(); }}>Cancel</Button>
-            <Button onClick={handleCreate} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">Create</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
+              Create
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={(open) => { if (!open) { setIsEditModalOpen(false); setSelectedTask(null); resetForm(); } }}>
+      <Dialog
+        open={isEditModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsEditModalOpen(false);
+            setSelectedTask(null);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Office Admin Task</DialogTitle>
@@ -344,21 +548,45 @@ export const OfficeAdminTasks: React.FC = () => {
           </DialogHeader>
           {renderFormFields()}
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setSelectedTask(null); resetForm(); }}>Cancel</Button>
-            <Button onClick={handleUpdate} className="bg-[#f26722] hover:bg-[#f26722]/90 text-white">Save Changes</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setSelectedTask(null);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdate}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* View modal */}
-      <Dialog open={isViewModalOpen} onOpenChange={(open) => { if (!open) { setIsViewModalOpen(false); setSelectedTask(null); } }}>
+      <Dialog
+        open={isViewModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsViewModalOpen(false);
+            setSelectedTask(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-[#f26722]" />
               {selectedTask?.name}
             </DialogTitle>
-            {selectedTask?.description && <DialogDescription>{selectedTask.description}</DialogDescription>}
+            {selectedTask?.description && (
+              <DialogDescription>{selectedTask.description}</DialogDescription>
+            )}
           </DialogHeader>
           {selectedTask && (
             <div className="space-y-3 pt-2 text-sm">
@@ -366,21 +594,47 @@ export const OfficeAdminTasks: React.FC = () => {
                 {getStatusBadge(selectedTask.status)}
                 {getPriorityBadge(selectedTask.priority)}
                 {selectedTask.is_template && (
-                  <span className="px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] text-xs font-medium">Template</span>
+                  <span className="px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] text-xs font-medium">
+                    Template
+                  </span>
                 )}
               </div>
-              <div><span className="font-medium text-gray-700 dark:text-gray-300">Type:</span> {selectedTask.task_type.replace('_', ' ')}</div>
-              {selectedTask.due_date && <div><span className="font-medium text-gray-700 dark:text-gray-300">Due:</span> {selectedTask.due_date}</div>}
+              <div>
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  Type:
+                </span>{" "}
+                {selectedTask.task_type.replace("_", " ")}
+              </div>
+              {selectedTask.due_date && (
+                <div>
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    Due:
+                  </span>{" "}
+                  {selectedTask.due_date}
+                </div>
+              )}
               {selectedTask.notes && (
                 <div>
-                  <div className="font-medium text-gray-700 dark:text-gray-300">Notes</div>
-                  <p className="mt-1 whitespace-pre-wrap text-gray-600 dark:text-gray-400">{selectedTask.notes}</p>
+                  <div className="font-medium text-zinc-700 dark:text-zinc-300">
+                    Notes
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-zinc-600 dark:text-zinc-400">
+                    {selectedTask.notes}
+                  </p>
                 </div>
               )}
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsViewModalOpen(false); setSelectedTask(null); }}>Close</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsViewModalOpen(false);
+                setSelectedTask(null);
+              }}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

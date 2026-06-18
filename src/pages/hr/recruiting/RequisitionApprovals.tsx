@@ -1,17 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { 
-  CheckCircle, XCircle, Eye, Clock, FileCheck, Search, Filter, AlertCircle, 
-  Briefcase, MapPin, User, DollarSign, Calendar, RefreshCw, Users, ArrowRight
-} from 'lucide-react';
-import { jobRequisitionsService, JobRequisition, RequisitionApprover, getJobRequisitionDisplayHtml } from '../../../services/hr/jobRequisitionsService';
-import { toast } from '../../../components/ui/toast';
-import { useAuth } from '../../../lib/AuthContext';
-import { supabase } from '../../../lib/supabase';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Textarea } from "../../../components/ui/Textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  CheckCircle,
+  XCircle,
+  Eye,
+  Clock,
+  FileCheck,
+  Search,
+  Filter,
+  AlertCircle,
+  Briefcase,
+  MapPin,
+  User,
+  DollarSign,
+  Calendar,
+  RefreshCw,
+  Users,
+  ArrowRight,
+} from "lucide-react";
+import {
+  jobRequisitionsService,
+  JobRequisition,
+  RequisitionApprover,
+  getJobRequisitionDisplayHtml,
+} from "../../../services/hr/jobRequisitionsService";
+import { toast } from "../../../components/ui/toast";
+import { useAuth } from "../../../lib/AuthContext";
+import { supabase } from "../../../lib/supabase";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface AppUser {
   id: string;
@@ -21,21 +52,26 @@ interface AppUser {
 
 export const RequisitionApprovals: React.FC = () => {
   const { user } = useAuth();
-  const [myPendingItems, setMyPendingItems] = useState<{ requisition: JobRequisition; approverRecord: RequisitionApprover }[]>([]);
+  const [myPendingItems, setMyPendingItems] = useState<
+    { requisition: JobRequisition; approverRecord: RequisitionApprover }[]
+  >([]);
   const [allPending, setAllPending] = useState<JobRequisition[]>([]);
-  const [allApproversMap, setAllApproversMap] = useState<Record<string, RequisitionApprover[]>>({});
+  const [allApproversMap, setAllApproversMap] = useState<
+    Record<string, RequisitionApprover[]>
+  >({});
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [selectedRequisition, setSelectedRequisition] = useState<JobRequisition | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [selectedRequisition, setSelectedRequisition] =
+    useState<JobRequisition | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [approving, setApproving] = useState(false);
   const [rejecting, setRejecting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterDepartment, setFilterDepartment] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [viewTab, setViewTab] = useState<'mine' | 'all'>('mine');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState<string>("all");
+  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [viewTab, setViewTab] = useState<"mine" | "all">("mine");
 
   useEffect(() => {
     fetchData();
@@ -46,11 +82,13 @@ export const RequisitionApprovals: React.FC = () => {
     try {
       setLoading(true);
       const all = await jobRequisitionsService.getAll();
-      const pending = all.filter(req => req.status === 'pending_approval');
+      const pending = all.filter((req) => req.status === "pending_approval");
       setAllPending(pending);
 
       if (pending.length > 0) {
-        const approvers = await jobRequisitionsService.getApproversForMultiple(pending.map(r => r.id));
+        const approvers = await jobRequisitionsService.getApproversForMultiple(
+          pending.map((r) => r.id),
+        );
         setAllApproversMap(approvers);
       }
 
@@ -59,11 +97,11 @@ export const RequisitionApprovals: React.FC = () => {
         setMyPendingItems(myItems);
       }
     } catch (error: any) {
-      console.error('Error fetching pending requisitions:', error);
+      console.error("Error fetching pending requisitions:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load pending requisitions',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load pending requisitions",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -74,73 +112,89 @@ export const RequisitionApprovals: React.FC = () => {
     try {
       let users: AppUser[] = [];
       let { data: adminData, error: adminError } = await supabase
-        .schema('common')
-        .rpc('admin_get_users');
+        .schema("common")
+        .rpc("admin_get_users");
 
       if (adminError) {
-        const fallback = await supabase.rpc('admin_get_users');
-        if (!fallback.error) { adminData = fallback.data; adminError = null; }
+        const fallback = await supabase.rpc("admin_get_users");
+        if (!fallback.error) {
+          adminData = fallback.data;
+          adminError = null;
+        }
       }
 
       if (!adminError && adminData) {
         users = adminData.map((u: any) => ({
           id: u.id,
-          email: u.email || '',
-          name: u.raw_user_meta_data?.name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
+          email: u.email || "",
+          name:
+            u.raw_user_meta_data?.name ||
+            u.user_metadata?.name ||
+            u.email?.split("@")[0] ||
+            "Unknown",
         }));
       } else {
         const { data: profiles } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('id, email, full_name, user_metadata');
+          .schema("common")
+          .from("profiles")
+          .select("id, email, full_name, user_metadata");
 
         if (profiles) {
           users = profiles.map((p: any) => ({
             id: p.id,
-            email: p.email || '',
-            name: p.full_name || p.user_metadata?.name || p.email?.split('@')[0] || 'Unknown',
+            email: p.email || "",
+            name:
+              p.full_name ||
+              p.user_metadata?.name ||
+              p.email?.split("@")[0] ||
+              "Unknown",
           }));
         }
       }
 
       setAllUsers(users.sort((a, b) => a.name.localeCompare(b.name)));
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error("Error fetching users:", err);
     }
   };
 
   const getUserName = (userId: string): string => {
-    const u = allUsers.find(u => u.id === userId);
-    return u ? u.name : 'Unknown User';
+    const u = allUsers.find((u) => u.id === userId);
+    return u ? u.name : "Unknown User";
   };
 
   const handleApprove = async (requisitionId: string) => {
     if (!user?.id) return;
-    
+
     try {
       setApproving(true);
-      const { allApproved } = await jobRequisitionsService.approveStep(requisitionId, user.id);
+      const { allApproved } = await jobRequisitionsService.approveStep(
+        requisitionId,
+        user.id,
+      );
       if (allApproved) {
         toast({
-          title: 'Fully Approved',
-          description: 'All approvers have approved. Requisition is now ready to post to the career page.',
-          variant: 'success',
+          title: "Fully Approved",
+          description:
+            "All approvers have approved. Requisition is now ready to post to the career page.",
+          variant: "success",
         });
       } else {
         toast({
-          title: 'Approved',
-          description: 'Your approval has been recorded. The requisition has been sent to the next approver.',
-          variant: 'success',
+          title: "Approved",
+          description:
+            "Your approval has been recorded. The requisition has been sent to the next approver.",
+          variant: "success",
         });
       }
       fetchData();
       setIsViewModalOpen(false);
     } catch (error: any) {
-      console.error('Error approving requisition:', error);
+      console.error("Error approving requisition:", error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to approve requisition',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to approve requisition",
+        variant: "destructive",
       });
     } finally {
       setApproving(false);
@@ -149,35 +203,39 @@ export const RequisitionApprovals: React.FC = () => {
 
   const handleReject = async () => {
     if (!selectedRequisition || !user?.id) return;
-    
+
     if (!rejectReason.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please provide a reason for rejection',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please provide a reason for rejection",
+        variant: "destructive",
       });
       return;
     }
-    
+
     try {
       setRejecting(true);
-      await jobRequisitionsService.rejectStep(selectedRequisition.id, user.id, rejectReason);
+      await jobRequisitionsService.rejectStep(
+        selectedRequisition.id,
+        user.id,
+        rejectReason,
+      );
       toast({
-        title: 'Rejected',
-        description: 'Requisition has been rejected and closed',
-        variant: 'success',
+        title: "Rejected",
+        description: "Requisition has been rejected and closed",
+        variant: "success",
       });
       fetchData();
       setIsRejectModalOpen(false);
       setIsViewModalOpen(false);
-      setRejectReason('');
+      setRejectReason("");
       setSelectedRequisition(null);
     } catch (error: any) {
-      console.error('Error rejecting requisition:', error);
+      console.error("Error rejecting requisition:", error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to reject requisition',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to reject requisition",
+        variant: "destructive",
       });
     } finally {
       setRejecting(false);
@@ -191,7 +249,7 @@ export const RequisitionApprovals: React.FC = () => {
 
   const openRejectModal = (requisition: JobRequisition) => {
     setSelectedRequisition(requisition);
-    setRejectReason('');
+    setRejectReason("");
     setIsRejectModalOpen(true);
   };
 
@@ -203,64 +261,96 @@ export const RequisitionApprovals: React.FC = () => {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffMinutes > 0) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
-    return 'Just now';
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    if (diffHours > 0)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffMinutes > 0)
+      return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+    return "Just now";
   };
 
   const formatSalaryRange = (min?: number, max?: number) => {
-    if (!min && !max) return 'Not specified';
-    if (min && max) return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
+    if (!min && !max) return "Not specified";
+    if (min && max)
+      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
     if (min) return `$${min.toLocaleString()}+`;
     if (max) return `Up to $${max.toLocaleString()}`;
-    return 'Not specified';
+    return "Not specified";
   };
 
-  const getPriorityColor = (priority: JobRequisition['priority']) => {
+  const getPriorityColor = (priority: JobRequisition["priority"]) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'low': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-      default: return 'bg-gray-100 text-gray-800';
+      case "high":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "low":
+        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200";
+      default:
+        return "bg-zinc-100 text-zinc-800";
     }
   };
 
   const isMyTurn = (reqId: string): boolean => {
-    return myPendingItems.some(item => item.requisition.id === reqId);
+    return myPendingItems.some((item) => item.requisition.id === reqId);
   };
 
-  const displayRequisitions = viewTab === 'mine'
-    ? myPendingItems.map(item => item.requisition)
-    : allPending;
+  const displayRequisitions =
+    viewTab === "mine"
+      ? myPendingItems.map((item) => item.requisition)
+      : allPending;
 
-  const filteredRequisitions = displayRequisitions.filter(req => {
-    const matchesSearch = req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         req.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         req.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = filterDepartment === 'all' || req.department === filterDepartment;
-    const matchesPriority = filterPriority === 'all' || req.priority === filterPriority;
+  const filteredRequisitions = displayRequisitions.filter((req) => {
+    const matchesSearch =
+      req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment =
+      filterDepartment === "all" || req.department === filterDepartment;
+    const matchesPriority =
+      filterPriority === "all" || req.priority === filterPriority;
     return matchesSearch && matchesDepartment && matchesPriority;
   });
 
-  const departments = Array.from(new Set(allPending.map(req => req.department))).sort();
+  const departments = Array.from(
+    new Set(allPending.map((req) => req.department)),
+  ).sort();
 
-  const ApprovalChain: React.FC<{ approvers: RequisitionApprover[]; currentStep: number; compact?: boolean }> = ({ approvers, currentStep, compact }) => (
-    <div className={`flex items-center gap-${compact ? '1' : '2'} flex-wrap`}>
+  const ApprovalChain: React.FC<{
+    approvers: RequisitionApprover[];
+    currentStep: number;
+    compact?: boolean;
+  }> = ({ approvers, currentStep, compact }) => (
+    <div className={`flex items-center gap-${compact ? "1" : "2"} flex-wrap`}>
       {approvers.map((approver, idx) => {
         const isCurrentStep = approver.step_order === currentStep;
         return (
           <React.Fragment key={approver.id}>
-            {idx > 0 && <ArrowRight className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} text-gray-300 dark:text-gray-600 shrink-0`} />}
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-              approver.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-              approver.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-              isCurrentStep ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-2 ring-yellow-300 dark:ring-yellow-700' :
-              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-            }`}>
-              {approver.status === 'approved' && <CheckCircle className="h-3 w-3" />}
-              {approver.status === 'rejected' && <XCircle className="h-3 w-3" />}
-              {approver.status === 'pending' && isCurrentStep && <Clock className="h-3 w-3 animate-pulse" />}
+            {idx > 0 && (
+              <ArrowRight
+                className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-zinc-300 dark:text-zinc-600 shrink-0`}
+              />
+            )}
+            <div
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                approver.status === "approved"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : approver.status === "rejected"
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    : isCurrentStep
+                      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-2 ring-yellow-300 dark:ring-yellow-700"
+                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {approver.status === "approved" && (
+                <CheckCircle className="h-3 w-3" />
+              )}
+              {approver.status === "rejected" && (
+                <XCircle className="h-3 w-3" />
+              )}
+              {approver.status === "pending" && isCurrentStep && (
+                <Clock className="h-3 w-3 animate-pulse" />
+              )}
               <span>{getUserName(approver.approver_user_id)}</span>
             </div>
           </React.Fragment>
@@ -273,17 +363,17 @@ export const RequisitionApprovals: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Requisition Approvals</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+            Requisition Approvals
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
             Review and approve job requisitions assigned to you
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={fetchData}
-          disabled={loading}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        <Button variant="outline" onClick={fetchData} disabled={loading}>
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -292,48 +382,60 @@ export const RequisitionApprovals: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="border-l-4 border-l-[#f26722]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Assigned to Me</CardTitle>
+            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+              Assigned to Me
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#f26722]">{myPendingItems.length}</div>
+            <div className="text-2xl font-bold text-[#f26722]">
+              {myPendingItems.length}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-yellow-600 dark:text-yellow-400">Total Pending</CardTitle>
+            <CardTitle className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+              Total Pending
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{allPending.length}</div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              {allPending.length}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-red-600 dark:text-red-400">High Priority</CardTitle>
+            <CardTitle className="text-xs font-medium text-red-600 dark:text-red-400">
+              High Priority
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{allPending.filter(r => r.priority === 'high').length}</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {allPending.filter((r) => r.priority === "high").length}
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-zinc-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
         <button
-          onClick={() => setViewTab('mine')}
+          onClick={() => setViewTab("mine")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            viewTab === 'mine'
-              ? 'bg-white dark:bg-dark-150 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            viewTab === "mine"
+              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           }`}
         >
           My Approvals ({myPendingItems.length})
         </button>
         <button
-          onClick={() => setViewTab('all')}
+          onClick={() => setViewTab("all")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            viewTab === 'all'
-              ? 'bg-white dark:bg-dark-150 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            viewTab === "all"
+              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           }`}
         >
           All Pending ({allPending.length})
@@ -345,32 +447,34 @@ export const RequisitionApprovals: React.FC = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <input
                 type="text"
                 placeholder="Search by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
+              <Filter className="h-4 w-4 text-zinc-400" />
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Departments</option>
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
                 ))}
               </select>
             </div>
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -378,8 +482,10 @@ export const RequisitionApprovals: React.FC = () => {
               <option value="low">Low</option>
             </select>
           </div>
-          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            Showing {filteredRequisitions.length} {viewTab === 'mine' ? 'assigned to you' : 'pending'} requisition{filteredRequisitions.length !== 1 ? 's' : ''}
+          <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+            Showing {filteredRequisitions.length}{" "}
+            {viewTab === "mine" ? "assigned to you" : "pending"} requisition
+            {filteredRequisitions.length !== 1 ? "s" : ""}
           </div>
         </CardContent>
       </Card>
@@ -397,14 +503,16 @@ export const RequisitionApprovals: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <FileCheck className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-                {viewTab === 'mine' ? 'No approvals assigned to you' : 'No pending approvals'}
+              <FileCheck className="mx-auto h-12 w-12 text-zinc-400" />
+              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+                {viewTab === "mine"
+                  ? "No approvals assigned to you"
+                  : "No pending approvals"}
               </h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {viewTab === 'mine'
-                  ? 'You have no requisitions waiting for your approval'
-                  : 'All requisitions have been reviewed'}
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                {viewTab === "mine"
+                  ? "You have no requisitions waiting for your approval"
+                  : "All requisitions have been reviewed"}
               </p>
             </div>
           </CardContent>
@@ -417,14 +525,21 @@ export const RequisitionApprovals: React.FC = () => {
             const canApprove = isMyTurn(req.id);
             const currentStep = req.current_approval_step || 1;
             return (
-              <Card key={req.id} className={`hover:shadow-lg transition-all border-l-4 ${canApprove ? 'border-l-[#f26722]' : 'border-l-yellow-400'}`}>
+              <Card
+                key={req.id}
+                className={`hover:shadow-lg transition-all border-l-4 ${canApprove ? "border-l-[#f26722]" : "border-l-yellow-400"}`}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <CardTitle className="text-xl">{req.title}</CardTitle>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(req.priority)}`}>
-                          {req.priority.charAt(0).toUpperCase() + req.priority.slice(1)} Priority
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(req.priority)}`}
+                        >
+                          {req.priority.charAt(0).toUpperCase() +
+                            req.priority.slice(1)}{" "}
+                          Priority
                         </span>
                         {canApprove && (
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
@@ -432,7 +547,7 @@ export const RequisitionApprovals: React.FC = () => {
                           </span>
                         )}
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                          Step {currentStep} of {approvers.length || '?'}
+                          Step {currentStep} of {approvers.length || "?"}
                         </span>
                       </div>
                       <CardDescription className="flex flex-wrap items-center gap-4 mt-2">
@@ -450,7 +565,10 @@ export const RequisitionApprovals: React.FC = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <DollarSign className="h-4 w-4" />
-                          {formatSalaryRange(req.salary_range_min, req.salary_range_max)}
+                          {formatSalaryRange(
+                            req.salary_range_min,
+                            req.salary_range_max,
+                          )}
                         </span>
                       </CardDescription>
                     </div>
@@ -459,17 +577,22 @@ export const RequisitionApprovals: React.FC = () => {
                 <CardContent>
                   {/* Approval Chain */}
                   {approvers.length > 0 && (
-                    <div className="mb-4 pb-3 border-b border-gray-100 dark:border-dark-200">
+                    <div className="mb-4 pb-3 border-b border-zinc-100 dark:border-dark-200">
                       <div className="flex items-center gap-2 mb-2">
-                        <Users className="h-4 w-4 text-gray-400" />
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Approval Chain</span>
+                        <Users className="h-4 w-4 text-zinc-400" />
+                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                          Approval Chain
+                        </span>
                       </div>
-                      <ApprovalChain approvers={approvers} currentStep={currentStep} />
+                      <ApprovalChain
+                        approvers={approvers}
+                        currentStep={currentStep}
+                      />
                     </div>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         Submitted {getTimeSinceSubmission(submittedAt)}
@@ -480,7 +603,11 @@ export const RequisitionApprovals: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openViewModal(req)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openViewModal(req)}
+                      >
                         <Eye className="mr-2 h-4 w-4" />
                         Review
                       </Button>
@@ -493,7 +620,7 @@ export const RequisitionApprovals: React.FC = () => {
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            {approving ? 'Approving...' : 'Approve'}
+                            {approving ? "Approving..." : "Approve"}
                           </Button>
                           <Button
                             variant="outline"
@@ -519,7 +646,9 @@ export const RequisitionApprovals: React.FC = () => {
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{selectedRequisition?.title}</DialogTitle>
+            <DialogTitle className="text-2xl">
+              {selectedRequisition?.title}
+            </DialogTitle>
             <DialogDescription>
               Review all details before making your decision
             </DialogDescription>
@@ -527,123 +656,197 @@ export const RequisitionApprovals: React.FC = () => {
           {selectedRequisition && (
             <div className="space-y-6 py-4">
               {/* Key Information Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Department</label>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{selectedRequisition.department}</p>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    Department
+                  </label>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                    {selectedRequisition.department}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Location</label>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{selectedRequisition.location}</p>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    Location
+                  </label>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                    {selectedRequisition.location}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Employment Type</label>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{selectedRequisition.employment_type}</p>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    Employment Type
+                  </label>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                    {selectedRequisition.employment_type}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Priority</label>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1 capitalize">{selectedRequisition.priority}</p>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    Priority
+                  </label>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1 capitalize">
+                    {selectedRequisition.priority}
+                  </p>
                 </div>
               </div>
 
               {/* Salary Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Salary Range</label>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {formatSalaryRange(selectedRequisition.salary_range_min, selectedRequisition.salary_range_max)}
+                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Salary Range
+                  </label>
+                  <p className="text-zinc-900 dark:text-white font-medium">
+                    {formatSalaryRange(
+                      selectedRequisition.salary_range_min,
+                      selectedRequisition.salary_range_max,
+                    )}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {selectedRequisition.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Status
+                  </label>
+                  <p className="text-zinc-900 dark:text-white font-medium">
+                    {selectedRequisition.status
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+                      )
+                      .join(" ")}
                   </p>
                 </div>
               </div>
 
               {/* Approval Chain in Detail */}
-              {allApproversMap[selectedRequisition.id] && allApproversMap[selectedRequisition.id].length > 0 && (
-                <div className="p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <label className="text-sm font-semibold text-gray-900 dark:text-white">Approval Chain Progress</label>
+              {allApproversMap[selectedRequisition.id] &&
+                allApproversMap[selectedRequisition.id].length > 0 && (
+                  <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Users className="h-4 w-4 text-zinc-500" />
+                      <label className="text-sm font-semibold text-zinc-900 dark:text-white">
+                        Approval Chain Progress
+                      </label>
+                    </div>
+                    <div className="space-y-3">
+                      {allApproversMap[selectedRequisition.id].map(
+                        (approver, idx) => {
+                          const isCurrentStep =
+                            selectedRequisition.current_approval_step ===
+                            approver.step_order;
+                          return (
+                            <div
+                              key={approver.id}
+                              className={`flex items-center gap-3 p-3 rounded-lg border ${
+                                approver.status === "approved"
+                                  ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
+                                  : approver.status === "rejected"
+                                    ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
+                                    : isCurrentStep
+                                      ? "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20"
+                                      : "border-zinc-200 bg-white dark:border-dark-200 dark:bg-dark-150"
+                              }`}
+                            >
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                  approver.status === "approved"
+                                    ? "bg-green-500 text-white"
+                                    : approver.status === "rejected"
+                                      ? "bg-red-500 text-white"
+                                      : isCurrentStep
+                                        ? "bg-yellow-500 text-white"
+                                        : "bg-zinc-300 text-zinc-600 dark:bg-zinc-600 dark:text-zinc-300"
+                                }`}
+                              >
+                                {approver.status === "approved" ? (
+                                  <CheckCircle className="h-4 w-4" />
+                                ) : approver.status === "rejected" ? (
+                                  <XCircle className="h-4 w-4" />
+                                ) : (
+                                  idx + 1
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                                  {getUserName(approver.approver_user_id)}
+                                  {approver.approver_user_id === user?.id && (
+                                    <span className="ml-2 text-xs text-[#f26722]">
+                                      (You)
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  {approver.status === "approved"
+                                    ? `Approved ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ""}`
+                                    : approver.status === "rejected"
+                                      ? `Rejected ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ""}`
+                                      : isCurrentStep
+                                        ? "Awaiting approval..."
+                                        : "Pending"}
+                                </p>
+                                {approver.status === "rejected" &&
+                                  approver.rejection_reason && (
+                                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                      Reason: {approver.rejection_reason}
+                                    </p>
+                                  )}
+                              </div>
+                            </div>
+                          );
+                        },
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    {allApproversMap[selectedRequisition.id].map((approver, idx) => {
-                      const isCurrentStep = selectedRequisition.current_approval_step === approver.step_order;
-                      return (
-                        <div key={approver.id} className={`flex items-center gap-3 p-3 rounded-lg border ${
-                          approver.status === 'approved' ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' :
-                          approver.status === 'rejected' ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' :
-                          isCurrentStep ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20' :
-                          'border-gray-200 bg-white dark:border-dark-200 dark:bg-dark-150'
-                        }`}>
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                            approver.status === 'approved' ? 'bg-green-500 text-white' :
-                            approver.status === 'rejected' ? 'bg-red-500 text-white' :
-                            isCurrentStep ? 'bg-yellow-500 text-white' :
-                            'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                          }`}>
-                            {approver.status === 'approved' ? <CheckCircle className="h-4 w-4" /> :
-                             approver.status === 'rejected' ? <XCircle className="h-4 w-4" /> :
-                             idx + 1}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {getUserName(approver.approver_user_id)}
-                              {approver.approver_user_id === user?.id && (
-                                <span className="ml-2 text-xs text-[#f26722]">(You)</span>
-                              )}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {approver.status === 'approved' ? `Approved ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ''}` :
-                               approver.status === 'rejected' ? `Rejected ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ''}` :
-                               isCurrentStep ? 'Awaiting approval...' : 'Pending'}
-                            </p>
-                            {approver.status === 'rejected' && approver.rejection_reason && (
-                              <p className="text-xs text-red-600 dark:text-red-400 mt-1">Reason: {approver.rejection_reason}</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                )}
 
               {/* Description, Requirements & Notes */}
-              {(selectedRequisition.description || selectedRequisition.requirements || selectedRequisition.notes) && (
+              {(selectedRequisition.description ||
+                selectedRequisition.requirements ||
+                selectedRequisition.notes) && (
                 <div>
-                  <label className="text-sm font-semibold text-gray-900 dark:text-white mb-2 block">Job Description, Requirements & Notes</label>
-                  <div className="p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
+                  <label className="text-sm font-semibold text-zinc-900 dark:text-white mb-2 block">
+                    Job Description, Requirements & Notes
+                  </label>
+                  <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
                     <div
-                      className="text-gray-900 dark:text-white prose prose-sm dark:prose-invert max-w-none leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
-                      dangerouslySetInnerHTML={{ __html: getJobRequisitionDisplayHtml(selectedRequisition) }}
+                      className="text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          getJobRequisitionDisplayHtml(selectedRequisition),
+                      }}
                     />
                   </div>
                 </div>
               )}
 
               {/* Timeline Information */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-dark-200">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-200 dark:border-dark-200">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Created</label>
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    Created
+                  </label>
+                  <p className="text-sm text-zinc-900 dark:text-white">
                     {new Date(selectedRequisition.created_at).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Last Updated</label>
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    Last Updated
+                  </label>
+                  <p className="text-sm text-zinc-900 dark:text-white">
                     {new Date(selectedRequisition.updated_at).toLocaleString()}
                   </p>
                 </div>
                 {selectedRequisition.submitted_for_approval_at && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Submitted for Approval</label>
-                    <p className="text-sm text-gray-900 dark:text-white">
-                      {new Date(selectedRequisition.submitted_for_approval_at).toLocaleString()}
+                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      Submitted for Approval
+                    </label>
+                    <p className="text-sm text-zinc-900 dark:text-white">
+                      {new Date(
+                        selectedRequisition.submitted_for_approval_at,
+                      ).toLocaleString()}
                     </p>
                   </div>
                 )}
@@ -673,7 +876,7 @@ export const RequisitionApprovals: React.FC = () => {
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  {approving ? 'Approving...' : 'Approve Requisition'}
+                  {approving ? "Approving..." : "Approve Requisition"}
                 </Button>
               </>
             )}
@@ -690,21 +893,26 @@ export const RequisitionApprovals: React.FC = () => {
               Reject Requisition
             </DialogTitle>
             <DialogDescription>
-              Rejecting will close this requisition for all approvers. Please provide a reason.
+              Rejecting will close this requisition for all approvers. Please
+              provide a reason.
             </DialogDescription>
           </DialogHeader>
           {selectedRequisition && (
             <div className="space-y-4 py-4">
-              <div className="p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  Rejecting: <span className="font-semibold">{selectedRequisition.title}</span>
+              <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                  Rejecting:{" "}
+                  <span className="font-semibold">
+                    {selectedRequisition.title}
+                  </span>
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {selectedRequisition.department} &bull; {selectedRequisition.location}
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  {selectedRequisition.department} &bull;{" "}
+                  {selectedRequisition.location}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">
+                <label className="text-sm font-medium text-zinc-900 dark:text-white mb-2 block">
                   Rejection Reason <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -714,17 +922,21 @@ export const RequisitionApprovals: React.FC = () => {
                   rows={5}
                   className="w-full"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  This reason will be visible to the requisition creator and all approvers
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  This reason will be visible to the requisition creator and all
+                  approvers
                 </p>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsRejectModalOpen(false);
-              setRejectReason('');
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRejectModalOpen(false);
+                setRejectReason("");
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -733,7 +945,7 @@ export const RequisitionApprovals: React.FC = () => {
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <XCircle className="mr-2 h-4 w-4" />
-              {rejecting ? 'Rejecting...' : 'Reject Requisition'}
+              {rejecting ? "Rejecting..." : "Reject Requisition"}
             </Button>
           </DialogFooter>
         </DialogContent>

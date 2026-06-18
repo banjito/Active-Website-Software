@@ -1056,7 +1056,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         }
       `}</style>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1146,7 +1146,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
@@ -1156,7 +1156,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   type="text"
                   value={maskCustomerName(formData.customer)}
                   readOnly
-                  className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
                 />
               </div>
               <div className="md:col-span-2">
@@ -1165,7 +1165,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   type="text"
                   value={maskCustomerAddress(formData.address)}
                   readOnly
-                  className="form-input w-full bg-gray-100 dark:bg-dark-150"
+                  className="form-input w-full bg-zinc-100 dark:bg-dark-150"
                 />
               </div>
               <div>
@@ -1175,7 +1175,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   value={formData.user}
                   onChange={(e) => handleChange("user", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1184,7 +1184,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   type="text"
                   value={formData.jobNumber}
                   readOnly
-                  className="form-input bg-gray-100 dark:bg-dark-150 w-full"
+                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
                 />
               </div>
               <div>
@@ -1194,7 +1194,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1204,7 +1204,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex items-center space-x-1">
@@ -1215,7 +1215,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.temperature.fahrenheit || ""}
                     onChange={handleFahrenheitChange}
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="ml-1 text-xs">°F</span>
                 </div>
@@ -1226,7 +1226,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.temperature.celsius || ""}
                     onChange={handleCelsiusChange}
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="ml-1 text-xs">°C</span>
                 </div>
@@ -1243,7 +1243,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1262,7 +1262,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   }
                   list="substation-options"
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1272,7 +1272,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1291,7 +1291,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   }
                   list="identifier-options"
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1320,7 +1320,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           <div className="mb-6">
             <div className="print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4" />
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
                 Nameplate Data
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1333,7 +1333,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("manufacturer", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1345,7 +1345,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("catalogModelNo", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1357,7 +1357,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("serialNumber", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1367,7 +1367,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.yearMfd}
                     onChange={(e) => handleChange("yearMfd", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1377,7 +1377,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.ratedKva}
                     onChange={(e) => handleChange("ratedKva", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1389,7 +1389,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("powerFactor", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1399,7 +1399,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.ratedKw}
                     onChange={(e) => handleChange("ratedKw", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1409,7 +1409,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.hp}
                     onChange={(e) => handleChange("hp", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1419,7 +1419,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.voltages1}
                     onChange={(e) => handleChange("voltages1", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     placeholder="e.g. 480"
                   />
                 </div>
@@ -1430,7 +1430,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.voltages2}
                     onChange={(e) => handleChange("voltages2", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     placeholder="e.g. 208"
                   />
                 </div>
@@ -1443,7 +1443,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("currentRating", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1453,7 +1453,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     value={formData.frequency}
                     onChange={(e) => handleChange("frequency", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1464,7 +1464,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       handleChange("connections", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   >
                     {connectionsOptions.map((o) => (
                       <option key={o} value={o}>
@@ -1480,65 +1480,65 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
               <h2 className="text-xl font-semibold mb-2 text-black border-b border-black pb-2 font-bold">
                 Nameplate Data
               </h2>
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black text-[0.85rem]">
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Manufacturer:</div>
                       <div>{formData.manufacturer || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Cat./Model No.:</div>
                       <div>{formData.catalogModelNo || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div>{formData.serialNumber || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Year Mfd.:</div>
                       <div>{formData.yearMfd || "-"}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Rated KVA:</div>
                       <div>{formData.ratedKva || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Power Factor:</div>
                       <div>{formData.powerFactor || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Rated kW:</div>
                       <div>{formData.ratedKw || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">HP:</div>
                       <div>{formData.hp || "-"}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Voltages (V):</div>
                       <div>{formData.voltages1 || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Voltages (V) 2:</div>
                       <div>{formData.voltages2 || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Current Rating (A):</div>
                       <div>{formData.currentRating || "-"}</div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="font-semibold">Frequency (Hz):</div>
                       <div>{formData.frequency || "-"}</div>
                     </td>
                   </tr>
                   <tr>
                     <td
-                      className="p-2 align-top border border-gray-300 print:border-black"
+                      className="p-2 align-top border border-zinc-300 print:border-black"
                       colSpan={4}
                     >
                       <div className="font-semibold">Connections:</div>
@@ -1553,19 +1553,19 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
-            <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 vm-standard visual-mechanical-table">
-              <thead className="bg-gray-50 dark:bg-dark-150">
+            <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 vm-standard visual-mechanical-table">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-left text-sm font-medium text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-left text-sm font-medium text-zinc-900 dark:text-white">
                     NETA Section
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-left text-sm font-medium text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-left text-sm font-medium text-zinc-900 dark:text-white">
                     Description
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium text-gray-900 dark:text-white">
+                  <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium text-zinc-900 dark:text-white">
                     Results
                   </th>
                 </tr>
@@ -1573,13 +1573,13 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
               <tbody className="bg-white dark:bg-dark-150">
                 {formData.visualInspectionItems.map((item, idx) => (
                   <tr key={item.id}>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-sm text-zinc-900 dark:text-white">
                       {item.id}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm text-gray-900 dark:text-white">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-sm text-zinc-900 dark:text-white">
                       {item.description}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
+                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
                       <select
                         value={item.result}
                         onChange={(e) =>
@@ -1589,7 +1589,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">-</option>
                         {visualInspectionResultsOptions.map((o) => (
@@ -1608,7 +1608,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:hidden">
@@ -1623,7 +1623,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   {insulationTypeOptions.map((o) => (
                     <option key={o} value={o}>
@@ -1643,7 +1643,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 >
                   {testMethodOptions.map((o) => (
                     <option key={o} value={o}>
@@ -1666,7 +1666,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1683,28 +1683,28 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             {/* Print-only: Insulation Type, Test method, Temp, TCF table */}
             <div className="hidden print:block print:mb-3">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black text-[0.85rem]">
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black w-1/4">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black w-1/4">
                       <div className="font-semibold">Insulation Type:</div>
                       <div>
                         {formData.insulationResistance.insulationType || "-"}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black w-1/4">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black w-1/4">
                       <div className="font-semibold">Test method:</div>
                       <div>
                         {formData.insulationResistance.testMethod || "-"}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black w-1/4">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black w-1/4">
                       <div className="font-semibold">
                         Insulation Temperature (°C):
                       </div>
@@ -1712,7 +1712,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                         {formData.insulationResistance.insulationTempC || "-"}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black w-1/4">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black w-1/4">
                       <div className="font-semibold">
                         Temperature Correction Factor to 40°C:
                       </div>
@@ -1723,7 +1723,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
               </table>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 electrical-tests-table emergency-engine-ir-table">
+              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 electrical-tests-table emergency-engine-ir-table">
                 <colgroup>
                   <col style={{ width: "20%" }} />
                   <col style={{ width: "6%" }} />
@@ -1735,52 +1735,52 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "2%" }} />
                 </colgroup>
-                <thead className="bg-gray-50 dark:bg-dark-150">
+                <thead className="bg-zinc-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-left text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-left text-xs">
                       Winding Under Test
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-left text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-left text-xs">
                       Test Voltage
                     </th>
                     <th
                       colSpan={3}
-                      className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs"
+                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs"
                     >
                       Measured Values
                     </th>
                     <th
                       colSpan={3}
-                      className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs"
+                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs"
                     >
                       Temperature Corrected
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-left text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-left text-xs">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1" />
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1" />
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1" />
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1" />
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       30 Sec.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       1 Min.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       10 Min.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       30 Sec.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       1 Min.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                       10 Min.
                     </th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1" />
+                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1" />
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
@@ -1790,10 +1790,10 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                       defaultWindingRow();
                     return (
                       <tr key={key}>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs">
                           {label}
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <select
                             value={w.testVoltage}
                             onChange={(e) =>
@@ -1803,7 +1803,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {insulationTestVoltageOptions.map((o) => (
                               <option key={o} value={o}>
@@ -1812,7 +1812,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             ))}
                           </select>
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.measured30Sec}
@@ -1823,10 +1823,10 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.measured1Min}
@@ -1837,10 +1837,10 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.measured10Min}
@@ -1851,37 +1851,37 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.corrected30Sec}
                             readOnly
-                            className="w-full text-xs bg-gray-100 dark:bg-dark-150"
+                            className="w-full text-xs bg-zinc-100 dark:bg-dark-150"
                             title="Calculated: measured × TCF"
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.corrected1Min}
                             readOnly
-                            className="w-full text-xs bg-gray-100 dark:bg-dark-150"
+                            className="w-full text-xs bg-zinc-100 dark:bg-dark-150"
                             title="Calculated: measured × TCF"
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <input
                             type="text"
                             value={w.corrected10Min}
                             readOnly
-                            className="w-full text-xs bg-gray-100 dark:bg-dark-150"
+                            className="w-full text-xs bg-zinc-100 dark:bg-dark-150"
                             title="Calculated: measured × TCF"
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
                           <select
                             value={w.units}
                             onChange={(e) =>
@@ -1891,7 +1891,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {insulationResistanceUnitsOptions.map((o) => (
                               <option key={o} value={o}>
@@ -1908,7 +1908,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
             </div>
             {/* Dielectric Absorption / Polarization Index - same table as other reports (e.g. Liquid Filled Xfmr ATS 25) */}
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-600 table-fixed w-full">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-300 dark:border-zinc-600 table-fixed w-full">
                 <colgroup>
                   <col style={{ width: "18%" }} />
                   <col style={{ width: "28%" }} />
@@ -1920,34 +1920,34 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]"></th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]"></th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]"></th>
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]"></th>
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]">
                       A Phase
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]">
                       B Phase
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]">
                       C Phase
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]">
                       Phases to GND.
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-300 dark:border-gray-600 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-300 dark:border-zinc-600 print:text-[7px]">
                       Acceptable
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                       Dielectric Absorption
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                       (Ratio of 1 Min. to 30 Sec. Result)
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
@@ -1955,11 +1955,11 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             .aPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 1 Min / 30 Sec corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
@@ -1967,11 +1967,11 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             .bPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 1 Min / 30 Sec corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
@@ -1979,11 +1979,11 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             .cPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 1 Min / 30 Sec corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
@@ -1991,12 +1991,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             .phasesTo
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 1 Min / 30 Sec corrected"
                       />
                     </td>
                     <td
-                      className={`px-2 py-2 text-center text-sm font-semibold border border-gray-300 dark:border-gray-600 ${formData.insulationResistance.dielectricAbsorption.result === "PASS" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.insulationResistance.dielectricAbsorption.result === "FAIL" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                      className={`px-2 py-2 text-center text-sm font-semibold border border-zinc-300 dark:border-zinc-600 ${formData.insulationResistance.dielectricAbsorption.result === "PASS" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.insulationResistance.dielectricAbsorption.result === "FAIL" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                     >
                       <select
                         value={
@@ -2010,7 +2010,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full text-center text-sm border-0 bg-transparent ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full text-center text-sm border-0 bg-transparent ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">-</option>
                         {equipmentEvaluationResultOptions.map((o) => (
@@ -2022,46 +2022,46 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                       Polarization Index
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                       (Ratio of 10 Min. to 1 Min. Result)
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.polarizationIndex.aPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 10 Min / 1 Min corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.polarizationIndex.bPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 10 Min / 1 Min corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
                           formData.insulationResistance.polarizationIndex.cPhase
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 10 Min / 1 Min corrected"
                       />
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-300 dark:border-gray-600">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={
@@ -2069,12 +2069,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                             .phasesTo
                         }
                         readOnly
-                        className="w-full text-center text-sm border-0 bg-gray-100 dark:bg-dark-150"
+                        className="w-full text-center text-sm border-0 bg-zinc-100 dark:bg-dark-150"
                         title="Calculated: 10 Min / 1 Min corrected"
                       />
                     </td>
                     <td
-                      className={`px-2 py-2 text-center text-sm font-semibold border border-gray-300 dark:border-gray-600 ${formData.insulationResistance.polarizationIndex.result === "PASS" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.insulationResistance.polarizationIndex.result === "FAIL" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                      className={`px-2 py-2 text-center text-sm font-semibold border border-zinc-300 dark:border-zinc-600 ${formData.insulationResistance.polarizationIndex.result === "PASS" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.insulationResistance.polarizationIndex.result === "FAIL" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                     >
                       <select
                         value={
@@ -2087,7 +2087,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full text-center text-sm border-0 bg-transparent ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full text-center text-sm border-0 bg-transparent ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">-</option>
                         {equipmentEvaluationResultOptions.map((o) => (
@@ -2115,7 +2115,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   )
                 }
                 disabled={!isEditing}
-                className={`form-input w-48 mt-1 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-48 mt-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               >
                 <option value="">-</option>
                 {equipmentEvaluationResultOptions.map((o) => (
@@ -2127,26 +2127,26 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
             </div>
             {/* Print-only: Compare temp corrected values in table */}
             <div className="hidden print:block print:mt-3">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black text-[0.85rem]">
                 <thead>
                   <tr>
-                    <th className="p-2 text-left border border-gray-300 print:border-black font-semibold text-black">
+                    <th className="p-2 text-left border border-zinc-300 print:border-black font-semibold text-black">
                       Description
                     </th>
-                    <th className="p-2 text-left border border-gray-300 print:border-black font-semibold text-black w-24">
+                    <th className="p-2 text-left border border-zinc-300 print:border-black font-semibold text-black w-24">
                       Result
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div>
                         Compare temperature corrected values to IEEE-43 & NETA
                         minimum insulation resistances:
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div>
                         {formData.insulationResistance.complianceResult || "-"}
                       </div>
@@ -2160,12 +2160,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 print:hidden test-eqpt-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Megohmmeter:
                 </label>
                 <EquipmentAutocomplete
@@ -2207,7 +2207,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number:
                 </label>
                 <input
@@ -2220,11 +2220,11 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   AMP ID:
                 </label>
                 <input
@@ -2237,11 +2237,11 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Cal Date:
                 </label>
                 <input
@@ -2255,40 +2255,40 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="MM/DD/YYYY"
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
             </div>
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <table className="w-full border-collapse border border-zinc-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 print:border-black p-1 text-left">
+                    <th className="border border-zinc-300 print:border-black p-1 text-left">
                       Equipment
                     </th>
-                    <th className="border border-gray-300 print:border-black p-1 text-left">
+                    <th className="border border-zinc-300 print:border-black p-1 text-left">
                       Serial Number
                     </th>
-                    <th className="border border-gray-300 print:border-black p-1 text-left">
+                    <th className="border border-zinc-300 print:border-black p-1 text-left">
                       AMP ID
                     </th>
-                    <th className="border border-gray-300 print:border-black p-1 text-left">
+                    <th className="border border-zinc-300 print:border-black p-1 text-left">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-300 print:border-black p-1">
+                    <td className="border border-zinc-300 print:border-black p-1">
                       {formData.testEquipment.megohmmeter.name || "Megohmmeter"}
                     </td>
-                    <td className="border border-gray-300 print:border-black p-1">
+                    <td className="border border-zinc-300 print:border-black p-1">
                       {formData.testEquipment.megohmmeter.serialNumber}
                     </td>
-                    <td className="border border-gray-300 print:border-black p-1">
+                    <td className="border border-zinc-300 print:border-black p-1">
                       {formData.testEquipment.megohmmeter.ampId}
                     </td>
-                    <td className="border border-gray-300 print:border-black p-1">
+                    <td className="border border-zinc-300 print:border-black p-1">
                       {formData.testEquipment.megohmmeter.calibrationDate}
                     </td>
                   </tr>
@@ -2302,7 +2302,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <textarea
@@ -2310,15 +2310,15 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
               onChange={(e) => handleChange("comments", e.target.value)}
               readOnly={!isEditing}
               rows={4}
-              className={`form-input w-full print:hidden ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+              className={`form-input w-full print:hidden ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               placeholder="Enter any comments or notes..."
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full border-collapse border border-gray-300 print:border-black text-[0.85rem]">
+                <table className="w-full border-collapse border border-zinc-300 print:border-black text-[0.85rem]">
                   <tbody>
                     <tr>
-                      <td className="p-3 align-top border border-gray-300 print:border-black min-h-[80px] whitespace-pre-wrap text-black">
+                      <td className="p-3 align-top border border-zinc-300 print:border-black min-h-[80px] whitespace-pre-wrap text-black">
                         {formData.comments}
                       </td>
                     </tr>

@@ -1,26 +1,26 @@
-import React, { useLayoutEffect, useEffect } from 'react';
-import { 
-  FileText, 
-  PencilRuler, 
-  Book, 
-  FileSymlink, 
-  ChevronRight, 
+import React, { useLayoutEffect, useEffect } from "react";
+import {
+  FileText,
+  PencilRuler,
+  Book,
+  FileSymlink,
+  ChevronRight,
   Users,
   Building,
   Briefcase,
-  FileCode, 
+  FileCode,
   Workflow,
-  Gauge
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Card, Button } from '@/components/ui';
-import { useAuth } from '@/lib/AuthContext';
-import { useDivision } from '@/App';
+  Gauge,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { Card, Button } from "@/components/ui";
+import { useAuth } from "@/lib/AuthContext";
+import { useDivision } from "@/App";
 
 export default function EngineeringDashboard() {
   const { user } = useAuth();
   const { setDivision } = useDivision();
-  
+
   // Scroll to top when the component mounts
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -28,12 +28,11 @@ export default function EngineeringDashboard() {
 
   // Set division context to engineering when this component mounts
   useEffect(() => {
-    setDivision('engineering');
+    setDivision("engineering");
   }, [setDivision]);
 
   return (
     <div className="space-y-6">
-
       {/* Quick Actions Section */}
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
@@ -44,15 +43,19 @@ export default function EngineeringDashboard() {
                   <PencilRuler className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Design Approval</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Review and approve engineering designs</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Design Approval
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Review and approve engineering designs
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
-        
+
         <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
           <Link to="/engineering/documentation" className="block p-4">
             <div className="flex items-center justify-between">
@@ -61,15 +64,19 @@ export default function EngineeringDashboard() {
                   <Book className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Technical Documentation</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Access engineering documents and manuals</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Technical Documentation
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Access engineering documents and manuals
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
-        
+
         <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer">
           <Link to="/engineering/standards" className="block p-4">
             <div className="flex items-center justify-between">
@@ -78,15 +85,19 @@ export default function EngineeringDashboard() {
                   <FileCode className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Standards & Compliance</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Access engineering standards and updates</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Standards & Compliance
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Access engineering standards and updates
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
-        
+
         <Card className="hover:shadow-md hover:border-purple-200 transition-all cursor-pointer">
           <Link to="/engineering/drawings" className="block p-4">
             <div className="flex items-center justify-between">
@@ -95,15 +106,19 @@ export default function EngineeringDashboard() {
                   <FileSymlink className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Drawing Repository</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Access technical drawings and blueprints</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Drawing Repository
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Access technical drawings and blueprints
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
-        
+
         <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
           <Link to="/engineering/customers" className="block p-4">
             <div className="flex items-center justify-between">
@@ -112,15 +127,19 @@ export default function EngineeringDashboard() {
                   <Building className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Customers</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Manage engineering customers</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Customers
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Manage engineering customers
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
-        
+
         <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
           <Link to="/engineering/jobs" className="block p-4">
             <div className="flex items-center justify-between">
@@ -129,16 +148,20 @@ export default function EngineeringDashboard() {
                   <Briefcase className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Jobs & Projects</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Manage engineering projects</p>
+                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                    Jobs & Projects
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Manage engineering projects
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-zinc-400" />
             </div>
           </Link>
         </Card>
       </div>
-      
+
       {/* Engineering Metrics Section */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Engineering Metrics</h2>
@@ -146,48 +169,72 @@ export default function EngineeringDashboard() {
           <Card>
             <div className="flex items-center justify-between p-6">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Design Reviews</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">24</p>
-                <p className="text-xs text-gray-500 dark:text-white">8 pending approval</p>
+                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
+                  Design Reviews
+                </p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  24
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-white">
+                  8 pending approval
+                </p>
               </div>
               <div className="rounded-md bg-black/5 p-2">
                 <PencilRuler className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
           </Card>
-          
+
           <Card>
             <div className="flex items-center justify-between p-6">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Active Projects</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">12</p>
-                <p className="text-xs text-gray-500 dark:text-white">3 in critical phase</p>
+                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
+                  Active Projects
+                </p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  12
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-white">
+                  3 in critical phase
+                </p>
               </div>
               <div className="rounded-md bg-black/5 p-2">
                 <Workflow className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
           </Card>
-          
+
           <Card>
             <div className="flex items-center justify-between p-6">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Standard Updates</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">7</p>
-                <p className="text-xs text-gray-500 dark:text-white">2 require action</p>
+                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
+                  Standard Updates
+                </p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  7
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-white">
+                  2 require action
+                </p>
               </div>
               <div className="rounded-md bg-black/5 p-2">
                 <FileCode className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
           </Card>
-          
+
           <Card>
             <div className="flex items-center justify-between p-6">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Compliance</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">98%</p>
-                <p className="text-xs text-gray-500 dark:text-white">Above target (95%)</p>
+                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
+                  Compliance
+                </p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  98%
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-white">
+                  Above target (95%)
+                </p>
               </div>
               <div className="rounded-md bg-black/5 p-2">
                 <Gauge className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -196,7 +243,7 @@ export default function EngineeringDashboard() {
           </Card>
         </div>
       </div>
-      
+
       {/* Recent Activity Section */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
@@ -208,8 +255,12 @@ export default function EngineeringDashboard() {
                   <PencilRuler className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Main Line Power Distribution Design approved</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday at 2:34 PM</p>
+                  <p className="text-sm font-medium">
+                    Main Line Power Distribution Design approved
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Yesterday at 2:34 PM
+                  </p>
                 </div>
               </li>
               <li className="flex items-start">
@@ -217,8 +268,13 @@ export default function EngineeringDashboard() {
                   <Book className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Technical Documentation updated for Transformer Specifications</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
+                  <p className="text-sm font-medium">
+                    Technical Documentation updated for Transformer
+                    Specifications
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    2 days ago
+                  </p>
                 </div>
               </li>
               <li className="flex items-start">
@@ -226,8 +282,12 @@ export default function EngineeringDashboard() {
                   <FileCode className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">IEEE 1547 Standard update notification</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Last week</p>
+                  <p className="text-sm font-medium">
+                    IEEE 1547 Standard update notification
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Last week
+                  </p>
                 </div>
               </li>
             </ul>
@@ -236,4 +296,4 @@ export default function EngineeringDashboard() {
       </div>
     </div>
   );
-} 
+}

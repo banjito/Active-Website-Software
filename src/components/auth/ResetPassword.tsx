@@ -83,11 +83,12 @@ export default function ResetPassword() {
             </h2>
           </div>
 
-          <Card className="bg-[#f26722] border border-gray-800 shadow-sm">
+          <Card className="bg-[#f26722] border border-zinc-800 shadow-sm">
             <CardContent className="p-12">
               {checkingSession ? (
                 <p className="text-sm text-black">Checking reset link...</p>
-              ) : isError && message === "This reset link is invalid or expired." ? (
+              ) : isError &&
+                message === "This reset link is invalid or expired." ? (
                 <div className="space-y-6">
                   <div className="rounded-xl p-4 bg-transparent border border-red-700 text-red-950">
                     <div className="text-sm font-medium">{message}</div>
@@ -115,11 +116,11 @@ export default function ResetPassword() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
+                      leftIcon={<Lock className="h-5 w-5 text-zinc-400" />}
                       minLength={6}
                       placeholder="Enter new password"
                       hint="Password must be at least 6 characters"
-                      className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
+                      className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
                     />
 
                     <Input
@@ -131,10 +132,10 @@ export default function ResetPassword() {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
+                      leftIcon={<Lock className="h-5 w-5 text-zinc-400" />}
                       minLength={6}
                       placeholder="Re-enter new password"
-                      className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
+                      className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
                     />
                   </div>
 

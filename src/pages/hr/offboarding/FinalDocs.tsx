@@ -1,23 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { 
-  FileText, Plus, Edit, Trash2, Eye, Search, 
-  Loader2, Clock, CheckCircle, FileCheck, AlertCircle, Upload, Download, X
-} from 'lucide-react';
-import { toast } from '../../../components/ui/toast';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  FileText,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Search,
+  Loader2,
+  Clock,
+  CheckCircle,
+  FileCheck,
+  AlertCircle,
+  Upload,
+  Download,
+  X,
+} from "lucide-react";
+import { toast } from "../../../components/ui/toast";
 
 export type FinalDocType =
-  | 'release'
-  | 'return_of_property'
-  | 'confidentiality'
-  | 'final_pay_ack'
-  | 'cobra_notice'
-  | 'benefits_termination'
-  | 'other';
+  | "release"
+  | "return_of_property"
+  | "confidentiality"
+  | "final_pay_ack"
+  | "cobra_notice"
+  | "benefits_termination"
+  | "other";
 
 export interface FinalDocTemplate {
   id: string;
@@ -26,7 +49,7 @@ export interface FinalDocTemplate {
   doc_type: FinalDocType;
   required: boolean;
   instructions?: string;
-  status: 'draft' | 'active' | 'archived';
+  status: "draft" | "active" | "archived";
   /** Uploaded file: name and base64 data (e.g. .doc, .docx, .pdf) */
   attachment_name?: string;
   attachment_data?: string;
@@ -39,7 +62,7 @@ export interface FinalDocAssignment {
   template_id: string;
   employee_name?: string;
   employee_id?: string;
-  status: 'pending' | 'signed' | 'declined' | 'waived';
+  status: "pending" | "signed" | "declined" | "waived";
   signed_at?: string;
   notes?: string;
   created_at: string;
@@ -47,40 +70,75 @@ export interface FinalDocAssignment {
 }
 
 const DOC_TYPE_OPTIONS = [
-  { value: 'release', label: 'Separation / Release Agreement' },
-  { value: 'return_of_property', label: 'Return of Property' },
-  { value: 'confidentiality', label: 'Confidentiality / NDA' },
-  { value: 'final_pay_ack', label: 'Final Pay Acknowledgment' },
-  { value: 'cobra_notice', label: 'COBRA Notice' },
-  { value: 'benefits_termination', label: 'Benefits Termination' },
-  { value: 'other', label: 'Other' },
+  { value: "release", label: "Separation / Release Agreement" },
+  { value: "return_of_property", label: "Return of Property" },
+  { value: "confidentiality", label: "Confidentiality / NDA" },
+  { value: "final_pay_ack", label: "Final Pay Acknowledgment" },
+  { value: "cobra_notice", label: "COBRA Notice" },
+  { value: "benefits_termination", label: "Benefits Termination" },
+  { value: "other", label: "Other" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-  { value: 'active', label: 'Active', color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-  { value: 'archived', label: 'Archived', color: 'text-gray-500 bg-gray-100 dark:bg-gray-800' },
+  {
+    value: "draft",
+    label: "Draft",
+    color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20",
+  },
+  {
+    value: "active",
+    label: "Active",
+    color: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  },
+  {
+    value: "archived",
+    label: "Archived",
+    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+  },
 ];
 
 const ASSIGNMENT_STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending', icon: Clock, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-  { value: 'signed', label: 'Signed', icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-  { value: 'declined', label: 'Declined', icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
-  { value: 'waived', label: 'Waived', icon: FileCheck, color: 'text-gray-500 bg-gray-100 dark:bg-gray-800' },
+  {
+    value: "pending",
+    label: "Pending",
+    icon: Clock,
+    color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20",
+  },
+  {
+    value: "signed",
+    label: "Signed",
+    icon: CheckCircle,
+    color: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  },
+  {
+    value: "declined",
+    label: "Declined",
+    icon: AlertCircle,
+    color: "text-red-600 bg-red-50 dark:bg-red-900/20",
+  },
+  {
+    value: "waived",
+    label: "Waived",
+    icon: FileCheck,
+    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+  },
 ];
 
-const defaultTemplate = (): Omit<FinalDocTemplate, 'id' | 'created_at' | 'updated_at'> => ({
-  name: '',
-  description: '',
-  doc_type: 'release',
+const defaultTemplate = (): Omit<
+  FinalDocTemplate,
+  "id" | "created_at" | "updated_at"
+> => ({
+  name: "",
+  description: "",
+  doc_type: "release",
   required: true,
-  instructions: '',
-  status: 'draft',
+  instructions: "",
+  status: "draft",
   attachment_name: undefined,
   attachment_data: undefined,
 });
 
-const ACCEPTED_FILE_TYPES = '.doc,.docx,.pdf,.txt';
+const ACCEPTED_FILE_TYPES = ".doc,.docx,.pdf,.txt";
 const MAX_FILE_MB = 5;
 
 function downloadAttachment(name: string, base64Data: string) {
@@ -88,13 +146,13 @@ function downloadAttachment(name: string, base64Data: string) {
     const bytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
     const blob = new Blob([bytes]);
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = name;
     a.click();
     URL.revokeObjectURL(url);
   } catch (_) {
-    console.error('Download failed');
+    console.error("Download failed");
   }
 }
 
@@ -102,13 +160,14 @@ export const FinalDocs: React.FC = () => {
   const [templates, setTemplates] = useState<FinalDocTemplate[]>([]);
   const [assignments, setAssignments] = useState<FinalDocAssignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<FinalDocTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<FinalDocTemplate | null>(null);
   const [formData, setFormData] = useState(defaultTemplate());
 
   useEffect(() => {
@@ -118,27 +177,34 @@ export const FinalDocs: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const storedT = localStorage.getItem('hr_final_doc_templates');
-      const storedA = localStorage.getItem('hr_final_doc_assignments');
+      const storedT = localStorage.getItem("hr_final_doc_templates");
+      const storedA = localStorage.getItem("hr_final_doc_assignments");
       setTemplates(storedT ? JSON.parse(storedT) : []);
       setAssignments(storedA ? JSON.parse(storedA) : []);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to load documents', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to load documents",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const saveTemplates = (list: FinalDocTemplate[]) => {
-    localStorage.setItem('hr_final_doc_templates', JSON.stringify(list));
+    localStorage.setItem("hr_final_doc_templates", JSON.stringify(list));
     setTemplates(list);
   };
 
   const filteredTemplates = templates.filter((t) => {
-    if (filterType !== 'all' && t.doc_type !== filterType) return false;
+    if (filterType !== "all" && t.doc_type !== filterType) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q);
+      return (
+        t.name.toLowerCase().includes(q) ||
+        (t.description || "").toLowerCase().includes(q)
+      );
     }
     return true;
   });
@@ -152,10 +218,10 @@ export const FinalDocs: React.FC = () => {
     setSelectedTemplate(t);
     setFormData({
       name: t.name,
-      description: t.description || '',
+      description: t.description || "",
       doc_type: t.doc_type,
       required: t.required,
-      instructions: t.instructions || '',
+      instructions: t.instructions || "",
       status: t.status,
       attachment_name: t.attachment_name,
       attachment_data: t.attachment_data,
@@ -167,22 +233,35 @@ export const FinalDocs: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      toast({ title: 'File too large', description: `Keep files under ${MAX_FILE_MB} MB.`, variant: 'destructive' });
+      toast({
+        title: "File too large",
+        description: `Keep files under ${MAX_FILE_MB} MB.`,
+        variant: "destructive",
+      });
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      const base64 = dataUrl.indexOf(',') >= 0 ? dataUrl.split(',')[1] : dataUrl;
-      setFormData((p) => ({ ...p, attachment_name: file.name, attachment_data: base64 }));
-      toast({ title: 'File attached', description: file.name });
+      const base64 =
+        dataUrl.indexOf(",") >= 0 ? dataUrl.split(",")[1] : dataUrl;
+      setFormData((p) => ({
+        ...p,
+        attachment_name: file.name,
+        attachment_data: base64,
+      }));
+      toast({ title: "File attached", description: file.name });
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const removeAttachment = () => {
-    setFormData((p) => ({ ...p, attachment_name: undefined, attachment_data: undefined }));
+    setFormData((p) => ({
+      ...p,
+      attachment_name: undefined,
+      attachment_data: undefined,
+    }));
   };
 
   const openView = (t: FinalDocTemplate) => {
@@ -192,7 +271,11 @@ export const FinalDocs: React.FC = () => {
 
   const handleCreate = () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Document name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Document name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const now = new Date().toISOString();
@@ -204,35 +287,47 @@ export const FinalDocs: React.FC = () => {
     };
     saveTemplates([...templates, newT]);
     setIsCreateModalOpen(false);
-    toast({ title: 'Created', description: 'Document template created.' });
+    toast({ title: "Created", description: "Document template created." });
   };
 
   const handleUpdate = () => {
     if (!selectedTemplate || !formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Document name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Document name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const updated = templates.map((t) =>
-      t.id === selectedTemplate.id ? { ...t, ...formData, updated_at: new Date().toISOString() } : t
+      t.id === selectedTemplate.id
+        ? { ...t, ...formData, updated_at: new Date().toISOString() }
+        : t,
     );
     saveTemplates(updated);
     setIsEditModalOpen(false);
     setSelectedTemplate(null);
-    toast({ title: 'Updated', description: 'Template updated.' });
+    toast({ title: "Updated", description: "Template updated." });
   };
 
   const handleDelete = (t: FinalDocTemplate) => {
-    if (!confirm('Delete this template?')) return;
+    if (!confirm("Delete this template?")) return;
     saveTemplates(templates.filter((x) => x.id !== t.id));
-    toast({ title: 'Deleted', description: 'Template removed.' });
+    toast({ title: "Deleted", description: "Template removed." });
   };
 
   const getStatusBadge = (status: string) => {
     const opt = STATUS_OPTIONS.find((o) => o.value === status);
     if (!opt) return null;
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}>
-        {status === 'active' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+      >
+        {status === "active" ? (
+          <CheckCircle className="h-3 w-3" />
+        ) : (
+          <Clock className="h-3 w-3" />
+        )}
         {opt.label}
       </span>
     );
@@ -245,7 +340,7 @@ export const FinalDocs: React.FC = () => {
   // Stats
   const stats = {
     total: templates.length,
-    active: templates.filter((t) => t.status === 'active').length,
+    active: templates.filter((t) => t.status === "active").length,
     required: templates.filter((t) => t.required).length,
   };
 
@@ -254,12 +349,13 @@ export const FinalDocs: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
             <FileText className="h-6 w-6 text-[#f26722]" />
             Final Documents
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Release agreements, property returns, and other offboarding documents
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Release agreements, property returns, and other offboarding
+            documents
           </p>
         </div>
         <Button onClick={openCreate}>
@@ -273,12 +369,14 @@ export const FinalDocs: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                <FileText className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                <FileText className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.total}</p>
-                <p className="text-sm text-gray-500">Total Templates</p>
+                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                  {stats.total}
+                </p>
+                <p className="text-sm text-zinc-500">Total Templates</p>
               </div>
             </div>
           </CardContent>
@@ -290,8 +388,10 @@ export const FinalDocs: React.FC = () => {
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.active}</p>
-                <p className="text-sm text-gray-500">Active</p>
+                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                  {stats.active}
+                </p>
+                <p className="text-sm text-zinc-500">Active</p>
               </div>
             </div>
           </CardContent>
@@ -303,8 +403,10 @@ export const FinalDocs: React.FC = () => {
                 <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.required}</p>
-                <p className="text-sm text-gray-500">Required</p>
+                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                  {stats.required}
+                </p>
+                <p className="text-sm text-zinc-500">Required</p>
               </div>
             </div>
           </CardContent>
@@ -316,7 +418,7 @@ export const FinalDocs: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <Input
                 placeholder="Search documents..."
                 value={search}
@@ -327,11 +429,13 @@ export const FinalDocs: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm min-w-[180px]"
+              className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm min-w-[180px]"
             >
               <option value="all">All Types</option>
               {DOC_TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           </div>
@@ -352,12 +456,16 @@ export const FinalDocs: React.FC = () => {
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-gray-500 dark:text-gray-400 font-medium">No documents found</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                {search || filterType !== 'all' ? 'Try adjusting your filters' : 'Create your first document template'}
+              <FileText className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                No documents found
               </p>
-              {!search && filterType === 'all' && (
+              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                {search || filterType !== "all"
+                  ? "Try adjusting your filters"
+                  : "Create your first document template"}
+              </p>
+              {!search && filterType === "all" && (
                 <Button variant="outline" className="mt-4" onClick={openCreate}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Template
@@ -368,37 +476,47 @@ export const FinalDocs: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Document
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Type
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                   {filteredTemplates.map((t) => (
-                    <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr
+                      key={t.id}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{t.name}</p>
+                          <p className="font-medium text-zinc-900 dark:text-white">
+                            {t.name}
+                          </p>
                           {t.description && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
                               {t.description}
                             </p>
                           )}
                           <div className="flex flex-wrap gap-1 mt-1">
                             {t.attachment_name && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300" title={t.attachment_name}>
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                                title={t.attachment_name}
+                              >
                                 <FileText className="h-3 w-3" />
-                                {t.attachment_name.length > 20 ? t.attachment_name.slice(0, 17) + '…' : t.attachment_name}
+                                {t.attachment_name.length > 20
+                                  ? t.attachment_name.slice(0, 17) + "…"
+                                  : t.attachment_name}
                               </span>
                             )}
                             {t.required && (
@@ -410,34 +528,32 @@ export const FinalDocs: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                        <span className="text-sm text-zinc-600 dark:text-zinc-300">
                           {getDocTypeLabel(t.doc_type)}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {getStatusBadge(t.status)}
-                      </td>
+                      <td className="px-6 py-4">{getStatusBadge(t.status)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openView(t)}
                             title="View"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openEdit(t)}
                             title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(t)}
                             title="Delete"
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -456,93 +572,122 @@ export const FinalDocs: React.FC = () => {
       </Card>
 
       {/* Create/Edit Modal */}
-      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateModalOpen(false);
-          setIsEditModalOpen(false);
-          setSelectedTemplate(null);
-        }
-      }}>
+      <Dialog
+        open={isCreateModalOpen || isEditModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateModalOpen(false);
+            setIsEditModalOpen(false);
+            setSelectedTemplate(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{isEditModalOpen ? 'Edit Template' : 'New Document Template'}</DialogTitle>
-            <DialogDescription>Configure a document template for offboarding.</DialogDescription>
+            <DialogTitle>
+              {isEditModalOpen ? "Edit Template" : "New Document Template"}
+            </DialogTitle>
+            <DialogDescription>
+              Configure a document template for offboarding.
+            </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Document Name *
               </label>
               <Input
                 value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, name: e.target.value }))
+                }
                 placeholder="e.g. Separation Agreement"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Document Type
               </label>
               <select
                 value={formData.doc_type}
-                onChange={(e) => setFormData((p) => ({ ...p, doc_type: e.target.value as FinalDocType }))}
-                className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    doc_type: e.target.value as FinalDocType,
+                  }))
+                }
+                className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
               >
                 {DOC_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Description
               </label>
               <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, description: e.target.value }))
+                }
                 placeholder="Brief description of this document"
                 rows={2}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Instructions for Employee
               </label>
               <Textarea
                 value={formData.instructions}
-                onChange={(e) => setFormData((p) => ({ ...p, instructions: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, instructions: e.target.value }))
+                }
                 placeholder="e.g. Sign and return by your last day"
                 rows={2}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Upload document (optional)
               </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                Attach a file if you don’t want to create the document here — e.g. .doc, .docx, .pdf, .txt (max {MAX_FILE_MB} MB).
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                Attach a file if you don’t want to create the document here —
+                e.g. .doc, .docx, .pdf, .txt (max {MAX_FILE_MB} MB).
               </p>
               {formData.attachment_name ? (
-                <div className="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate flex items-center gap-2">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-gray-500" />
+                <div className="flex items-center justify-between gap-2 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex items-center gap-2">
+                    <FileText className="h-4 w-4 flex-shrink-0 text-zinc-500" />
                     {formData.attachment_name}
                   </span>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button type="button" variant="ghost" size="sm" onClick={removeAttachment} title="Remove file">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeAttachment}
+                      title="Remove file"
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <Upload className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Choose file to upload</span>
+                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                  <Upload className="h-5 w-5 text-zinc-400" />
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                    Choose file to upload
+                  </span>
                   <input
                     type="file"
                     accept={ACCEPTED_FILE_TYPES}
@@ -555,16 +700,23 @@ export const FinalDocs: React.FC = () => {
 
             <div className="flex items-center gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Status
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value as any }))}
-                  className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      status: e.target.value as any,
+                    }))
+                  }
+                  className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -573,21 +725,31 @@ export const FinalDocs: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.required}
-                    onChange={(e) => setFormData((p) => ({ ...p, required: e.target.checked }))}
-                    className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, required: e.target.checked }))
+                    }
+                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Required for offboarding</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    Required for offboarding
+                  </span>
                 </label>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button onClick={isEditModalOpen ? handleUpdate : handleCreate}>
-              {isEditModalOpen ? 'Save Changes' : 'Create Template'}
+              {isEditModalOpen ? "Save Changes" : "Create Template"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -598,7 +760,9 @@ export const FinalDocs: React.FC = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{selectedTemplate?.name}</DialogTitle>
-            <DialogDescription>{selectedTemplate?.description || 'No description provided'}</DialogDescription>
+            <DialogDescription>
+              {selectedTemplate?.description || "No description provided"}
+            </DialogDescription>
           </DialogHeader>
           {selectedTemplate && (
             <div className="space-y-4 py-4">
@@ -613,14 +777,14 @@ export const FinalDocs: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400">Type</p>
-                  <p className="font-medium text-gray-900 dark:text-white mt-0.5">
+                  <p className="text-zinc-500 dark:text-zinc-400">Type</p>
+                  <p className="font-medium text-zinc-900 dark:text-white mt-0.5">
                     {getDocTypeLabel(selectedTemplate.doc_type)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400">Created</p>
-                  <p className="font-medium text-gray-900 dark:text-white mt-0.5">
+                  <p className="text-zinc-500 dark:text-zinc-400">Created</p>
+                  <p className="font-medium text-zinc-900 dark:text-white mt-0.5">
                     {new Date(selectedTemplate.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -628,31 +792,48 @@ export const FinalDocs: React.FC = () => {
 
               {selectedTemplate.instructions && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Instructions</p>
-                  <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                    Instructions
+                  </p>
+                  <p className="text-sm text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg">
                     {selectedTemplate.instructions}
                   </p>
                 </div>
               )}
 
-              {selectedTemplate.attachment_name && selectedTemplate.attachment_data && (
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Attached file</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => downloadAttachment(selectedTemplate.attachment_name!, selectedTemplate.attachment_data!)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download {selectedTemplate.attachment_name}
-                  </Button>
-                </div>
-              )}
+              {selectedTemplate.attachment_name &&
+                selectedTemplate.attachment_data && (
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                      Attached file
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        downloadAttachment(
+                          selectedTemplate.attachment_name!,
+                          selectedTemplate.attachment_data!,
+                        )
+                      }
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download {selectedTemplate.attachment_name}
+                    </Button>
+                  </div>
+                )}
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
-            <Button onClick={() => { setIsViewModalOpen(false); if (selectedTemplate) openEdit(selectedTemplate); }}>
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setIsViewModalOpen(false);
+                if (selectedTemplate) openEdit(selectedTemplate);
+              }}
+            >
               Edit
             </Button>
           </DialogFooter>

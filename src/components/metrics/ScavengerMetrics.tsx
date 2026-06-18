@@ -56,7 +56,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           <div className="flex items-center justify-between p-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Equipment Requests</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{equipmentRequests}</p>
+              <p className="text-2xl font-bold text-zinc-900 dark:text-white">{equipmentRequests}</p>
             </div>
             <div className="rounded-md bg-black/5 p-2">
               <ClipboardList className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -68,7 +68,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           <div className="flex items-center justify-between p-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Equipment Found</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{equipmentFound} <span className="text-sm font-normal text-gray-500">({successRate}%)</span></p>
+              <p className="text-2xl font-bold text-zinc-900 dark:text-white">{equipmentFound} <span className="text-sm font-normal text-zinc-500">({successRate}%)</span></p>
             </div>
             <div className="rounded-md bg-black/5 p-2">
               <Search className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -80,7 +80,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           <div className="flex items-center justify-between p-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Avg. Completion Time</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{avgCompletionTime} <span className="text-sm font-normal text-gray-500">days</span></p>
+              <p className="text-2xl font-bold text-zinc-900 dark:text-white">{avgCompletionTime} <span className="text-sm font-normal text-zinc-500">days</span></p>
             </div>
             <div className="rounded-md bg-black/5 p-2">
               <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -99,7 +99,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           </TabsList>
           
           <TabsContent value="timeline" className="pt-4">
-            <p className="text-sm text-gray-500 mb-4">Monthly equipment requests and fulfillment</p>
+            <p className="text-sm text-zinc-500 mb-4">Monthly equipment requests and fulfillment</p>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -118,7 +118,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           </TabsContent>
           
           <TabsContent value="equipment" className="pt-4">
-            <p className="text-sm text-gray-500 mb-4">Success rate by equipment type</p>
+            <p className="text-sm text-zinc-500 mb-4">Success rate by equipment type</p>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -137,7 +137,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
           </TabsContent>
           
           <TabsContent value="timetrend" className="pt-4">
-            <p className="text-sm text-gray-500 mb-4">Average order completion time trend</p>
+            <p className="text-sm text-zinc-500 mb-4">Average order completion time trend</p>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart

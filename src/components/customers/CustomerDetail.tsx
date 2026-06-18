@@ -518,7 +518,7 @@ export default function CustomerDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">
+        <div className="text-lg text-zinc-600">
           <LoadingSpinner size="md" />
         </div>
       </div>
@@ -528,7 +528,7 @@ export default function CustomerDetail() {
   if (!customer) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Customer not found</div>
+        <div className="text-lg text-zinc-600">Customer not found</div>
       </div>
     );
   }
@@ -542,14 +542,14 @@ export default function CustomerDetail() {
           <div className="flex items-center">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mr-4"
+              className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-700 mr-4"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
             </button>
             <div className="flex items-center">
               <Building2 className="h-8 w-8 text-[#f26722]" />
-              <h1 className="ml-3 text-2xl font-semibold text-gray-900 dark:text-white">
+              <h1 className="ml-3 text-2xl font-semibold text-zinc-900 dark:text-white">
                 {maskCustomerName(customer.company_name) || "No Company Name"}
               </h1>
             </div>
@@ -558,7 +558,7 @@ export default function CustomerDetail() {
             className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
               customer.status === "active"
                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                : "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-200"
+                : "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-200"
             }`}
           >
             {customer.status}
@@ -570,7 +570,7 @@ export default function CustomerDetail() {
           {/* Customer Information Card */}
           <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                 Customer Information
               </h2>
               <button
@@ -583,8 +583,8 @@ export default function CustomerDetail() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
-                    <Tag className="h-4 w-4 text-gray-400 mr-2" />
+                  <h3 className="text-sm font-medium text-zinc-900 dark:text-white flex items-center">
+                    <Tag className="h-4 w-4 text-zinc-400 mr-2" />
                     Category
                   </h3>
                   <button
@@ -601,20 +601,20 @@ export default function CustomerDetail() {
                         className="w-4 h-4 rounded-full mr-2"
                         style={{ backgroundColor: category.color }}
                       ></div>
-                      <span className="text-sm text-gray-900 dark:text-white">
+                      <span className="text-sm text-zinc-900 dark:text-white">
                         {category.name}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm text-gray-500 dark:text-white">
+                    <span className="text-sm text-zinc-500 dark:text-white">
                       No category assigned
                     </span>
                   )}
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center mb-2">
-                  <Tag className="h-4 w-4 text-gray-400 mr-2" />
+                <h3 className="text-sm font-medium text-zinc-900 dark:text-white flex items-center mb-2">
+                  <Tag className="h-4 w-4 text-zinc-400 mr-2" />
                   Divisions
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -631,7 +631,7 @@ export default function CustomerDetail() {
                         className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
                           isActive
                             ? "bg-[#f26722] text-white"
-                            : "bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600"
+                            : "bg-zinc-100 dark:bg-dark-200 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
                         }`}
                       >
                         {div.label}
@@ -640,7 +640,7 @@ export default function CustomerDetail() {
                   })}
                 </div>
                 {(!customer.divisions || customer.divisions.length === 0) && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
                     Click to assign divisions
                   </p>
                 )}
@@ -648,10 +648,10 @@ export default function CustomerDetail() {
               <div className="flex items-start">
                 <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-white">
                     Email
                   </p>
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <p className="text-sm text-zinc-900 dark:text-white">
                     {customer.email || "-"}
                   </p>
                 </div>
@@ -659,7 +659,7 @@ export default function CustomerDetail() {
               <div className="flex items-start">
                 <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-white">
                     Phone
                   </p>
                   {customer.phone ? (
@@ -670,17 +670,17 @@ export default function CustomerDetail() {
                       {customer.phone}
                     </a>
                   ) : (
-                    <p className="text-sm text-gray-900 dark:text-white">-</p>
+                    <p className="text-sm text-zinc-900 dark:text-white">-</p>
                   )}
                 </div>
               </div>
               <div className="flex items-start">
                 <MapPin className="h-5 w-5 text-[#f26722] mt-0.5" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-white">
                     Address
                   </p>
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <p className="text-sm text-zinc-900 dark:text-white">
                     {maskCustomerAddress(customer.address) || "-"}
                   </p>
                 </div>
@@ -688,10 +688,10 @@ export default function CustomerDetail() {
               <div className="flex items-start">
                 <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-white">
                     Created
                   </p>
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <p className="text-sm text-zinc-900 dark:text-white">
                     {format(new Date(customer.created_at), "MMM d, yyyy")}
                   </p>
                 </div>
@@ -702,7 +702,7 @@ export default function CustomerDetail() {
           {/* Contacts Card */}
           <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                 Contacts
               </h2>
               <button
@@ -717,16 +717,16 @@ export default function CustomerDetail() {
               {contacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                  className="flex items-start cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 p-2 rounded-lg"
                   onClick={() => handleContactClick(contact)}
                 >
-                  <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                    <span className="text-gray-500 dark:text-white text-lg font-medium">
+                  <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center">
+                    <span className="text-zinc-500 dark:text-white text-lg font-medium">
                       {contact.first_name?.charAt(0) || "C"}
                     </span>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center">
                       {contact.first_name} {contact.last_name}
                       {contact.is_primary && (
                         <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -734,17 +734,17 @@ export default function CustomerDetail() {
                         </span>
                       )}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-white">
+                    <p className="text-sm text-zinc-500 dark:text-white">
                       {contact.position || ""}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-white">
+                    <p className="text-sm text-zinc-500 dark:text-white">
                       {contact.email}
                     </p>
                   </div>
                 </div>
               ))}
               {contacts.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-white text-center py-4">
+                <p className="text-sm text-zinc-500 dark:text-white text-center py-4">
                   No contacts found
                 </p>
               )}
@@ -761,14 +761,14 @@ export default function CustomerDetail() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-zinc-200 dark:border-zinc-700">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <a
               href="#overview"
               className={`${
                 activeTab === "overview"
                   ? "border-[#f26722] text-[#f26722]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
                 e.preventDefault();
@@ -782,7 +782,7 @@ export default function CustomerDetail() {
               className={`${
                 activeTab === "jobs"
                   ? "border-[#f26722] text-[#f26722]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
                 e.preventDefault();
@@ -796,7 +796,7 @@ export default function CustomerDetail() {
               className={`${
                 activeTab === "documents"
                   ? "border-[#f26722] text-[#f26722]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
                 e.preventDefault();
@@ -810,7 +810,7 @@ export default function CustomerDetail() {
               className={`${
                 activeTab === "interactions"
                   ? "border-[#f26722] text-[#f26722]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
                 e.preventDefault();
@@ -824,7 +824,7 @@ export default function CustomerDetail() {
               className={`${
                 activeTab === "health"
                   ? "border-[#f26722] text-[#f26722]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
                 e.preventDefault();
@@ -842,9 +842,9 @@ export default function CustomerDetail() {
             <div className="space-y-6">
               {/* Jobs section */}
               <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                    <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                       Recent Jobs
                     </h2>
                     <Link
@@ -859,18 +859,18 @@ export default function CustomerDetail() {
                     </Link>
                   </div>
                 </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
                   {jobs.slice(0, 2).map((job) => (
                     <Link
                       key={job.id}
                       to={`/jobs/${job.id}`}
-                      className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="block p-6 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Briefcase className="h-5 w-5 text-[#f26722]" />
                           <div className="ml-3">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
                               {job.title}
                             </p>
                             <div className="flex items-center mt-1 space-x-2">
@@ -899,11 +899,11 @@ export default function CustomerDetail() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-white">
+                        <div className="text-sm text-zinc-500 dark:text-white">
                           ${job.budget?.toLocaleString() || "-"}
                         </div>
                       </div>
-                      <div className="mt-2 text-sm text-gray-500 dark:text-white">
+                      <div className="mt-2 text-sm text-zinc-500 dark:text-white">
                         Due:{" "}
                         {job.due_date
                           ? format(new Date(job.due_date), "MMM d, yyyy")
@@ -912,7 +912,7 @@ export default function CustomerDetail() {
                     </Link>
                   ))}
                   {jobs.length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-white text-center py-6">
+                    <p className="text-sm text-zinc-500 dark:text-white text-center py-6">
                       No jobs found
                     </p>
                   )}
@@ -923,9 +923,9 @@ export default function CustomerDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contacts section */}
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                      <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                         Key Contacts
                       </h2>
                       <button
@@ -941,16 +941,16 @@ export default function CustomerDetail() {
                     {contacts.slice(0, 2).map((contact) => (
                       <div
                         key={contact.id}
-                        className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                        className="flex items-start cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 p-2 rounded-lg"
                         onClick={() => handleContactClick(contact)}
                       >
-                        <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                          <span className="text-gray-500 dark:text-white text-lg font-medium">
+                        <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center">
+                          <span className="text-zinc-500 dark:text-white text-lg font-medium">
                             {contact.first_name?.charAt(0) || "C"}
                           </span>
                         </div>
                         <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center">
                             {contact.first_name} {contact.last_name}
                             {contact.is_primary && (
                               <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -958,17 +958,17 @@ export default function CustomerDetail() {
                               </span>
                             )}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-white">
+                          <p className="text-sm text-zinc-500 dark:text-white">
                             {contact.position || "No position"}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-white">
+                          <p className="text-sm text-zinc-500 dark:text-white">
                             {contact.email}
                           </p>
                         </div>
                       </div>
                     ))}
                     {contacts.length === 0 && (
-                      <p className="text-sm text-gray-500 dark:text-white text-center">
+                      <p className="text-sm text-zinc-500 dark:text-white text-center">
                         No contacts found
                       </p>
                     )}
@@ -987,20 +987,20 @@ export default function CustomerDetail() {
                       </div>
                     )}
                     {contactsExpanded && contacts.length > 2 && (
-                      <div className="pt-2 space-y-4 border-t border-gray-100 dark:border-gray-700 mt-4">
+                      <div className="pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-700 mt-4">
                         {contacts.slice(2).map((contact) => (
                           <div
                             key={contact.id}
-                            className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                            className="flex items-start cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 p-2 rounded-lg"
                             onClick={() => handleContactClick(contact)}
                           >
-                            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                              <span className="text-gray-500 dark:text-white text-lg font-medium">
+                            <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center">
+                              <span className="text-zinc-500 dark:text-white text-lg font-medium">
                                 {contact.first_name?.charAt(0) || "C"}
                               </span>
                             </div>
                             <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                              <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center">
                                 {contact.first_name} {contact.last_name}
                                 {contact.is_primary && (
                                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -1008,10 +1008,10 @@ export default function CustomerDetail() {
                                   </span>
                                 )}
                               </p>
-                              <p className="text-sm text-gray-500 dark:text-white">
+                              <p className="text-sm text-zinc-500 dark:text-white">
                                 {contact.position || "No position"}
                               </p>
-                              <p className="text-sm text-gray-500 dark:text-white">
+                              <p className="text-sm text-zinc-500 dark:text-white">
                                 {contact.email}
                               </p>
                             </div>
@@ -1024,9 +1024,9 @@ export default function CustomerDetail() {
 
                 {/* Documents section */}
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                      <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                         Recent Documents
                       </h2>
                       <Link
@@ -1062,10 +1062,10 @@ export default function CustomerDetail() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white">
                             Contract_2023.pdf
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-white">
+                          <p className="text-xs text-zinc-500 dark:text-white">
                             Added on Apr 05, 2023
                           </p>
                         </div>
@@ -1088,10 +1088,10 @@ export default function CustomerDetail() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white">
                             Quarterly_Report.xlsx
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-white">
+                          <p className="text-xs text-zinc-500 dark:text-white">
                             Added on Mar 10, 2023
                           </p>
                         </div>
@@ -1118,9 +1118,9 @@ export default function CustomerDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Interactions section */}
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                      <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                         Recent Interactions
                       </h2>
                       <Link
@@ -1142,8 +1142,8 @@ export default function CustomerDetail() {
                       </div>
                     ) : notes.length === 0 ? (
                       <div className="text-center py-8">
-                        <Phone className="h-8 w-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <Phone className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           No interactions yet
                         </p>
                         <Link
@@ -1183,7 +1183,7 @@ export default function CustomerDetail() {
                             </div>
                             <div className="ml-4 min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                                <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
                                   {note.note_type === "call"
                                     ? "Phone Call"
                                     : note.note_type === "email"
@@ -1202,7 +1202,7 @@ export default function CustomerDetail() {
                                   {note.contact_display_name}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                 {note.occurred_at
                                   ? format(
                                       new Date(note.occurred_at),
@@ -1210,7 +1210,7 @@ export default function CustomerDetail() {
                                     )
                                   : "No date"}
                               </p>
-                              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300 line-clamp-2">
                                 {note.context}
                               </p>
                             </div>
@@ -1238,13 +1238,13 @@ export default function CustomerDetail() {
 
                 {/* Health metrics section */}
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                  <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">
                     Customer Health Dashboard
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                     <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
-                      <div className="text-xs text-gray-500 dark:text-white mb-2">
+                      <div className="text-xs text-zinc-500 dark:text-white mb-2">
                         Overall Health
                       </div>
                       <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
@@ -1258,18 +1258,18 @@ export default function CustomerDetail() {
                     </div>
 
                     <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                      <div className="text-xs text-gray-500 dark:text-white">
+                      <div className="text-xs text-zinc-500 dark:text-white">
                         Engagement
                       </div>
                       <div className="flex items-end mt-1">
-                        <div className="text-xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-xl font-bold text-zinc-900 dark:text-white">
                           85%
                         </div>
                         <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
                           ▲ 5%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                         <div
                           className="h-full bg-green-500 rounded-full"
                           style={{ width: "85%" }}
@@ -1278,18 +1278,18 @@ export default function CustomerDetail() {
                     </div>
 
                     <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                      <div className="text-xs text-gray-500 dark:text-white">
+                      <div className="text-xs text-zinc-500 dark:text-white">
                         Satisfaction
                       </div>
                       <div className="flex items-end mt-1">
-                        <div className="text-xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-xl font-bold text-zinc-900 dark:text-white">
                           92%
                         </div>
                         <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
                           ▲ 3%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                         <div
                           className="h-full bg-green-500 rounded-full"
                           style={{ width: "92%" }}
@@ -1298,18 +1298,18 @@ export default function CustomerDetail() {
                     </div>
 
                     <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                      <div className="text-xs text-gray-500 dark:text-white">
+                      <div className="text-xs text-zinc-500 dark:text-white">
                         Response Time
                       </div>
                       <div className="flex items-end mt-1">
-                        <div className="text-xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-xl font-bold text-zinc-900 dark:text-white">
                           78%
                         </div>
                         <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">
                           ▼ 2%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                         <div
                           className="h-full bg-yellow-500 rounded-full"
                           style={{ width: "78%" }}
@@ -1330,9 +1330,9 @@ export default function CustomerDetail() {
 
           {activeTab === "jobs" && (
             <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                     All Jobs
                   </h2>
                   <Link
@@ -1344,18 +1344,18 @@ export default function CustomerDetail() {
                   </Link>
                 </div>
               </div>
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
                 {jobs.map((job) => (
                   <Link
                     key={job.id}
                     to={`/jobs/${job.id}`}
-                    className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="block p-6 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Briefcase className="h-5 w-5 text-[#f26722]" />
                         <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white">
                             {job.title}
                           </p>
                           <div className="flex items-center mt-1 space-x-2">
@@ -1384,11 +1384,11 @@ export default function CustomerDetail() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-white">
+                      <div className="text-sm text-zinc-500 dark:text-white">
                         ${job.budget?.toLocaleString() || "-"}
                       </div>
                     </div>
-                    <div className="mt-2 text-sm text-gray-500 dark:text-white">
+                    <div className="mt-2 text-sm text-zinc-500 dark:text-white">
                       Due:{" "}
                       {job.due_date
                         ? format(new Date(job.due_date), "MMM d, yyyy")
@@ -1397,7 +1397,7 @@ export default function CustomerDetail() {
                   </Link>
                 ))}
                 {jobs.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-white text-center py-6">
+                  <p className="text-sm text-zinc-500 dark:text-white text-center py-6">
                     No jobs found
                   </p>
                 )}
@@ -1407,9 +1407,9 @@ export default function CustomerDetail() {
 
           {activeTab === "documents" && (
             <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <h2 className="text-lg font-medium text-zinc-900 dark:text-white">
                     Customer Documents
                   </h2>
                 </div>
@@ -1463,7 +1463,7 @@ export default function CustomerDetail() {
               return (
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
                       Customer Interactions
                     </h2>
                     <button
@@ -1486,55 +1486,55 @@ export default function CustomerDetail() {
 
                   {/* Stats */}
                   <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-[#f26722]/10 flex items-center justify-center">
                           <Phone className="h-5 w-5 text-[#f26722]" />
                         </div>
                         <div className="ml-3">
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-lg font-semibold text-zinc-900 dark:text-white">
                             {callCount}
                           </p>
-                          <p className="text-xs text-gray-500">Calls</p>
+                          <p className="text-xs text-zinc-500">Calls</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                           <Mail className="h-5 w-5 text-blue-600 dark:text-blue-300" />
                         </div>
                         <div className="ml-3">
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-lg font-semibold text-zinc-900 dark:text-white">
                             {emailCount}
                           </p>
-                          <p className="text-xs text-gray-500">Emails</p>
+                          <p className="text-xs text-zinc-500">Emails</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
                           <UserIcon className="h-5 w-5 text-purple-600 dark:text-purple-300" />
                         </div>
                         <div className="ml-3">
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-lg font-semibold text-zinc-900 dark:text-white">
                             {inPersonCount}
                           </p>
-                          <p className="text-xs text-gray-500">In Person</p>
+                          <p className="text-xs text-zinc-500">In Person</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Filter tabs */}
-                  <div className="flex space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex space-x-4 mb-6 border-b border-zinc-200 dark:border-zinc-700">
                     {(["all", "call", "email", "in_person"] as const).map(
                       (f) => (
                         <button
                           key={f}
                           onClick={() => setNoteFilter(f)}
-                          className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}
+                          className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"}`}
                         >
                           {f === "all"
                             ? "All"
@@ -1550,13 +1550,13 @@ export default function CustomerDetail() {
 
                   {/* Log form */}
                   {showNoteForm && (
-                    <div className="mb-6 bg-gray-50 dark:bg-dark-200 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    <div className="mb-6 bg-zinc-50 dark:bg-dark-200 rounded-lg p-4 border border-zinc-200 dark:border-zinc-600">
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
                         {editingNoteId ? "Edit Interaction" : "Log Interaction"}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                             Contact
                           </label>
                           <select
@@ -1567,7 +1567,7 @@ export default function CustomerDetail() {
                                 contact_id: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           >
                             <option value="">Select contact...</option>
                             {contacts.map((c) => (
@@ -1578,7 +1578,7 @@ export default function CustomerDetail() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                             Type
                           </label>
                           <select
@@ -1589,7 +1589,7 @@ export default function CustomerDetail() {
                                 note_type: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           >
                             <option value="call">Call</option>
                             <option value="email">Email</option>
@@ -1597,7 +1597,7 @@ export default function CustomerDetail() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                             Date / Time
                           </label>
                           <input
@@ -1609,12 +1609,12 @@ export default function CustomerDetail() {
                                 occurred_at: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           />
                         </div>
                       </div>
                       <div className="mb-3">
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                        <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                           Notes
                         </label>
                         <textarea
@@ -1627,7 +1627,7 @@ export default function CustomerDetail() {
                             }))
                           }
                           placeholder="What happened during this interaction..."
-                          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                         />
                       </div>
                       <div className="flex justify-end gap-2">
@@ -1636,7 +1636,7 @@ export default function CustomerDetail() {
                             setShowNoteForm(false);
                             setEditingNoteId(null);
                           }}
-                          className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                          className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded"
                         >
                           Cancel
                         </button>
@@ -1657,11 +1657,11 @@ export default function CustomerDetail() {
 
                   {/* Timeline */}
                   {notesLoading ? (
-                    <div className="py-12 text-center text-gray-500">
+                    <div className="py-12 text-center text-zinc-500">
                       <LoadingSpinner size="md" />
                     </div>
                   ) : filteredNotes.length === 0 ? (
-                    <div className="py-12 text-center text-gray-500">
+                    <div className="py-12 text-center text-zinc-500">
                       <p className="text-sm">No interactions logged yet.</p>
                       <p className="text-xs mt-1">
                         Click "Log Interaction" to add one.
@@ -1672,24 +1672,24 @@ export default function CustomerDetail() {
                       {filteredNotes.map((note, idx) => (
                         <div key={note.id} className="relative">
                           {idx < filteredNotes.length - 1 && (
-                            <div className="absolute top-0 left-6 h-full w-0.5 bg-gray-200 dark:bg-gray-700" />
+                            <div className="absolute top-0 left-6 h-full w-0.5 bg-zinc-200 dark:bg-zinc-700" />
                           )}
                           <div className="flex items-start relative">
                             <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                               <div
-                                className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-gray-800`}
+                                className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-zinc-800`}
                               >
                                 {noteTypeIcon(note.note_type)}
                               </div>
                             </div>
-                            <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 w-full">
+                            <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 w-full">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                                  <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
                                     {noteTypeLabel(note.note_type)} with{" "}
                                     {note.contact_display_name}
                                   </h3>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                     {format(
                                       new Date(note.occurred_at),
                                       "MMM d, yyyy 'at' h:mm a",
@@ -1702,7 +1702,7 @@ export default function CustomerDetail() {
                                   {noteTypeLabel(note.note_type)}
                                 </span>
                               </div>
-                              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap">
                                 {note.context}
                               </p>
                               <div className="mt-3 flex justify-between items-center">
@@ -1714,7 +1714,7 @@ export default function CustomerDetail() {
                                     )}
                                     size={24}
                                   />
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                     Logged by: {note.author_email}
                                   </p>
                                 </div>
@@ -1740,7 +1740,7 @@ export default function CustomerDetail() {
                                   </button>
                                   <button
                                     onClick={() => handleDeleteNote(note.id)}
-                                    className="text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 flex items-center gap-0.5"
+                                    className="text-sm text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 flex items-center gap-0.5"
                                   >
                                     <Trash2 className="h-3 w-3" /> Delete
                                   </button>
@@ -1753,7 +1753,7 @@ export default function CustomerDetail() {
                     </div>
                   )}
 
-                  <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
                     {filteredNotes.length} interaction
                     {filteredNotes.length !== 1 ? "s" : ""}
                   </div>
@@ -1763,13 +1763,13 @@ export default function CustomerDetail() {
 
           {activeTab === "health" && (
             <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">
                 Customer Health Dashboard
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
-                  <div className="text-xs text-gray-500 dark:text-white mb-2">
+                  <div className="text-xs text-zinc-500 dark:text-white mb-2">
                     Overall Health
                   </div>
                   <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
@@ -1781,18 +1781,18 @@ export default function CustomerDetail() {
                 </div>
 
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                  <div className="text-xs text-gray-500 dark:text-white">
+                  <div className="text-xs text-zinc-500 dark:text-white">
                     Engagement
                   </div>
                   <div className="flex items-end mt-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-xl font-bold text-zinc-900 dark:text-white">
                       85%
                     </div>
                     <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
                       ▲ 5%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                     <div
                       className="h-full bg-green-500 rounded-full"
                       style={{ width: "85%" }}
@@ -1801,18 +1801,18 @@ export default function CustomerDetail() {
                 </div>
 
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                  <div className="text-xs text-gray-500 dark:text-white">
+                  <div className="text-xs text-zinc-500 dark:text-white">
                     Satisfaction
                   </div>
                   <div className="flex items-end mt-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-xl font-bold text-zinc-900 dark:text-white">
                       92%
                     </div>
                     <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
                       ▲ 3%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                     <div
                       className="h-full bg-green-500 rounded-full"
                       style={{ width: "92%" }}
@@ -1821,18 +1821,18 @@ export default function CustomerDetail() {
                 </div>
 
                 <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-                  <div className="text-xs text-gray-500 dark:text-white">
+                  <div className="text-xs text-zinc-500 dark:text-white">
                     Response Time
                   </div>
                   <div className="flex items-end mt-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-xl font-bold text-zinc-900 dark:text-white">
                       78%
                     </div>
                     <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">
                       ▼ 2%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
                     <div
                       className="h-full bg-yellow-500 rounded-full"
                       style={{ width: "78%" }}
@@ -1861,12 +1861,12 @@ export default function CustomerDetail() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-lg rounded bg-white dark:bg-dark-150 p-6">
             <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
                 Add New Contact for {customer?.company_name}
               </Dialog.Title>
               <button
                 onClick={() => setIsContactFormOpen(false)}
-                className="text-gray-400 hover:text-gray-500 dark:text-white dark:hover:text-white"
+                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1875,7 +1875,7 @@ export default function CustomerDetail() {
               <div>
                 <label
                   htmlFor="first_name"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   First Name *
                 </label>
@@ -1891,13 +1891,13 @@ export default function CustomerDetail() {
                       first_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="last_name"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Last Name *
                 </label>
@@ -1913,13 +1913,13 @@ export default function CustomerDetail() {
                       last_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Email *
                 </label>
@@ -1935,13 +1935,13 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Phone
                 </label>
@@ -1956,13 +1956,13 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="position"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Position
                 </label>
@@ -1977,7 +1977,7 @@ export default function CustomerDetail() {
                       position: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -1992,17 +1992,17 @@ export default function CustomerDetail() {
                       is_primary: e.target.checked,
                     }))
                   }
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 dark:border-zinc-600 rounded"
                 />
                 <label
                   htmlFor="is_primary"
-                  className="ml-2 block text-sm text-gray-700 dark:text-white"
+                  className="ml-2 block text-sm text-zinc-700 dark:text-white"
                 >
                   Primary Contact
                 </label>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Divisions
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -2025,7 +2025,7 @@ export default function CustomerDetail() {
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                           isActive
                             ? "bg-[#f26722] text-white"
-                            : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600"
+                            : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
                         }`}
                       >
                         {div.label}
@@ -2033,7 +2033,7 @@ export default function CustomerDetail() {
                     );
                   })}
                 </div>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                   Leave empty to inherit from the customer's divisions.
                 </p>
               </div>
@@ -2048,7 +2048,7 @@ export default function CustomerDetail() {
                 <button
                   type="button"
                   onClick={() => setIsContactFormOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-zinc-700 dark:text-white shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2068,12 +2068,12 @@ export default function CustomerDetail() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-lg rounded bg-white dark:bg-dark-150 p-6 w-full">
             <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
                 Edit Customer
               </Dialog.Title>
               <button
                 onClick={() => setIsCustomerEditOpen(false)}
-                className="text-gray-400 hover:text-gray-500 dark:text-white dark:hover:text-white"
+                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -2082,7 +2082,7 @@ export default function CustomerDetail() {
               <div>
                 <label
                   htmlFor="company_name"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Company Name
                 </label>
@@ -2095,13 +2095,13 @@ export default function CustomerDetail() {
                       company_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="email_edit"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Email
                 </label>
@@ -2115,13 +2115,13 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="phone_edit"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Phone
                 </label>
@@ -2134,13 +2134,13 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="address_edit"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Address
                 </label>
@@ -2153,13 +2153,13 @@ export default function CustomerDetail() {
                       address: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="status_edit"
-                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                  className="block text-sm font-medium text-zinc-700 dark:text-white"
                 >
                   Status
                 </label>
@@ -2172,14 +2172,14 @@ export default function CustomerDetail() {
                       status: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="active">active</option>
                   <option value="inactive">inactive</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
                   Divisions
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -2198,7 +2198,7 @@ export default function CustomerDetail() {
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                         customerEditForm.divisions.includes(div.value)
                           ? "bg-[#f26722] text-white"
-                          : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600"
+                          : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
                       }`}
                     >
                       {div.label}
@@ -2217,7 +2217,7 @@ export default function CustomerDetail() {
                 <button
                   type="button"
                   onClick={() => setIsCustomerEditOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-zinc-700 dark:text-white shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2240,18 +2240,18 @@ export default function CustomerDetail() {
               <>
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
-                    <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center mr-3">
-                      <span className="text-gray-500 dark:text-white text-lg font-medium">
+                    <div className="h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center mr-3">
+                      <span className="text-zinc-500 dark:text-white text-lg font-medium">
                         {selectedContact.first_name?.charAt(0)}
                         {selectedContact.last_name?.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+                      <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
                         {selectedContact.first_name} {selectedContact.last_name}
                       </Dialog.Title>
                       {selectedContact.position && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           {selectedContact.position}
                         </p>
                       )}
@@ -2266,19 +2266,19 @@ export default function CustomerDetail() {
                     <button
                       type="button"
                       onClick={() => setContactPopupOpen(false)}
-                      className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                      className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
                   {selectedContact.phone && (
                     <div className="flex items-center">
                       <Phone className="h-5 w-5 text-[#f26722] mr-3" />
                       <div>
-                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                           Phone
                         </p>
                         <a
@@ -2294,7 +2294,7 @@ export default function CustomerDetail() {
                     <div className="flex items-center">
                       <Mail className="h-5 w-5 text-[#f26722] mr-3" />
                       <div>
-                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                           Email
                         </p>
                         <a
@@ -2307,7 +2307,7 @@ export default function CustomerDetail() {
                     </div>
                   )}
                   {!selectedContact.phone && !selectedContact.email && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-2">
                       No contact information available.
                     </p>
                   )}
@@ -2338,13 +2338,13 @@ export default function CustomerDetail() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-sm rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
                 Change Category
               </Dialog.Title>
               <button
                 type="button"
                 onClick={() => setIsCategorySelectOpen(false)}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -2355,11 +2355,11 @@ export default function CustomerDetail() {
                 onClick={() => handleCategoryChange(null)}
                 className={`w-full text-left py-2 px-3 rounded-md flex items-center ${
                   selectedCategoryId === null
-                    ? "bg-gray-100 dark:bg-dark-150"
-                    : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? "bg-zinc-100 dark:bg-dark-150"
+                    : "hover:bg-zinc-50 dark:hover:bg-zinc-700"
                 }`}
               >
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-zinc-900 dark:text-white">
                   No Category
                 </span>
               </button>
@@ -2370,8 +2370,8 @@ export default function CustomerDetail() {
                   onClick={() => handleCategoryChange(category.id)}
                   className={`w-full text-left py-2 px-3 rounded-md flex items-center ${
                     selectedCategoryId === category.id
-                      ? "bg-gray-100 dark:bg-dark-150"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-zinc-100 dark:bg-dark-150"
+                      : "hover:bg-zinc-50 dark:hover:bg-zinc-700"
                   }`}
                 >
                   <div
@@ -2379,10 +2379,10 @@ export default function CustomerDetail() {
                     style={{ backgroundColor: category.color }}
                   ></div>
                   <div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
                       {category.name}
                     </span>
-                    <p className="text-sm text-gray-500 dark:text-white">
+                    <p className="text-sm text-zinc-500 dark:text-white">
                       {category.description}
                     </p>
                   </div>

@@ -1057,7 +1057,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1126,16 +1126,16 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.customerName}
@@ -1145,10 +1145,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={maskCustomerAddress(formData.customerLocation)}
@@ -1158,10 +1158,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.userName}
@@ -1174,10 +1174,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="date"
                       value={formData.date}
@@ -1190,10 +1190,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.identifier}
@@ -1211,10 +1211,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
               </div>
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.jobNumber}
@@ -1224,10 +1224,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.technicians}
@@ -1243,11 +1243,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature.fahrenheit}
@@ -1260,7 +1260,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                     <span className="mx-2">{formData.temperature.celsius}</span>
                     <span className="mx-2">°C</span>
                     <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-gray-300 dark:border-gray-600">
+                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={formData.temperature.tcf.toFixed(3)}
@@ -1271,11 +1271,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                       <input
                         type="number"
                         value={formData.temperature.humidity || 0}
@@ -1296,10 +1296,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.substation}
@@ -1315,10 +1315,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">
+                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
+                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={formData.eqptLocation}
@@ -1359,11 +1359,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -1373,13 +1373,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150">
                   {/* Row 1: Manufacturer, Catalog Number, Serial Number, KVA */}
                   <tr>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Manufacturer:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.manufacturer}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1397,13 +1397,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.manufacturer || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Catalog Number:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.catalogNumber}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1421,13 +1421,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.catalogNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Serial Number:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.serialNumber}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1445,13 +1445,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.serialNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         KVA:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.kva}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1472,13 +1472,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   </tr>
                   {/* Row 2: Temp Rise, Impedance, Fluid Type, Fluid Volume */}
                   <tr>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Temp. Rise:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.tempRise}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1496,13 +1496,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.tempRise || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Impedance:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.impedance}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1520,13 +1520,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.impedance || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Fluid Type:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.fluidType}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1544,13 +1544,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.fluidType || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Fluid Volume (gal):
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.fluidVolume}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1575,32 +1575,32 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
             {/* Voltages and Winding Connections */}
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 print:table-fixed print:w-full">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 print:table-fixed print:w-full">
                 <thead>
                   <tr>
                     <th
-                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[9px] print:break-words print:whitespace-normal"
+                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal"
                       colSpan={2}
                     >
                       Voltages (V)
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[9px] print:break-words print:whitespace-normal">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal">
                       Winding Connections
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[9px] print:break-words print:whitespace-normal">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal">
                       Winding Material
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Primary
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden flex gap-2">
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.primaryVoltage1}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1616,7 +1616,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         />
                         <span>/</span>
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.primaryVoltage2}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1635,7 +1635,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.primaryVoltage2 || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.primaryWindingConnection}
@@ -1649,7 +1649,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_CONNECTIONS.map((c) => (
                             <option key={c} value={c}>
@@ -1662,7 +1662,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.primaryWindingConnection || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.primaryWindingMaterial}
@@ -1676,7 +1676,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_MATERIALS.map((m) => (
                             <option key={m} value={m}>
@@ -1691,13 +1691,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Secondary
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden flex gap-2">
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.secondaryVoltage1}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1713,7 +1713,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         />
                         <span>/</span>
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.secondaryVoltage2}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1733,7 +1733,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.secondaryVoltage2 || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.secondaryWindingConnection}
@@ -1747,7 +1747,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_CONNECTIONS.map((c) => (
                             <option key={c} value={c}>
@@ -1760,7 +1760,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.nameplate.secondaryWindingConnection || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.secondaryWindingMaterial}
@@ -1774,7 +1774,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_MATERIALS.map((m) => (
                             <option key={m} value={m}>
@@ -1794,7 +1794,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
             {/* Tap Position / Voltages */}
             <div className="mt-4">
-              <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   {TAP_POSITIONS.map((pos) => (
@@ -1803,20 +1803,20 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 </colgroup>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Tap Position
                     </td>
                     {TAP_POSITIONS.map((pos) => (
                       <td
                         key={pos}
-                        className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 font-medium"
+                        className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 font-medium"
                       >
                         {pos}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Tap Voltages
                     </td>
                     {TAP_POSITIONS.map((pos) => {
@@ -1825,11 +1825,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                       return (
                         <td
                           key={pos}
-                          className="px-2 py-2 text-center border border-gray-200 dark:border-gray-700"
+                          className="px-2 py-2 text-center border border-zinc-200 dark:border-zinc-700"
                         >
                           <div className="print:hidden">
                             <input
-                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                               value={(formData.nameplate[key] as string) || ""}
                               onChange={(e) =>
                                 setFormData((p) => ({
@@ -1856,11 +1856,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
             {/* Tap Position Left */}
             <div className="mt-4 flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 Tap Position Left:
               </span>
               <input
-                className={`form-input w-20 ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 value={formData.nameplate.tapPositionLeft}
                 onChange={(e) =>
                   setFormData((p) => ({
@@ -1879,11 +1879,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Indicator Gauge Values */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Indicator Gauge Values
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
                 <colgroup>
                   <col style={{ width: "16.66%" }} />
                   <col style={{ width: "16.66%" }} />
@@ -1894,13 +1894,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 </colgroup>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Oil Level:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.indicatorGaugeValues.oilLevel}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1918,13 +1918,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.indicatorGaugeValues.oilLevel || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Oil Temperature (°C):
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.indicatorGaugeValues.oilTemperature}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1942,13 +1942,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.indicatorGaugeValues.oilTemperature || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Oil Temp. Range:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.indicatorGaugeValues.oilTempRange}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1966,13 +1966,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.indicatorGaugeValues.oilTempRange || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Tank Pressure:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.indicatorGaugeValues.tankPressure}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -1990,13 +1990,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.indicatorGaugeValues.tankPressure || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Winding Temperature (°C):
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={
                             formData.indicatorGaugeValues.windingTemperature
                           }
@@ -2017,13 +2017,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                           "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                         Winding Temp. Range:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.indicatorGaugeValues.windingTempRange}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -2050,11 +2050,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed visual-mechanical-table">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed visual-mechanical-table">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "68%" }} />
@@ -2062,23 +2062,23 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
                         {item.id}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 dark:text-white"
+                        className="px-3 py-2 text-sm text-zinc-900 dark:text-white"
                         style={{
                           whiteSpace: "normal",
                           wordWrap: "break-word",
@@ -2100,7 +2100,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {VISUAL_INSPECTION_OPTIONS.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2123,7 +2123,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Visual & Mechanical Inspection Comments */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual & Mechanical Inspection Comments:
             </h2>
             <textarea
@@ -2136,13 +2136,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
               }
               rows={4}
               readOnly={!isEditing}
-              className={`form-textarea w-full resize-none ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <td className="p-2 align-top border border-zinc-300 print:border-black">
                       <div className="mt-0">
                         {formData.visualMechanicalComments || ""}
                       </div>
@@ -2156,7 +2156,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
             <div className="flex flex-wrap justify-end items-center mb-4 gap-4">
@@ -2168,7 +2168,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 table-fixed w-full">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 table-fixed w-full">
                 <colgroup>
                   <col style={{ width: "10%" }} /> {/* Winding Under Test */}
                   <col style={{ width: "7%" }} /> {/* Test Voltage */}
@@ -2184,7 +2184,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 <thead>
                   <tr>
                     <th
-                      className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"
+                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
                       rowSpan={2}
                     >
                       <span className="print:hidden">Winding Under Test</span>
@@ -2197,7 +2197,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                       </span>
                     </th>
                     <th
-                      className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"
+                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
                       rowSpan={2}
                     >
                       <span className="print:hidden">Test Voltage</span>
@@ -2208,55 +2208,55 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                       </span>
                     </th>
                     <th
-                      className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"
+                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
                       colSpan={4}
                     >
                       Insulation Resistance Values
                     </th>
                     <th
-                      className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"
+                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
                       colSpan={4}
                     >
                       Temperature Corrected Values
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       0.5 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       1 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       10 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       Units
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       0.5 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       1 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       10 Min.
                     </th>
-                    <th className="px-1 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white border border-gray-200 dark:border-gray-700">
+                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white border border-zinc-200 dark:border-zinc-700">
                       Units
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   {formData.insulationRows.map((row, idx) => (
                     <tr key={idx}>
                       <td
-                        className="px-1 py-2 text-xs text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700"
+                        className="px-1 py-2 text-xs text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                       >
                         {row.windingUnderTest}
                       </td>
-                      <td className="px-1 py-2 border border-gray-200 dark:border-gray-700 align-middle">
+                      <td className="px-1 py-2 border border-zinc-200 dark:border-zinc-700 align-middle">
                         <div className="print:hidden">
                           <select
                             value={row.testVoltage}
@@ -2269,7 +2269,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`form-select w-20 max-w-full text-sm font-medium text-gray-900 dark:text-white py-1 px-1.5 rounded border-gray-300 dark:border-gray-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                            className={`form-select w-20 max-w-full text-sm font-medium text-zinc-900 dark:text-white py-1 px-1.5 rounded border-zinc-300 dark:border-zinc-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                           >
                             {INSULATION_RESISTANCE_TEST_VOLTAGES.map((v) => (
                               <option key={v} value={v}>
@@ -2278,11 +2278,11 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             ))}
                           </select>
                         </div>
-                        <div className="hidden print:block text-center text-sm text-gray-900 dark:text-white font-medium">
+                        <div className="hidden print:block text-center text-sm text-zinc-900 dark:text-white font-medium">
                           {row.testVoltage}
                         </div>
                       </td>
-                      <td className="px-1 py-2 border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 border border-zinc-200 dark:border-zinc-700">
                         <input
                           value={row.measured05Min}
                           onChange={(e) => {
@@ -2294,10 +2294,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }));
                           }}
                           readOnly={!isEditing}
-                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="px-1 py-2 border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 border border-zinc-200 dark:border-zinc-700">
                         <input
                           value={row.measured1Min}
                           onChange={(e) => {
@@ -2309,10 +2309,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }));
                           }}
                           readOnly={!isEditing}
-                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="px-1 py-2 border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 border border-zinc-200 dark:border-zinc-700">
                         <input
                           value={row.measured10Min}
                           onChange={(e) => {
@@ -2324,10 +2324,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }));
                           }}
                           readOnly={!isEditing}
-                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="px-2 py-2 border border-gray-200 dark:border-gray-700 align-middle">
+                      <td className="px-2 py-2 border border-zinc-200 dark:border-zinc-700 align-middle">
                         <select
                           value={formData.insulationUnit}
                           onChange={(e) =>
@@ -2337,7 +2337,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full text-sm font-medium text-gray-900 dark:text-white py-1.5 px-2 rounded border-gray-300 dark:border-gray-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                          className={`form-select w-full text-sm font-medium text-zinc-900 dark:text-white py-1.5 px-2 rounded border-zinc-300 dark:border-zinc-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                         >
                           {INSULATION_RESISTANCE_UNITS.map((u) => (
                             <option key={u} value={u}>
@@ -2346,16 +2346,16 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                           ))}
                         </select>
                       </td>
-                      <td className="px-1 py-2 text-center text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700">
                         {row.corrected05Min || ""}
                       </td>
-                      <td className="px-1 py-2 text-center text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700">
                         {row.corrected1Min || ""}
                       </td>
-                      <td className="px-1 py-2 text-center text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700">
                         {row.corrected10Min || ""}
                       </td>
-                      <td className="px-1 py-2 text-center text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      <td className="px-1 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700">
                         {formData.insulationUnit}
                       </td>
                     </tr>
@@ -2366,7 +2366,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
             {/* Dielectric Absorption / Polarization Index */}
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 table-fixed w-full">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 table-fixed w-full">
                 <colgroup>
                   <col style={{ width: "18%" }} />{" "}
                   {/* Dielectric Absorption / Polarization Index */}
@@ -2378,63 +2378,63 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"></th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]"></th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"></th>
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"></th>
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
                       Primary
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
                       Secondary
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
                       Primary to Secondary
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 print:text-[7px]">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
                       Acceptable
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Dielectric Absorption
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       : (Ratio of 1 Minute to 0.5 Minute Result)
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.dielectricAbsorption.primary || ""}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.dielectricAbsorption.secondary || ""}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.dielectricAbsorption.priToSec || ""}
                     </td>
                     <td
-                      className={`px-2 py-2 text-center text-sm font-semibold border border-gray-200 dark:border-gray-700 ${formData.dielectricAbsorption.acceptable === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.dielectricAbsorption.acceptable === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                      className={`px-2 py-2 text-center text-sm font-semibold border border-zinc-200 dark:border-zinc-700 ${formData.dielectricAbsorption.acceptable === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.dielectricAbsorption.acceptable === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                     >
                       {formData.dielectricAbsorption.acceptable || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       Polarization Index
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                       : (Ratio of 10 Minute to 1 Minute Result)
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.polarizationIndex.primary || ""}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.polarizationIndex.secondary || ""}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-gray-200 dark:border-gray-700">
+                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700">
                       {formData.polarizationIndex.priToSec || ""}
                     </td>
                     <td
-                      className={`px-2 py-2 text-center text-sm font-semibold border border-gray-200 dark:border-gray-700 ${formData.polarizationIndex.acceptable === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.polarizationIndex.acceptable === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                      className={`px-2 py-2 text-center text-sm font-semibold border border-zinc-200 dark:border-zinc-700 ${formData.polarizationIndex.acceptable === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.polarizationIndex.acceptable === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                     >
                       {formData.polarizationIndex.acceptable || ""}
                     </td>
@@ -2447,34 +2447,34 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700 w-32"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 w-32"></th>
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
                       Name:
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
                       Serial Number:
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
                       AMP ID:
                     </th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase border border-gray-200 dark:border-gray-700">
+                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
                       Cal Date:
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-700">
                       Megohmmeter:
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <EquipmentAutocomplete
                           value={formData.testEquipment.megohmmeter.name}
@@ -2529,10 +2529,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.name || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={
                             formData.testEquipment.megohmmeter.serialNumber
                           }
@@ -2555,10 +2555,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.serialNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.megohmmeter.ampId}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -2579,10 +2579,10 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.ampId || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.megohmmeter.calDate}
                           onChange={(e) =>
                             setFormData((p) => ({
@@ -2614,7 +2614,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>
             <textarea
@@ -2624,14 +2624,14 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
               }
               rows={4}
               readOnly={!isEditing}
-              className={`form-textarea w-full resize-none ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <td className="p-2 align-top border border-zinc-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

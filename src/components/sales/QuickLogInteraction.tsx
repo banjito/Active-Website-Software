@@ -18,7 +18,7 @@ import {
 } from "@/services/interactionsService";
 
 const iconButtonClass =
-  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-zinc-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
 const iconButtonActiveClass =
   "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
 
@@ -226,13 +226,13 @@ export const QuickLogInteraction: React.FC = () => {
 
       {open && (
         <div className="absolute top-full right-0 mt-2 w-[360px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-          <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
-            <div className="font-medium text-gray-900 dark:text-white">
+          <div className="p-3 border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between">
+            <div className="font-medium text-zinc-900 dark:text-white">
               Log interaction
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -242,12 +242,12 @@ export const QuickLogInteraction: React.FC = () => {
           <div className="p-3 space-y-3">
             {/* Step 1: Customer */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                 Customer
               </label>
               {selectedCustomer ? (
-                <div className="flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200 px-3 py-2">
-                  <span className="text-sm text-gray-900 dark:text-white truncate">
+                <div className="flex items-center justify-between rounded-md border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-dark-200 px-3 py-2">
+                  <span className="text-sm text-zinc-900 dark:text-white truncate">
                     {selectedCustomer.company_name || selectedCustomer.name}
                   </span>
                   <button
@@ -265,13 +265,13 @@ export const QuickLogInteraction: React.FC = () => {
                   {customerTerm ? (
                     <button
                       onClick={() => setCustomerTerm("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400"
                       aria-label="Clear"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   ) : (
-                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
                   )}
                   <input
                     autoFocus
@@ -279,16 +279,16 @@ export const QuickLogInteraction: React.FC = () => {
                     value={customerTerm}
                     onChange={(e) => setCustomerTerm(e.target.value)}
                     placeholder="Search customers..."
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                   />
                   {customerTerm.trim() && (
-                    <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-gray-200 dark:border-dark-200 bg-white dark:bg-dark-150 shadow-lg">
+                    <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-zinc-200 dark:border-dark-200 bg-white dark:bg-dark-150 shadow-lg">
                       {searching ? (
-                        <div className="px-3 py-2 text-xs text-gray-500">
+                        <div className="px-3 py-2 text-xs text-zinc-500">
                           Hmm...
                         </div>
                       ) : customerResults.length === 0 ? (
-                        <div className="px-3 py-2 text-xs text-gray-500">
+                        <div className="px-3 py-2 text-xs text-zinc-500">
                           No customers found.
                         </div>
                       ) : (
@@ -296,7 +296,7 @@ export const QuickLogInteraction: React.FC = () => {
                           <button
                             key={c.id}
                             onClick={() => setSelectedCustomer(c)}
-                            className="w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-200 truncate"
+                            className="w-full text-left px-3 py-2 text-sm text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-dark-200 truncate"
                           >
                             {c.company_name || c.name}
                           </button>
@@ -310,14 +310,14 @@ export const QuickLogInteraction: React.FC = () => {
 
             {/* Step 2: Contact */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                 Contact
               </label>
               <select
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
                 disabled={!selectedCustomer || contactsLoading}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
               >
                 {!selectedCustomer ? (
                   <option value="">Select a customer first</option>
@@ -338,7 +338,7 @@ export const QuickLogInteraction: React.FC = () => {
 
             {/* Step 3: Type */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                 Type
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -349,7 +349,7 @@ export const QuickLogInteraction: React.FC = () => {
                     className={`flex flex-col items-center justify-center gap-1 rounded-md border py-2 text-xs font-medium transition-colors ${
                       noteType === t.value
                         ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
-                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-600 dark:text-gray-300"
+                        : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-600 dark:text-zinc-300"
                     }`}
                   >
                     {t.icon}
@@ -360,7 +360,7 @@ export const QuickLogInteraction: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                 Note
               </label>
               <textarea
@@ -368,14 +368,14 @@ export const QuickLogInteraction: React.FC = () => {
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="What happened during this interaction..."
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
 
             <div className="flex justify-end gap-2 pt-1">
               <button
                 onClick={handleClose}
-                className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-200 rounded"
+                className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-200 rounded"
               >
                 Cancel
               </button>

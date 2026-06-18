@@ -66,7 +66,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Globe className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">PURPOSE</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Committed to extraordinary quality while exhibiting servant leadership exceeding our clients' objectives of safety and reliability.
                 </p>
               </div>
@@ -77,7 +77,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <ArrowRight className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">MISSION</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   To further the gospel while sustaining exceptional employment, and providing quality services to the energy industry.
                 </p>
               </div>
@@ -88,7 +88,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Eye className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">ATTENTIVENESS</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Showing the worth of a person or task by giving our undivided concentration.
                 </p>
               </div>
@@ -99,7 +99,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <CheckCircle className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">COMMITMENT</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Devoting ourselves to following up on our word with action.
                 </p>
               </div>
@@ -110,7 +110,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Lightbulb className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">CREATIVITY</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Approaching a need, a task or an idea from a new perspective.
                 </p>
               </div>
@@ -121,7 +121,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Shield className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">DEPENDABILITY</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Fulfilling what we consented to do even if it means unexpected sacrifice.
                 </p>
               </div>
@@ -132,7 +132,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Briefcase className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">DILIGENCE</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Treating each task as unique and giving our full effort to achieve excellence.
                 </p>
               </div>
@@ -143,7 +143,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <Scale className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">INTEGRITY</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Upholding moral and ethical principles to remain whole and complete.
                 </p>
               </div>
@@ -154,7 +154,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                   <CircleDot className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">POISE</h3>
-                <p className="text-gray-700 dark:text-dark-400 text-sm leading-relaxed">
+                <p className="text-zinc-700 dark:text-dark-400 text-sm leading-relaxed">
                   Being totally balanced in mind, body, and spirit.
                 </p>
               </div>
@@ -170,7 +170,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                 <Zap className="w-8 h-8 text-orange-500 dark:text-orange-400" />
               </div>
               <h2 className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-6">WHO WE ARE</h2>
-              <p className="text-gray-700 dark:text-dark-400 leading-relaxed">
+              <p className="text-zinc-700 dark:text-dark-400 leading-relaxed">
                 We believe that as a company, it is our privilege and responsibility to serve and honor God in how we
                 conduct our business. That means that we are going to take care of our employees and their families. That
                 also means that we are going to exceed our clients' expectations and treat them with fairness, respect,
@@ -190,29 +190,29 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="p-8">
                 <div className="prose prose-orange dark:prose-invert max-w-none">
-                  <p className="text-gray-700 dark:text-dark-400">
+                  <p className="text-zinc-700 dark:text-dark-400">
                     In 2009, our founder, Brian, felt called to step out in faith and start a new venture. With the
                     support of his wife, he left his previous role and launched AMP, but the road wasn't easy. On his
                     first day, he faced unexpected transitions, financial uncertainty, and even a car accident. Yet,
                     within days, opportunities began to emerge.
                   </p>
-                  <p className="text-gray-700 dark:text-dark-400">
+                  <p className="text-zinc-700 dark:text-dark-400">
                     A former customer reached out, insisting on working with Brian directly. With no equipment and just
                     one employee, AMP took on its first project, marking the start of our journey. From those early
                     challenges, AMP grew through hard work, determination, and faith. Our first job's success laid the
                     foundation for growth, but the path wasn't always smooth.
                   </p>
-                  <p className="text-gray-700 dark:text-dark-400">
+                  <p className="text-zinc-700 dark:text-dark-400">
                     In 2015, a downturn brought significant challenges, leaving Brian as the sole employee. However,
                     through perseverance, careful planning, and the support of trusted advisors, AMP rebuilt stronger than
                     ever.
                   </p>
-                  <p className="text-gray-700 dark:text-dark-400">
+                  <p className="text-zinc-700 dark:text-dark-400">
                     Today, AMP has grown into a thriving company with a dedicated team. Over the past several years, we've
                     experienced substantial growth and continue to thrive, guided by our commitment to faith, integrity,
                     and service.
                   </p>
-                  <p className="text-gray-700 dark:text-dark-400">
+                  <p className="text-zinc-700 dark:text-dark-400">
                     Through every challenge and triumph, AMP's story is one of resilience, community, and faith. We are
                     grateful to our team, customers, and the support systems that have shaped our journey. At AMP, we
                     believe that no matter the business, we're in the people business.

@@ -1,16 +1,19 @@
 /**
  * Form Canvas
- * 
+ *
  * The main drag-and-drop area where form sections are displayed and arranged.
  * Sections can be reordered, selected for editing, duplicated, or deleted.
  * Supports per-cell formula editing when formula mode is active.
  */
 
-import React, { useState } from 'react';
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import React, { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   GripVertical,
   Trash2,
@@ -19,26 +22,33 @@ import {
   Eye,
   EyeOff,
   FileCode2,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { SectionConfig, type ConditionalRowConfig, type ColumnConfig } from '@/lib/types/customForms';
-import { getComponentDefinition } from '@/lib/customForms/componentLibrary';
-import { getSectionReferenceCode } from '@/lib/customForms/formCellResolution';
+import {
+  SectionConfig,
+  type ConditionalRowConfig,
+  type ColumnConfig,
+} from "@/lib/types/customForms";
+import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
+import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
 
 function isVisibleWhen(
   visibleWhen: Record<string, string | string[]> | undefined,
-  settings: Record<string, string>
+  settings: Record<string, string>,
 ): boolean {
   if (!visibleWhen || Object.keys(visibleWhen).length === 0) return true;
   for (const [settingId, allowed] of Object.entries(visibleWhen)) {
-    const current = settings[settingId] ?? '';
+    const current = settings[settingId] ?? "";
     const allowedList = Array.isArray(allowed) ? allowed : [allowed];
     if (!allowedList.includes(current)) return false;
   }
   return true;
 }
 
-function isConditionalRowVisible(row: ConditionalRowConfig, settings: Record<string, string>): boolean {
+function isConditionalRowVisible(
+  row: ConditionalRowConfig,
+  settings: Record<string, string>,
+): boolean {
   return isVisibleWhen(row.visibleWhen, settings);
 }
 
@@ -49,7 +59,12 @@ interface SortableSectionProps {
   onDelete: () => void;
   onDuplicate: () => void;
   isFormulaEditing?: boolean;
-  onCellFormulaChange?: (sectionId: string, rowIndex: number, colId: string, formula: string) => void;
+  onCellFormulaChange?: (
+    sectionId: string,
+    rowIndex: number,
+    colId: string,
+    formula: string,
+  ) => void;
   onRequestEditFormulas?: (sectionId: string) => void;
 }
 
@@ -86,23 +101,23 @@ const SortableSection: React.FC<SortableSectionProps> = ({
       style={style}
       className={`bg-white dark:bg-dark-150 border-2 rounded-lg transition-all ${
         isSelected
-          ? 'border-[#f26722] shadow-lg'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+          ? "border-[#f26722] shadow-lg"
+          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
       }`}
     >
       {/* Section Header */}
       <div
         className={`flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 border-b ${
           isSelected
-            ? 'border-[#f26722] bg-orange-50 dark:bg-orange-900/20'
-            : 'border-gray-200 dark:border-gray-700'
+            ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
+            : "border-zinc-200 dark:border-zinc-700"
         }`}
       >
         {/* Drag Handle */}
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden md:block"
+          className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hidden md:block"
         >
           <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
         </button>
@@ -110,7 +125,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         {/* Section Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white truncate">
+            <h3 className="text-xs md:text-sm font-semibold text-zinc-900 dark:text-white truncate">
               {section.title}
             </h3>
             {isFormulaEditing && (
@@ -120,17 +135,20 @@ const SortableSection: React.FC<SortableSectionProps> = ({
               </span>
             )}
             {!section.showInPrint && (
-              <span className="hidden md:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+              <span className="hidden md:flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                 <EyeOff className="w-3 h-3" />
                 Hidden in print
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
             {componentDef?.name || section.componentType}
           </p>
-          <p className="font-mono text-[10px] text-gray-400 dark:text-gray-500 truncate" title={`${section.title || 'Section'} — use in formulas e.g. {${getSectionReferenceCode(section)}.C1.R2} (${section.title || 'Section'}, column 1, row 2)`}>
-            {getSectionReferenceCode(section)} ({section.title || 'Section'})
+          <p
+            className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 truncate"
+            title={`${section.title || "Section"} — use in formulas e.g. {${getSectionReferenceCode(section)}.C1.R2} (${section.title || "Section"}, column 1, row 2)`}
+          >
+            {getSectionReferenceCode(section)} ({section.title || "Section"})
           </p>
         </div>
 
@@ -138,7 +156,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         <div className="flex items-center gap-0.5 md:gap-1">
           <button
             onClick={onSelect}
-            className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-100 rounded"
+            className="p-1.5 md:p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
             title="Edit section"
           >
             <Settings className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -146,7 +164,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 
           <button
             onClick={onDuplicate}
-            className="hidden md:block p-1.5 md:p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-100 rounded"
+            className="hidden md:block p-1.5 md:p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
             title="Duplicate section"
           >
             <Copy className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -154,7 +172,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 
           <button
             onClick={onDelete}
-            className="p-1.5 md:p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-100 rounded"
+            className="p-1.5 md:p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
             title="Delete section"
           >
             <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -176,33 +194,42 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 };
 
 /** Interactive conditional table preview for the builder canvas */
-const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({ section }) => {
+const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
+  section,
+}) => {
   const initialSettings: Record<string, string> = {};
   (section.settingFields ?? []).forEach((sf) => {
-    initialSettings[sf.id] = sf.defaultValue ?? sf.options[0]?.value ?? '';
+    initialSettings[sf.id] = sf.defaultValue ?? sf.options[0]?.value ?? "";
   });
-  const [settings, setSettings] = useState<Record<string, string>>(initialSettings);
+  const [settings, setSettings] =
+    useState<Record<string, string>>(initialSettings);
 
   const visibleRows = (section.conditionalRows ?? []).filter((row) =>
-    isVisibleWhen(row.visibleWhen, settings)
+    isVisibleWhen(row.visibleWhen, settings),
   );
   const visibleColumns = (section.columns ?? []).filter((col: ColumnConfig) =>
-    isVisibleWhen(col.visibleWhen, settings)
+    isVisibleWhen(col.visibleWhen, settings),
   );
 
   return (
     <div className="space-y-3 w-full min-w-0">
-      <div className="flex flex-wrap items-center gap-3 text-xs pb-2 border-b border-gray-200 dark:border-gray-600">
+      <div className="flex flex-wrap items-center gap-3 text-xs pb-2 border-b border-zinc-200 dark:border-zinc-600">
         {(section.settingFields ?? []).map((sf) => (
           <div key={sf.id} className="flex items-center gap-1.5">
-            <span className="font-medium text-gray-700 dark:text-gray-300">{sf.label}:</span>
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {sf.label}:
+            </span>
             <select
-              value={settings[sf.id] ?? ''}
-              onChange={(e) => setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))}
-              className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:ring-1 focus:ring-[#f26722]"
+              value={settings[sf.id] ?? ""}
+              onChange={(e) =>
+                setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))
+              }
+              className="px-2 py-1 text-xs border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-1 focus:ring-[#f26722]"
             >
               {sf.options.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           </div>
@@ -210,13 +237,13 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({ s
       </div>
       {visibleColumns.length > 0 && visibleRows.length > 0 ? (
         <div className="overflow-x-auto w-full min-w-0">
-          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+          <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
             <thead>
               <tr>
                 {visibleColumns.map((col) => (
                   <th
                     key={col.id}
-                    className="border border-gray-300 dark:border-gray-600 px-2 py-1 bg-gray-50 dark:bg-dark-200 text-left font-medium"
+                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium"
                     style={col.width ? { width: col.width } : undefined}
                   >
                     {col.label}
@@ -227,12 +254,15 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({ s
             <tbody>
               {visibleRows.map((row) => (
                 <tr key={row.id}>
-                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-1 font-medium text-gray-700 dark:text-gray-300">
+                  <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 font-medium text-zinc-700 dark:text-zinc-300">
                     {row.label}
                   </td>
                   {visibleColumns.slice(1).map((col) => (
-                    <td key={col.id} className="border border-gray-300 dark:border-gray-600 px-2 py-1">
-                      <div className="h-6 bg-gray-100 dark:bg-dark-100 rounded" />
+                    <td
+                      key={col.id}
+                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                    >
+                      <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded" />
                     </td>
                   ))}
                 </tr>
@@ -241,13 +271,15 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({ s
           </table>
         </div>
       ) : (
-        <p className="text-xs text-gray-500 dark:text-gray-400 italic py-2">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 italic py-2">
           No rows/columns visible for the selected settings.
         </p>
       )}
       <div className="flex items-center gap-2 text-[10px]">
-        <span className="text-gray-500 dark:text-gray-400">
-          {visibleRows.length} row{visibleRows.length !== 1 ? 's' : ''}, {visibleColumns.length} col{visibleColumns.length !== 1 ? 's' : ''} &middot; {(section.conditionalRows ?? []).length} total defined
+        <span className="text-zinc-500 dark:text-zinc-400">
+          {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""},{" "}
+          {visibleColumns.length} col{visibleColumns.length !== 1 ? "s" : ""}{" "}
+          &middot; {(section.conditionalRows ?? []).length} total defined
         </span>
         {section.allowAddRows && (
           <span className="text-[#f26722]">+ Add Row</span>
@@ -267,9 +299,19 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({ s
 const SectionPreview: React.FC<{
   section: SectionConfig;
   isFormulaEditing?: boolean;
-  onCellFormulaChange?: (sectionId: string, rowIndex: number, colId: string, formula: string) => void;
+  onCellFormulaChange?: (
+    sectionId: string,
+    rowIndex: number,
+    colId: string,
+    formula: string,
+  ) => void;
   onRequestEditFormulas?: (sectionId: string) => void;
-}> = ({ section, isFormulaEditing = false, onCellFormulaChange, onRequestEditFormulas }) => {
+}> = ({
+  section,
+  isFormulaEditing = false,
+  onCellFormulaChange,
+  onRequestEditFormulas,
+}) => {
   // Conditional table: interactive dropdowns + all visible rows
   if (
     section.settingFields &&
@@ -290,37 +332,63 @@ const SectionPreview: React.FC<{
     const displayRows = showAllRows ? totalRows : Math.min(totalRows, 3);
 
     return (
-      <div className={`overflow-x-auto ${isFormulaEditing ? 'max-h-[420px] overflow-y-auto' : ''}`}>
+      <div
+        className={`overflow-x-auto ${isFormulaEditing ? "max-h-[420px] overflow-y-auto" : ""}`}
+      >
         {isFormulaEditing && (
           <div className="mb-2 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-[10px] text-amber-800 dark:text-amber-200">
-            Type formulas directly in cells below. Use references like <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{'{'}Code.fieldId{'}'}</code> or <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{'{'}Code.C1.R2{'}'}</code>. Math: <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{'{'}ND.ratedCurrent{'}'}*{'{'}ND.ratedVoltage{'}'}</code>
+            Type formulas directly in cells below. Use references like{" "}
+            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+              {"{"}Code.fieldId{"}"}
+            </code>{" "}
+            or{" "}
+            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+              {"{"}Code.C1.R2{"}"}
+            </code>
+            . Math:{" "}
+            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+              {"{"}ND.ratedCurrent{"}"}*{"{"}ND.ratedVoltage{"}"}
+            </code>
           </div>
         )}
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
           <thead>
             <tr>
               {isFormulaEditing && (
-                <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 bg-gray-50 dark:bg-dark-200 text-center font-medium w-8 text-[10px] text-gray-400">
+                <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-50 dark:bg-dark-200 text-center font-medium w-8 text-[10px] text-zinc-400">
                   #
                 </th>
               )}
               {section.columns.map((col, colIndex) => {
                 const cNum = colIndex + 1;
                 const sameRowRef = `{${code}.C${cNum}}`;
-                const rowRefs = Array.from({ length: Math.min(totalRows, 5) }, (_, i) => `{${code}.C${cNum}.R${i + 1}}`).join(', ');
+                const rowRefs = Array.from(
+                  { length: Math.min(totalRows, 5) },
+                  (_, i) => `{${code}.C${cNum}.R${i + 1}}`,
+                ).join(", ");
                 return (
                   <th
                     key={col.id}
-                    className="border border-gray-300 dark:border-gray-600 px-2 py-1 bg-gray-50 dark:bg-dark-200 text-left font-medium align-top"
+                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium align-top"
                     style={col.width ? { width: col.width } : undefined}
                   >
-                    <div>{col.label}{col.width && <span className="text-[9px] text-gray-400 ml-1">({col.width})</span>}</div>
-                    <div className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5" title={`${section.title || 'Section'}, column ${cNum} (same row). Or ${rowRefs} for specific rows.`}>
+                    <div>
+                      {col.label}
+                      {col.width && (
+                        <span className="text-[9px] text-zinc-400 ml-1">
+                          ({col.width})
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+                      title={`${section.title || "Section"}, column ${cNum} (same row). Or ${rowRefs} for specific rows.`}
+                    >
                       {sameRowRef}
                     </div>
                     {!isFormulaEditing && (
-                      <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        ({section.title || 'Section'}, column {cNum}, same row)
+                      <div className="text-[9px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        ({section.title || "Section"}, column {cNum}, same row)
                       </div>
                     )}
                   </th>
@@ -332,32 +400,42 @@ const SectionPreview: React.FC<{
             {Array.from({ length: displayRows }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {isFormulaEditing && (
-                  <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-[10px] text-gray-400 bg-gray-50 dark:bg-dark-200">
+                  <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-[10px] text-zinc-400 bg-zinc-50 dark:bg-dark-200">
                     R{rowIndex + 1}
                   </td>
                 )}
-                {section.columns!.map(col => {
+                {section.columns!.map((col) => {
                   const cellKey = `row${rowIndex}_${col.id}`;
-                  const cellFormula = section.cellFormulas?.[cellKey] ?? '';
-                  const colLevelFormula = col.field?.cellBehavior === 'calculate'
-                    ? col.field.calculation?.formula ?? ''
-                    : col.field?.cellBehavior === 'populate'
-                      ? '(populated)'
-                      : '';
+                  const cellFormula = section.cellFormulas?.[cellKey] ?? "";
+                  const colLevelFormula =
+                    col.field?.cellBehavior === "calculate"
+                      ? (col.field.calculation?.formula ?? "")
+                      : col.field?.cellBehavior === "populate"
+                        ? "(populated)"
+                        : "";
 
                   if (isFormulaEditing) {
                     return (
                       <td
                         key={col.id}
-                        className="border border-gray-300 dark:border-gray-600 p-0"
+                        className="border border-zinc-300 dark:border-zinc-600 p-0"
                         style={col.width ? { width: col.width } : undefined}
                       >
                         <input
                           type="text"
                           value={cellFormula}
-                          onChange={(e) => onCellFormulaChange?.(section.id, rowIndex, col.id, e.target.value)}
-                          placeholder={colLevelFormula || 'e.g. {JD.TCF} or {IR.C1.R2}'}
-                          className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-gray-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 focus:bg-amber-50 dark:focus:bg-amber-900/20 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                          onChange={(e) =>
+                            onCellFormulaChange?.(
+                              section.id,
+                              rowIndex,
+                              col.id,
+                              e.target.value,
+                            )
+                          }
+                          placeholder={
+                            colLevelFormula || "e.g. {JD.TCF} or {IR.C1.R2}"
+                          }
+                          className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-zinc-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 focus:bg-amber-50 dark:focus:bg-amber-900/20 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                           title={`Cell ${code}.C${section.columns!.indexOf(col) + 1}.R${rowIndex + 1} — e.g. {JD.TCF} for TCF, {section.C1.R2} for table ref`}
                         />
                       </td>
@@ -367,15 +445,17 @@ const SectionPreview: React.FC<{
                   return (
                     <td
                       key={col.id}
-                      className="border border-gray-300 dark:border-gray-600 px-2 py-1"
+                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
                       style={col.width ? { width: col.width } : undefined}
                     >
                       {cellFormula ? (
                         <div className="h-6 bg-amber-50 dark:bg-amber-900/20 rounded px-1 flex items-center">
-                          <span className="text-[10px] font-mono text-amber-700 dark:text-amber-300 truncate">{cellFormula}</span>
+                          <span className="text-[10px] font-mono text-amber-700 dark:text-amber-300 truncate">
+                            {cellFormula}
+                          </span>
                         </div>
                       ) : (
-                        <div className="h-6 bg-gray-100 dark:bg-dark-100 rounded"></div>
+                        <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded"></div>
                       )}
                     </td>
                   );
@@ -386,12 +466,12 @@ const SectionPreview: React.FC<{
               <tr>
                 <td
                   colSpan={section.columns.length + (isFormulaEditing ? 1 : 0)}
-                  className="border border-gray-300 dark:border-gray-600 p-0"
+                  className="border border-zinc-300 dark:border-zinc-600 p-0"
                 >
                   <button
                     type="button"
                     onClick={() => onRequestEditFormulas?.(section.id)}
-                    className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-gray-200 dark:border-gray-600"
+                    className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-zinc-200 dark:border-zinc-600"
                   >
                     Show all {totalRows} rows and edit formulas…
                   </button>
@@ -401,14 +481,15 @@ const SectionPreview: React.FC<{
           </tbody>
         </table>
         {isFormulaEditing && (
-          <p className="mt-1.5 text-[10px] text-gray-500 dark:text-gray-400">
-            Showing all {totalRows} rows. Empty cells use column-level behavior. Per-cell formulas override column settings.
+          <p className="mt-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            Showing all {totalRows} rows. Empty cells use column-level behavior.
+            Per-cell formulas override column settings.
           </p>
         )}
         {!isFormulaEditing && (
           <div className="flex items-center gap-2 mt-1.5 text-[10px]">
-            <span className="text-gray-500 dark:text-gray-400">
-              {totalRows} row{totalRows !== 1 ? 's' : ''}
+            <span className="text-zinc-500 dark:text-zinc-400">
+              {totalRows} row{totalRows !== 1 ? "s" : ""}
             </span>
             {section.allowAddRows && (
               <span className="text-[#f26722]">+ Add Row</span>
@@ -417,7 +498,9 @@ const SectionPreview: React.FC<{
               <span className="text-red-500">- Remove Row</span>
             )}
             {!section.allowAddRows && !section.allowRemoveRows && (
-              <span className="text-gray-400 dark:text-gray-500 italic">fixed rows</span>
+              <span className="text-zinc-400 dark:text-zinc-500 italic">
+                fixed rows
+              </span>
             )}
           </div>
         )}
@@ -427,46 +510,77 @@ const SectionPreview: React.FC<{
 
   // For grouped fields (nameplate data, job info, etc.) - stacked label + input in each cell
   if (section.fields && section.fields.length > 0) {
-    const columns = section.componentType === 'job-info' ? 5 : section.layout === 'five-column' ? 5 : section.layout === 'four-column' ? 4 : section.layout === 'three-column' ? 3 : section.layout === 'two-column' ? 2 : 1;
+    const columns =
+      section.componentType === "job-info"
+        ? 5
+        : section.layout === "five-column"
+          ? 5
+          : section.layout === "four-column"
+            ? 4
+            : section.layout === "three-column"
+              ? 3
+              : section.layout === "two-column"
+                ? 2
+                : 1;
     const code = getSectionReferenceCode(section);
-    const fieldRows: typeof section.fields[] = [];
+    const fieldRows: (typeof section.fields)[] = [];
     for (let i = 0; i < section.fields.length; i += columns) {
       fieldRows.push(section.fields.slice(i, i + columns));
     }
-    const isJobInfo = section.componentType === 'job-info';
+    const isJobInfo = section.componentType === "job-info";
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
           <tbody>
             {fieldRows.map((row, rowIdx) => (
               <tr key={rowIdx}>
-                {row.map(field => (
+                {row.map((field) => (
                   <td
                     key={field.id}
-                    className="border border-gray-300 dark:border-gray-600 px-2 py-1 align-top"
+                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 align-top"
                   >
-                    <div className="font-medium text-gray-700 dark:text-gray-300">
+                    <div className="font-medium text-zinc-700 dark:text-zinc-300">
                       {field.label}
-                      {field.unit && <span className="text-gray-500 ml-1">({field.unit})</span>}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                      {field.readOnly && <span className="text-blue-500 ml-1 text-[10px]">(Auto)</span>}
+                      {field.unit && (
+                        <span className="text-zinc-500 ml-1">
+                          ({field.unit})
+                        </span>
+                      )}
+                      {field.required && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                      {field.readOnly && (
+                        <span className="text-blue-500 ml-1 text-[10px]">
+                          (Auto)
+                        </span>
+                      )}
                     </div>
-                    <div className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5" title={`${section.title || 'Section'} » ${field.label || field.id}`}>
+                    <div
+                      className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+                      title={`${section.title || "Section"} » ${field.label || field.id}`}
+                    >
                       {`{${code}.${field.id}}`}
                     </div>
-                    <div className={`h-6 mt-1 ${field.readOnly ? 'bg-gray-200 dark:bg-dark-200' : 'bg-gray-100 dark:bg-dark-100'} rounded`}></div>
+                    <div
+                      className={`h-6 mt-1 ${field.readOnly ? "bg-zinc-200 dark:bg-dark-200" : "bg-zinc-100 dark:bg-dark-100"} rounded`}
+                    ></div>
                   </td>
                 ))}
-                {row.length < columns && Array.from({ length: columns - row.length }).map((_, i) => (
-                  <td key={`empty-${i}`} className="border border-gray-300 dark:border-gray-600 px-2 py-1"></td>
-                ))}
+                {row.length < columns &&
+                  Array.from({ length: columns - row.length }).map((_, i) => (
+                    <td
+                      key={`empty-${i}`}
+                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                    ></td>
+                  ))}
               </tr>
             ))}
           </tbody>
         </table>
         {isJobInfo && (
-          <p className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
-            Use <span className="font-mono">{'{JD.TCF}'}</span> in formulas for Temperature Correction Factor
+          <p className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+            Use <span className="font-mono">{"{JD.TCF}"}</span> in formulas for
+            Temperature Correction Factor
           </p>
         )}
       </div>
@@ -478,15 +592,22 @@ const SectionPreview: React.FC<{
     const code = getSectionReferenceCode(section);
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
           <tbody>
             <tr>
-              <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
-                <div className="font-medium text-gray-700 dark:text-gray-300">{section.field.label}</div>
-                <div className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5" title={`Use in formula: {${code}.${section.field.id}}`}>
+              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                <div className="font-medium text-zinc-700 dark:text-zinc-300">
+                  {section.field.label}
+                </div>
+                <div
+                  className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+                  title={`Use in formula: {${code}.${section.field.id}}`}
+                >
                   {`{${code}.${section.field.id}}`}
                 </div>
-                <div className={`${section.field.type === 'textarea' ? 'h-16' : 'h-6'} mt-1 bg-gray-100 dark:bg-dark-100 rounded`}></div>
+                <div
+                  className={`${section.field.type === "textarea" ? "h-16" : "h-6"} mt-1 bg-zinc-100 dark:bg-dark-100 rounded`}
+                ></div>
               </td>
             </tr>
           </tbody>
@@ -499,31 +620,31 @@ const SectionPreview: React.FC<{
   if (section.checklistItems && section.checklistItems.length > 0) {
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
           <thead>
             <tr>
-              <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 bg-gray-50 dark:bg-dark-200 text-left font-medium w-24">
+              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium w-24">
                 NETA Section
               </th>
-              <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 bg-gray-50 dark:bg-dark-200 text-left font-medium">
+              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium">
                 Description
               </th>
-              <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 bg-gray-50 dark:bg-dark-200 text-left font-medium w-32">
+              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium w-32">
                 Result
               </th>
             </tr>
           </thead>
           <tbody>
-            {section.checklistItems.slice(0, 3).map(item => (
+            {section.checklistItems.slice(0, 3).map((item) => (
               <tr key={item.id}>
-                <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
-                  {item.netaSection || '-'}
+                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                  {item.netaSection || "-"}
                 </td>
-                <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
+                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
                   {item.description}
                 </td>
-                <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
-                  <div className="h-6 bg-gray-100 dark:bg-dark-100 rounded"></div>
+                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                  <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded"></div>
                 </td>
               </tr>
             ))}
@@ -531,7 +652,7 @@ const SectionPreview: React.FC<{
               <tr>
                 <td
                   colSpan={3}
-                  className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-gray-500 dark:text-gray-400"
+                  className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-zinc-500 dark:text-zinc-400"
                 >
                   ... {section.checklistItems.length - 3} more items
                 </td>
@@ -544,7 +665,7 @@ const SectionPreview: React.FC<{
   }
 
   return (
-    <div className="text-center text-gray-500 dark:text-gray-400 py-4 text-sm">
+    <div className="text-center text-zinc-500 dark:text-zinc-400 py-4 text-sm">
       No preview available
     </div>
   );
@@ -557,7 +678,12 @@ interface FormCanvasProps {
   onSectionDelete: (sectionId: string) => void;
   onSectionDuplicate: (sectionId: string) => void;
   formulaEditingSectionId?: string | null;
-  onCellFormulaChange?: (sectionId: string, rowIndex: number, colId: string, formula: string) => void;
+  onCellFormulaChange?: (
+    sectionId: string,
+    rowIndex: number,
+    colId: string,
+    formula: string,
+  ) => void;
   onRequestEditFormulas?: (sectionId: string) => void;
 }
 
@@ -572,7 +698,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   onRequestEditFormulas,
 }) => {
   const { setNodeRef } = useDroppable({
-    id: 'form-canvas',
+    id: "form-canvas",
   });
 
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
@@ -580,7 +706,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   return (
     <div ref={setNodeRef} className="w-full mx-auto">
       <SortableContext
-        items={sortedSections.map(s => s.id)}
+        items={sortedSections.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-3 md:space-y-4">
@@ -591,7 +717,9 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
               isSelected={section.id === selectedSectionId}
               onSelect={() => onSectionSelect(section.id)}
               onDelete={() => {
-                if (confirm(`Are you sure you want to delete "${section.title}"?`)) {
+                if (
+                  confirm(`Are you sure you want to delete "${section.title}"?`)
+                ) {
                   onSectionDelete(section.id);
                 }
               }}

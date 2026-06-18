@@ -55,7 +55,9 @@ const GFITripTestReport: React.FC = () => {
     reportId,
     substation: urlSubstation,
   } = useParams<{ id: string; reportId?: string; substation?: string }>();
-  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    reportId,
+  );
 
   useEffect(() => {
     setCurrentReportId(reportId);
@@ -432,7 +434,7 @@ const GFITripTestReport: React.FC = () => {
       />
 
       {/* Print Header - standard AMP layout: logo | title | PASS/FAIL */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 mt-4">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 mt-4">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -525,7 +527,7 @@ const GFITripTestReport: React.FC = () => {
                 printColorAdjust: "exact",
               }}
             ></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div
@@ -627,24 +629,24 @@ const GFITripTestReport: React.FC = () => {
               className={`${isPrintMode ? "block" : "hidden print:block"} job-info-print`}
             >
               <table
-                className="w-full border-collapse border border-gray-300 print:border-black print:border"
+                className="w-full border-collapse border border-zinc-300 print:border-black print:border"
                 style={{ marginLeft: 0 }}
               >
                 <tbody>
                   <tr className="allow-row-break">
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">Customer:</div>
                       <div className="mt-1 whitespace-pre-wrap break-words text-center">
                         {formData.customer || ""}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">Job #:</div>
                       <div className="mt-1 whitespace-pre-wrap break-words text-center">
                         {formData.jobNumber || ""}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">
                         Technicians:
                       </div>
@@ -652,7 +654,7 @@ const GFITripTestReport: React.FC = () => {
                         {formData.technicians || ""}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">Date:</div>
                       <div className="mt-1 whitespace-pre-wrap break-words text-center">
                         {formData.date
@@ -664,13 +666,13 @@ const GFITripTestReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">Address:</div>
                       <div className="mt-1 whitespace-pre-wrap break-words text-center">
                         {maskCustomerAddress(formData.address || "")}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">
                         Identifier:
                       </div>
@@ -678,7 +680,7 @@ const GFITripTestReport: React.FC = () => {
                         {formData.identifier || ""}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">
                         Substation:
                       </div>
@@ -686,7 +688,7 @@ const GFITripTestReport: React.FC = () => {
                         {formData.substation || ""}
                       </div>
                     </td>
-                    <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+                    <td className="p-3 align-middle text-center border border-zinc-300 print:border-black print:border">
                       <div className="font-semibold text-center">
                         Eqpt. Location:
                       </div>
@@ -713,7 +715,7 @@ const GFITripTestReport: React.FC = () => {
                 printColorAdjust: "exact",
               }}
             ></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment
             </h2>
 
@@ -804,35 +806,35 @@ const GFITripTestReport: React.FC = () => {
 
             {/* Print view - table structure */}
             <div className={`${isPrintMode ? "block" : "hidden print:block"}`}>
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <table className="w-full border-collapse border border-zinc-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Model
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Serial Number
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       AMP ID
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.testEquipment.model || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.testEquipment.serialNumber || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.testEquipment.ampId || ""}
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.testEquipment.calDate
                         ? new Date(
                             formData.testEquipment.calDate + "T00:00:00",
@@ -858,7 +860,7 @@ const GFITripTestReport: React.FC = () => {
                 printColorAdjust: "exact",
               }}
             ></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
               Overview
             </h2>
 
@@ -866,26 +868,26 @@ const GFITripTestReport: React.FC = () => {
             <div
               className={`overflow-x-auto ${isPrintMode ? "hidden" : ""} print:hidden`}
             >
-              <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
                 <thead>
                   <tr>
                     <th
-                      className="border border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-dark-150 font-semibold text-left text-gray-900 dark:text-white"
+                      className="border border-zinc-200 dark:border-zinc-700 p-2 bg-zinc-50 dark:bg-dark-150 font-semibold text-left text-zinc-900 dark:text-white"
                       colSpan={2}
                     >
                       Data
                     </th>
-                    <th className="border border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-dark-150 font-semibold text-left text-gray-900 dark:text-white">
+                    <th className="border border-zinc-200 dark:border-zinc-700 p-2 bg-zinc-50 dark:bg-dark-150 font-semibold text-left text-zinc-900 dark:text-white">
                       Results
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-gray-300 w-40">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium text-zinc-700 dark:text-zinc-300 w-40">
                       Manufacturer
                     </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 w-48">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 w-48">
                       <input
                         type="text"
                         value={formData.manufacturer}
@@ -898,7 +900,7 @@ const GFITripTestReport: React.FC = () => {
                       />
                     </td>
                     <td
-                      className="border border-gray-200 dark:border-gray-700 px-4 py-2 align-top"
+                      className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 align-top"
                       rowSpan={4}
                     >
                       <textarea
@@ -914,10 +916,10 @@ const GFITripTestReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium text-zinc-700 dark:text-zinc-300">
                       Rated Current
                     </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
                       <input
                         type="text"
                         value={formData.ratedCurrent}
@@ -931,10 +933,10 @@ const GFITripTestReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium text-zinc-700 dark:text-zinc-300">
                       Ground Fault Setting
                     </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
                       <input
                         type="text"
                         value={formData.groundFaultSetting}
@@ -948,10 +950,10 @@ const GFITripTestReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium text-zinc-700 dark:text-zinc-300">
                       Ground Fault Trip
                     </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
                       <input
                         type="text"
                         value={formData.groundFaultTrip}
@@ -972,7 +974,7 @@ const GFITripTestReport: React.FC = () => {
             <div
               className={`${isPrintMode ? "block" : "hidden print:block"} overview-print`}
             >
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <table className="w-full border-collapse border border-zinc-300 print:border-black">
                 <colgroup>
                   <col style={{ width: "22%" }} />
                   <col style={{ width: "28%" }} />
@@ -981,26 +983,26 @@ const GFITripTestReport: React.FC = () => {
                 <thead>
                   <tr>
                     <th
-                      className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left"
+                      className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left"
                       colSpan={2}
                     >
                       Data
                     </th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 font-semibold text-left">
+                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 font-semibold text-left">
                       Results
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="allow-row-break">
-                    <td className="p-2 border border-gray-300 print:border-black font-medium w-40">
+                    <td className="p-2 border border-zinc-300 print:border-black font-medium w-40">
                       Manufacturer
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black w-48">
+                    <td className="p-2 border border-zinc-300 print:border-black w-48">
                       {formData.manufacturer || ""}
                     </td>
                     <td
-                      className="p-2 border border-gray-300 print:border-black align-top"
+                      className="p-2 border border-zinc-300 print:border-black align-top"
                       rowSpan={4}
                     >
                       <div
@@ -1016,26 +1018,26 @@ const GFITripTestReport: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-medium">
+                    <td className="p-2 border border-zinc-300 print:border-black font-medium">
                       Rated Current
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.ratedCurrent || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-medium">
+                    <td className="p-2 border border-zinc-300 print:border-black font-medium">
                       Ground Fault Setting
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.groundFaultSetting || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-medium">
+                    <td className="p-2 border border-zinc-300 print:border-black font-medium">
                       Ground Fault Trip
                     </td>
-                    <td className="p-2 border border-gray-300 print:border-black">
+                    <td className="p-2 border border-zinc-300 print:border-black">
                       {formData.groundFaultTrip || ""}
                     </td>
                   </tr>
@@ -1048,7 +1050,7 @@ const GFITripTestReport: React.FC = () => {
           <div className="print:hidden">
             <button
               onClick={() => navigate(`/jobs/${jobId}`)}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+              className="text-zinc-600 dark:text-zinc-300 hover:text-zinc-800 dark:hover:text-white"
             >
               ← Back to Job
             </button>

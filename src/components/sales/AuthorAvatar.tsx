@@ -1,9 +1,9 @@
-import React from 'react';
-import type { AuthorProfile } from '@/services/interactionsService';
+import React from "react";
+import type { AuthorProfile } from "@/services/interactionsService";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
+  if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
@@ -23,18 +23,19 @@ export const AuthorAvatar: React.FC<AuthorAvatarProps> = ({
   email,
   profile,
   size = 28,
-  className = '',
+  className = "",
 }) => {
-  const displayName = profile?.displayName || (email ? email.split('@')[0] : 'Unknown');
+  const displayName =
+    profile?.displayName || (email ? email.split("@")[0] : "Unknown");
   const avatarUrl = profile?.avatarUrl || null;
   const dim = { width: size, height: size };
 
   return (
     <a
       href={email ? `mailto:${email}` : undefined}
-      title={`${displayName}${email ? ` · ${email}` : ''}`}
+      title={`${displayName}${email ? ` · ${email}` : ""}`}
       onClick={(e) => e.stopPropagation()}
-      className={`inline-flex shrink-0 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-[#f26722] transition-shadow ${className}`}
+      className={`inline-flex shrink-0 rounded-full overflow-hidden ring-1 ring-zinc-200 dark:ring-zinc-600 hover:ring-[#f26722] transition-shadow ${className}`}
       style={dim}
     >
       {avatarUrl ? (

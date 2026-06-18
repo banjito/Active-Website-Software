@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { 
-  SelectTrigger, 
-  SelectValue, 
-  SelectContent, 
+import React, { useState } from "react";
+import { format } from "date-fns";
+import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import {
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
   SelectItem,
-  SelectRoot
-} from '@/components/ui/Select';
+  SelectRoot,
+} from "@/components/ui/Select";
 import {
   Table,
   TableBody,
@@ -26,11 +26,22 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { Badge } from '@/components/ui/Badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Search, Plus, Tag, Calendar, User, DollarSign, MapPin, AlertTriangle, CheckCircle, Package } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Textarea } from '@/components/ui/Textarea';
+import { Badge } from "@/components/ui/Badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import {
+  Search,
+  Plus,
+  Tag,
+  Calendar,
+  User,
+  DollarSign,
+  MapPin,
+  AlertTriangle,
+  CheckCircle,
+  Package,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
+import { Textarea } from "@/components/ui/Textarea";
 
 // Define asset types
 interface Asset {
@@ -41,7 +52,7 @@ interface Asset {
   cost: number;
   location: string;
   assignedTo?: string;
-  status: 'available' | 'assigned' | 'maintenance' | 'retired';
+  status: "available" | "assigned" | "maintenance" | "retired";
   serialNumber?: string;
   warrantyExpiration?: string;
   lastMaintenance?: string;
@@ -81,153 +92,160 @@ interface CheckoutFormData {
 // Sample data - replace with API calls
 const sampleAssets: Asset[] = [
   {
-    id: '1',
-    name: 'Dell Latitude 5520',
-    type: 'laptop',
-    purchaseDate: '2023-03-15',
+    id: "1",
+    name: "Dell Latitude 5520",
+    type: "laptop",
+    purchaseDate: "2023-03-15",
     cost: 1200,
-    location: 'IT Department',
-    status: 'assigned',
-    assignedTo: 'John Doe',
-    serialNumber: 'DL55207890',
-    warrantyExpiration: '2026-03-15',
-    lastMaintenance: '2023-12-10',
-    notes: 'Company standard laptop configuration',
+    location: "IT Department",
+    status: "assigned",
+    assignedTo: "John Doe",
+    serialNumber: "DL55207890",
+    warrantyExpiration: "2026-03-15",
+    lastMaintenance: "2023-12-10",
+    notes: "Company standard laptop configuration",
     checkoutHistory: [
       {
-        id: 'c1',
-        assetId: '1',
-        checkoutDate: '2023-04-01',
-        expectedReturnDate: '2024-04-01',
-        checkedOutBy: 'IT Admin',
-        checkedOutTo: 'John Doe',
-        notes: 'Annual laptop assignment'
-      }
-    ]
+        id: "c1",
+        assetId: "1",
+        checkoutDate: "2023-04-01",
+        expectedReturnDate: "2024-04-01",
+        checkedOutBy: "IT Admin",
+        checkedOutTo: "John Doe",
+        notes: "Annual laptop assignment",
+      },
+    ],
   },
   {
-    id: '2',
-    name: 'HP Color LaserJet Pro',
-    type: 'printer',
-    purchaseDate: '2022-11-05',
+    id: "2",
+    name: "HP Color LaserJet Pro",
+    type: "printer",
+    purchaseDate: "2022-11-05",
     cost: 499.99,
-    location: 'Marketing Department',
-    status: 'available',
-    serialNumber: 'HPL8700123',
-    warrantyExpiration: '2025-11-05',
-    lastMaintenance: '2023-11-10',
+    location: "Marketing Department",
+    status: "available",
+    serialNumber: "HPL8700123",
+    warrantyExpiration: "2025-11-05",
+    lastMaintenance: "2023-11-10",
   },
   {
-    id: '3',
-    name: 'Logitech ConferenceCam',
-    type: 'conferencing',
-    purchaseDate: '2023-01-20',
+    id: "3",
+    name: "Logitech ConferenceCam",
+    type: "conferencing",
+    purchaseDate: "2023-01-20",
     cost: 899.99,
-    location: 'Conference Room A',
-    status: 'maintenance',
-    serialNumber: 'LGT456789',
-    warrantyExpiration: '2025-01-20',
-    lastMaintenance: '2023-10-15',
-    notes: 'Scheduled for firmware update',
+    location: "Conference Room A",
+    status: "maintenance",
+    serialNumber: "LGT456789",
+    warrantyExpiration: "2025-01-20",
+    lastMaintenance: "2023-10-15",
+    notes: "Scheduled for firmware update",
   },
   {
-    id: '4',
-    name: 'Steelcase Gesture Chair',
-    type: 'furniture',
-    purchaseDate: '2022-08-12',
+    id: "4",
+    name: "Steelcase Gesture Chair",
+    type: "furniture",
+    purchaseDate: "2022-08-12",
     cost: 1150,
-    location: 'Executive Office',
-    status: 'assigned',
-    assignedTo: 'Jane Smith',
-    serialNumber: 'SC78901234',
-    warrantyExpiration: '2027-08-12',
+    location: "Executive Office",
+    status: "assigned",
+    assignedTo: "Jane Smith",
+    serialNumber: "SC78901234",
+    warrantyExpiration: "2027-08-12",
   },
   {
-    id: '5',
-    name: 'Portable Projector',
-    type: 'presentation',
-    purchaseDate: '2023-02-28',
+    id: "5",
+    name: "Portable Projector",
+    type: "presentation",
+    purchaseDate: "2023-02-28",
     cost: 750,
-    location: 'Equipment Room',
-    status: 'available',
-    serialNumber: 'PP9876543',
-    warrantyExpiration: '2025-02-28',
-    lastMaintenance: '2023-08-15',
-  }
+    location: "Equipment Room",
+    status: "available",
+    serialNumber: "PP9876543",
+    warrantyExpiration: "2025-02-28",
+    lastMaintenance: "2023-08-15",
+  },
 ];
 
 // Asset type options
 const assetTypes = [
-  { value: 'laptop', label: 'Laptop' },
-  { value: 'desktop', label: 'Desktop Computer' },
-  { value: 'tablet', label: 'Tablet' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'printer', label: 'Printer' },
-  { value: 'scanner', label: 'Scanner' },
-  { value: 'networking', label: 'Networking Equipment' },
-  { value: 'conferencing', label: 'Conferencing Equipment' },
-  { value: 'presentation', label: 'Presentation Equipment' },
-  { value: 'furniture', label: 'Furniture' },
-  { value: 'low_voltage_switch_multi_device_test', label: '6-Low Voltage Switch - Multi-Device TEST' },
-  { value: 'other', label: 'Other' }
+  { value: "laptop", label: "Laptop" },
+  { value: "desktop", label: "Desktop Computer" },
+  { value: "tablet", label: "Tablet" },
+  { value: "phone", label: "Phone" },
+  { value: "printer", label: "Printer" },
+  { value: "scanner", label: "Scanner" },
+  { value: "networking", label: "Networking Equipment" },
+  { value: "conferencing", label: "Conferencing Equipment" },
+  { value: "presentation", label: "Presentation Equipment" },
+  { value: "furniture", label: "Furniture" },
+  {
+    value: "low_voltage_switch_multi_device_test",
+    label: "6-Low Voltage Switch - Multi-Device TEST",
+  },
+  { value: "other", label: "Other" },
 ];
 
 // Status colors for badges
 const statusColors = {
-  available: 'default',
-  assigned: 'secondary',
-  maintenance: 'destructive',
-  retired: 'outline'
+  available: "default",
+  assigned: "secondary",
+  maintenance: "destructive",
+  retired: "outline",
 } as const;
 
 export default function AssetTracking() {
   const [assets, setAssets] = useState<Asset[]>(sampleAssets);
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   // Form states
   const [showAssetForm, setShowAssetForm] = useState(false);
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  
+
   const [assetForm, setAssetForm] = useState<AssetFormData>({
-    name: '',
-    type: 'laptop',
-    purchaseDate: format(new Date(), 'yyyy-MM-dd'),
+    name: "",
+    type: "laptop",
+    purchaseDate: format(new Date(), "yyyy-MM-dd"),
     cost: 0,
-    location: '',
-    serialNumber: '',
-    warrantyExpiration: '',
-    notes: ''
+    location: "",
+    serialNumber: "",
+    warrantyExpiration: "",
+    notes: "",
   });
-  
+
   const [checkoutForm, setCheckoutForm] = useState<CheckoutFormData>({
-    expectedReturnDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-    checkedOutBy: 'Current User', // Replace with actual user
-    checkedOutTo: '',
-    notes: ''
+    expectedReturnDate: format(
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      "yyyy-MM-dd",
+    ),
+    checkedOutBy: "Current User", // Replace with actual user
+    checkedOutTo: "",
+    notes: "",
   });
 
   // Filter assets based on search term, type, and status
-  const filteredAssets = assets.filter(asset => {
-    const matchesSearch = 
+  const filteredAssets = assets.filter((asset) => {
+    const matchesSearch =
       asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.assignedTo?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = typeFilter === 'all' || asset.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
-    const matchesTab = 
-      activeTab === 'all' || 
-      (activeTab === 'assigned' && asset.status === 'assigned') ||
-      (activeTab === 'available' && asset.status === 'available') ||
-      (activeTab === 'maintenance' && asset.status === 'maintenance');
-    
+
+    const matchesType = typeFilter === "all" || asset.type === typeFilter;
+    const matchesStatus =
+      statusFilter === "all" || asset.status === statusFilter;
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "assigned" && asset.status === "assigned") ||
+      (activeTab === "available" && asset.status === "available") ||
+      (activeTab === "maintenance" && asset.status === "maintenance");
+
     return matchesSearch && matchesType && matchesStatus && matchesTab;
   });
 
@@ -235,37 +253,39 @@ export default function AssetTracking() {
   const handleAssetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       // Validate form
       if (!assetForm.name.trim() || !assetForm.location.trim()) {
-        throw new Error('Please fill in all required fields');
+        throw new Error("Please fill in all required fields");
       }
-      
+
       // Create new asset
       const newAsset: Asset = {
         id: Math.random().toString(36).substr(2, 9),
         ...assetForm,
-        status: 'available',
-        cost: Number(assetForm.cost)
+        status: "available",
+        cost: Number(assetForm.cost),
       };
-      
-      setAssets(prev => [...prev, newAsset]);
+
+      setAssets((prev) => [...prev, newAsset]);
       setShowAssetForm(false);
       setAssetForm({
-        name: '',
-        type: 'laptop',
-        purchaseDate: format(new Date(), 'yyyy-MM-dd'),
+        name: "",
+        type: "laptop",
+        purchaseDate: format(new Date(), "yyyy-MM-dd"),
         cost: 0,
-        location: '',
-        serialNumber: '',
-        warrantyExpiration: '',
-        notes: ''
+        location: "",
+        serialNumber: "",
+        warrantyExpiration: "",
+        notes: "",
       });
       setFormError(null);
     } catch (error) {
-      console.error('Error creating asset:', error);
-      setFormError(error instanceof Error ? error.message : 'An error occurred');
+      console.error("Error creating asset:", error);
+      setFormError(
+        error instanceof Error ? error.message : "An error occurred",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -275,56 +295,58 @@ export default function AssetTracking() {
   const handleCheckoutSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       if (!selectedAsset) {
-        throw new Error('No asset selected');
+        throw new Error("No asset selected");
       }
-      
+
       if (!checkoutForm.checkedOutTo.trim()) {
-        throw new Error('Please specify who the asset is assigned to');
+        throw new Error("Please specify who the asset is assigned to");
       }
-      
+
       // Create checkout record
       const checkoutRecord: CheckoutRecord = {
         id: Math.random().toString(36).substr(2, 9),
         assetId: selectedAsset.id,
-        checkoutDate: format(new Date(), 'yyyy-MM-dd'),
+        checkoutDate: format(new Date(), "yyyy-MM-dd"),
         expectedReturnDate: checkoutForm.expectedReturnDate,
         checkedOutBy: checkoutForm.checkedOutBy,
         checkedOutTo: checkoutForm.checkedOutTo,
-        notes: checkoutForm.notes
+        notes: checkoutForm.notes,
       };
-      
+
       // Update the asset
-      const updatedAssets = assets.map(asset => {
+      const updatedAssets = assets.map((asset) => {
         if (asset.id === selectedAsset.id) {
           return {
             ...asset,
-            status: 'assigned' as const,
+            status: "assigned" as const,
             assignedTo: checkoutForm.checkedOutTo,
-            checkoutHistory: [
-              ...(asset.checkoutHistory || []),
-              checkoutRecord
-            ]
+            checkoutHistory: [...(asset.checkoutHistory || []), checkoutRecord],
           };
         }
         return asset;
       });
-      
+
       setAssets(updatedAssets);
       setShowCheckoutForm(false);
       setSelectedAsset(null);
       setCheckoutForm({
-        expectedReturnDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-        checkedOutBy: 'Current User',
-        checkedOutTo: '',
-        notes: ''
+        expectedReturnDate: format(
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          "yyyy-MM-dd",
+        ),
+        checkedOutBy: "Current User",
+        checkedOutTo: "",
+        notes: "",
       });
       setFormError(null);
     } catch (error) {
-      console.error('Error checking out asset:', error);
-      setFormError(error instanceof Error ? error.message : 'An error occurred');
+      console.error("Error checking out asset:", error);
+      setFormError(
+        error instanceof Error ? error.message : "An error occurred",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -332,44 +354,50 @@ export default function AssetTracking() {
 
   // Handle asset return (check-in)
   const handleAssetReturn = (assetId: string) => {
-    const updatedAssets = assets.map(asset => {
+    const updatedAssets = assets.map((asset) => {
       if (asset.id === assetId) {
         // Update the most recent checkout record with a return date
-        const updatedHistory = asset.checkoutHistory ? [...asset.checkoutHistory] : [];
+        const updatedHistory = asset.checkoutHistory
+          ? [...asset.checkoutHistory]
+          : [];
         if (updatedHistory.length > 0) {
           const lastIndex = updatedHistory.length - 1;
           updatedHistory[lastIndex] = {
             ...updatedHistory[lastIndex],
-            actualReturnDate: format(new Date(), 'yyyy-MM-dd')
+            actualReturnDate: format(new Date(), "yyyy-MM-dd"),
           };
         }
-        
+
         return {
           ...asset,
-          status: 'available' as const,
+          status: "available" as const,
           assignedTo: undefined,
-          checkoutHistory: updatedHistory
+          checkoutHistory: updatedHistory,
         };
       }
       return asset;
     });
-    
+
     setAssets(updatedAssets);
   };
 
   // Handle asset maintenance status
   const handleMaintenanceStatus = (assetId: string, inMaintenance: boolean) => {
-    const updatedAssets = assets.map(asset => {
+    const updatedAssets = assets.map((asset) => {
       if (asset.id === assetId) {
         return {
           ...asset,
-          status: inMaintenance ? 'maintenance' as const : 'available' as const,
-          lastMaintenance: inMaintenance ? format(new Date(), 'yyyy-MM-dd') : asset.lastMaintenance
+          status: inMaintenance
+            ? ("maintenance" as const)
+            : ("available" as const),
+          lastMaintenance: inMaintenance
+            ? format(new Date(), "yyyy-MM-dd")
+            : asset.lastMaintenance,
         };
       }
       return asset;
     });
-    
+
     setAssets(updatedAssets);
   };
 
@@ -385,18 +413,22 @@ export default function AssetTracking() {
 
       <Card>
         <CardContent className="p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid grid-cols-4 mb-6">
               <TabsTrigger value="all">All Assets</TabsTrigger>
               <TabsTrigger value="available">Available</TabsTrigger>
               <TabsTrigger value="assigned">Assigned</TabsTrigger>
               <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
             </TabsList>
-            
+
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <Input
                     className="pl-9"
                     placeholder="Search assets..."
@@ -405,24 +437,23 @@ export default function AssetTracking() {
                   />
                 </div>
                 <div className="md:w-48">
-                  <SelectRoot 
-                    value={typeFilter} 
-                    onValueChange={setTypeFilter}
-                  >
+                  <SelectRoot value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      {assetTypes.map(type => (
-                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                      {assetTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </SelectRoot>
                 </div>
                 <div className="md:w-48">
-                  <SelectRoot 
-                    value={statusFilter} 
+                  <SelectRoot
+                    value={statusFilter}
                     onValueChange={setStatusFilter}
                   >
                     <SelectTrigger>
@@ -463,22 +494,30 @@ export default function AssetTracking() {
                       <TableRow key={asset.id}>
                         <TableCell>
                           <div className="font-medium">{asset.name}</div>
-                          <div className="text-xs text-gray-500">SN: {asset.serialNumber}</div>
+                          <div className="text-xs text-zinc-500">
+                            SN: {asset.serialNumber}
+                          </div>
                         </TableCell>
-                        <TableCell>{assetTypes.find(t => t.value === asset.type)?.label || asset.type}</TableCell>
+                        <TableCell>
+                          {assetTypes.find((t) => t.value === asset.type)
+                            ?.label || asset.type}
+                        </TableCell>
                         <TableCell>{asset.location}</TableCell>
                         <TableCell>
                           <Badge variant={statusColors[asset.status]}>
-                            {asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}
+                            {asset.status.charAt(0).toUpperCase() +
+                              asset.status.slice(1)}
                           </Badge>
                         </TableCell>
-                        <TableCell>{asset.assignedTo || '—'}</TableCell>
-                        <TableCell>{format(new Date(asset.purchaseDate), 'MMM d, yyyy')}</TableCell>
+                        <TableCell>{asset.assignedTo || "—"}</TableCell>
+                        <TableCell>
+                          {format(new Date(asset.purchaseDate), "MMM d, yyyy")}
+                        </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            {asset.status === 'available' && (
-                              <Button 
-                                size="sm" 
+                            {asset.status === "available" && (
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => {
                                   setSelectedAsset(asset);
@@ -488,29 +527,34 @@ export default function AssetTracking() {
                                 Checkout
                               </Button>
                             )}
-                            {asset.status === 'assigned' && (
-                              <Button 
-                                size="sm" 
+                            {asset.status === "assigned" && (
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => handleAssetReturn(asset.id)}
                               >
                                 Return
                               </Button>
                             )}
-                            {asset.status !== 'maintenance' && asset.status !== 'retired' && (
-                              <Button 
-                                size="sm" 
+                            {asset.status !== "maintenance" &&
+                              asset.status !== "retired" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleMaintenanceStatus(asset.id, true)
+                                  }
+                                >
+                                  Maintenance
+                                </Button>
+                              )}
+                            {asset.status === "maintenance" && (
+                              <Button
+                                size="sm"
                                 variant="outline"
-                                onClick={() => handleMaintenanceStatus(asset.id, true)}
-                              >
-                                Maintenance
-                              </Button>
-                            )}
-                            {asset.status === 'maintenance' && (
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleMaintenanceStatus(asset.id, false)}
+                                onClick={() =>
+                                  handleMaintenanceStatus(asset.id, false)
+                                }
                               >
                                 Complete
                               </Button>
@@ -548,7 +592,9 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Asset Name *</label>
               <Input
                 value={assetForm.name}
-                onChange={(e) => setAssetForm({...assetForm, name: e.target.value})}
+                onChange={(e) =>
+                  setAssetForm({ ...assetForm, name: e.target.value })
+                }
                 placeholder="Dell Latitude 5520"
                 required
               />
@@ -556,16 +602,20 @@ export default function AssetTracking() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Asset Type *</label>
-              <SelectRoot 
-                value={assetForm.type} 
-                onValueChange={(value: string) => setAssetForm({...assetForm, type: value})}
+              <SelectRoot
+                value={assetForm.type}
+                onValueChange={(value: string) =>
+                  setAssetForm({ ...assetForm, type: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select asset type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {assetTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  {assetTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </SelectRoot>
@@ -577,7 +627,9 @@ export default function AssetTracking() {
                 <Input
                   type="date"
                   value={assetForm.purchaseDate}
-                  onChange={(e) => setAssetForm({...assetForm, purchaseDate: e.target.value})}
+                  onChange={(e) =>
+                    setAssetForm({ ...assetForm, purchaseDate: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -588,7 +640,12 @@ export default function AssetTracking() {
                   min="0"
                   step="0.01"
                   value={assetForm.cost}
-                  onChange={(e) => setAssetForm({...assetForm, cost: parseFloat(e.target.value)})}
+                  onChange={(e) =>
+                    setAssetForm({
+                      ...assetForm,
+                      cost: parseFloat(e.target.value),
+                    })
+                  }
                   required
                 />
               </div>
@@ -598,7 +655,9 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Location *</label>
               <Input
                 value={assetForm.location}
-                onChange={(e) => setAssetForm({...assetForm, location: e.target.value})}
+                onChange={(e) =>
+                  setAssetForm({ ...assetForm, location: e.target.value })
+                }
                 placeholder="IT Department"
                 required
               />
@@ -608,7 +667,9 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Serial Number</label>
               <Input
                 value={assetForm.serialNumber}
-                onChange={(e) => setAssetForm({...assetForm, serialNumber: e.target.value})}
+                onChange={(e) =>
+                  setAssetForm({ ...assetForm, serialNumber: e.target.value })
+                }
                 placeholder="SN12345678"
               />
             </div>
@@ -618,7 +679,12 @@ export default function AssetTracking() {
               <Input
                 type="date"
                 value={assetForm.warrantyExpiration}
-                onChange={(e) => setAssetForm({...assetForm, warrantyExpiration: e.target.value})}
+                onChange={(e) =>
+                  setAssetForm({
+                    ...assetForm,
+                    warrantyExpiration: e.target.value,
+                  })
+                }
               />
             </div>
 
@@ -626,7 +692,9 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Notes</label>
               <Textarea
                 value={assetForm.notes}
-                onChange={(e) => setAssetForm({...assetForm, notes: e.target.value})}
+                onChange={(e) =>
+                  setAssetForm({ ...assetForm, notes: e.target.value })
+                }
                 placeholder="Additional details about this asset"
                 rows={3}
               />
@@ -641,7 +709,7 @@ export default function AssetTracking() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Add Asset'}
+                {isSubmitting ? "Saving..." : "Add Asset"}
               </Button>
             </DialogFooter>
           </form>
@@ -668,12 +736,16 @@ export default function AssetTracking() {
             )}
 
             {selectedAsset && (
-              <div className="p-3 bg-gray-50 dark:bg-dark-150 rounded-md">
+              <div className="p-3 bg-zinc-50 dark:bg-dark-150 rounded-md">
                 <h3 className="font-medium">{selectedAsset.name}</h3>
-                <p className="text-sm text-gray-500">
-                  Type: {assetTypes.find(t => t.value === selectedAsset.type)?.label}
+                <p className="text-sm text-zinc-500">
+                  Type:{" "}
+                  {
+                    assetTypes.find((t) => t.value === selectedAsset.type)
+                      ?.label
+                  }
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-zinc-500">
                   SN: {selectedAsset.serialNumber}
                 </p>
               </div>
@@ -683,19 +755,31 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Assign To *</label>
               <Input
                 value={checkoutForm.checkedOutTo}
-                onChange={(e) => setCheckoutForm({...checkoutForm, checkedOutTo: e.target.value})}
+                onChange={(e) =>
+                  setCheckoutForm({
+                    ...checkoutForm,
+                    checkedOutTo: e.target.value,
+                  })
+                }
                 placeholder="Employee name"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Expected Return Date</label>
+              <label className="text-sm font-medium">
+                Expected Return Date
+              </label>
               <Input
                 type="date"
                 value={checkoutForm.expectedReturnDate}
-                onChange={(e) => setCheckoutForm({...checkoutForm, expectedReturnDate: e.target.value})}
-                min={format(new Date(), 'yyyy-MM-dd')}
+                onChange={(e) =>
+                  setCheckoutForm({
+                    ...checkoutForm,
+                    expectedReturnDate: e.target.value,
+                  })
+                }
+                min={format(new Date(), "yyyy-MM-dd")}
               />
             </div>
 
@@ -703,7 +787,9 @@ export default function AssetTracking() {
               <label className="text-sm font-medium">Notes</label>
               <Textarea
                 value={checkoutForm.notes}
-                onChange={(e) => setCheckoutForm({...checkoutForm, notes: e.target.value})}
+                onChange={(e) =>
+                  setCheckoutForm({ ...checkoutForm, notes: e.target.value })
+                }
                 placeholder="Reason for checkout, condition, etc."
                 rows={3}
               />
@@ -721,7 +807,7 @@ export default function AssetTracking() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Checking out...' : 'Checkout Asset'}
+                {isSubmitting ? "Checking out..." : "Checkout Asset"}
               </Button>
             </DialogFooter>
           </form>
@@ -729,4 +815,4 @@ export default function AssetTracking() {
       </Dialog>
     </div>
   );
-} 
+}

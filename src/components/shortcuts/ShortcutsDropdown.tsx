@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   PlusCircle,
   Edit2,
@@ -10,10 +10,14 @@ import {
   ArrowUpRight,
   Check,
   X,
-} from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { ShortcutService, Shortcut, MAX_SHORTCUTS } from '@/services/ShortcutService';
-import { BUILTIN_PORTALS } from '@/components/shortcuts/builtins';
+} from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  ShortcutService,
+  Shortcut,
+  MAX_SHORTCUTS,
+} from "@/services/ShortcutService";
+import { BUILTIN_PORTALS } from "@/components/shortcuts/builtins";
 import {
   DndContext,
   closestCenter,
@@ -22,22 +26,22 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ShortcutsDropdownProps {
   onNavigate: (url: string) => void;
 }
 
-type View = 'list' | 'form' | 'quick';
+type View = "list" | "form" | "quick";
 
 interface FormData {
   title: string;
@@ -50,7 +54,14 @@ const SortableRow: React.FC<{
   onEdit: (s: Shortcut) => void;
   onDelete: (id: string) => void;
 }> = ({ shortcut, onNavigate, onEdit, onDelete }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: shortcut.id!,
   });
 
@@ -59,7 +70,7 @@ const SortableRow: React.FC<{
     transition,
   };
 
-  const isExternal = shortcut.url.startsWith('http');
+  const isExternal = shortcut.url.startsWith("http");
 
   return (
     <div
@@ -67,14 +78,14 @@ const SortableRow: React.FC<{
       style={style}
       className={`group flex items-center gap-1 rounded-lg pl-1 pr-1.5 ${
         isDragging
-          ? 'bg-orange-50 dark:bg-[#f26722]/10 ring-1 ring-[#f26722]/40 shadow-md z-50'
-          : 'hover:bg-gray-50 dark:hover:bg-dark-200'
+          ? "bg-orange-50 dark:bg-[#f26722]/10 ring-1 ring-[#f26722]/40 shadow-md z-50"
+          : "hover:bg-zinc-50 dark:hover:bg-dark-200"
       } transition-colors`}
     >
       <button
         type="button"
         aria-label="Drag to reorder"
-        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-gray-300 hover:text-[#f26722] dark:text-gray-600 dark:hover:text-[#f26722] active:cursor-grabbing"
+        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-zinc-300 hover:text-[#f26722] dark:text-zinc-600 dark:hover:text-[#f26722] active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
@@ -88,17 +99,17 @@ const SortableRow: React.FC<{
         title={shortcut.url}
       >
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+          <span className="block truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">
             {shortcut.title}
           </span>
-          <span className="block truncate text-[11px] leading-tight text-gray-400 dark:text-gray-500">
+          <span className="block truncate text-[11px] leading-tight text-zinc-400 dark:text-zinc-500">
             {shortcut.url}
           </span>
         </span>
         {isExternal ? (
-          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-gray-300 dark:text-gray-600" />
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" />
         ) : (
-          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-gray-300 dark:text-gray-600" />
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" />
         )}
       </button>
 
@@ -107,7 +118,7 @@ const SortableRow: React.FC<{
           type="button"
           aria-label={`Edit ${shortcut.title}`}
           onClick={() => onEdit(shortcut)}
-          className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-dark-100 dark:hover:text-gray-200"
+          className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-dark-100 dark:hover:text-zinc-200"
         >
           <Edit2 className="h-3.5 w-3.5" />
         </button>
@@ -115,7 +126,7 @@ const SortableRow: React.FC<{
           type="button"
           aria-label={`Delete ${shortcut.title}`}
           onClick={() => onDelete(shortcut.id!)}
-          className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+          className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -124,27 +135,33 @@ const SortableRow: React.FC<{
   );
 };
 
-export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate }) => {
+export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
+  onNavigate,
+}) => {
   const { user } = useAuth();
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<View>('list');
+  const [view, setView] = useState<View>("list");
 
   // Form (add/edit)
-  const [formData, setFormData] = useState<FormData>({ title: '', url: '' });
+  const [formData, setFormData] = useState<FormData>({ title: "", url: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [useBuiltin, setUseBuiltin] = useState(true);
-  const [selectedPortal, setSelectedPortal] = useState('sales');
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedPortal, setSelectedPortal] = useState("sales");
+  const [selectedOption, setSelectedOption] = useState("");
 
   // Quick add
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedQuick, setSelectedQuick] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedQuick, setSelectedQuick] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const loadShortcuts = async () => {
@@ -155,8 +172,8 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
       const data = await ShortcutService.getUserShortcuts(user.id);
       setShortcuts(data);
     } catch (err) {
-      console.error('Error loading shortcuts:', err);
-      setError('Failed to load shortcuts.');
+      console.error("Error loading shortcuts:", err);
+      setError("Failed to load shortcuts.");
     } finally {
       setLoading(false);
     }
@@ -170,13 +187,15 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
   const atMax = shortcuts.length >= MAX_SHORTCUTS;
 
   const openAdd = () => {
-    setFormData({ title: '', url: '' });
+    setFormData({ title: "", url: "" });
     setEditingId(null);
     setUseBuiltin(true);
-    setSelectedPortal('sales');
-    setSelectedOption(BUILTIN_PORTALS.find((p) => p.key === 'sales')?.options[0]?.path || '');
+    setSelectedPortal("sales");
+    setSelectedOption(
+      BUILTIN_PORTALS.find((p) => p.key === "sales")?.options[0]?.path || "",
+    );
     setError(null);
-    setView('form');
+    setView("form");
   };
 
   const openEdit = (s: Shortcut) => {
@@ -184,7 +203,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
     setEditingId(s.id!);
     setUseBuiltin(false);
     setError(null);
-    setView('form');
+    setView("form");
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -199,13 +218,16 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
       ? selectedOption
         ? {
             title:
-              BUILTIN_PORTALS.find((p) => p.key === selectedPortal)?.options.find(
-                (o) => o.path === selectedOption
-              )?.label || 'Shortcut',
+              BUILTIN_PORTALS.find(
+                (p) => p.key === selectedPortal,
+              )?.options.find((o) => o.path === selectedOption)?.label ||
+              "Shortcut",
             url: selectedOption,
           }
         : {
-            title: BUILTIN_PORTALS.find((p) => p.key === selectedPortal)?.label || 'Portal',
+            title:
+              BUILTIN_PORTALS.find((p) => p.key === selectedPortal)?.label ||
+              "Portal",
             url: `portal:${selectedPortal}`,
           }
       : formData;
@@ -219,25 +241,25 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
         await ShortcutService.createShortcut({ user_id: user.id, ...payload });
       }
       await loadShortcuts();
-      setView('list');
+      setView("list");
     } catch (err) {
-      console.error('Error saving shortcut:', err);
-      setError('Failed to save shortcut.');
+      console.error("Error saving shortcut:", err);
+      setError("Failed to save shortcut.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this shortcut?')) return;
+    if (!window.confirm("Delete this shortcut?")) return;
     try {
       setLoading(true);
       setError(null);
       await ShortcutService.deleteShortcut(id);
       await loadShortcuts();
     } catch (err) {
-      console.error('Error deleting shortcut:', err);
-      setError('Failed to delete shortcut.');
+      console.error("Error deleting shortcut:", err);
+      setError("Failed to delete shortcut.");
     } finally {
       setLoading(false);
     }
@@ -253,10 +275,10 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
       const next = arrayMove(items, oldIndex, newIndex);
       ShortcutService.reorderShortcuts(
         user.id,
-        next.map((i) => i.id!)
+        next.map((i) => i.id!),
       ).catch((err) => {
-        console.error('Error reordering:', err);
-        setError('Failed to save new order.');
+        console.error("Error reordering:", err);
+        setError("Failed to save new order.");
         loadShortcuts();
       });
       return next;
@@ -268,20 +290,31 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
     BUILTIN_PORTALS.forEach((p) => {
       p.options.forEach((opt) => {
         const l = opt.label.toLowerCase();
-        if (l.includes('drag to reorder') || l.includes('reorder your shortcuts')) return;
-        items.push({ key: `${p.key}:${opt.path}`, label: `${p.label} • ${opt.label}`, path: opt.path });
+        if (
+          l.includes("drag to reorder") ||
+          l.includes("reorder your shortcuts")
+        )
+          return;
+        items.push({
+          key: `${p.key}:${opt.path}`,
+          label: `${p.label} • ${opt.label}`,
+          path: opt.path,
+        });
       });
     });
-    return items.filter((it) => it.label.toLowerCase().includes(searchQuery.toLowerCase()));
+    return items.filter((it) =>
+      it.label.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
   }, [searchQuery]);
 
-  const selectedQuickCount = Object.values(selectedQuick).filter(Boolean).length;
+  const selectedQuickCount =
+    Object.values(selectedQuick).filter(Boolean).length;
 
   const handleQuickAdd = async () => {
     if (!user) return;
     const chosen = quickAddItems.filter((it) => selectedQuick[it.key]);
     if (!chosen.length) {
-      setView('list');
+      setView("list");
       return;
     }
     const slotsLeft = MAX_SHORTCUTS - shortcuts.length;
@@ -294,45 +327,56 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
       setError(null);
       await ShortcutService.bulkCreateShortcuts(
         user.id,
-        chosen.slice(0, slotsLeft).map((c) => ({ title: c.label, url: c.path }))
+        chosen
+          .slice(0, slotsLeft)
+          .map((c) => ({ title: c.label, url: c.path })),
       );
     } finally {
       setLoading(false);
       setSelectedQuick({});
-      setSearchQuery('');
+      setSearchQuery("");
       await loadShortcuts();
-      setView('list');
+      setView("list");
     }
   };
 
-  const headerTitle = view === 'list' ? 'Shortcuts' : view === 'quick' ? 'Quick Add' : editingId ? 'Edit Shortcut' : 'Add Shortcut';
+  const headerTitle =
+    view === "list"
+      ? "Shortcuts"
+      : view === "quick"
+        ? "Quick Add"
+        : editingId
+          ? "Edit Shortcut"
+          : "Add Shortcut";
 
   return (
     <div className="flex max-h-[32rem] w-80 flex-col overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 dark:bg-dark-150 dark:ring-white/10">
       {/* Header */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-gray-100 px-3 py-2.5 dark:border-dark-200">
-        {view !== 'list' && (
+      <div className="flex shrink-0 items-center gap-2 border-b border-zinc-100 px-3 py-2.5 dark:border-dark-200">
+        {view !== "list" && (
           <button
             type="button"
             aria-label="Back"
             onClick={() => {
-              setView('list');
+              setView("list");
               setError(null);
               setSelectedQuick({});
-              setSearchQuery('');
+              setSearchQuery("");
             }}
-            className="-ml-1 rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-dark-200"
+            className="-ml-1 rounded-md p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-dark-200"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
         )}
-        <span className="flex-1 text-sm font-semibold text-gray-900 dark:text-white">{headerTitle}</span>
-        {view === 'list' && (
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:bg-dark-200 dark:text-gray-400">
+        <span className="flex-1 text-sm font-semibold text-zinc-900 dark:text-white">
+          {headerTitle}
+        </span>
+        {view === "list" && (
+          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-dark-200 dark:text-zinc-400">
             {shortcuts.length}/{MAX_SHORTCUTS}
           </span>
         )}
-        {view === 'quick' && selectedQuickCount > 0 && (
+        {view === "quick" && selectedQuickCount > 0 && (
           <span className="rounded-full bg-[#f26722]/10 px-2 py-0.5 text-[11px] font-medium text-[#f26722]">
             {selectedQuickCount} selected
           </span>
@@ -347,7 +391,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
 
       {/* Body */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {view === 'list' && (
+        {view === "list" && (
           <div className="p-1.5">
             {loading && shortcuts.length === 0 ? (
               <div className="flex justify-center py-10">
@@ -355,14 +399,23 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
               </div>
             ) : shortcuts.length === 0 ? (
               <div className="px-4 py-10 text-center">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">No shortcuts yet</p>
-                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                  No shortcuts yet
+                </p>
+                <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                   Add shortcuts to jump to your favorite pages.
                 </p>
               </div>
             ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={shortcuts.map((s) => s.id!)} strategy={verticalListSortingStrategy}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={shortcuts.map((s) => s.id!)}
+                  strategy={verticalListSortingStrategy}
+                >
                   <div className="space-y-0.5">
                     {shortcuts.map((s) => (
                       <SortableRow
@@ -380,17 +433,17 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
           </div>
         )}
 
-        {view === 'form' && (
+        {view === "form" && (
           <form onSubmit={handleSave} className="space-y-3 p-3">
             {!editingId && (
-              <div className="flex rounded-lg bg-gray-100 p-0.5 text-xs font-medium dark:bg-dark-200">
+              <div className="flex rounded-lg bg-zinc-100 p-0.5 text-xs font-medium dark:bg-dark-200">
                 <button
                   type="button"
                   onClick={() => setUseBuiltin(true)}
                   className={`flex-1 rounded-md px-2 py-1.5 transition-colors ${
                     useBuiltin
-                      ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-100 dark:text-white'
-                      : 'text-gray-500 dark:text-gray-400'
+                      ? "bg-white text-zinc-900 shadow-sm dark:bg-dark-100 dark:text-white"
+                      : "text-zinc-500 dark:text-zinc-400"
                   }`}
                 >
                   Built-in page
@@ -400,8 +453,8 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
                   onClick={() => setUseBuiltin(false)}
                   className={`flex-1 rounded-md px-2 py-1.5 transition-colors ${
                     !useBuiltin
-                      ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-100 dark:text-white'
-                      : 'text-gray-500 dark:text-gray-400'
+                      ? "bg-white text-zinc-900 shadow-sm dark:bg-dark-100 dark:text-white"
+                      : "text-zinc-500 dark:text-zinc-400"
                   }`}
                 >
                   Custom URL
@@ -412,14 +465,18 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
             {useBuiltin && !editingId ? (
               <>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Portal</label>
+                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                    Portal
+                  </label>
                   <select
-                    className="w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedPortal}
                     onChange={(e) => {
                       setSelectedPortal(e.target.value);
                       setSelectedOption(
-                        BUILTIN_PORTALS.find((p) => p.key === (e.target.value as any))?.options[0]?.path || ''
+                        BUILTIN_PORTALS.find(
+                          (p) => p.key === (e.target.value as any),
+                        )?.options[0]?.path || "",
                       );
                     }}
                   >
@@ -431,14 +488,18 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Destination</label>
+                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                    Destination
+                  </label>
                   <select
-                    className="w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedOption}
                     onChange={(e) => setSelectedOption(e.target.value)}
                   >
                     <option value="">(Add as portal group)</option>
-                    {BUILTIN_PORTALS.find((p) => p.key === (selectedPortal as any))?.options.map((opt) => (
+                    {BUILTIN_PORTALS.find(
+                      (p) => p.key === (selectedPortal as any),
+                    )?.options.map((opt) => (
                       <option key={opt.path} value={opt.path}>
                         {opt.label}
                       </option>
@@ -449,29 +510,39 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
             ) : (
               <>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300" htmlFor="sc-title">
+                  <label
+                    className="text-xs font-medium text-zinc-600 dark:text-zinc-300"
+                    htmlFor="sc-title"
+                  >
                     Name
                   </label>
                   <input
                     id="sc-title"
                     value={formData.title}
-                    onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, title: e.target.value }))
+                    }
                     placeholder="My Shortcut"
                     required
-                    className="w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300" htmlFor="sc-url">
+                  <label
+                    className="text-xs font-medium text-zinc-600 dark:text-zinc-300"
+                    htmlFor="sc-url"
+                  >
                     URL or path
                   </label>
                   <input
                     id="sc-url"
                     value={formData.url}
-                    onChange={(e) => setFormData((p) => ({ ...p, url: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, url: e.target.value }))
+                    }
                     placeholder="/north_alabama/dashboard or https://…"
                     required
-                    className="w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
               </>
@@ -481,10 +552,10 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
               <button
                 type="button"
                 onClick={() => {
-                  setView('list');
+                  setView("list");
                   setError(null);
                 }}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-200"
+                className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-dark-200"
               >
                 Cancel
               </button>
@@ -498,17 +569,17 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
                 ) : (
                   <Check className="h-3.5 w-3.5" />
                 )}
-                {editingId ? 'Save' : 'Add'}
+                {editingId ? "Save" : "Add"}
               </button>
             </div>
           </form>
         )}
 
-        {view === 'quick' && (
+        {view === "quick" && (
           <div>
             <div className="sticky top-0 z-10 bg-white p-2.5 dark:bg-dark-150">
-              <div className="flex items-center gap-2 rounded-md border border-gray-300 px-2.5 py-1.5 focus-within:border-[#f26722] focus-within:ring-1 focus-within:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100">
-                <Search className="h-4 w-4 shrink-0 text-gray-400" />
+              <div className="flex items-center gap-2 rounded-md border border-zinc-300 px-2.5 py-1.5 focus-within:border-[#f26722] focus-within:ring-1 focus-within:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100">
+                <Search className="h-4 w-4 shrink-0 text-zinc-400" />
                 <input
                   autoFocus
                   value={searchQuery}
@@ -517,26 +588,32 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
                   className="w-full bg-transparent text-sm focus:outline-none dark:text-white"
                 />
                 {searchQuery && (
-                  <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear">
-                    <X className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear"
+                  >
+                    <X className="h-3.5 w-3.5 text-zinc-400 hover:text-zinc-600" />
                   </button>
                 )}
               </div>
             </div>
             {quickAddItems.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-400">No matches</div>
+              <div className="px-4 py-8 text-center text-sm text-zinc-400">
+                No matches
+              </div>
             ) : (
               <ul className="px-1.5 pb-1.5">
                 {quickAddItems.map((it) => {
                   const checked = !!selectedQuick[it.key];
                   return (
                     <li key={it.key}>
-                      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-dark-200">
+                      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-50 dark:hover:bg-dark-200">
                         <span
                           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                             checked
-                              ? 'border-[#f26722] bg-[#f26722] text-white'
-                              : 'border-gray-300 dark:border-dark-200'
+                              ? "border-[#f26722] bg-[#f26722] text-white"
+                              : "border-zinc-300 dark:border-dark-200"
                           }`}
                         >
                           {checked && <Check className="h-3 w-3" />}
@@ -544,10 +621,15 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
                         <input
                           type="checkbox"
                           checked={checked}
-                          onChange={() => setSelectedQuick((p) => ({ ...p, [it.key]: !p[it.key] }))}
+                          onChange={() =>
+                            setSelectedQuick((p) => ({
+                              ...p,
+                              [it.key]: !p[it.key],
+                            }))
+                          }
                           className="sr-only"
                         />
-                        <span className="min-w-0 flex-1 truncate text-sm text-gray-700 dark:text-gray-200">
+                        <span className="min-w-0 flex-1 truncate text-sm text-zinc-700 dark:text-zinc-200">
                           {it.label}
                         </span>
                       </label>
@@ -561,18 +643,18 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
       </div>
 
       {/* Footer */}
-      {view === 'list' && (
-        <div className="flex shrink-0 items-center gap-2 border-t border-gray-100 p-2 dark:border-dark-200">
+      {view === "list" && (
+        <div className="flex shrink-0 items-center gap-2 border-t border-zinc-100 p-2 dark:border-dark-200">
           <button
             type="button"
             onClick={() => {
               setSelectedQuick({});
-              setSearchQuery('');
+              setSearchQuery("");
               setError(null);
-              setView('quick');
+              setView("quick");
             }}
             disabled={atMax}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-gray-300 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-dark-200 dark:text-gray-200 dark:hover:bg-dark-200"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-dark-200 dark:text-zinc-200 dark:hover:bg-dark-200"
           >
             <Search className="h-3.5 w-3.5" />
             Quick add
@@ -589,16 +671,16 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
         </div>
       )}
 
-      {view === 'quick' && (
-        <div className="flex shrink-0 justify-end gap-2 border-t border-gray-100 p-2 dark:border-dark-200">
+      {view === "quick" && (
+        <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-100 p-2 dark:border-dark-200">
           <button
             type="button"
             onClick={() => {
-              setView('list');
+              setView("list");
               setSelectedQuick({});
-              setSearchQuery('');
+              setSearchQuery("");
             }}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-200"
+            className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-dark-200"
           >
             Cancel
           </button>
@@ -608,7 +690,9 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
             disabled={loading || selectedQuickCount === 0}
             className="rounded-md bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 disabled:opacity-50"
           >
-            {loading ? 'Adding…' : `Add${selectedQuickCount ? ` (${selectedQuickCount})` : ''}`}
+            {loading
+              ? "Adding…"
+              : `Add${selectedQuickCount ? ` (${selectedQuickCount})` : ""}`}
           </button>
         </div>
       )}

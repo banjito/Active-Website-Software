@@ -1,22 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { PageLayout } from '@/components/ui/PageLayout';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { 
-  SelectRoot as Select, 
-  SelectTrigger, 
-  SelectValue, 
-  SelectContent, 
-  SelectItem 
-} from '@/components/ui/Select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
-import { Badge } from '@/components/ui/Badge';
-import { toast } from '@/components/ui/toast';
-import { useAuth } from '@/lib/AuthContext';
-import { 
-  FileText, 
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/Card";
+import { PageLayout } from "@/components/ui/PageLayout";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import {
+  SelectRoot as Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/Dialog";
+import { Badge } from "@/components/ui/Badge";
+import { toast } from "@/components/ui/toast";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  FileText,
   Plus,
   Search,
   Download,
@@ -29,8 +40,8 @@ import {
   Loader2,
   Trash2,
   Eye,
-  Printer
-} from 'lucide-react';
+  Printer,
+} from "lucide-react";
 import {
   fetchVendorPOs,
   createVendorPO,
@@ -39,34 +50,34 @@ import {
   updateVendorPOStatus,
   VendorPO,
   VendorPOItem,
-  VendorPOFormData
-} from '@/services/vendorPOService';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { fetchVendors, Vendor } from '@/services/vendorService';
+  VendorPOFormData,
+} from "@/services/vendorPOService";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { fetchVendors, Vendor } from "@/services/vendorService";
 
 const emptyPOForm: VendorPOFormData = {
   vendor_id: null,
-  date: new Date().toISOString().split('T')[0],
-  terms: 'NET 30',
-  quote_number: '',
-  quote_references: '',
-  ship_to_name: 'AMP Quality Energy Services',
-  ship_to_address: '616 Church St. NE',
-  ship_to_city: 'Decatur',
-  ship_to_state: 'AL',
-  ship_to_zip: '35601',
-  status: 'pending',
-  notes: '',
-  authorized_by: '',
-  items: []
+  date: new Date().toISOString().split("T")[0],
+  terms: "NET 30",
+  quote_number: "",
+  quote_references: "",
+  ship_to_name: "AMP Quality Energy Services",
+  ship_to_address: "616 Church St. NE",
+  ship_to_city: "Decatur",
+  ship_to_state: "AL",
+  ship_to_zip: "35601",
+  status: "pending",
+  notes: "",
+  authorized_by: "",
+  items: [],
 };
 
 const emptyLineItem: VendorPOItem = {
-  item_number: '',
-  quantity: '',
-  description: '',
-  unit_price: '',
-  extended_price: 0
+  item_number: "",
+  quantity: "",
+  description: "",
+  unit_price: "",
+  extended_price: 0,
 };
 
 const VendorPOs: React.FC = () => {
@@ -75,8 +86,8 @@ const VendorPOs: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showPOForm, setShowPOForm] = useState(false);
   const [showPOView, setShowPOView] = useState(false);
   const [selectedPO, setSelectedPO] = useState<VendorPO | null>(null);
@@ -92,92 +103,105 @@ const VendorPOs: React.FC = () => {
       setLoading(true);
       const [posData, vendorsData] = await Promise.all([
         fetchVendorPOs(),
-        fetchVendors()
+        fetchVendors(),
       ]);
       setPOs(posData);
       setVendors(vendorsData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load data. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load data. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: VendorPO['status']) => {
+  const getStatusColor = (status: VendorPO["status"]) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'approved':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'ordered':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'received':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "approved":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      case "ordered":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+      case "received":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case "cancelled":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-400";
     }
   };
 
-  const getStatusIcon = (status: VendorPO['status']) => {
+  const getStatusIcon = (status: VendorPO["status"]) => {
     switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />;
-      case 'approved': return <CheckCircle className="h-4 w-4" />;
-      case 'ordered': return <Truck className="h-4 w-4" />;
-      case 'received': return <Package className="h-4 w-4" />;
-      case 'cancelled': return <AlertCircle className="h-4 w-4" />;
-      default: return null;
+      case "pending":
+        return <Clock className="h-4 w-4" />;
+      case "approved":
+        return <CheckCircle className="h-4 w-4" />;
+      case "ordered":
+        return <Truck className="h-4 w-4" />;
+      case "received":
+        return <Package className="h-4 w-4" />;
+      case "cancelled":
+        return <AlertCircle className="h-4 w-4" />;
+      default:
+        return null;
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
   // Format unit price - shows as currency if numeric, otherwise as-is (e.g., "PPA")
   const formatUnitPrice = (price: string | number) => {
-    const numPrice = typeof price === 'number' ? price : parseFloat(price);
+    const numPrice = typeof price === "number" ? price : parseFloat(price);
     if (!isNaN(numPrice)) {
       return formatCurrency(numPrice);
     }
     return String(price); // Return as-is for text values like "PPA"
   };
 
-  const filteredPOs = pos.filter(po => {
-    const matchesSearch = po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         po.vendor?.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         po.quote_number?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || po.status === statusFilter;
+  const filteredPOs = pos.filter((po) => {
+    const matchesSearch =
+      po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      po.vendor?.company_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      po.quote_number?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || po.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const totalPending = pos.filter(po => po.status === 'pending').length;
-  const totalOrdered = pos.filter(po => po.status === 'ordered').length;
+  const totalPending = pos.filter((po) => po.status === "pending").length;
+  const totalOrdered = pos.filter((po) => po.status === "ordered").length;
   const totalValue = pos.reduce((sum, po) => sum + (po.amount || 0), 0);
 
   const addLineItem = () => {
     setPOForm({
       ...poForm,
-      items: [...poForm.items, { ...emptyLineItem }]
+      items: [...poForm.items, { ...emptyLineItem }],
     });
   };
 
-  const updateLineItem = (index: number, field: keyof VendorPOItem, value: any) => {
+  const updateLineItem = (
+    index: number,
+    field: keyof VendorPOItem,
+    value: any,
+  ) => {
     const updatedItems = [...poForm.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
-    
+
     // Auto-calculate extended price only if both quantity and unit_price are valid numbers
-    if (field === 'quantity' || field === 'unit_price') {
+    if (field === "quantity" || field === "unit_price") {
       const quantity = parseFloat(String(updatedItems[index].quantity));
       const unitPrice = parseFloat(String(updatedItems[index].unit_price));
       if (!isNaN(quantity) && !isNaN(unitPrice)) {
@@ -186,7 +210,7 @@ const VendorPOs: React.FC = () => {
         updatedItems[index].extended_price = 0;
       }
     }
-    
+
     setPOForm({ ...poForm, items: updatedItems });
   };
 
@@ -196,7 +220,10 @@ const VendorPOs: React.FC = () => {
   };
 
   const calculateTotal = () => {
-    return poForm.items.reduce((sum, item) => sum + (item.extended_price || 0), 0);
+    return poForm.items.reduce(
+      (sum, item) => sum + (item.extended_price || 0),
+      0,
+    );
   };
 
   const openNewPO = () => {
@@ -210,18 +237,18 @@ const VendorPOs: React.FC = () => {
     setPOForm({
       vendor_id: po.vendor_id,
       date: po.date,
-      terms: po.terms || 'NET 30',
-      quote_number: po.quote_number || '',
-      quote_references: po.quote_references || '',
-      ship_to_name: po.ship_to_name || 'AMP Quality Energy Services',
-      ship_to_address: po.ship_to_address || '616 Church St. NE',
-      ship_to_city: po.ship_to_city || 'Decatur',
-      ship_to_state: po.ship_to_state || 'AL',
-      ship_to_zip: po.ship_to_zip || '35601',
+      terms: po.terms || "NET 30",
+      quote_number: po.quote_number || "",
+      quote_references: po.quote_references || "",
+      ship_to_name: po.ship_to_name || "AMP Quality Energy Services",
+      ship_to_address: po.ship_to_address || "616 Church St. NE",
+      ship_to_city: po.ship_to_city || "Decatur",
+      ship_to_state: po.ship_to_state || "AL",
+      ship_to_zip: po.ship_to_zip || "35601",
       status: po.status,
-      notes: po.notes || '',
-      authorized_by: po.authorized_by || '',
-      items: po.items || []
+      notes: po.notes || "",
+      authorized_by: po.authorized_by || "",
+      items: po.items || [],
     });
     setShowPOForm(true);
   };
@@ -229,18 +256,18 @@ const VendorPOs: React.FC = () => {
   const handleSavePO = async () => {
     if (!poForm.vendor_id) {
       toast({
-        title: 'Validation Error',
-        description: 'Please select a vendor.',
-        variant: 'destructive',
+        title: "Validation Error",
+        description: "Please select a vendor.",
+        variant: "destructive",
       });
       return;
     }
 
     if (poForm.items.length === 0) {
       toast({
-        title: 'Validation Error',
-        description: 'Please add at least one line item.',
-        variant: 'destructive',
+        title: "Validation Error",
+        description: "Please add at least one line item.",
+        variant: "destructive",
       });
       return;
     }
@@ -249,31 +276,35 @@ const VendorPOs: React.FC = () => {
     try {
       if (editPO) {
         const updated = await updateVendorPO(editPO.id, poForm);
-        setPOs(pos.map(p => p.id === updated.id ? { ...updated, vendor: p.vendor } : p));
+        setPOs(
+          pos.map((p) =>
+            p.id === updated.id ? { ...updated, vendor: p.vendor } : p,
+          ),
+        );
         toast({
-          title: 'PO Updated',
-          description: 'Purchase order has been updated.',
-          variant: 'default',
+          title: "PO Updated",
+          description: "Purchase order has been updated.",
+          variant: "default",
         });
       } else {
         const newPO = await createVendorPO(poForm, user?.id);
         // Reload to get vendor info
         await loadData();
         toast({
-          title: 'PO Created',
+          title: "PO Created",
           description: `Purchase order ${newPO.po_number} has been created.`,
-          variant: 'default',
+          variant: "default",
         });
       }
       setShowPOForm(false);
       setPOForm(emptyPOForm);
       setEditPO(null);
     } catch (error) {
-      console.error('Error saving PO:', error);
+      console.error("Error saving PO:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to save purchase order. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to save purchase order. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -285,42 +316,47 @@ const VendorPOs: React.FC = () => {
 
     try {
       await deleteVendorPO(po.id);
-      setPOs(pos.filter(p => p.id !== po.id));
+      setPOs(pos.filter((p) => p.id !== po.id));
       toast({
-        title: 'PO Deleted',
+        title: "PO Deleted",
         description: `Purchase order ${po.po_number} has been deleted.`,
-        variant: 'default',
+        variant: "default",
       });
     } catch (error) {
-      console.error('Error deleting PO:', error);
+      console.error("Error deleting PO:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete purchase order.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to delete purchase order.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleStatusChange = async (po: VendorPO, newStatus: VendorPO['status']) => {
+  const handleStatusChange = async (
+    po: VendorPO,
+    newStatus: VendorPO["status"],
+  ) => {
     try {
       await updateVendorPOStatus(po.id, newStatus);
-      setPOs(pos.map(p => p.id === po.id ? { ...p, status: newStatus } : p));
+      setPOs(
+        pos.map((p) => (p.id === po.id ? { ...p, status: newStatus } : p)),
+      );
       toast({
-        title: 'Status Updated',
+        title: "Status Updated",
         description: `PO ${po.po_number} status changed to ${newStatus}.`,
-        variant: 'default',
+        variant: "default",
       });
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update status.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to update status.",
+        variant: "destructive",
       });
     }
   };
 
-  const selectedVendor = vendors.find(v => v.id === poForm.vendor_id);
+  const selectedVendor = vendors.find((v) => v.id === poForm.vendor_id);
 
   if (loading) {
     return (
@@ -328,13 +364,15 @@ const VendorPOs: React.FC = () => {
         title="Vendor Purchase Orders"
         subtitle="Manage and track vendor purchase orders"
         breadcrumbs={[
-          { label: 'Home', to: '/' },
-          { label: "Vendor PO's", to: '/office' },
+          { label: "Home", to: "/" },
+          { label: "Vendor PO's", to: "/office" },
         ]}
       >
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-500"><LoadingSpinner size="md" /></span>
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          <span className="ml-2 text-zinc-500">
+            <LoadingSpinner size="md" />
+          </span>
         </div>
       </PageLayout>
     );
@@ -345,8 +383,8 @@ const VendorPOs: React.FC = () => {
       title="Vendor Purchase Orders"
       subtitle="Manage and track vendor purchase orders"
       breadcrumbs={[
-        { label: 'Home', to: '/' },
-        { label: "Vendor PO's", to: '/office' },
+        { label: "Home", to: "/" },
+        { label: "Vendor PO's", to: "/office" },
       ]}
     >
       {/* Summary Cards */}
@@ -355,8 +393,12 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total POs</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{pos.length}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Total POs
+                </p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  {pos.length}
+                </p>
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                 <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -369,8 +411,12 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Pending Approval</p>
-                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{totalPending}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Pending Approval
+                </p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  {totalPending}
+                </p>
               </div>
               <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
                 <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
@@ -383,8 +429,12 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">In Transit</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalOrdered}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  In Transit
+                </p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {totalOrdered}
+                </p>
               </div>
               <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
                 <Truck className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -397,7 +447,9 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Total Value
+                </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(totalValue)}
                 </p>
@@ -416,7 +468,7 @@ const VendorPOs: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-between">
             <div className="flex flex-1 gap-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
                   placeholder="Search POs..."
                   value={searchTerm}
@@ -438,7 +490,10 @@ const VendorPOs: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={openNewPO} className="bg-[#f26722] hover:bg-[#e55611]">
+            <Button
+              onClick={openNewPO}
+              className="bg-[#f26722] hover:bg-[#e55611]"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New PO
             </Button>
@@ -450,42 +505,71 @@ const VendorPOs: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Purchase Orders</CardTitle>
-          <CardDescription>View and manage all vendor purchase orders</CardDescription>
+          <CardDescription>
+            View and manage all vendor purchase orders
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">PO Number</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Vendor</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Quote #</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Amount</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    PO Number
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Vendor
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Quote #
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPOs.map((po) => (
-                  <tr 
-                    key={po.id} 
-                    className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-dark-200 transition-colors"
+                  <tr
+                    key={po.id}
+                    className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-dark-200 transition-colors"
                   >
                     <td className="px-4 py-4">
-                      <span className="font-medium text-[#f26722]">{po.po_number}</span>
+                      <span className="font-medium text-[#f26722]">
+                        {po.po_number}
+                      </span>
                     </td>
-                    <td className="px-4 py-4 text-gray-900 dark:text-white">
-                      {po.vendor?.company_name || 'Unknown Vendor'}
+                    <td className="px-4 py-4 text-zinc-900 dark:text-white">
+                      {po.vendor?.company_name || "Unknown Vendor"}
                     </td>
-                    <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{po.date}</td>
-                    <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{po.quote_number || '-'}</td>
-                    <td className="px-4 py-4 text-gray-900 dark:text-white font-medium">
+                    <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
+                      {po.date}
+                    </td>
+                    <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
+                      {po.quote_number || "-"}
+                    </td>
+                    <td className="px-4 py-4 text-zinc-900 dark:text-white font-medium">
                       {formatCurrency(po.amount || 0)}
                     </td>
                     <td className="px-4 py-4">
-                      <Select value={po.status} onValueChange={(value) => handleStatusChange(po, value as VendorPO['status'])}>
-                        <SelectTrigger className={`w-[130px] ${getStatusColor(po.status)}`}>
+                      <Select
+                        value={po.status}
+                        onValueChange={(value) =>
+                          handleStatusChange(po, value as VendorPO["status"])
+                        }
+                      >
+                        <SelectTrigger
+                          className={`w-[130px] ${getStatusColor(po.status)}`}
+                        >
                           <div className="flex items-center gap-1.5">
                             {getStatusIcon(po.status)}
                             <SelectValue />
@@ -502,22 +586,25 @@ const VendorPOs: React.FC = () => {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
-                          onClick={() => { setSelectedPO(po); setShowPOView(true); }}
+                          onClick={() => {
+                            setSelectedPO(po);
+                            setShowPOView(true);
+                          }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => openEditPO(po)}
                         >
                           Edit
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
                           onClick={() => handleDeletePO(po)}
@@ -533,13 +620,20 @@ const VendorPOs: React.FC = () => {
 
             {filteredPOs.length === 0 && (
               <div className="text-center py-12">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No purchase orders found</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                  {pos.length === 0 ? 'Create your first purchase order to get started' : 'Try adjusting your search or filter'}
+                <Package className="h-12 w-12 text-zinc-400 mx-auto mb-4" />
+                <p className="text-zinc-500 dark:text-zinc-400">
+                  No purchase orders found
+                </p>
+                <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                  {pos.length === 0
+                    ? "Create your first purchase order to get started"
+                    : "Try adjusting your search or filter"}
                 </p>
                 {pos.length === 0 && (
-                  <Button onClick={openNewPO} className="mt-4 bg-[#f26722] hover:bg-[#e55611]">
+                  <Button
+                    onClick={openNewPO}
+                    className="mt-4 bg-[#f26722] hover:bg-[#e55611]"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Create First PO
                   </Button>
@@ -552,22 +646,26 @@ const VendorPOs: React.FC = () => {
 
       {/* PO Form Dialog */}
       <Dialog open={showPOForm} onOpenChange={setShowPOForm}>
-        <DialogContent 
-          className="w-[95vw] max-w-[1400px] min-w-[1000px] max-h-[90vh] overflow-y-auto"
-        >
+        <DialogContent className="w-[95vw] max-w-[1400px] min-w-[1000px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editPO ? 'Edit Purchase Order' : 'Create Purchase Order'}</DialogTitle>
+            <DialogTitle>
+              {editPO ? "Edit Purchase Order" : "Create Purchase Order"}
+            </DialogTitle>
           </DialogHeader>
 
           {/* PO Form styled like a real PO */}
-          <div className="border-2 border-gray-300 dark:border-gray-600 rounded-lg p-8 bg-white dark:bg-dark-150 w-full">
+          <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-8 bg-white dark:bg-dark-150 w-full">
             {/* Header */}
             <div className="flex justify-between items-start border-b pb-4 mb-6">
-              <div className="text-sm text-gray-600 dark:text-gray-400">256-513-8255</div>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">PURCHASE ORDER</h2>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                256-513-8255
               </div>
-              <div className="text-right text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  PURCHASE ORDER
+                </h2>
+              </div>
+              <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
                 P.O. Box 1725 Decatur, AL 35602
               </div>
             </div>
@@ -575,25 +673,36 @@ const VendorPOs: React.FC = () => {
             {/* Date, Amount, Terms, PO# Row */}
             <div className="grid grid-cols-4 gap-6 mb-8">
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Date:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Date:
+                </label>
                 <Input
                   type="date"
                   value={poForm.date}
-                  onChange={(e) => setPOForm({ ...poForm, date: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, date: e.target.value })
+                  }
                   className="w-full"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Amount:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Amount:
+                </label>
                 <Input
                   value={formatCurrency(calculateTotal())}
                   readOnly
-                  className="w-full bg-gray-100 dark:bg-dark-200 font-semibold"
+                  className="w-full bg-zinc-100 dark:bg-dark-200 font-semibold"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Terms:</label>
-                <Select value={poForm.terms} onValueChange={(v) => setPOForm({ ...poForm, terms: v })}>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Terms:
+                </label>
+                <Select
+                  value={poForm.terms}
+                  onValueChange={(v) => setPOForm({ ...poForm, terms: v })}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -608,11 +717,13 @@ const VendorPOs: React.FC = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Purchase Order #</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Purchase Order #
+                </label>
                 <Input
-                  value={editPO?.po_number || '(Auto-generated)'}
+                  value={editPO?.po_number || "(Auto-generated)"}
                   readOnly
-                  className="w-full bg-gray-100 dark:bg-dark-200"
+                  className="w-full bg-zinc-100 dark:bg-dark-200"
                 />
               </div>
             </div>
@@ -620,16 +731,18 @@ const VendorPOs: React.FC = () => {
             {/* Provider and Ship To */}
             <div className="grid grid-cols-2 gap-12 mb-8">
               <div>
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 block mb-2">Provider (Vendor):</label>
-                <Select 
-                  value={poForm.vendor_id || ''} 
+                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Provider (Vendor):
+                </label>
+                <Select
+                  value={poForm.vendor_id || ""}
                   onValueChange={(v) => setPOForm({ ...poForm, vendor_id: v })}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a vendor..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {vendors.map(vendor => (
+                    {vendors.map((vendor) => (
                       <SelectItem key={vendor.id} value={vendor.id}>
                         {vendor.company_name}
                       </SelectItem>
@@ -637,40 +750,56 @@ const VendorPOs: React.FC = () => {
                   </SelectContent>
                 </Select>
                 {selectedVendor && (
-                  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 p-3 bg-gray-50 dark:bg-dark-200 rounded">
+                  <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 p-3 bg-zinc-50 dark:bg-dark-200 rounded">
                     <p>{selectedVendor.address_street}</p>
-                    <p>{selectedVendor.address_city}, {selectedVendor.address_state} {selectedVendor.address_zip}</p>
+                    <p>
+                      {selectedVendor.address_city},{" "}
+                      {selectedVendor.address_state}{" "}
+                      {selectedVendor.address_zip}
+                    </p>
                   </div>
                 )}
               </div>
               <div>
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 block mb-2">Ship to:</label>
+                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Ship to:
+                </label>
                 <Input
                   value={poForm.ship_to_name}
-                  onChange={(e) => setPOForm({ ...poForm, ship_to_name: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, ship_to_name: e.target.value })
+                  }
                   className="w-full mb-2"
                   placeholder="Company Name"
                 />
                 <Input
                   value={poForm.ship_to_address}
-                  onChange={(e) => setPOForm({ ...poForm, ship_to_address: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, ship_to_address: e.target.value })
+                  }
                   className="w-full mb-2"
                   placeholder="Address"
                 />
                 <div className="grid grid-cols-3 gap-3">
                   <Input
                     value={poForm.ship_to_city}
-                    onChange={(e) => setPOForm({ ...poForm, ship_to_city: e.target.value })}
+                    onChange={(e) =>
+                      setPOForm({ ...poForm, ship_to_city: e.target.value })
+                    }
                     placeholder="City"
                   />
                   <Input
                     value={poForm.ship_to_state}
-                    onChange={(e) => setPOForm({ ...poForm, ship_to_state: e.target.value })}
+                    onChange={(e) =>
+                      setPOForm({ ...poForm, ship_to_state: e.target.value })
+                    }
                     placeholder="State"
                   />
                   <Input
                     value={poForm.ship_to_zip}
-                    onChange={(e) => setPOForm({ ...poForm, ship_to_zip: e.target.value })}
+                    onChange={(e) =>
+                      setPOForm({ ...poForm, ship_to_zip: e.target.value })
+                    }
                     placeholder="ZIP"
                   />
                 </div>
@@ -680,19 +809,27 @@ const VendorPOs: React.FC = () => {
             {/* Quote Info */}
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Quote Number:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Quote Number:
+                </label>
                 <Input
                   value={poForm.quote_number}
-                  onChange={(e) => setPOForm({ ...poForm, quote_number: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, quote_number: e.target.value })
+                  }
                   className="w-full"
                   placeholder="e.g., HVD031825CS6"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Quote References:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Quote References:
+                </label>
                 <Input
                   value={poForm.quote_references}
-                  onChange={(e) => setPOForm({ ...poForm, quote_references: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, quote_references: e.target.value })
+                  }
                   className="w-full"
                   placeholder="e.g., 6039, 6332, 6488"
                 />
@@ -702,64 +839,96 @@ const VendorPOs: React.FC = () => {
             {/* Line Items Table */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Line Items</label>
+                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                  Line Items
+                </label>
                 <Button size="sm" variant="outline" onClick={addLineItem}>
                   <Plus className="h-4 w-4 mr-1" /> Add Item
                 </Button>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 min-w-[700px]">
+                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 min-w-[700px]">
                   <thead>
-                    <tr className="bg-gray-100 dark:bg-dark-200">
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm font-semibold w-[60px]">Item</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm font-semibold w-[100px]">Quantity</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm font-semibold text-left">Description</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm font-semibold w-[120px]">Unit Price</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm font-semibold w-[120px]">Extended</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-sm w-[60px]"></th>
+                    <tr className="bg-zinc-100 dark:bg-dark-200">
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[60px]">
+                        Item
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[100px]">
+                        Quantity
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold text-left">
+                        Description
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[120px]">
+                        Unit Price
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[120px]">
+                        Extended
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm w-[60px]"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {poForm.items.map((item, index) => (
                       <tr key={index}>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
                           <Input
                             value={item.item_number}
-                            onChange={(e) => updateLineItem(index, 'item_number', e.target.value)}
+                            onChange={(e) =>
+                              updateLineItem(
+                                index,
+                                "item_number",
+                                e.target.value,
+                              )
+                            }
                             className="h-9 text-center w-full"
                             placeholder=""
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
                           <Input
                             type="text"
                             value={item.quantity}
-                            onChange={(e) => updateLineItem(index, 'quantity', e.target.value)}
+                            onChange={(e) =>
+                              updateLineItem(index, "quantity", e.target.value)
+                            }
                             className="h-9 text-center"
                             placeholder=""
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
                           <Input
                             value={item.description}
-                            onChange={(e) => updateLineItem(index, 'description', e.target.value)}
+                            onChange={(e) =>
+                              updateLineItem(
+                                index,
+                                "description",
+                                e.target.value,
+                              )
+                            }
                             className="h-9 w-full"
                             placeholder="Enter description..."
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
                           <Input
                             type="text"
                             value={item.unit_price}
-                            onChange={(e) => updateLineItem(index, 'unit_price', e.target.value)}
+                            onChange={(e) =>
+                              updateLineItem(
+                                index,
+                                "unit_price",
+                                e.target.value,
+                              )
+                            }
                             className="h-9 text-right"
                             placeholder="0.00 or PPA"
                           />
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-right bg-gray-50 dark:bg-dark-200 font-medium">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-right bg-zinc-50 dark:bg-dark-200 font-medium">
                           {formatCurrency(item.extended_price || 0)}
                         </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -773,17 +942,27 @@ const VendorPOs: React.FC = () => {
                     ))}
                     {poForm.items.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="border border-gray-300 dark:border-gray-600 px-4 py-10 text-center text-gray-500">
+                        <td
+                          colSpan={6}
+                          className="border border-zinc-300 dark:border-zinc-600 px-4 py-10 text-center text-zinc-500"
+                        >
                           No items added. Click "Add Item" to add line items.
                         </td>
                       </tr>
                     )}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-gray-100 dark:bg-dark-200 font-bold">
-                      <td colSpan={4} className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-right text-sm">Total</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-3 text-right text-base">{formatCurrency(calculateTotal())}</td>
-                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                    <tr className="bg-zinc-100 dark:bg-dark-200 font-bold">
+                      <td
+                        colSpan={4}
+                        className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-right text-sm"
+                      >
+                        Total
+                      </td>
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-right text-base">
+                        {formatCurrency(calculateTotal())}
+                      </td>
+                      <td className="border border-zinc-300 dark:border-zinc-600"></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -797,19 +976,27 @@ const VendorPOs: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Authorized Signature:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Authorized Signature:
+                </label>
                 <Input
                   value={poForm.authorized_by}
-                  onChange={(e) => setPOForm({ ...poForm, authorized_by: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, authorized_by: e.target.value })
+                  }
                   className="w-full"
                   placeholder="Enter name"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Notes:</label>
+                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                  Notes:
+                </label>
                 <Textarea
                   value={poForm.notes}
-                  onChange={(e) => setPOForm({ ...poForm, notes: e.target.value })}
+                  onChange={(e) =>
+                    setPOForm({ ...poForm, notes: e.target.value })
+                  }
                   className="w-full"
                   rows={3}
                   placeholder="Additional notes..."
@@ -822,9 +1009,13 @@ const VendorPOs: React.FC = () => {
             <Button variant="outline" onClick={() => setShowPOForm(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSavePO} disabled={saving} className="bg-[#f26722] hover:bg-[#e55611]">
+            <Button
+              onClick={handleSavePO}
+              disabled={saving}
+              className="bg-[#f26722] hover:bg-[#e55611]"
+            >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editPO ? 'Update PO' : 'Create PO'}
+              {editPO ? "Update PO" : "Create PO"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -832,9 +1023,7 @@ const VendorPOs: React.FC = () => {
 
       {/* PO View Dialog */}
       <Dialog open={showPOView} onOpenChange={setShowPOView}>
-        <DialogContent 
-          className="w-[90vw] max-w-[1000px] min-w-[700px] max-h-[90vh] overflow-y-auto"
-        >
+        <DialogContent className="w-[90vw] max-w-[1000px] min-w-[700px] max-h-[90vh] overflow-y-auto">
           {selectedPO && (
             <>
               <DialogHeader>
@@ -847,14 +1036,18 @@ const VendorPOs: React.FC = () => {
               </DialogHeader>
 
               {/* PO Preview styled like the image */}
-              <div className="border-2 border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-dark-150 print:border-black">
+              <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-6 bg-white dark:bg-dark-150 print:border-black">
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">256-513-8255</div>
-                  <div className="text-center">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">PURCHASE ORDER</h2>
+                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    256-513-8255
                   </div>
-                  <div className="text-right text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+                      PURCHASE ORDER
+                    </h2>
+                  </div>
+                  <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
                     P.O. Box 1725 Decatur, AL 35602
                   </div>
                 </div>
@@ -865,13 +1058,15 @@ const VendorPOs: React.FC = () => {
                     <span className="font-bold">Date:</span> {selectedPO.date}
                   </div>
                   <div>
-                    <span className="font-bold">Amount:</span> {formatCurrency(selectedPO.amount || 0)}
+                    <span className="font-bold">Amount:</span>{" "}
+                    {formatCurrency(selectedPO.amount || 0)}
                   </div>
                   <div>
                     <span className="font-bold">Terms:</span> {selectedPO.terms}
                   </div>
                   <div>
-                    <span className="font-bold">Purchase Order #:</span> {selectedPO.po_number}
+                    <span className="font-bold">Purchase Order #:</span>{" "}
+                    {selectedPO.po_number}
                   </div>
                 </div>
 
@@ -879,52 +1074,98 @@ const VendorPOs: React.FC = () => {
                 <div className="grid grid-cols-2 gap-8 mb-6 text-sm">
                   <div>
                     <p className="font-bold">Provider:</p>
-                    <p className="font-medium">{selectedPO.vendor?.company_name}</p>
+                    <p className="font-medium">
+                      {selectedPO.vendor?.company_name}
+                    </p>
                     <p>{selectedPO.vendor?.address_street}</p>
-                    <p>{selectedPO.vendor?.address_city}, {selectedPO.vendor?.address_state} {selectedPO.vendor?.address_zip}</p>
+                    <p>
+                      {selectedPO.vendor?.address_city},{" "}
+                      {selectedPO.vendor?.address_state}{" "}
+                      {selectedPO.vendor?.address_zip}
+                    </p>
                   </div>
                   <div>
                     <p className="font-bold">Ship to:</p>
                     <p className="font-medium">{selectedPO.ship_to_name}</p>
                     <p>{selectedPO.ship_to_address}</p>
-                    <p>{selectedPO.ship_to_city}, {selectedPO.ship_to_state} {selectedPO.ship_to_zip}</p>
+                    <p>
+                      {selectedPO.ship_to_city}, {selectedPO.ship_to_state}{" "}
+                      {selectedPO.ship_to_zip}
+                    </p>
                   </div>
                 </div>
 
                 {/* Quote Info */}
                 {(selectedPO.quote_number || selectedPO.quote_references) && (
                   <div className="mb-4 text-sm">
-                    {selectedPO.quote_references && <p><span className="font-bold">Quote #:</span> {selectedPO.quote_references}</p>}
-                    {selectedPO.quote_number && <p><span className="font-bold">Quote Number:</span> {selectedPO.quote_number}</p>}
+                    {selectedPO.quote_references && (
+                      <p>
+                        <span className="font-bold">Quote #:</span>{" "}
+                        {selectedPO.quote_references}
+                      </p>
+                    )}
+                    {selectedPO.quote_number && (
+                      <p>
+                        <span className="font-bold">Quote Number:</span>{" "}
+                        {selectedPO.quote_number}
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {/* Line Items */}
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 mb-4 text-sm">
+                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 mb-4 text-sm">
                   <thead>
-                    <tr className="bg-gray-100 dark:bg-dark-200">
-                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2">Item</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2">Quantity</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2">Description</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2">Amount</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2">Extended</th>
+                    <tr className="bg-zinc-100 dark:bg-dark-200">
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        Item
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        Quantity
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        Description
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        Amount
+                      </th>
+                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        Extended
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {(selectedPO.items || []).map((item, index) => (
                       <tr key={index}>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">{item.item_number}</td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">{item.quantity}</td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">{item.description}</td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">{formatUnitPrice(item.unit_price)}</td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">{formatCurrency(item.extended_price)}</td>
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                          {item.item_number}
+                        </td>
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                          {item.quantity}
+                        </td>
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                          {item.description}
+                        </td>
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                          {formatUnitPrice(item.unit_price)}
+                        </td>
+                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                          {formatCurrency(item.extended_price)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="font-bold">
-                      <td colSpan={4} className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">Total</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">{formatCurrency(selectedPO.amount || 0)}</td>
+                      <td
+                        colSpan={4}
+                        className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right"
+                      >
+                        Total
+                      </td>
+                      <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                        {formatCurrency(selectedPO.amount || 0)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
@@ -935,7 +1176,8 @@ const VendorPOs: React.FC = () => {
 
                 {selectedPO.authorized_by && (
                   <div className="text-sm">
-                    <span className="font-bold">Authorized Signature:</span> <span className="italic">{selectedPO.authorized_by}</span>
+                    <span className="font-bold">Authorized Signature:</span>{" "}
+                    <span className="italic">{selectedPO.authorized_by}</span>
                   </div>
                 )}
               </div>
@@ -948,7 +1190,12 @@ const VendorPOs: React.FC = () => {
                 <Button variant="outline" onClick={() => setShowPOView(false)}>
                   Close
                 </Button>
-                <Button onClick={() => { setShowPOView(false); openEditPO(selectedPO); }}>
+                <Button
+                  onClick={() => {
+                    setShowPOView(false);
+                    openEditPO(selectedPO);
+                  }}
+                >
                   Edit PO
                 </Button>
               </DialogFooter>
@@ -963,16 +1210,17 @@ const VendorPOs: React.FC = () => {
 // Print function to generate a clean printable PO
 function printPO(po: VendorPO) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
   // Format unit price - shows as currency if numeric, otherwise as-is (e.g., "PPA")
   const formatUnitPrice = (price: string | number) => {
-    const numPrice = typeof price === 'number' ? price : parseFloat(String(price));
+    const numPrice =
+      typeof price === "number" ? price : parseFloat(String(price));
     if (!isNaN(numPrice)) {
       return formatCurrency(numPrice);
     }
@@ -981,8 +1229,10 @@ function printPO(po: VendorPO) {
 
   // Only show actual items - no empty rows or automatic freight
   const items = po.items || [];
-  
-  const itemRows = items.map((item) => `
+
+  const itemRows = items
+    .map(
+      (item) => `
     <tr>
       <td>${item.item_number}</td>
       <td>${item.quantity}</td>
@@ -990,7 +1240,9 @@ function printPO(po: VendorPO) {
       <td class="amount">${formatUnitPrice(item.unit_price)}</td>
       <td class="amount">${formatCurrency(item.extended_price)}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
   const printContent = `
     <!DOCTYPE html>
@@ -1172,7 +1424,7 @@ function printPO(po: VendorPO) {
         </div>
         <div class="field">
           <span class="label">Terms:</span>
-          <span class="value">${po.terms || 'NET 30'}</span>
+          <span class="value">${po.terms || "NET 30"}</span>
         </div>
         <div class="field">
           <span class="label">Purchase Order #</span>
@@ -1183,9 +1435,9 @@ function printPO(po: VendorPO) {
       <div class="parties">
         <div class="party">
           <div class="label">Provider:</div>
-          <div class="name">${po.vendor?.company_name || ''}</div>
-          <div>${po.vendor?.address_street || ''}</div>
-          <div>${po.vendor?.address_city || ''}, ${po.vendor?.address_state || ''} ${po.vendor?.address_zip || ''}</div>
+          <div class="name">${po.vendor?.company_name || ""}</div>
+          <div>${po.vendor?.address_street || ""}</div>
+          <div>${po.vendor?.address_city || ""}, ${po.vendor?.address_state || ""} ${po.vendor?.address_zip || ""}</div>
         </div>
         <div class="party">
           <div class="label">Ship to:</div>
@@ -1195,18 +1447,26 @@ function printPO(po: VendorPO) {
         </div>
       </div>
 
-      ${po.quote_references ? `
+      ${
+        po.quote_references
+          ? `
       <div class="quote-row">
         <span class="label">Quote #</span>
         <span>${po.quote_references}</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${po.quote_number ? `
+      ${
+        po.quote_number
+          ? `
       <div class="quote-number-row">
         <span class="label">Quote Number</span> ${po.quote_number}
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <table>
         <thead>
@@ -1233,13 +1493,13 @@ function printPO(po: VendorPO) {
 
       <div class="signature">
         <span class="label">Authorized Signature:</span>
-        <span class="value">${po.authorized_by || ''}</span>
+        <span class="value">${po.authorized_by || ""}</span>
       </div>
     </body>
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open("", "_blank");
   if (printWindow) {
     printWindow.document.write(printContent);
     printWindow.document.close();

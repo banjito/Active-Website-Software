@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { PageLayout } from '@/components/ui/PageLayout';
-import { 
-  FileText, 
-  DollarSign, 
-  Building, 
-  Calendar, 
+import React, { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import Card, {
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/Card";
+import { PageLayout } from "@/components/ui/PageLayout";
+import {
+  FileText,
+  DollarSign,
+  Building,
+  Calendar,
   Users,
   Upload,
   DownloadCloud,
@@ -20,14 +25,14 @@ import {
   CalendarCheck,
   Bell,
   UserRound,
-  ClipboardList
-} from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import DocumentManagement from '@/components/office/DocumentManagement';
-import ExpenseTracking from '@/components/office/ExpenseTracking';
-import FacilityManagement from '@/components/office/FacilityManagement';
-import CalendarSystem from '@/components/office/CalendarSystem';
-import VendorManagement from '@/components/office/VendorManagement';
+  ClipboardList,
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import DocumentManagement from "@/components/office/DocumentManagement";
+import ExpenseTracking from "@/components/office/ExpenseTracking";
+import FacilityManagement from "@/components/office/FacilityManagement";
+import CalendarSystem from "@/components/office/CalendarSystem";
+import VendorManagement from "@/components/office/VendorManagement";
 
 // These components will be implemented in the next steps
 const ExpensePlaceholder = () => (
@@ -49,16 +54,21 @@ const CalendarPlaceholder = () => (
 const OfficeAdministrationPortal: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('documents'); // Default tab
-  
+  const [activeTab, setActiveTab] = useState("documents"); // Default tab
+
   // Sync with URL hash on component mount and hash changes
   useEffect(() => {
-    const hashTab = location.hash.replace('#', '');
-    
-    if (hashTab && ['documents', 'expenses', 'facilities', 'calendar', 'vendors'].includes(hashTab)) {
+    const hashTab = location.hash.replace("#", "");
+
+    if (
+      hashTab &&
+      ["documents", "expenses", "facilities", "calendar", "vendors"].includes(
+        hashTab,
+      )
+    ) {
       setActiveTab(hashTab);
-    } else if (!location.hash && activeTab !== 'documents') {
-      setActiveTab('documents');
+    } else if (!location.hash && activeTab !== "documents") {
+      setActiveTab("documents");
     }
   }, [location.hash, activeTab]);
 
@@ -73,8 +83,8 @@ const OfficeAdministrationPortal: React.FC = () => {
       title="Office Administration Portal"
       subtitle="Comprehensive office management and administration system"
       breadcrumbs={[
-        { label: 'Home', to: '/' },
-        { label: 'Office Administration', to: '/office' },
+        { label: "Home", to: "/" },
+        { label: "Office Administration", to: "/office" },
       ]}
     >
       <div className="mb-6">
@@ -82,37 +92,62 @@ const OfficeAdministrationPortal: React.FC = () => {
           <CardHeader className="pb-4">
             <CardTitle>Office Dashboard</CardTitle>
             <CardDescription>
-              Manage documents, track expenses, handle facilities, schedule events, and organize vendor information
+              Manage documents, track expenses, handle facilities, schedule
+              events, and organize vendor information
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">284</p>
-                <p className="text-sm text-gray-500 dark:text-white">Documents</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  284
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-white">
+                  Documents
+                </p>
               </div>
               <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">32</p>
-                <p className="text-sm text-gray-500 dark:text-white">Pending Expenses</p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  32
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-white">
+                  Pending Expenses
+                </p>
               </div>
               <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">18</p>
-                <p className="text-sm text-gray-500 dark:text-white">Maintenance Requests + Active</p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  18
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-white">
+                  Maintenance Requests + Active
+                </p>
               </div>
               <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
-                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">8</p>
-                <p className="text-sm text-gray-500 dark:text-white">Upcoming Events + Active</p>
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                  8
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-white">
+                  Upcoming Events + Active
+                </p>
               </div>
               <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-                <p className="text-3xl font-bold text-red-600 dark:text-red-400">5</p>
-                <p className="text-sm text-gray-500 dark:text-white">Expiring Contracts</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                  5
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-white">
+                  Expiring Contracts
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="grid grid-cols-5 mb-8">
           <TabsTrigger value="documents" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -156,7 +191,7 @@ const OfficeAdministrationPortal: React.FC = () => {
         <TabsContent value="calendar">
           <CalendarSystem />
         </TabsContent>
-        
+
         <TabsContent value="vendors">
           <VendorManagement />
         </TabsContent>
@@ -165,4 +200,4 @@ const OfficeAdministrationPortal: React.FC = () => {
   );
 };
 
-export default OfficeAdministrationPortal; 
+export default OfficeAdministrationPortal;

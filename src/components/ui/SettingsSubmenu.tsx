@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { User as UserIcon, FileText, Edit3 } from 'lucide-react';
-import { EditProfilePopup } from '../profile/EditProfilePopup';
-import { EmailDigestPreferences } from '../settings/EmailDigestPreferences';
+import React, { useState } from "react";
+import { User as UserIcon, FileText, Edit3 } from "lucide-react";
+import { EditProfilePopup } from "../profile/EditProfilePopup";
+import { EmailDigestPreferences } from "../settings/EmailDigestPreferences";
 
 export interface SettingsSubmenuUser {
   id?: string;
@@ -37,17 +37,19 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
         role="menu"
         aria-label="Settings"
       >
-        <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">Settings</p>
+        <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
+          <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+            Settings
+          </p>
         </div>
 
         <div className="py-1">
           <button
             type="button"
             onClick={() => setShowEditProfile(true)}
-            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+            className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
           >
-            <UserIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+            <UserIcon className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
             Edit Profile
           </button>
 
@@ -58,9 +60,9 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
                 onEnterEditMode();
                 onClose();
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+              className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
             >
-              <Edit3 className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+              <Edit3 className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
               Enter Edit Mode
             </button>
           )}
@@ -71,9 +73,9 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
               onAbout?.();
               onClose();
             }}
-            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+            className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
           >
-            <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+            <FileText className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
             About
           </button>
         </div>

@@ -100,7 +100,7 @@ const handleSelectQuoteForCombined = (index: number) => {
 // Quantity input component
 {selectedQuotesForCombined.includes(idx) && (
   <div className="flex items-center gap-2 ml-4">
-    <label className="text-sm text-gray-700">Scope Quantity</label>
+    <label className="text-sm text-zinc-700">Scope Quantity</label>
     <input
       type="number"
       min="1"
@@ -112,7 +112,7 @@ const handleSelectQuoteForCombined = (index: number) => {
           [idx]: qty
         }));
       }}
-      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+      className="w-20 px-2 py-1 border border-zinc-300 rounded text-sm"
     />
   </div>
 )}

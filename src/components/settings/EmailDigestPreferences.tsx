@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Mail } from 'lucide-react';
-import { Switch } from '@/components/ui/Switch';
-import { toast } from '@/components/ui/toast';
-import { supabase } from '@/lib/supabase';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useCallback, useEffect, useState } from "react";
+import { Mail } from "lucide-react";
+import { Switch } from "@/components/ui/Switch";
+import { toast } from "@/components/ui/toast";
+import { supabase } from "@/lib/supabase";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   DEFAULT_AUTOMATED_EMAILS,
   getUserNotificationPreferences,
@@ -11,7 +11,7 @@ import {
   updateUserNotificationPreferences,
   type AutomatedEmailPreferences,
   type NotificationPreferences,
-} from '@/services/notificationService';
+} from "@/services/notificationService";
 
 interface EmailDigestPreferencesProps {
   userId: string;
@@ -26,19 +26,19 @@ const DIGEST_OPTIONS: {
   description: string;
 }[] = [
   {
-    key: 'dailyReview',
-    label: 'Daily review digest',
-    description: 'Reports ready for review (weekdays around 12:00 PM Central).',
+    key: "dailyReview",
+    label: "Daily review digest",
+    description: "Reports ready for review (weekdays around 12:00 PM Central).",
   },
   {
-    key: 'dailyReadyToBill',
-    label: 'Daily ready-to-bill digest',
-    description: 'Jobs waiting to be billed (around 8:00 AM Central).',
+    key: "dailyReadyToBill",
+    label: "Daily ready-to-bill digest",
+    description: "Jobs waiting to be billed (around 8:00 AM Central).",
   },
   {
-    key: 'weeklyReports',
-    label: 'Weekly reports digest',
-    description: 'PO summary and jobs status (Mondays around 8:00 AM Central).',
+    key: "weeklyReports",
+    label: "Weekly reports digest",
+    description: "PO summary and jobs status (Mondays around 8:00 AM Central).",
   },
 ];
 
@@ -47,7 +47,8 @@ export function EmailDigestPreferences({
   userEmail,
   compact = false,
 }: EmailDigestPreferencesProps) {
-  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
+  const [preferences, setPreferences] =
+    useState<NotificationPreferences | null>(null);
   const [hasSavedRow, setHasSavedRow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -56,10 +57,10 @@ export function EmailDigestPreferences({
     setLoading(true);
     try {
       const { data: row } = await supabase
-        .schema('common')
-        .from('user_preferences')
-        .select('notification_preferences')
-        .eq('user_id', userId)
+        .schema("common")
+        .from("user_preferences")
+        .select("notification_preferences")
+        .eq("user_id", userId)
         .maybeSingle();
 
       setHasSavedRow(!!row);
@@ -67,8 +68,8 @@ export function EmailDigestPreferences({
       setPreferences(prefs);
     } catch {
       toast({
-        title: 'Could not load email settings',
-        variant: 'destructive',
+        title: "Could not load email settings",
+        variant: "destructive",
       });
       setPreferences(mergeNotificationPreferences(null));
     } finally {
@@ -80,7 +81,9 @@ export function EmailDigestPreferences({
     loadPreferences();
   }, [loadPreferences]);
 
-  const persistAutomatedEmails = async (automatedEmails: AutomatedEmailPreferences) => {
+  const persistAutomatedEmails = async (
+    automatedEmails: AutomatedEmailPreferences,
+  ) => {
     if (!preferences) return;
 
     setSaving(true);
@@ -89,22 +92,28 @@ export function EmailDigestPreferences({
       automatedEmails,
     };
 
-    const { success } = await updateUserNotificationPreferences(userId, updated);
+    const { success } = await updateUserNotificationPreferences(
+      userId,
+      updated,
+    );
     setSaving(false);
 
     if (success) {
       setPreferences(updated);
       setHasSavedRow(true);
-      toast({ title: 'Email preferences saved' });
+      toast({ title: "Email preferences saved" });
     } else {
       toast({
-        title: 'Could not save email preferences',
-        variant: 'destructive',
+        title: "Could not save email preferences",
+        variant: "destructive",
       });
     }
   };
 
-  const handleToggle = (key: keyof AutomatedEmailPreferences, checked: boolean) => {
+  const handleToggle = (
+    key: keyof AutomatedEmailPreferences,
+    checked: boolean,
+  ) => {
     if (!preferences || saving) return;
     const automatedEmails: AutomatedEmailPreferences = {
       ...DEFAULT_AUTOMATED_EMAILS,
@@ -116,40 +125,53 @@ export function EmailDigestPreferences({
 
   const automated = preferences?.automatedEmails ?? DEFAULT_AUTOMATED_EMAILS;
 
-  const iconClass = compact ? 'h-4 w-4' : 'h-5 w-5';
-  const inset = compact ? 'px-3' : 'px-4';
-  const descPad = compact ? '' : 'ml-7';
+  const iconClass = compact ? "h-4 w-4" : "h-5 w-5";
+  const inset = compact ? "px-3" : "px-4";
+  const descPad = compact ? "" : "ml-7";
 
   return (
-    <div className={`${inset} py-3 border-t border-gray-200 dark:border-gray-700`}>
-      <div className={`flex items-center gap-2 mb-1 ${compact ? '' : ''}`}>
-        <Mail className={`${iconClass} text-gray-400 dark:text-[#f26722] shrink-0`} />
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Email digests</h3>
+    <div
+      className={`${inset} py-3 border-t border-zinc-200 dark:border-zinc-700`}
+    >
+      <div className={`flex items-center gap-2 mb-1 ${compact ? "" : ""}`}>
+        <Mail
+          className={`${iconClass} text-zinc-400 dark:text-[#f26722] shrink-0`}
+        />
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+          Email digests
+        </h3>
       </div>
-      <p className={`text-xs text-gray-500 dark:text-gray-400 mb-3 ${descPad}`}>
+      <p className={`text-xs text-zinc-500 dark:text-zinc-400 mb-3 ${descPad}`}>
         Scheduled ampOS summary emails
         {userEmail ? (
           <>
-            {' '}
-            to <span className="font-medium text-gray-700 dark:text-gray-300">{userEmail}</span>
+            {" "}
+            to{" "}
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {userEmail}
+            </span>
           </>
         ) : null}
         .
         {!hasSavedRow && !loading
-          ? ' Adjust a toggle to start or stop.'
-          : ' Turn off any you do not want.'}
+          ? " Adjust a toggle to start or stop."
+          : " Turn off any you do not want."}
       </p>
 
       {loading ? (
-        <div className={`flex justify-center py-6 ${descPad}`}><LoadingSpinner size="md" /></div>
+        <div className={`flex justify-center py-6 ${descPad}`}>
+          <LoadingSpinner size="md" />
+        </div>
       ) : (
         <div className={`space-y-2.5 ${descPad}`}>
           {DIGEST_OPTIONS.map(({ key, label, description }) => (
             <div key={key} className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-gray-900 dark:text-white">{label}</p>
+                <p className="text-sm text-zinc-900 dark:text-white">{label}</p>
                 {!compact && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {description}
+                  </p>
                 )}
               </div>
               <Switch

@@ -1,24 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Select } from '../../../components/ui/Select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { Users, Loader2, RefreshCw, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { onboardingService, HRTask } from '../../../services/hr/onboardingService';
-import { toast } from '../../../components/ui/toast';
+import React, { useState, useEffect, useCallback } from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Select } from "../../../components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  Users,
+  Loader2,
+  RefreshCw,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  onboardingService,
+  HRTask,
+} from "../../../services/hr/onboardingService";
+import { toast } from "../../../components/ui/toast";
 
 const PAGE_SIZE = 15;
 
 type TaskRow = HRTask & { employeeName: string };
 
-type StatusFilter = 'all' | 'pending' | 'in_progress' | 'completed';
+type StatusFilter = "all" | "pending" | "in_progress" | "completed";
 
 export const HROnboarding: React.FC = () => {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [detailTask, setDetailTask] = useState<TaskRow | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [page, setPage] = useState(1);
 
   const fetchData = useCallback(async () => {
@@ -28,42 +50,70 @@ export const HROnboarding: React.FC = () => {
         onboardingService.getHRTasks({ is_template: false }),
         onboardingService.getOnboardingTrackingList(),
       ]);
-      const assigned = allTasks.filter((t) => t.employee_id && t.status !== 'cancelled') as (HRTask & { employee_id: string })[];
+      const assigned = allTasks.filter(
+        (t) => t.employee_id && t.status !== "cancelled",
+      ) as (HRTask & { employee_id: string })[];
       const nameByUserId = new Map<string, string>();
       trackingList.forEach((r) => {
         const uid = (r as any).user_id;
         if (uid && r.user) {
-          const name = (r.user as any).name || (r.user as any).email || 'Unknown';
+          const name =
+            (r.user as any).name || (r.user as any).email || "Unknown";
           nameByUserId.set(uid, name);
         }
       });
       const rows: TaskRow[] = assigned.map((t) => ({
         ...t,
-        employeeName: nameByUserId.get(t.employee_id) || t.employee_id.slice(0, 8) + '…',
+        employeeName:
+          nameByUserId.get(t.employee_id) || t.employee_id.slice(0, 8) + "…",
       }));
       setTasks(rows);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to load assigned HR tasks', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to load assigned HR tasks",
+        variant: "destructive",
+      });
       setTasks([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const filteredTasks = tasks.filter((t) => statusFilter === 'all' ? true : t.status === statusFilter);
+  const filteredTasks = tasks.filter((t) =>
+    statusFilter === "all" ? true : t.status === statusFilter,
+  );
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / PAGE_SIZE));
-  const paginatedTasks = filteredTasks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginatedTasks = filteredTasks.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
-  const handleStatusChange = async (taskId: string, newStatus: 'pending' | 'in_progress' | 'completed') => {
+  const handleStatusChange = async (
+    taskId: string,
+    newStatus: "pending" | "in_progress" | "completed",
+  ) => {
     setUpdatingId(taskId);
     try {
       await onboardingService.updateHRTask(taskId, { status: newStatus });
-      setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, status: newStatus } : t)));
-      toast({ title: 'Updated', description: 'Task status updated.', variant: 'success' });
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
+      );
+      toast({
+        title: "Updated",
+        description: "Task status updated.",
+        variant: "success",
+      });
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to update status', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to update status",
+        variant: "destructive",
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -81,12 +131,13 @@ export const HROnboarding: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <Users className="h-8 w-8 text-[#f26722]" />
             HR Onboarding
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            See who has HR tasks assigned and mark them in progress or completed.
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+            See who has HR tasks assigned and mark them in progress or
+            completed.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchData}>
@@ -98,78 +149,127 @@ export const HROnboarding: React.FC = () => {
         <CardHeader>
           <CardTitle>Assigned HR tasks</CardTitle>
           <CardDescription>
-            Tasks assigned to new hires from Onboarding Tracking. Change status as you work on them.
+            Tasks assigned to new hires from Onboarding Tracking. Change status
+            as you work on them.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4">
-            {(['all', 'pending', 'in_progress', 'completed'] as const).map(status => (
-              <Button
-                key={status}
-                variant={statusFilter === status ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => { setStatusFilter(status); setPage(1); }}
-                className={statusFilter === status ? 'bg-[#f26722] hover:bg-[#f26722]/90 text-white' : ''}
-              >
-                {status === 'all' ? 'All' : status === 'in_progress' ? 'In progress' : status.charAt(0).toUpperCase() + status.slice(1)}
-              </Button>
-            ))}
+            {(["all", "pending", "in_progress", "completed"] as const).map(
+              (status) => (
+                <Button
+                  key={status}
+                  variant={statusFilter === status ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter(status);
+                    setPage(1);
+                  }}
+                  className={
+                    statusFilter === status
+                      ? "bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      : ""
+                  }
+                >
+                  {status === "all"
+                    ? "All"
+                    : status === "in_progress"
+                      ? "In progress"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+              ),
+            )}
           </div>
           {filteredTasks.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-6">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 py-6">
               {tasks.length === 0
-                ? 'No assigned HR tasks yet. Assign templates to people from Onboarding Tracking.'
-                : `No tasks with status "${statusFilter === 'all' ? 'any' : statusFilter === 'in_progress' ? 'In progress' : statusFilter}".`}
+                ? "No assigned HR tasks yet. Assign templates to people from Onboarding Tracking."
+                : `No tasks with status "${statusFilter === "all" ? "any" : statusFilter === "in_progress" ? "In progress" : statusFilter}".`}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Employee</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Task</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Status</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Update</th>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                      Employee
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                      Task
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                      Update
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedTasks.map(t => (
+                  {paginatedTasks.map((t) => (
                     <tr
                       key={t.id}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                      className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setDetailTask(t)}
                     >
-                      <td className="py-3 px-2 text-gray-900 dark:text-white">{t.employeeName}</td>
+                      <td className="py-3 px-2 text-zinc-900 dark:text-white">
+                        {t.employeeName}
+                      </td>
                       <td className="py-3 px-2">
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); setDetailTask(t); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDetailTask(t);
+                          }}
                           className="text-left font-medium text-[#f26722] hover:underline flex items-center gap-1.5"
                         >
                           <Eye className="h-3.5 w-3.5 flex-shrink-0" />
                           {t.name}
                         </button>
                       </td>
-                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          t.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                          t.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}>
-                          {t.status === 'in_progress' ? 'In progress' : t.status === 'completed' ? 'Completed' : 'Pending'}
+                      <td
+                        className="py-3 px-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span
+                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            t.status === "completed"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : t.status === "in_progress"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                          }`}
+                        >
+                          {t.status === "in_progress"
+                            ? "In progress"
+                            : t.status === "completed"
+                              ? "Completed"
+                              : "Pending"}
                         </span>
                       </td>
-                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="py-3 px-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {updatingId === t.id ? (
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         ) : (
                           <Select
                             value={t.status}
-                            onChange={(e) => handleStatusChange(t.id, e.target.value as 'pending' | 'in_progress' | 'completed')}
+                            onChange={(e) =>
+                              handleStatusChange(
+                                t.id,
+                                e.target.value as
+                                  | "pending"
+                                  | "in_progress"
+                                  | "completed",
+                              )
+                            }
                             options={[
-                              { value: 'pending', label: 'Pending' },
-                              { value: 'in_progress', label: 'In progress' },
-                              { value: 'completed', label: 'Completed' },
+                              { value: "pending", label: "Pending" },
+                              { value: "in_progress", label: "In progress" },
+                              { value: "completed", label: "Completed" },
                             ]}
                             fullWidth={false}
                             className="w-[140px]"
@@ -183,15 +283,25 @@ export const HROnboarding: React.FC = () => {
             </div>
           )}
           {filteredTasks.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
                 Page {page} of {totalPages} ({filteredTasks.length} total)
               </span>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
                   <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
                   Next <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -200,7 +310,10 @@ export const HROnboarding: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={!!detailTask} onOpenChange={(open) => !open && setDetailTask(null)}>
+      <Dialog
+        open={!!detailTask}
+        onOpenChange={(open) => !open && setDetailTask(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -208,21 +321,45 @@ export const HROnboarding: React.FC = () => {
               {detailTask?.name}
             </DialogTitle>
             <DialogDescription>
-              For: <span className="font-medium text-gray-900 dark:text-white">{detailTask?.employeeName}</span>
+              For:{" "}
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {detailTask?.employeeName}
+              </span>
               {detailTask?.description && (
-                <span className="block mt-2 text-gray-600 dark:text-gray-400">{detailTask.description}</span>
+                <span className="block mt-2 text-zinc-600 dark:text-zinc-400">
+                  {detailTask.description}
+                </span>
               )}
             </DialogDescription>
           </DialogHeader>
           {detailTask && (
             <div className="space-y-4 pt-2 text-sm">
-              <div><span className="font-medium text-gray-700 dark:text-gray-300">Type:</span> {detailTask.task_type.replace('_', ' ')}</div>
-              <div><span className="font-medium text-gray-700 dark:text-gray-300">Priority:</span> {detailTask.priority}</div>
-              {detailTask.due_date && <div><span className="font-medium text-gray-700 dark:text-gray-300">Due:</span> {detailTask.due_date}</div>}
+              <div>
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  Type:
+                </span>{" "}
+                {detailTask.task_type.replace("_", " ")}
+              </div>
+              <div>
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  Priority:
+                </span>{" "}
+                {detailTask.priority}
+              </div>
+              {detailTask.due_date && (
+                <div>
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    Due:
+                  </span>{" "}
+                  {detailTask.due_date}
+                </div>
+              )}
               {detailTask.notes && (
                 <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Notes</span>
-                  <p className="mt-1 whitespace-pre-wrap rounded border border-gray-200 dark:border-gray-700 p-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    Notes
+                  </span>
+                  <p className="mt-1 whitespace-pre-wrap rounded border border-zinc-200 dark:border-zinc-700 p-2 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                     {detailTask.notes}
                   </p>
                 </div>
@@ -232,21 +369,26 @@ export const HROnboarding: React.FC = () => {
           <DialogFooter className="flex items-center gap-2 flex-wrap">
             {detailTask && (
               <>
-                <span className="text-sm text-gray-500 mr-2">Status:</span>
+                <span className="text-sm text-zinc-500 mr-2">Status:</span>
                 {updatingId === detailTask.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Select
                     value={detailTask.status}
                     onChange={(e) => {
-                      const v = e.target.value as 'pending' | 'in_progress' | 'completed';
+                      const v = e.target.value as
+                        | "pending"
+                        | "in_progress"
+                        | "completed";
                       handleStatusChange(detailTask.id, v);
-                      setDetailTask(prev => (prev ? { ...prev, status: v } : null));
+                      setDetailTask((prev) =>
+                        prev ? { ...prev, status: v } : null,
+                      );
                     }}
                     options={[
-                      { value: 'pending', label: 'Pending' },
-                      { value: 'in_progress', label: 'In progress' },
-                      { value: 'completed', label: 'Completed' },
+                      { value: "pending", label: "Pending" },
+                      { value: "in_progress", label: "In progress" },
+                      { value: "completed", label: "Completed" },
                     ]}
                     fullWidth={false}
                     className="w-[140px]"
@@ -254,7 +396,9 @@ export const HROnboarding: React.FC = () => {
                 )}
               </>
             )}
-            <Button variant="outline" onClick={() => setDetailTask(null)}>Close</Button>
+            <Button variant="outline" onClick={() => setDetailTask(null)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

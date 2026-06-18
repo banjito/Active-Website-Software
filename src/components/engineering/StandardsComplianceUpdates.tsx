@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
-import { 
-  FileCode, 
-  AlertCircle, 
-  Info, 
-  CalendarDays, 
+import React, { useState } from "react";
+import {
+  FileCode,
+  AlertCircle,
+  Info,
+  CalendarDays,
   Search,
   Filter,
   Download,
   Plus,
-  X
-} from 'lucide-react';
-import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { PageLayout } from '@/components/ui/PageLayout';
+  X,
+} from "lucide-react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { PageLayout } from "@/components/ui/PageLayout";
 
 // Dummy data for standards
 const standardsData = [
@@ -47,7 +60,8 @@ const standardsData = [
     lastUpdated: "2023-08-12",
     nextReview: "2024-08-12",
     status: "current",
-    description: "Guide for Testing Metal-Enclosed Switchgear Rated up to 38kV for Internal Arcing Faults",
+    description:
+      "Guide for Testing Metal-Enclosed Switchgear Rated up to 38kV for Internal Arcing Faults",
     changeType: "none",
   },
   {
@@ -57,7 +71,8 @@ const standardsData = [
     lastUpdated: "2023-11-05",
     nextReview: "2024-11-05",
     status: "update-pending",
-    description: "Recommended Practice and Requirements for Harmonic Control in Electric Power Systems",
+    description:
+      "Recommended Practice and Requirements for Harmonic Control in Electric Power Systems",
     changeType: "major",
   },
   {
@@ -77,7 +92,8 @@ const standardsData = [
     lastUpdated: "2023-10-15",
     nextReview: "2024-04-15",
     status: "update-pending",
-    description: "Standard for Interconnection and Interoperability of Distributed Energy Resources with Associated Electric Power Systems Interfaces",
+    description:
+      "Standard for Interconnection and Interoperability of Distributed Energy Resources with Associated Electric Power Systems Interfaces",
     changeType: "major",
   },
   {
@@ -97,9 +113,10 @@ const standardsData = [
     lastUpdated: "2023-11-01",
     nextReview: "2024-03-01",
     status: "update-pending",
-    description: "Communication Networks and Systems for Power Utility Automation",
+    description:
+      "Communication Networks and Systems for Power Utility Automation",
     changeType: "minor",
-  }
+  },
 ];
 
 // Dummy compliance data
@@ -110,7 +127,7 @@ const complianceData = [
     dueDate: "2024-03-15",
     status: "on-track",
     assignee: "Engineering Team",
-    notes: "Documentation being prepared"
+    notes: "Documentation being prepared",
   },
   {
     id: 2,
@@ -118,7 +135,7 @@ const complianceData = [
     dueDate: "2024-02-01",
     status: "at-risk",
     assignee: "Safety Department",
-    notes: "Need to schedule remaining personnel"
+    notes: "Need to schedule remaining personnel",
   },
   {
     id: 3,
@@ -126,7 +143,7 @@ const complianceData = [
     dueDate: "2024-01-15",
     status: "completed",
     assignee: "Field Services",
-    notes: "All equipment updated to current standards"
+    notes: "All equipment updated to current standards",
   },
   {
     id: 4,
@@ -134,7 +151,7 @@ const complianceData = [
     dueDate: "2024-04-30",
     status: "on-track",
     assignee: "Power Quality Team",
-    notes: "Measurements in progress"
+    notes: "Measurements in progress",
   },
   {
     id: 5,
@@ -142,8 +159,8 @@ const complianceData = [
     dueDate: "2024-02-28",
     status: "on-track",
     assignee: "Testing Department",
-    notes: "Schedule created for all facilities"
-  }
+    notes: "Schedule created for all facilities",
+  },
 ];
 
 export function StandardsComplianceUpdates() {
@@ -153,7 +170,7 @@ export function StandardsComplianceUpdates() {
   const [showComplianceModal, setShowComplianceModal] = useState(false);
   const [standards, setStandards] = useState(standardsData);
   const [compliance, setCompliance] = useState(complianceData);
-  
+
   // New standard form state
   const [newStandard, setNewStandard] = useState({
     title: "",
@@ -161,8 +178,8 @@ export function StandardsComplianceUpdates() {
     description: "",
     status: "current",
     changeType: "none",
-    lastUpdated: new Date().toISOString().split('T')[0],
-    nextReview: ""
+    lastUpdated: new Date().toISOString().split("T")[0],
+    nextReview: "",
   });
 
   // New compliance form state
@@ -171,48 +188,50 @@ export function StandardsComplianceUpdates() {
     dueDate: "",
     status: "on-track",
     assignee: "",
-    notes: ""
+    notes: "",
   });
-  
+
   // Filter standards based on search term
-  const filteredStandards = standards.filter(standard => 
-    standard.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    standard.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    standard.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStandards = standards.filter(
+    (standard) =>
+      standard.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      standard.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      standard.category.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  
+
   // Filter compliance items based on search term
-  const filteredCompliance = compliance.filter(item => 
-    item.requirement.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    item.assignee.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    item.notes.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCompliance = compliance.filter(
+    (item) =>
+      item.requirement.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.assignee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.notes.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'current':
+      case "current":
         return <Badge className="bg-green-500">Current</Badge>;
-      case 'update-pending':
+      case "update-pending":
         return <Badge className="bg-amber-500">Update Pending</Badge>;
-      case 'on-track':
+      case "on-track":
         return <Badge className="bg-green-500">On Track</Badge>;
-      case 'at-risk':
+      case "at-risk":
         return <Badge className="bg-amber-500">At Risk</Badge>;
-      case 'completed':
+      case "completed":
         return <Badge className="bg-blue-500">Completed</Badge>;
       default:
-        return <Badge className="bg-gray-500">{status}</Badge>;
+        return <Badge className="bg-zinc-500">{status}</Badge>;
     }
   };
 
   const getChangeBadge = (changeType: string) => {
     switch (changeType) {
-      case 'major':
+      case "major":
         return <Badge className="bg-red-500">Major Change</Badge>;
-      case 'minor':
+      case "minor":
         return <Badge className="bg-amber-500">Minor Change</Badge>;
-      case 'none':
-        return <Badge className="bg-gray-300 text-gray-700">No Change</Badge>;
+      case "none":
+        return <Badge className="bg-zinc-300 text-zinc-700">No Change</Badge>;
       default:
         return null;
     }
@@ -221,16 +240,17 @@ export function StandardsComplianceUpdates() {
   // Add new standard
   const handleAddStandard = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Add new standard with generated ID
-    const newId = standards.length > 0 ? Math.max(...standards.map(s => s.id)) + 1 : 1;
-    const standardToAdd = { 
-      ...newStandard, 
-      id: newId
+    const newId =
+      standards.length > 0 ? Math.max(...standards.map((s) => s.id)) + 1 : 1;
+    const standardToAdd = {
+      ...newStandard,
+      id: newId,
     };
-    
+
     setStandards([...standards, standardToAdd]);
-    
+
     // Reset form and close modal
     setNewStandard({
       title: "",
@@ -238,8 +258,8 @@ export function StandardsComplianceUpdates() {
       description: "",
       status: "current",
       changeType: "none",
-      lastUpdated: new Date().toISOString().split('T')[0],
-      nextReview: ""
+      lastUpdated: new Date().toISOString().split("T")[0],
+      nextReview: "",
     });
     setShowStandardModal(false);
   };
@@ -247,23 +267,24 @@ export function StandardsComplianceUpdates() {
   // Add new compliance requirement
   const handleAddCompliance = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Add new compliance with generated ID
-    const newId = compliance.length > 0 ? Math.max(...compliance.map(c => c.id)) + 1 : 1;
-    const complianceToAdd = { 
-      ...newCompliance, 
-      id: newId 
+    const newId =
+      compliance.length > 0 ? Math.max(...compliance.map((c) => c.id)) + 1 : 1;
+    const complianceToAdd = {
+      ...newCompliance,
+      id: newId,
     };
-    
+
     setCompliance([...compliance, complianceToAdd]);
-    
+
     // Reset form and close modal
     setNewCompliance({
       requirement: "",
       dueDate: "",
       status: "on-track",
       assignee: "",
-      notes: ""
+      notes: "",
     });
     setShowComplianceModal(false);
   };
@@ -278,9 +299,13 @@ export function StandardsComplianceUpdates() {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button 
+          <Button
             className="bg-[#f26722] hover:bg-[#f26722]/90"
-            onClick={() => activeTab === "standards" ? setShowStandardModal(true) : setShowComplianceModal(true)}
+            onClick={() =>
+              activeTab === "standards"
+                ? setShowStandardModal(true)
+                : setShowComplianceModal(true)
+            }
           >
             <Plus className="mr-2 h-4 w-4" />
             Add {activeTab === "standards" ? "Standard" : "Compliance"}
@@ -292,7 +317,7 @@ export function StandardsComplianceUpdates() {
         {/* Search and filter */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative w-full sm:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
             <Input
               type="search"
               placeholder="Search standards or compliance items..."
@@ -306,46 +331,70 @@ export function StandardsComplianceUpdates() {
             Filter
           </Button>
         </div>
-        
-        <Tabs defaultValue="standards" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+
+        <Tabs
+          defaultValue="standards"
+          className="w-full"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
           <TabsList className="grid grid-cols-2 w-full sm:w-[400px]">
             <TabsTrigger value="standards">Standards</TabsTrigger>
-            <TabsTrigger value="compliance">Compliance Requirements</TabsTrigger>
+            <TabsTrigger value="compliance">
+              Compliance Requirements
+            </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="standards" className="space-y-4 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Standards</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Standards
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{standards.length}</div>
-                  <p className="text-xs text-gray-500">Tracked standards</p>
+                  <p className="text-xs text-zinc-500">Tracked standards</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Pending Updates</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Pending Updates
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{standards.filter(s => s.status === 'update-pending').length}</div>
-                  <p className="text-xs text-gray-500">Standards with upcoming changes</p>
+                  <div className="text-2xl font-bold">
+                    {
+                      standards.filter((s) => s.status === "update-pending")
+                        .length
+                    }
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Standards with upcoming changes
+                  </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Major Changes</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Major Changes
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{standards.filter(s => s.changeType === 'major').length}</div>
-                  <p className="text-xs text-gray-500">Standards with significant updates</p>
+                  <div className="text-2xl font-bold">
+                    {standards.filter((s) => s.changeType === "major").length}
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Standards with significant updates
+                  </p>
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -361,7 +410,10 @@ export function StandardsComplianceUpdates() {
                 <TableBody>
                   {filteredStandards.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-4 text-zinc-500"
+                      >
                         No standards match your search criteria
                       </TableCell>
                     </TableRow>
@@ -370,12 +422,16 @@ export function StandardsComplianceUpdates() {
                       <TableRow key={standard.id}>
                         <TableCell className="font-medium">
                           <div>{standard.title}</div>
-                          <div className="text-xs text-gray-500">{standard.description}</div>
+                          <div className="text-xs text-zinc-500">
+                            {standard.description}
+                          </div>
                         </TableCell>
                         <TableCell>{standard.category}</TableCell>
                         <TableCell>{standard.lastUpdated}</TableCell>
                         <TableCell>{getStatusBadge(standard.status)}</TableCell>
-                        <TableCell>{getChangeBadge(standard.changeType)}</TableCell>
+                        <TableCell>
+                          {getChangeBadge(standard.changeType)}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm">
                             View Details
@@ -388,40 +444,52 @@ export function StandardsComplianceUpdates() {
               </Table>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="compliance" className="space-y-4 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Compliance Items</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Compliance Items
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{compliance.length}</div>
-                  <p className="text-xs text-gray-500">Active requirements</p>
+                  <p className="text-xs text-zinc-500">Active requirements</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">At Risk</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{compliance.filter(c => c.status === 'at-risk').length}</div>
-                  <p className="text-xs text-gray-500">Items requiring attention</p>
+                  <div className="text-2xl font-bold">
+                    {compliance.filter((c) => c.status === "at-risk").length}
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Items requiring attention
+                  </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Completed
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{compliance.filter(c => c.status === 'completed').length}</div>
-                  <p className="text-xs text-gray-500">Requirements satisfied</p>
+                  <div className="text-2xl font-bold">
+                    {compliance.filter((c) => c.status === "completed").length}
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Requirements satisfied
+                  </p>
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -437,18 +505,25 @@ export function StandardsComplianceUpdates() {
                 <TableBody>
                   {filteredCompliance.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-4 text-zinc-500"
+                      >
                         No compliance items match your search criteria
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredCompliance.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.requirement}</TableCell>
+                        <TableCell className="font-medium">
+                          {item.requirement}
+                        </TableCell>
                         <TableCell>{item.dueDate}</TableCell>
                         <TableCell>{item.assignee}</TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{item.notes}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">
+                          {item.notes}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm">
                             Manage
@@ -462,7 +537,7 @@ export function StandardsComplianceUpdates() {
             </div>
           </TabsContent>
         </Tabs>
-        
+
         {/* Standards updates section */}
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Recent Updates</h2>
@@ -472,42 +547,58 @@ export function StandardsComplianceUpdates() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>IEEE 1547-2018 Amendment</CardTitle>
-                    <CardDescription>Distributed Energy Resources Standard</CardDescription>
+                    <CardDescription>
+                      Distributed Energy Resources Standard
+                    </CardDescription>
                   </div>
                   <Badge className="bg-amber-500">Update Pending</Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">Amendment to include new requirements for grid support functions and interoperability. This update will affect multiple existing projects.</p>
-                <div className="flex items-center mt-3 text-xs text-gray-500">
+                <p className="text-sm text-zinc-600">
+                  Amendment to include new requirements for grid support
+                  functions and interoperability. This update will affect
+                  multiple existing projects.
+                </p>
+                <div className="flex items-center mt-3 text-xs text-zinc-500">
                   <CalendarDays className="h-3.5 w-3.5 mr-1" />
                   <span>Expected release: April 15, 2024</span>
                 </div>
               </CardContent>
               <CardFooter className="pt-2">
-                <Button variant="outline" size="sm" className="w-full">View Details</Button>
+                <Button variant="outline" size="sm" className="w-full">
+                  View Details
+                </Button>
               </CardFooter>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>NFPA 70E-2021 Implementation</CardTitle>
-                    <CardDescription>Electrical Safety in the Workplace</CardDescription>
+                    <CardDescription>
+                      Electrical Safety in the Workplace
+                    </CardDescription>
                   </div>
                   <Badge className="bg-green-500">Current</Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">Updates to our internal safety procedures based on the most recent NFPA 70E standard. Includes revised arc flash calculation methods and PPE requirements.</p>
-                <div className="flex items-center mt-3 text-xs text-gray-500">
+                <p className="text-sm text-zinc-600">
+                  Updates to our internal safety procedures based on the most
+                  recent NFPA 70E standard. Includes revised arc flash
+                  calculation methods and PPE requirements.
+                </p>
+                <div className="flex items-center mt-3 text-xs text-zinc-500">
                   <AlertCircle className="h-3.5 w-3.5 mr-1" />
                   <span>Training sessions scheduled for Jan 15-20, 2024</span>
                 </div>
               </CardContent>
               <CardFooter className="pt-2">
-                <Button variant="outline" size="sm" className="w-full">View Details</Button>
+                <Button variant="outline" size="sm" className="w-full">
+                  View Details
+                </Button>
               </CardFooter>
             </Card>
           </div>
@@ -517,65 +608,86 @@ export function StandardsComplianceUpdates() {
       {/* Add Standard Modal */}
       {showStandardModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">Add New Standard</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowStandardModal(false)} className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowStandardModal(false)}
+                className="h-8 w-8 p-0"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={handleAddStandard} className="p-6 space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Title</label>
-                <Input 
-                  value={newStandard.title} 
-                  onChange={(e) => setNewStandard({...newStandard, title: e.target.value})}
+                <Input
+                  value={newStandard.title}
+                  onChange={(e) =>
+                    setNewStandard({ ...newStandard, title: e.target.value })
+                  }
                   placeholder="e.g. IEEE 802.11ax-2021"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
-                <Input 
-                  value={newStandard.category} 
-                  onChange={(e) => setNewStandard({...newStandard, category: e.target.value})}
+                <Input
+                  value={newStandard.category}
+                  onChange={(e) =>
+                    setNewStandard({ ...newStandard, category: e.target.value })
+                  }
                   placeholder="e.g. Communications, Electrical Safety, etc."
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Description</label>
-                <Input 
-                  value={newStandard.description} 
-                  onChange={(e) => setNewStandard({...newStandard, description: e.target.value})}
+                <Input
+                  value={newStandard.description}
+                  onChange={(e) =>
+                    setNewStandard({
+                      ...newStandard,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Brief description of the standard"
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>
-                  <select 
+                  <select
                     className="w-full px-3 py-2 border rounded-md"
                     value={newStandard.status}
-                    onChange={(e) => setNewStandard({...newStandard, status: e.target.value})}
+                    onChange={(e) =>
+                      setNewStandard({ ...newStandard, status: e.target.value })
+                    }
                     required
                   >
                     <option value="current">Current</option>
                     <option value="update-pending">Update Pending</option>
                   </select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Change Type</label>
-                  <select 
+                  <select
                     className="w-full px-3 py-2 border rounded-md"
                     value={newStandard.changeType}
-                    onChange={(e) => setNewStandard({...newStandard, changeType: e.target.value})}
+                    onChange={(e) =>
+                      setNewStandard({
+                        ...newStandard,
+                        changeType: e.target.value,
+                      })
+                    }
                     required
                   >
                     <option value="none">No Change</option>
@@ -584,34 +696,51 @@ export function StandardsComplianceUpdates() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Last Updated</label>
-                  <Input 
+                  <Input
                     type="date"
-                    value={newStandard.lastUpdated} 
-                    onChange={(e) => setNewStandard({...newStandard, lastUpdated: e.target.value})}
+                    value={newStandard.lastUpdated}
+                    onChange={(e) =>
+                      setNewStandard({
+                        ...newStandard,
+                        lastUpdated: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Next Review</label>
-                  <Input 
+                  <Input
                     type="date"
-                    value={newStandard.nextReview} 
-                    onChange={(e) => setNewStandard({...newStandard, nextReview: e.target.value})}
+                    value={newStandard.nextReview}
+                    onChange={(e) =>
+                      setNewStandard({
+                        ...newStandard,
+                        nextReview: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setShowStandardModal(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowStandardModal(false)}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#f26722] hover:bg-[#f26722]/90">
+                <Button
+                  type="submit"
+                  className="bg-[#f26722] hover:bg-[#f26722]/90"
+                >
                   Add Standard
                 </Button>
               </div>
@@ -623,51 +752,78 @@ export function StandardsComplianceUpdates() {
       {/* Add Compliance Modal */}
       {showComplianceModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-semibold">Add Compliance Requirement</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowComplianceModal(false)} className="h-8 w-8 p-0">
+              <h3 className="text-xl font-semibold">
+                Add Compliance Requirement
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowComplianceModal(false)}
+                className="h-8 w-8 p-0"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={handleAddCompliance} className="p-6 space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Requirement</label>
-                <Input 
-                  value={newCompliance.requirement} 
-                  onChange={(e) => setNewCompliance({...newCompliance, requirement: e.target.value})}
+                <Input
+                  value={newCompliance.requirement}
+                  onChange={(e) =>
+                    setNewCompliance({
+                      ...newCompliance,
+                      requirement: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Annual Arc Flash Analysis"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Due Date</label>
-                <Input 
+                <Input
                   type="date"
-                  value={newCompliance.dueDate} 
-                  onChange={(e) => setNewCompliance({...newCompliance, dueDate: e.target.value})}
+                  value={newCompliance.dueDate}
+                  onChange={(e) =>
+                    setNewCompliance({
+                      ...newCompliance,
+                      dueDate: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Assignee</label>
-                <Input 
-                  value={newCompliance.assignee} 
-                  onChange={(e) => setNewCompliance({...newCompliance, assignee: e.target.value})}
+                <Input
+                  value={newCompliance.assignee}
+                  onChange={(e) =>
+                    setNewCompliance({
+                      ...newCompliance,
+                      assignee: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Engineering Team, Safety Department"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <select 
+                <select
                   className="w-full px-3 py-2 border rounded-md"
                   value={newCompliance.status}
-                  onChange={(e) => setNewCompliance({...newCompliance, status: e.target.value})}
+                  onChange={(e) =>
+                    setNewCompliance({
+                      ...newCompliance,
+                      status: e.target.value,
+                    })
+                  }
                   required
                 >
                   <option value="on-track">On Track</option>
@@ -675,23 +831,35 @@ export function StandardsComplianceUpdates() {
                   <option value="completed">Completed</option>
                 </select>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Notes</label>
-                <textarea 
+                <textarea
                   className="w-full px-3 py-2 border rounded-md"
                   rows={3}
-                  value={newCompliance.notes} 
-                  onChange={(e) => setNewCompliance({...newCompliance, notes: e.target.value})}
+                  value={newCompliance.notes}
+                  onChange={(e) =>
+                    setNewCompliance({
+                      ...newCompliance,
+                      notes: e.target.value,
+                    })
+                  }
                   placeholder="Additional details or context"
                 />
               </div>
-              
+
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setShowComplianceModal(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowComplianceModal(false)}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#f26722] hover:bg-[#f26722]/90">
+                <Button
+                  type="submit"
+                  className="bg-[#f26722] hover:bg-[#f26722]/90"
+                >
                   Add Requirement
                 </Button>
               </div>
@@ -701,4 +869,4 @@ export function StandardsComplianceUpdates() {
       )}
     </PageLayout>
   );
-} 
+}

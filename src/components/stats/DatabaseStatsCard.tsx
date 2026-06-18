@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Database, FileText, Hash, Sigma } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Card, { CardContent, CardHeader, CardTitle } from './ui/Card';
-import { Skeleton } from './ui/Skeleton';
+import React, { useState, useEffect } from "react";
+import { Database, FileText, Hash, Sigma } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import Card, { CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { Skeleton } from "./ui/Skeleton";
 
 interface DbStats {
   total_size_bytes: number;
@@ -13,12 +13,12 @@ interface DbStats {
 
 // Helper to format bytes
 function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
 
 export const DatabaseStatsCard: React.FC = () => {
@@ -31,7 +31,9 @@ export const DatabaseStatsCard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc('get_database_statistics');
+        const { data, error: rpcError } = await supabase.rpc(
+          "get_database_statistics",
+        );
         if (rpcError) throw rpcError;
         setStats(data);
       } catch (err: any) {
@@ -45,9 +47,9 @@ export const DatabaseStatsCard: React.FC = () => {
   }, []);
 
   return (
-    <Card className="border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-sm">
+    <Card className="border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+        <CardTitle className="text-lg font-medium text-zinc-900 dark:text-white flex items-center">
           <Database className="h-5 w-5 mr-2 text-purple-500" />
           Database Statistics
         </CardTitle>
@@ -65,26 +67,48 @@ export const DatabaseStatsCard: React.FC = () => {
         ) : stats ? (
           <div className="mt-2 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-white flex items-center"><Sigma className="h-4 w-4 mr-2"/>Total Size:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{formatBytes(stats.total_size_bytes)}</span>
+              <span className="text-zinc-600 dark:text-white flex items-center">
+                <Sigma className="h-4 w-4 mr-2" />
+                Total Size:
+              </span>
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {formatBytes(stats.total_size_bytes)}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-white flex items-center"><Hash className="h-4 w-4 mr-2"/>Est. Rows:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{stats.total_rows_estimate.toLocaleString()}</span>
+              <span className="text-zinc-600 dark:text-white flex items-center">
+                <Hash className="h-4 w-4 mr-2" />
+                Est. Rows:
+              </span>
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {stats.total_rows_estimate.toLocaleString()}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-white flex items-center"><FileText className="h-4 w-4 mr-2"/>Tables:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{stats.table_count}</span>
+              <span className="text-zinc-600 dark:text-white flex items-center">
+                <FileText className="h-4 w-4 mr-2" />
+                Tables:
+              </span>
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {stats.table_count}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-white flex items-center"><Sigma className="h-4 w-4 mr-2"/>Functions:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{stats.function_count}</span>
+              <span className="text-zinc-600 dark:text-white flex items-center">
+                <Sigma className="h-4 w-4 mr-2" />
+                Functions:
+              </span>
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {stats.function_count}
+              </span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-white mt-2">No statistics available.</p>
+          <p className="text-sm text-zinc-500 dark:text-white mt-2">
+            No statistics available.
+          </p>
         )}
       </CardContent>
     </Card>
   );
-}; 
+};

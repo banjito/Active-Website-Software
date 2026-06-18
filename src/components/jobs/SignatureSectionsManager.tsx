@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { SignatureSectionsConfig, SignatureSection, SignaturePerson } from './JobDetail';
+import React, { useState } from "react";
+import { Plus, Trash2, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import {
+  SignatureSectionsConfig,
+  SignatureSection,
+  SignaturePerson,
+} from "./JobDetail";
 
 interface SignatureSectionsManagerProps {
   open: boolean;
@@ -19,17 +30,14 @@ interface SignatureSectionsManagerProps {
   }>;
 }
 
-export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> = ({
-  open,
-  onOpenChange,
-  sections: initialSections,
-  onSave,
-  users = [],
-}) => {
-  const [sections, setSections] = useState<SignatureSectionsConfig>(initialSections);
+export const SignatureSectionsManager: React.FC<
+  SignatureSectionsManagerProps
+> = ({ open, onOpenChange, sections: initialSections, onSave, users = [] }) => {
+  const [sections, setSections] =
+    useState<SignatureSectionsConfig>(initialSections);
 
   const addSection = () => {
-    setSections([...sections, { title: '', people: [] }]);
+    setSections([...sections, { title: "", people: [] }]);
   };
 
   const removeSection = (index: number) => {
@@ -46,7 +54,10 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
     const updated = [...sections];
     updated[sectionIndex] = {
       ...updated[sectionIndex],
-      people: [...updated[sectionIndex].people, { name: '', title: '', email: '', phone: '' }],
+      people: [
+        ...updated[sectionIndex].people,
+        { name: "", title: "", email: "", phone: "" },
+      ],
     };
     setSections(updated);
   };
@@ -60,12 +71,17 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
     setSections(updated);
   };
 
-  const updatePerson = (sectionIndex: number, personIndex: number, field: keyof SignaturePerson, value: string) => {
+  const updatePerson = (
+    sectionIndex: number,
+    personIndex: number,
+    field: keyof SignaturePerson,
+    value: string,
+  ) => {
     const updated = [...sections];
     updated[sectionIndex] = {
       ...updated[sectionIndex],
       people: updated[sectionIndex].people.map((p, i) =>
-        i === personIndex ? { ...p, [field]: value } : p
+        i === personIndex ? { ...p, [field]: value } : p,
       ),
     };
     setSections(updated);
@@ -74,12 +90,14 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
   const handleSave = () => {
     // Filter out empty sections and people
     const cleaned = sections
-      .map(section => ({
+      .map((section) => ({
         ...section,
-        people: section.people.filter(p => p.name.trim() !== ''),
+        people: section.people.filter((p) => p.name.trim() !== ""),
       }))
-      .filter(section => section.title.trim() !== '' || section.people.length > 0);
-    
+      .filter(
+        (section) => section.title.trim() !== "" || section.people.length > 0,
+      );
+
     onSave(cleaned);
     onOpenChange(false);
   };
@@ -91,13 +109,15 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
 
   // Helper to find user email by name
   const findUserEmail = (name: string): string => {
-    if (!name) return '';
+    if (!name) return "";
     const nameLower = name.toLowerCase().trim();
-    const user = users.find(u => {
-      const userName = (u.user_metadata?.name || u.email || '').toLowerCase().trim();
+    const user = users.find((u) => {
+      const userName = (u.user_metadata?.name || u.email || "")
+        .toLowerCase()
+        .trim();
       return userName === nameLower;
     });
-    return user?.email || '';
+    return user?.email || "";
   };
 
   return (
@@ -106,23 +126,29 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
         <DialogHeader>
           <DialogTitle>Manage Signature Sections</DialogTitle>
           <DialogDescription>
-            Configure signature sections for the executive summary. Add sections, rename titles, and add multiple people to each section.
+            Configure signature sections for the executive summary. Add
+            sections, rename titles, and add multiple people to each section.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto pr-2 space-y-6">
           {sections.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
               <p>No sections yet. Click "Add Section" to get started.</p>
             </div>
           )}
 
           {sections.map((section, sectionIndex) => (
-            <div key={sectionIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+            <div
+              key={sectionIndex}
+              className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 space-y-4"
+            >
               <div className="flex items-center gap-2">
                 <Input
                   value={section.title}
-                  onChange={(e) => updateSectionTitle(sectionIndex, e.target.value)}
+                  onChange={(e) =>
+                    updateSectionTitle(sectionIndex, e.target.value)
+                  }
                   placeholder="Section Title (e.g., Project Manager, Reviewed By, Work Performed By)"
                   className="flex-1"
                 />
@@ -136,28 +162,41 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
                 </Button>
               </div>
 
-              <div className="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+              <div className="space-y-3 pl-4 border-l-2 border-zinc-200 dark:border-zinc-700">
                 {section.people.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
                     No people in this section. Click "Add Person" below.
                   </p>
                 )}
 
                 {section.people.map((person, personIndex) => (
-                  <div key={personIndex} className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-dark-200 rounded">
+                  <div
+                    key={personIndex}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-zinc-50 dark:bg-dark-200 rounded"
+                  >
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Name *
                       </label>
                       <Input
                         value={person.name}
                         onChange={(e) => {
-                          updatePerson(sectionIndex, personIndex, 'name', e.target.value);
+                          updatePerson(
+                            sectionIndex,
+                            personIndex,
+                            "name",
+                            e.target.value,
+                          );
                           // Auto-fill email if user found
                           if (e.target.value && !person.email) {
                             const email = findUserEmail(e.target.value);
                             if (email) {
-                              updatePerson(sectionIndex, personIndex, 'email', email);
+                              updatePerson(
+                                sectionIndex,
+                                personIndex,
+                                "email",
+                                email,
+                              );
                             }
                           }
                         }}
@@ -166,43 +205,66 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Title
                       </label>
                       <Input
-                        value={person.title || ''}
-                        onChange={(e) => updatePerson(sectionIndex, personIndex, 'title', e.target.value)}
+                        value={person.title || ""}
+                        onChange={(e) =>
+                          updatePerson(
+                            sectionIndex,
+                            personIndex,
+                            "title",
+                            e.target.value,
+                          )
+                        }
                         placeholder="Job Title"
                         className="w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Email
                       </label>
                       <Input
                         type="email"
-                        value={person.email || ''}
-                        onChange={(e) => updatePerson(sectionIndex, personIndex, 'email', e.target.value)}
+                        value={person.email || ""}
+                        onChange={(e) =>
+                          updatePerson(
+                            sectionIndex,
+                            personIndex,
+                            "email",
+                            e.target.value,
+                          )
+                        }
                         placeholder="email@ampqes.com"
                         className="w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Phone
                       </label>
                       <div className="flex gap-2">
                         <Input
-                          value={person.phone || ''}
-                          onChange={(e) => updatePerson(sectionIndex, personIndex, 'phone', e.target.value)}
+                          value={person.phone || ""}
+                          onChange={(e) =>
+                            updatePerson(
+                              sectionIndex,
+                              personIndex,
+                              "phone",
+                              e.target.value,
+                            )
+                          }
                           placeholder="(256) 123-4567"
                           className="flex-1"
                         />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => removePerson(sectionIndex, personIndex)}
+                          onClick={() =>
+                            removePerson(sectionIndex, personIndex)
+                          }
                           className="text-red-600 hover:text-red-700"
                         >
                           <X className="h-4 w-4" />
@@ -225,11 +287,7 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
             </div>
           ))}
 
-          <Button
-            variant="outline"
-            onClick={addSection}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={addSection} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
             Add Section
           </Button>
@@ -239,7 +297,10 @@ export const SignatureSectionsManager: React.FC<SignatureSectionsManagerProps> =
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-[#f26722] hover:bg-[#e55611] text-white">
+          <Button
+            onClick={handleSave}
+            className="bg-[#f26722] hover:bg-[#e55611] text-white"
+          >
             Save Configuration
           </Button>
         </DialogFooter>

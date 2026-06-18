@@ -1288,7 +1288,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print-report-header print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 print:pb-2 print:mb-4">
+      <div className="print-report-header print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 print:pb-2 print:mb-4">
         <div
           style={{
             width: "120px",
@@ -1347,7 +1347,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Job Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
@@ -1362,7 +1362,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={maskCustomerName(formData.customer)}
                 onChange={(e) => handleChange("customer", e.target.value)}
                 readOnly
-                className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                className={`form-input text-sm bg-zinc-100 dark:bg-dark-150 cursor-not-allowed`}
               />
             </div>
             <div>
@@ -1376,7 +1376,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
                 readOnly
-                className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                className={`form-input text-sm bg-zinc-100 dark:bg-dark-150 cursor-not-allowed`}
               />
             </div>
             <div>
@@ -1390,7 +1390,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.jobNumber}
                 onChange={(e) => handleChange("jobNumber", e.target.value)}
                 readOnly
-                className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                className={`form-input text-sm bg-zinc-100 dark:bg-dark-150 cursor-not-allowed`}
               />
             </div>
             <div>
@@ -1404,7 +1404,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange("date", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1418,7 +1418,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange("technicians", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1432,7 +1432,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange("identifier", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div className="grid grid-cols-2 gap-x-2">
@@ -1449,7 +1449,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleFahrenheitChange(parseFloat(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input text-sm w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1466,7 +1466,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleCelsiusChange(parseFloat(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input text-sm w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1482,7 +1482,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.user}
                 onChange={(e) => handleChange("user", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1502,13 +1502,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input text-sm w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             <div className="flex items-center mt-auto mb-1">
               <label className="form-label mr-2">TCF:</label>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="font-medium text-zinc-900 dark:text-white">
                 {formData.temperature.tcf}
               </span>
             </div>
@@ -1523,7 +1523,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange("substation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1537,7 +1537,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange("eqptLocation", e.target.value)}
                 readOnly={!isEditing}
-                className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                className={`form-input text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </div>
@@ -1563,7 +1563,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Nameplate Data
           </h2>
 
@@ -1572,7 +1572,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             {/* Row 1: Manufacturer, Catalog, Serial */}
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Manufacturer
                 </label>
                 <input
@@ -1582,11 +1582,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.manufacturer", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Catalog Number
                 </label>
                 <input
@@ -1596,11 +1596,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.catalogNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Serial Number
                 </label>
                 <input
@@ -1610,7 +1610,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.serialNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1618,7 +1618,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             {/* Row 2: KVA, Temp Rise, Impedance */}
             <div className="grid grid-cols-3 gap-4 items-end">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   KVA
                 </label>
                 <div className="flex items-center space-x-1 mt-1">
@@ -1629,9 +1629,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.kvaBase", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-20 rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="text-gray-500">/</span>
+                  <span className="text-zinc-500">/</span>
                   <input
                     type="text"
                     value={formData.nameplate.kvaCooling}
@@ -1639,12 +1639,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.kvaCooling", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-20 rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Temp. Rise (°C)
                 </label>
                 <input
@@ -1654,11 +1654,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.tempRise", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
                   Impedance (%)
                 </label>
                 <input
@@ -1668,7 +1668,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.impedance", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1676,20 +1676,20 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             {/* Row 3: Headers */}
             <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 mt-4">
               <div>{/* Empty cell for alignment */}</div>
-              <div className="text-center font-medium text-sm text-gray-700 dark:text-white">
+              <div className="text-center font-medium text-sm text-zinc-700 dark:text-white">
                 Volts
               </div>
-              <div className="text-center font-medium text-sm text-gray-700 dark:text-white">
+              <div className="text-center font-medium text-sm text-zinc-700 dark:text-white">
                 Connections
               </div>
-              <div className="text-center font-medium text-sm text-gray-700 dark:text-white">
+              <div className="text-center font-medium text-sm text-zinc-700 dark:text-white">
                 Winding Material
               </div>
             </div>
 
             {/* Row 4: Primary */}
             <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
-              <div className="text-sm font-medium text-gray-700 dark:text-white">
+              <div className="text-sm font-medium text-zinc-700 dark:text-white">
                 Primary
               </div>
               {/* Volts */}
@@ -1701,9 +1701,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.voltsPrimary", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
-                <span className="text-gray-500">/</span>
+                <span className="text-zinc-500">/</span>
                 <input
                   type="text"
                   value={formData.nameplate.voltsPrimarySecondary}
@@ -1714,7 +1714,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/* Connections */}
@@ -1733,9 +1733,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.connectionsPrimary", conn)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
                     />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-white">
+                    <span className="ml-2 text-sm text-zinc-700 dark:text-white">
                       {conn}
                     </span>
                   </label>
@@ -1759,9 +1759,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.windingMaterialPrimary", mat)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
                     />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-white">
+                    <span className="ml-2 text-sm text-zinc-700 dark:text-white">
                       {mat}
                     </span>
                   </label>
@@ -1771,7 +1771,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
             {/* Row 5: Secondary */}
             <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
-              <div className="text-sm font-medium text-gray-700 dark:text-white">
+              <div className="text-sm font-medium text-zinc-700 dark:text-white">
                 Secondary
               </div>
               {/* Volts */}
@@ -1783,9 +1783,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.voltsSecondary", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
-                <span className="text-gray-500">/</span>
+                <span className="text-zinc-500">/</span>
                 <input
                   type="text"
                   value={formData.nameplate.voltsSecondarySecondary}
@@ -1796,7 +1796,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/* Connections */}
@@ -1815,9 +1815,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.connectionsSecondary", conn)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
                     />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-white">
+                    <span className="ml-2 text-sm text-zinc-700 dark:text-white">
                       {conn}
                     </span>
                   </label>
@@ -1841,9 +1841,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.windingMaterialSecondary", mat)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
                     />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-white">
+                    <span className="ml-2 text-sm text-zinc-700 dark:text-white">
                       {mat}
                     </span>
                   </label>
@@ -1855,7 +1855,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             <div className="space-y-2">
               {/* Tap Voltages */}
               <div className="flex items-center">
-                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-white flex-shrink-0">
+                <label className="w-[130px] text-sm font-medium text-zinc-700 dark:text-white flex-shrink-0">
                   Tap Voltages
                 </label>
                 <div className="grid grid-cols-7 gap-2 flex-grow">
@@ -1870,7 +1870,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.tapVoltages", newVoltages);
                       }}
                       readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                     />
                   ))}
                 </div>
@@ -1878,14 +1878,14 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
               {/* Tap Position Numbers */}
               <div className="flex items-center">
-                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-white flex-shrink-0">
+                <label className="w-[130px] text-sm font-medium text-zinc-700 dark:text-white flex-shrink-0">
                   Tap Position
                 </label>
                 <div className="grid grid-cols-7 gap-2 flex-grow">
                   {[1, 2, 3, 4, 5, 6, 7].map((position) => (
                     <div
                       key={position}
-                      className="text-center text-sm text-gray-700 dark:text-white font-medium"
+                      className="text-center text-sm text-zinc-700 dark:text-white font-medium"
                     >
                       {position}
                     </div>
@@ -1895,7 +1895,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
               {/* Tap Position Left */}
               <div className="flex items-center">
-                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-white flex-shrink-0">
+                <label className="w-[130px] text-sm font-medium text-zinc-700 dark:text-white flex-shrink-0">
                   Tap Position Left
                 </label>
                 {/* First pair of inputs */}
@@ -1907,19 +1907,19 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.tapPosition", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="text-gray-500">/</span>
+                  <span className="text-zinc-500">/</span>
                   <input
                     type="text"
                     value={formData.nameplate.tapPosition}
                     readOnly
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white bg-gray-100 dark:bg-dark-150`}
+                    className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white bg-zinc-100 dark:bg-dark-150`}
                   />
                 </div>
                 {/* Separate Volts input */}
                 <div className="flex items-center space-x-1 mr-4">
-                  <span className="text-sm font-medium text-gray-700 dark:text-white">
+                  <span className="text-sm font-medium text-zinc-700 dark:text-white">
                     Volts
                   </span>
                   <input
@@ -1932,12 +1932,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 {/* Separate Percent input */}
                 <div className="flex items-center space-x-1">
-                  <span className="text-sm font-medium text-gray-700 dark:text-white">
+                  <span className="text-sm font-medium text-zinc-700 dark:text-white">
                     Percent
                   </span>
                   <input
@@ -1950,7 +1950,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1960,7 +1960,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           {/* Print-only Nameplate Data tables */}
           <div className="report-section-content hidden print:block space-y-3">
             {/* Table 1: Basic Information - stacked label then value in each cell */}
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 nameplate-table">
+            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 nameplate-table">
               <colgroup>
                 <col style={{ width: "33.33%" }} />
                 <col style={{ width: "33.33%" }} />
@@ -1969,19 +1969,19 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               <tbody>
                 {/* Row 1: label and value inside the same box */}
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">Manufacturer:</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.manufacturer || ""}
                     </div>
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">Catalog Number:</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.catalogNumber || ""}
                     </div>
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">Serial Number:</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.serialNumber || ""}
@@ -1990,7 +1990,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 </tr>
                 {/* Row 2: label and value inside the same box */}
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">KVA:</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.kvaBase || ""}
@@ -1999,13 +1999,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         : ""}
                     </div>
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">Temp. Rise (°C):</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.tempRise || ""}
                     </div>
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white">
                     <div className="text-xs font-bold">Impedance:</div>
                     <div className="text-sm mt-0.5">
                       {formData.nameplate.impedance || ""}
@@ -2016,7 +2016,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             </table>
 
             {/* Table 2: Primary/Secondary Details - Compact layout */}
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 nameplate-table">
+            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 nameplate-table">
               <colgroup>
                 <col style={{ width: "12%" }} />
                 <col style={{ width: "18%" }} />
@@ -2028,21 +2028,21 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"></th>
                   <th
-                    className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"
+                    className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
                     colSpan={1}
                   >
                     Volts
                   </th>
                   <th
-                    className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"
+                    className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
                     colSpan={3}
                   >
                     Connections
                   </th>
                   <th
-                    className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"
+                    className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
                     colSpan={2}
                   >
                     Winding Materials
@@ -2051,38 +2051,38 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
                     Primary
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.voltsPrimary || ""} /{" "}
                     {formData.nameplate.voltsPrimarySecondary || ""}
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsPrimary === "Delta"
                       ? "☒"
                       : "☐"}{" "}
                     Delta
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsPrimary === "Wye"
                       ? "☒"
                       : "☐"}{" "}
                     Wye
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsPrimary === "Single Phase"
                       ? "☒"
                       : "☐"}{" "}
                     Single Phase
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.windingMaterialPrimary === "Aluminum"
                       ? "☒"
                       : "☐"}{" "}
                     Aluminum
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.windingMaterialPrimary === "Copper"
                       ? "☒"
                       : "☐"}{" "}
@@ -2090,38 +2090,38 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
                     Secondary
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.voltsSecondary || ""} /{" "}
                     {formData.nameplate.voltsSecondarySecondary || ""}
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsSecondary === "Delta"
                       ? "☒"
                       : "☐"}{" "}
                     Delta
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsSecondary === "Wye"
                       ? "☒"
                       : "☐"}{" "}
                     Wye
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.connectionsSecondary === "Single Phase"
                       ? "☒"
                       : "☐"}{" "}
                     Single Phase
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.windingMaterialSecondary === "Aluminum"
                       ? "☒"
                       : "☐"}{" "}
                     Aluminum
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
                     {formData.nameplate.windingMaterialSecondary === "Copper"
                       ? "☒"
                       : "☐"}{" "}
@@ -2132,56 +2132,56 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             </table>
 
             {/* Table 3: Tap Configuration */}
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 nameplate-table">
+            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 nameplate-table">
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Tap Position
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     1
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     2
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     3
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     4
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     5
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     6
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     7
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
                     Tap Voltages
                   </td>
                   {formData.nameplate.tapVoltages.map((voltage, index) => (
                     <td
                       key={index}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center"
+                      className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center"
                     >
                       {voltage || ""}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
                     Tap Position Left
                   </td>
                   <td
                     colSpan={7}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white"
+                    className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white"
                   >
                     Position: {formData.nameplate.tapPosition || ""} /{" "}
                     {formData.nameplate.tapPosition || ""} | Volts:{" "}
@@ -2196,45 +2196,45 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Visual and Mechanical Inspection
           </h2>
           <div className="report-section-content overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
               <colgroup>
                 <col style={{ width: "6%" }} />
                 <col style={{ width: "70%" }} />
                 <col style={{ width: "24%" }} />
               </colgroup>
-              <thead className="bg-gray-50 dark:bg-dark-150">
+              <thead className="bg-zinc-50 dark:bg-dark-150">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     NETA Section
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     Description
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
                   >
                     Result
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {formData.visualInspectionItems.map((item, index) => (
                   <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
                       {item.netaSection}
                     </td>
-                    <td className="px-6 py-4 whitespace-normal text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-normal text-sm text-zinc-900 dark:text-white">
                       {item.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -2250,7 +2250,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150 cursor-not-allowed" : "dark:bg-dark-150"}`}
+                          className={`form-select w-full text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : "dark:bg-dark-150"}`}
                         >
                           {visualInspectionOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2273,17 +2273,17 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           <div
             className={`report-section-content hidden print:block mt-3 ${!formData.visualInspectionComments?.trim() ? "print:hidden" : ""}`}
           >
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Visual Inspection Comments
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[60px] align-top">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white text-sm min-h-[60px] align-top">
                     {formData.visualInspectionComments || ""}
                   </td>
                 </tr>
@@ -2294,12 +2294,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Electrical Tests - Measured Insulation Resistance
           </h2>
           <div className="report-section-content w-full max-w-full overflow-x-auto">
             <table
-              className="w-full border-collapse border border-gray-300 dark:border-gray-600 insulation-resistance-table"
+              className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 insulation-resistance-table"
               style={{ tableLayout: "fixed" }}
             >
               <colgroup>
@@ -2316,56 +2316,56 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Winding Tested
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600 whitespace-normal leading-tight">
                     Test V<br />
                     (VDC)
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     0.5 Min.
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     1 Min.
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Units
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     0.5 Min.
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     1 Min.
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Units
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Value
                   </th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Units
                   </th>
                 </tr>
                 <tr>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"></th>
+                  <th className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"></th>
                   <th
                     colSpan={3}
-                    className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight"
+                    className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600 whitespace-normal leading-tight"
                   >
                     Measured
                   </th>
                   <th
                     colSpan={3}
-                    className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight"
+                    className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600 whitespace-normal leading-tight"
                   >
                     Corrected @ 20°C
                   </th>
                   <th
                     colSpan={2}
-                    className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight"
+                    className="px-1 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600 whitespace-normal leading-tight"
                   >
                     Table 100.5
                   </th>
@@ -2374,10 +2374,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               <tbody>
                 {formData.insulationResistance.tests.map((test, index) => (
                   <tr key={index}>
-                    <td className="px-1 py-1 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">
+                    <td className="px-1 py-1 text-xs text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 whitespace-normal leading-tight">
                       {test.winding}
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <select
                         value={test.testVoltage}
                         onChange={(e) =>
@@ -2389,7 +2389,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {testVoltageOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2398,7 +2398,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         ))}
                       </select>
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={test.measured0_5Min}
@@ -2411,10 +2411,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={test.measured1Min}
@@ -2427,10 +2427,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <select
                         value={test.units}
                         onChange={(e) =>
@@ -2442,7 +2442,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2451,7 +2451,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         ))}
                       </select>
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={calculateCorrectedIRValue(
@@ -2459,10 +2459,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           getTCF(formData.temperature.celsius),
                         )}
                         readOnly
-                        className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                        className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={calculateCorrectedIRValue(
@@ -2470,10 +2470,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           getTCF(formData.temperature.celsius),
                         )}
                         readOnly
-                        className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                        className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                       />
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <select
                         value={test.correctedUnits}
                         onChange={(e) =>
@@ -2485,7 +2485,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2494,7 +2494,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         ))}
                       </select>
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <input
                         type="text"
                         value={test.tableMinimum}
@@ -2507,10 +2507,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                    <td className="px-1 py-1 border border-zinc-300 dark:border-zinc-600">
                       <select
                         value={test.tableMinimumUnits}
                         onChange={(e) =>
@@ -2522,7 +2522,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                        className={`form-select w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2538,33 +2538,33 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
 
           <div className="report-section-content mt-3">
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 dielectric-absorption-table">
+            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 dielectric-absorption-table">
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Calculated As:
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Pri to Gnd
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Sec to Gnd
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Pri to Sec
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Pass/Fail
                   </th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                  <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                     Min. D.A.R.
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-3 py-2 text-left border border-gray-300 dark:border-gray-600">
-                    <div className="text-sm text-gray-900 dark:text-white">
+                  <td className="px-3 py-2 text-left border border-zinc-300 dark:border-zinc-600">
+                    <div className="text-sm text-zinc-900 dark:text-white">
                       Dielectric Absorption : (Ratio of 1 Minute to 0.5 Minute
                       Result)
                     </div>
@@ -2572,17 +2572,17 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   {formData.insulationResistance.tests.map((test, index) => (
                     <td
                       key={index}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600"
+                      className="px-3 py-2 border border-zinc-300 dark:border-zinc-600"
                     >
                       <input
                         type="text"
                         value={test.dielectricAbsorption}
                         readOnly
-                        className="form-input text-center text-sm bg-gray-100 dark:bg-dark-150 w-full"
+                        className="form-input text-center text-sm bg-zinc-100 dark:bg-dark-150 w-full"
                       />
                     </td>
                   ))}
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value={
@@ -2590,7 +2590,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           .dielectricAbsorptionAcceptable
                       }
                       readOnly
-                      className={`form-input text-center text-sm bg-gray-100 dark:bg-dark-150 w-full ${
+                      className={`form-input text-center text-sm bg-zinc-100 dark:bg-dark-150 w-full ${
                         formData.insulationResistance
                           .dielectricAbsorptionAcceptable === "Yes"
                           ? "text-green-600 font-medium"
@@ -2601,12 +2601,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       }`}
                     />
                   </td>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
+                  <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600">
                     <input
                       type="text"
                       value="1.0"
                       readOnly
-                      className="form-input text-center text-sm bg-gray-100 dark:bg-dark-150 w-full"
+                      className="form-input text-center text-sm bg-zinc-100 dark:bg-dark-150 w-full"
                     />
                   </td>
                 </tr>
@@ -2617,7 +2617,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Electrical Tests - Turns Ratio
           </h2>
           <div className="report-section-content flex justify-start items-center gap-2 mb-3 turns-ratio-secondary-label text-xs print:text-[8px]">
@@ -2634,7 +2634,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               value={formData.turnsRatio.secondaryWindingVoltage}
               onChange={(e) => handleChange(e.target.name, e.target.value)}
               readOnly={!isEditing}
-              className={`form-input w-24 text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+              className={`form-input w-24 text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             />
             <span>V</span>
           </div>
@@ -2653,13 +2653,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Tap
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Nameplate V.
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Calc. Ratio
                     </th>
                   </tr>
@@ -2667,7 +2667,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 <tbody>
                   {formData.turnsRatio.tests.map((test, index) => (
                     <tr key={`setup-${index}`}>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                      <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                         <select
                           value={test.tap}
                           onChange={(e) =>
@@ -2679,7 +2679,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full text-xs text-center ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full text-xs text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         >
                           {Array.from({ length: 7 }, (_, i) => i + 1).map(
                             (num) => (
@@ -2690,7 +2690,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           )}
                         </select>
                       </td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                      <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                         <input
                           type="text"
                           value={test.nameplateVoltage}
@@ -2703,15 +2703,15 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                      <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                         <input
                           type="text"
                           value={test.calculatedRatio}
                           readOnly
-                          className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                          className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                         />
                       </td>
                     </tr>
@@ -2735,19 +2735,19 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Tap
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Winding
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Measured
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       % Dev.
                     </th>
-                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
                       Pass/Fail
                     </th>
                   </tr>
@@ -2758,14 +2758,14 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       <tr>
                         <td
                           rowSpan={3}
-                          className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium align-middle"
+                          className="px-2 py-2 border border-zinc-300 dark:border-zinc-600 text-xs text-center font-medium align-middle"
                         >
                           {test.tap}
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600 text-xs text-center font-medium">
                           {TURNS_RATIO_WINDING_LABELS.h1h2}
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.measuredH1H2}
@@ -2778,18 +2778,18 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.devH1H2}
                             readOnly
-                            className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <select
                             value={test.passFailH1H2}
                             onChange={(e) =>
@@ -2801,7 +2801,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {passFailOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2812,10 +2812,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600 text-xs text-center font-medium">
                           {TURNS_RATIO_WINDING_LABELS.h2h3}
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.measuredH2H3}
@@ -2828,18 +2828,18 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.devH2H3}
                             readOnly
-                            className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <select
                             value={test.passFailH2H3}
                             onChange={(e) =>
@@ -2851,7 +2851,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {passFailOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2862,10 +2862,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600 text-xs text-center font-medium">
                           {TURNS_RATIO_WINDING_LABELS.h3h1}
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.measuredH3H1}
@@ -2878,18 +2878,18 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <input
                             type="text"
                             value={test.devH3H1}
                             readOnly
-                            className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150"
+                            className="form-input w-full text-center text-xs bg-zinc-100 dark:bg-dark-150"
                           />
                         </td>
-                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <td className="px-2 py-2 border border-zinc-300 dark:border-zinc-600">
                           <select
                             value={test.passFailH3H1}
                             onChange={(e) =>
@@ -2901,7 +2901,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full text-xs ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                           >
                             {passFailOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2921,13 +2921,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Test Equipment Used
           </h2>
           <div className="space-y-4 print:hidden test-eqpt-onscreen">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   Megohmmeter
                 </label>
                 <EquipmentAutocomplete
@@ -2956,7 +2956,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   Serial Number
                 </label>
                 <input
@@ -2965,11 +2965,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.megohmmeter.serialNumber}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   AMP ID
                 </label>
                 <input
@@ -2978,11 +2978,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.megohmmeter.ampId}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   Cal Date
                 </label>
                 <input
@@ -2991,13 +2991,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.megohmmeter.calDate}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   TTR Test Set
                 </label>
                 <EquipmentAutocomplete
@@ -3026,7 +3026,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   Serial Number
                 </label>
                 <input
@@ -3035,11 +3035,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.ttrTestSet.serialNumber}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   AMP ID
                 </label>
                 <input
@@ -3048,11 +3048,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.ttrTestSet.ampId}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-1">
                   Cal Date
                 </label>
                 <input
@@ -3061,7 +3061,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   value={formData.testEquipment.ttrTestSet.calDate}
                   onChange={(e) => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full text-sm text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -3125,7 +3125,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           className={`mb-6 comments-section print:mb-3 ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
-          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Comments
           </h2>
           <div className="print:hidden">
@@ -3135,17 +3135,17 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               onChange={(e) => handleChange(e.target.name, e.target.value)}
               readOnly={!isEditing}
               rows={4}
-              className={`form-textarea w-full text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+              className={`form-textarea w-full text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
             />
           </div>
 
           {formData.comments?.trim() && (
             <div className="report-section-content hidden print:block">
-              <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="comments-print-table w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600">
                 <tbody>
                   <tr>
                     <td
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top whitespace-pre-wrap break-words"
+                      className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white text-sm min-h-[80px] align-top whitespace-pre-wrap break-words"
                       style={{
                         wordBreak: "break-word",
                         overflowWrap: "anywhere",

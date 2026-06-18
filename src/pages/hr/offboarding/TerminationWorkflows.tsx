@@ -1,30 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { 
-  DoorOpen, Plus, Edit, Trash2, Eye, Search, CheckSquare, FileText, 
-  Loader2, Clock, CheckCircle, Archive
-} from 'lucide-react';
-import { toast } from '../../../components/ui/toast';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import {
+  DoorOpen,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Search,
+  CheckSquare,
+  FileText,
+  Loader2,
+  Clock,
+  CheckCircle,
+  Archive,
+} from "lucide-react";
+import { toast } from "../../../components/ui/toast";
 
 export interface TerminationTask {
   id: string;
   title: string;
   description?: string;
-  category: 'hr' | 'it' | 'facilities' | 'manager' | 'other';
+  category: "hr" | "it" | "facilities" | "manager" | "other";
   required: boolean;
   order: number;
-  assignee_type: 'hr' | 'manager' | 'employee' | 'it';
+  assignee_type: "hr" | "manager" | "employee" | "it";
   due_days_after_notice?: number;
 }
 
 export interface TerminationDocument {
   id: string;
   name: string;
-  doc_type: 'release' | 'return_property' | 'confidentiality' | 'final_pay' | 'other';
+  doc_type:
+    | "release"
+    | "return_property"
+    | "confidentiality"
+    | "final_pay"
+    | "other";
   required: boolean;
   order: number;
 }
@@ -35,60 +61,79 @@ export interface TerminationWorkflow {
   description?: string;
   tasks: TerminationTask[];
   documents: TerminationDocument[];
-  status: 'draft' | 'active' | 'archived';
+  status: "draft" | "active" | "archived";
   is_template: boolean;
   created_at: string;
   updated_at: string;
 }
 
 const CATEGORY_OPTIONS = [
-  { value: 'hr', label: 'HR' },
-  { value: 'it', label: 'IT' },
-  { value: 'facilities', label: 'Facilities' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'other', label: 'Other' },
+  { value: "hr", label: "HR" },
+  { value: "it", label: "IT" },
+  { value: "facilities", label: "Facilities" },
+  { value: "manager", label: "Manager" },
+  { value: "other", label: "Other" },
 ];
 
 const DOC_TYPE_OPTIONS = [
-  { value: 'release', label: 'Separation / Release' },
-  { value: 'return_property', label: 'Return of Property' },
-  { value: 'confidentiality', label: 'Confidentiality / NDA' },
-  { value: 'final_pay', label: 'Final Pay Acknowledgment' },
-  { value: 'other', label: 'Other' },
+  { value: "release", label: "Separation / Release" },
+  { value: "return_property", label: "Return of Property" },
+  { value: "confidentiality", label: "Confidentiality / NDA" },
+  { value: "final_pay", label: "Final Pay Acknowledgment" },
+  { value: "other", label: "Other" },
 ];
 
 const ASSIGNEE_OPTIONS = [
-  { value: 'hr', label: 'HR' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'employee', label: 'Employee' },
-  { value: 'it', label: 'IT' },
+  { value: "hr", label: "HR" },
+  { value: "manager", label: "Manager" },
+  { value: "employee", label: "Employee" },
+  { value: "it", label: "IT" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft', icon: Clock, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-  { value: 'active', label: 'Active', icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-  { value: 'archived', label: 'Archived', icon: Archive, color: 'text-gray-500 bg-gray-100 dark:bg-gray-800' },
+  {
+    value: "draft",
+    label: "Draft",
+    icon: Clock,
+    color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20",
+  },
+  {
+    value: "active",
+    label: "Active",
+    icon: CheckCircle,
+    color: "text-green-600 bg-green-50 dark:bg-green-900/20",
+  },
+  {
+    value: "archived",
+    label: "Archived",
+    icon: Archive,
+    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+  },
 ];
 
-const defaultWorkflow = (): Omit<TerminationWorkflow, 'id' | 'created_at' | 'updated_at'> => ({
-  name: '',
-  description: '',
+const defaultWorkflow = (): Omit<
+  TerminationWorkflow,
+  "id" | "created_at" | "updated_at"
+> => ({
+  name: "",
+  description: "",
   tasks: [],
   documents: [],
-  status: 'draft',
+  status: "draft",
   is_template: true,
 });
 
 export const TerminationWorkflows: React.FC = () => {
   const [workflows, setWorkflows] = useState<TerminationWorkflow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<TerminationWorkflow | null>(null);
+  const [selectedWorkflow, setSelectedWorkflow] =
+    useState<TerminationWorkflow | null>(null);
   const [formData, setFormData] = useState(defaultWorkflow());
 
   useEffect(() => {
@@ -98,26 +143,33 @@ export const TerminationWorkflows: React.FC = () => {
   const loadWorkflows = async () => {
     try {
       setLoading(true);
-      const stored = localStorage.getItem('hr_termination_workflows');
+      const stored = localStorage.getItem("hr_termination_workflows");
       const parsed = stored ? JSON.parse(stored) : [];
       setWorkflows(Array.isArray(parsed) ? parsed : []);
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to load workflows', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to load workflows",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const saveWorkflows = (list: TerminationWorkflow[]) => {
-    localStorage.setItem('hr_termination_workflows', JSON.stringify(list));
+    localStorage.setItem("hr_termination_workflows", JSON.stringify(list));
     setWorkflows(list);
   };
 
   const filteredWorkflows = workflows.filter((w) => {
-    if (filterStatus !== 'all' && w.status !== filterStatus) return false;
+    if (filterStatus !== "all" && w.status !== filterStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return w.name.toLowerCase().includes(q) || (w.description || '').toLowerCase().includes(q);
+      return (
+        w.name.toLowerCase().includes(q) ||
+        (w.description || "").toLowerCase().includes(q)
+      );
     }
     return true;
   });
@@ -125,21 +177,30 @@ export const TerminationWorkflows: React.FC = () => {
   const addTask = () => {
     setFormData((prev) => ({
       ...prev,
-      tasks: [...prev.tasks, {
-        id: `task_${Date.now()}`,
-        title: '',
-        category: 'hr',
-        required: true,
-        order: prev.tasks.length,
-        assignee_type: 'hr',
-      }],
+      tasks: [
+        ...prev.tasks,
+        {
+          id: `task_${Date.now()}`,
+          title: "",
+          category: "hr",
+          required: true,
+          order: prev.tasks.length,
+          assignee_type: "hr",
+        },
+      ],
     }));
   };
 
-  const updateTask = (index: number, field: keyof TerminationTask, value: any) => {
+  const updateTask = (
+    index: number,
+    field: keyof TerminationTask,
+    value: any,
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((t, i) => (i === index ? { ...t, [field]: value } : t)),
+      tasks: prev.tasks.map((t, i) =>
+        i === index ? { ...t, [field]: value } : t,
+      ),
     }));
   };
 
@@ -153,20 +214,29 @@ export const TerminationWorkflows: React.FC = () => {
   const addDocument = () => {
     setFormData((prev) => ({
       ...prev,
-      documents: [...prev.documents, {
-        id: `doc_${Date.now()}`,
-        name: '',
-        doc_type: 'release',
-        required: true,
-        order: prev.documents.length,
-      }],
+      documents: [
+        ...prev.documents,
+        {
+          id: `doc_${Date.now()}`,
+          name: "",
+          doc_type: "release",
+          required: true,
+          order: prev.documents.length,
+        },
+      ],
     }));
   };
 
-  const updateDocument = (index: number, field: keyof TerminationDocument, value: any) => {
+  const updateDocument = (
+    index: number,
+    field: keyof TerminationDocument,
+    value: any,
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      documents: prev.documents.map((d, i) => (i === index ? { ...d, [field]: value } : d)),
+      documents: prev.documents.map((d, i) =>
+        i === index ? { ...d, [field]: value } : d,
+      ),
     }));
   };
 
@@ -186,7 +256,7 @@ export const TerminationWorkflows: React.FC = () => {
     setSelectedWorkflow(w);
     setFormData({
       name: w.name,
-      description: w.description || '',
+      description: w.description || "",
       tasks: w.tasks.map((t) => ({ ...t })),
       documents: w.documents.map((d) => ({ ...d })),
       status: w.status,
@@ -202,7 +272,11 @@ export const TerminationWorkflows: React.FC = () => {
 
   const handleCreate = () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Workflow name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Workflow name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const now = new Date().toISOString();
@@ -214,27 +288,33 @@ export const TerminationWorkflows: React.FC = () => {
     };
     saveWorkflows([...workflows, newW]);
     setIsCreateModalOpen(false);
-    toast({ title: 'Created', description: 'Termination workflow created.' });
+    toast({ title: "Created", description: "Termination workflow created." });
   };
 
   const handleUpdate = () => {
     if (!selectedWorkflow || !formData.name.trim()) {
-      toast({ title: 'Validation', description: 'Workflow name is required.', variant: 'destructive' });
+      toast({
+        title: "Validation",
+        description: "Workflow name is required.",
+        variant: "destructive",
+      });
       return;
     }
     const updated = workflows.map((w) =>
-      w.id === selectedWorkflow.id ? { ...w, ...formData, updated_at: new Date().toISOString() } : w
+      w.id === selectedWorkflow.id
+        ? { ...w, ...formData, updated_at: new Date().toISOString() }
+        : w,
     );
     saveWorkflows(updated);
     setIsEditModalOpen(false);
     setSelectedWorkflow(null);
-    toast({ title: 'Updated', description: 'Workflow updated.' });
+    toast({ title: "Updated", description: "Workflow updated." });
   };
 
   const handleDelete = (w: TerminationWorkflow) => {
-    if (!confirm('Delete this workflow?')) return;
+    if (!confirm("Delete this workflow?")) return;
     saveWorkflows(workflows.filter((x) => x.id !== w.id));
-    toast({ title: 'Deleted', description: 'Workflow removed.' });
+    toast({ title: "Deleted", description: "Workflow removed." });
   };
 
   const getStatusBadge = (status: string) => {
@@ -242,7 +322,9 @@ export const TerminationWorkflows: React.FC = () => {
     if (!opt) return null;
     const Icon = opt.icon;
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}>
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+      >
         <Icon className="h-3 w-3" />
         {opt.label}
       </span>
@@ -254,11 +336,11 @@ export const TerminationWorkflows: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
             <DoorOpen className="h-6 w-6 text-[#f26722]" />
             Termination Workflows
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             Define tasks and documents for employee offboarding
           </p>
         </div>
@@ -273,7 +355,7 @@ export const TerminationWorkflows: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <Input
                 placeholder="Search workflows..."
                 value={search}
@@ -282,15 +364,15 @@ export const TerminationWorkflows: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              {['all', 'draft', 'active', 'archived'].map((status) => (
+              {["all", "draft", "active", "archived"].map((status) => (
                 <Button
                   key={status}
-                  variant={filterStatus === status ? 'default' : 'outline'}
+                  variant={filterStatus === status ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilterStatus(status)}
                   className="capitalize"
                 >
-                  {status === 'all' ? 'All' : status}
+                  {status === "all" ? "All" : status}
                 </Button>
               ))}
             </div>
@@ -312,12 +394,16 @@ export const TerminationWorkflows: React.FC = () => {
             </div>
           ) : filteredWorkflows.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <DoorOpen className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-gray-500 dark:text-gray-400 font-medium">No workflows found</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                {search || filterStatus !== 'all' ? 'Try adjusting your filters' : 'Create your first termination workflow'}
+              <DoorOpen className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                No workflows found
               </p>
-              {!search && filterStatus === 'all' && (
+              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                {search || filterStatus !== "all"
+                  ? "Try adjusting your filters"
+                  : "Create your first termination workflow"}
+              </p>
+              {!search && filterStatus === "all" && (
                 <Button variant="outline" className="mt-4" onClick={openCreate}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Workflow
@@ -328,32 +414,37 @@ export const TerminationWorkflows: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Workflow
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Tasks
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Documents
                     </th>
-                    <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                   {filteredWorkflows.map((w) => (
-                    <tr key={w.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr
+                      key={w.id}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{w.name}</p>
+                          <p className="font-medium text-zinc-900 dark:text-white">
+                            {w.name}
+                          </p>
                           {w.description && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
                               {w.description}
                             </p>
                           )}
@@ -365,41 +456,39 @@ export const TerminationWorkflows: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
-                          <CheckSquare className="h-4 w-4 text-gray-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
+                          <CheckSquare className="h-4 w-4 text-zinc-400" />
                           {w.tasks.length}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
-                          <FileText className="h-4 w-4 text-gray-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
+                          <FileText className="h-4 w-4 text-zinc-400" />
                           {w.documents.length}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {getStatusBadge(w.status)}
-                      </td>
+                      <td className="px-6 py-4">{getStatusBadge(w.status)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openView(w)}
                             title="View"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openEdit(w)}
                             title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(w)}
                             title="Delete"
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -418,54 +507,72 @@ export const TerminationWorkflows: React.FC = () => {
       </Card>
 
       {/* Create/Edit Modal */}
-      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateModalOpen(false);
-          setIsEditModalOpen(false);
-          setSelectedWorkflow(null);
-        }
-      }}>
+      <Dialog
+        open={isCreateModalOpen || isEditModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateModalOpen(false);
+            setIsEditModalOpen(false);
+            setSelectedWorkflow(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditModalOpen ? 'Edit Workflow' : 'New Termination Workflow'}</DialogTitle>
-            <DialogDescription>Configure the tasks and documents for this workflow.</DialogDescription>
+            <DialogTitle>
+              {isEditModalOpen ? "Edit Workflow" : "New Termination Workflow"}
+            </DialogTitle>
+            <DialogDescription>
+              Configure the tasks and documents for this workflow.
+            </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Workflow Name *
                 </label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, name: e.target.value }))
+                  }
                   placeholder="e.g. Standard Voluntary Exit"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Description
                 </label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, description: e.target.value }))
+                  }
                   placeholder="Brief description of this workflow"
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Status
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value as any }))}
-                  className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      status: e.target.value as any,
+                    }))
+                  }
+                  className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -474,10 +581,17 @@ export const TerminationWorkflows: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.is_template}
-                    onChange={(e) => setFormData((p) => ({ ...p, is_template: e.target.checked }))}
-                    className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        is_template: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Save as template</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    Save as template
+                  </span>
                 </label>
               </div>
             </div>
@@ -485,60 +599,90 @@ export const TerminationWorkflows: React.FC = () => {
             {/* Tasks Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Tasks ({formData.tasks.length})
                 </label>
-                <Button type="button" variant="outline" size="sm" onClick={addTask}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTask}
+                >
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   Add Task
                 </Button>
               </div>
               {formData.tasks.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
-                  <CheckSquare className="h-8 w-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                  <p className="text-sm text-gray-500">No tasks yet. Add tasks that need to be completed during offboarding.</p>
+                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
+                  <CheckSquare className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
+                  <p className="text-sm text-zinc-500">
+                    No tasks yet. Add tasks that need to be completed during
+                    offboarding.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {formData.tasks.map((task, i) => (
-                    <div key={task.id} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div
+                      key={task.id}
+                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                    >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
                           value={task.title}
-                          onChange={(e) => updateTask(i, 'title', e.target.value)}
+                          onChange={(e) =>
+                            updateTask(i, "title", e.target.value)
+                          }
                           placeholder="Task title"
                           className="sm:col-span-3"
                         />
                         <select
                           value={task.assignee_type}
-                          onChange={(e) => updateTask(i, 'assignee_type', e.target.value)}
-                          className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          onChange={(e) =>
+                            updateTask(i, "assignee_type", e.target.value)
+                          }
+                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                         >
                           {ASSIGNEE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <select
                           value={task.category}
-                          onChange={(e) => updateTask(i, 'category', e.target.value)}
-                          className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          onChange={(e) =>
+                            updateTask(i, "category", e.target.value)
+                          }
+                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                         >
                           {CATEGORY_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <label className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={task.required}
-                            onChange={(e) => updateTask(i, 'required', e.target.checked)}
-                            className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                            onChange={(e) =>
+                              updateTask(i, "required", e.target.checked)
+                            }
+                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Required</span>
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                            Required
+                          </span>
                         </label>
                       </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeTask(i)}>
-                        <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeTask(i)}
+                      >
+                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -549,51 +693,76 @@ export const TerminationWorkflows: React.FC = () => {
             {/* Documents Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Documents ({formData.documents.length})
                 </label>
-                <Button type="button" variant="outline" size="sm" onClick={addDocument}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addDocument}
+                >
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   Add Document
                 </Button>
               </div>
               {formData.documents.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
-                  <FileText className="h-8 w-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                  <p className="text-sm text-gray-500">No documents yet. Add documents required for offboarding.</p>
+                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
+                  <FileText className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
+                  <p className="text-sm text-zinc-500">
+                    No documents yet. Add documents required for offboarding.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {formData.documents.map((doc, i) => (
-                    <div key={doc.id} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div
+                      key={doc.id}
+                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                    >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
                           value={doc.name}
-                          onChange={(e) => updateDocument(i, 'name', e.target.value)}
+                          onChange={(e) =>
+                            updateDocument(i, "name", e.target.value)
+                          }
                           placeholder="Document name"
                           className="sm:col-span-1"
                         />
                         <select
                           value={doc.doc_type}
-                          onChange={(e) => updateDocument(i, 'doc_type', e.target.value)}
-                          className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          onChange={(e) =>
+                            updateDocument(i, "doc_type", e.target.value)
+                          }
+                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
                         >
                           {DOC_TYPE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <label className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={doc.required}
-                            onChange={(e) => updateDocument(i, 'required', e.target.checked)}
-                            className="rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                            onChange={(e) =>
+                              updateDocument(i, "required", e.target.checked)
+                            }
+                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Required</span>
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                            Required
+                          </span>
                         </label>
                       </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeDocument(i)}>
-                        <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeDocument(i)}
+                      >
+                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -603,11 +772,17 @@ export const TerminationWorkflows: React.FC = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button onClick={isEditModalOpen ? handleUpdate : handleCreate}>
-              {isEditModalOpen ? 'Save Changes' : 'Create Workflow'}
+              {isEditModalOpen ? "Save Changes" : "Create Workflow"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -618,7 +793,9 @@ export const TerminationWorkflows: React.FC = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{selectedWorkflow?.name}</DialogTitle>
-            <DialogDescription>{selectedWorkflow?.description || 'No description provided'}</DialogDescription>
+            <DialogDescription>
+              {selectedWorkflow?.description || "No description provided"}
+            </DialogDescription>
           </DialogHeader>
           {selectedWorkflow && (
             <div className="space-y-6 py-4">
@@ -632,24 +809,34 @@ export const TerminationWorkflows: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-gray-400" />
+                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4 text-zinc-400" />
                   Tasks ({selectedWorkflow.tasks.length})
                 </h4>
                 {selectedWorkflow.tasks.length === 0 ? (
-                  <p className="text-sm text-gray-500">No tasks defined</p>
+                  <p className="text-sm text-zinc-500">No tasks defined</p>
                 ) : (
                   <ul className="space-y-2">
                     {selectedWorkflow.tasks.map((t) => (
                       <li key={t.id} className="flex items-start gap-2 text-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
-                          <span className="text-gray-900 dark:text-white">{t.title}</span>
-                          <span className="text-gray-500 ml-2">
-                            ({ASSIGNEE_OPTIONS.find((a) => a.value === t.assignee_type)?.label})
+                          <span className="text-zinc-900 dark:text-white">
+                            {t.title}
+                          </span>
+                          <span className="text-zinc-500 ml-2">
+                            (
+                            {
+                              ASSIGNEE_OPTIONS.find(
+                                (a) => a.value === t.assignee_type,
+                              )?.label
+                            }
+                            )
                           </span>
                           {t.required && (
-                            <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">Required</span>
+                            <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                              Required
+                            </span>
                           )}
                         </div>
                       </li>
@@ -659,24 +846,34 @@ export const TerminationWorkflows: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-gray-400" />
+                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-zinc-400" />
                   Documents ({selectedWorkflow.documents.length})
                 </h4>
                 {selectedWorkflow.documents.length === 0 ? (
-                  <p className="text-sm text-gray-500">No documents defined</p>
+                  <p className="text-sm text-zinc-500">No documents defined</p>
                 ) : (
                   <ul className="space-y-2">
                     {selectedWorkflow.documents.map((d) => (
                       <li key={d.id} className="flex items-start gap-2 text-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
-                          <span className="text-gray-900 dark:text-white">{d.name || 'Unnamed'}</span>
-                          <span className="text-gray-500 ml-2">
-                            ({DOC_TYPE_OPTIONS.find((o) => o.value === d.doc_type)?.label})
+                          <span className="text-zinc-900 dark:text-white">
+                            {d.name || "Unnamed"}
+                          </span>
+                          <span className="text-zinc-500 ml-2">
+                            (
+                            {
+                              DOC_TYPE_OPTIONS.find(
+                                (o) => o.value === d.doc_type,
+                              )?.label
+                            }
+                            )
                           </span>
                           {d.required && (
-                            <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">Required</span>
+                            <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                              Required
+                            </span>
                           )}
                         </div>
                       </li>
@@ -687,8 +884,15 @@ export const TerminationWorkflows: React.FC = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
-            <Button onClick={() => { setIsViewModalOpen(false); if (selectedWorkflow) openEdit(selectedWorkflow); }}>
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setIsViewModalOpen(false);
+                if (selectedWorkflow) openEdit(selectedWorkflow);
+              }}
+            >
               Edit
             </Button>
           </DialogFooter>

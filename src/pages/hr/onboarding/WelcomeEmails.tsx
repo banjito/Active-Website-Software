@@ -1,42 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Textarea } from '../../../components/ui/Textarea';
-import { Select } from '../../../components/ui/Select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { Mail, Plus, Edit, Trash2, Eye, Send, X } from 'lucide-react';
-import { onboardingService, WelcomeEmail } from '../../../services/hr/onboardingService';
-import { useAuth } from '../../../lib/AuthContext';
-import { toast } from '../../../components/ui/toast';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
+import { Select } from "../../../components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/Dialog";
+import { Mail, Plus, Edit, Trash2, Eye, Send, X } from "lucide-react";
+import {
+  onboardingService,
+  WelcomeEmail,
+} from "../../../services/hr/onboardingService";
+import { useAuth } from "../../../lib/AuthContext";
+import { toast } from "../../../components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export const WelcomeEmails: React.FC = () => {
   const { user } = useAuth();
   const [emails, setEmails] = useState<WelcomeEmail[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'templates' | 'active' | 'archived'>('all');
-  
+  const [filter, setFilter] = useState<
+    "all" | "templates" | "active" | "archived"
+  >("all");
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<WelcomeEmail | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    email_type: 'standard' as const,
-    subject: '',
-    email_body: '',
-    email_body_text: '',
+    name: "",
+    description: "",
+    email_type: "standard" as const,
+    subject: "",
+    email_body: "",
+    email_body_text: "",
     template_variables: [] as Array<{ name: string; description?: string }>,
     send_automatically: false,
     send_days_before_start: 0,
-    send_time: '09:00:00',
-    status: 'draft' as const,
+    send_time: "09:00:00",
+    status: "draft" as const,
     is_template: false,
   });
 
@@ -48,70 +65,86 @@ export const WelcomeEmails: React.FC = () => {
     try {
       setLoading(true);
       const filters: any = {};
-      
-      if (filter === 'templates') {
+
+      if (filter === "templates") {
         filters.is_template = true;
-      } else if (filter === 'active') {
-        filters.status = 'active';
-      } else if (filter === 'archived') {
-        filters.status = 'archived';
+      } else if (filter === "active") {
+        filters.status = "active";
+      } else if (filter === "archived") {
+        filters.status = "archived";
       }
-      
+
       const data = await onboardingService.getWelcomeEmails(filters);
       setEmails(data);
     } catch (error: any) {
-      console.error('Error fetching emails:', error);
+      console.error("Error fetching emails:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load emails. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load emails. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-              type === 'number' ? parseInt(value) || 0 : value,
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : type === "number"
+            ? parseInt(value) || 0
+            : value,
     }));
   };
 
   const handleVariableAdd = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       template_variables: [
         ...prev.template_variables,
-        { name: '', description: '' },
+        { name: "", description: "" },
       ],
     }));
   };
 
-  const handleVariableChange = (index: number, field: string, value: string) => {
-    setFormData(prev => ({
+  const handleVariableChange = (
+    index: number,
+    field: string,
+    value: string,
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       template_variables: prev.template_variables.map((v, i) =>
-        i === index ? { ...v, [field]: value } : v
+        i === index ? { ...v, [field]: value } : v,
       ),
     }));
   };
 
   const handleVariableRemove = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       template_variables: prev.template_variables.filter((_, i) => i !== index),
     }));
   };
 
   const handleCreate = async () => {
-    if (!formData.name.trim() || !formData.subject.trim() || !formData.email_body.trim()) {
+    if (
+      !formData.name.trim() ||
+      !formData.subject.trim() ||
+      !formData.email_body.trim()
+    ) {
       toast({
-        title: 'Error',
-        description: 'Please enter a name, subject, and email body',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please enter a name, subject, and email body",
+        variant: "destructive",
       });
       return;
     }
@@ -125,18 +158,18 @@ export const WelcomeEmails: React.FC = () => {
       });
 
       toast({
-        title: 'Success',
-        description: 'Welcome email created successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Welcome email created successfully",
+        variant: "success",
       });
       setIsCreateModalOpen(false);
       resetForm();
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create email',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to create email",
+        variant: "destructive",
       });
     }
   };
@@ -144,11 +177,15 @@ export const WelcomeEmails: React.FC = () => {
   const handleUpdate = async () => {
     if (!selectedEmail) return;
 
-    if (!formData.name.trim() || !formData.subject.trim() || !formData.email_body.trim()) {
+    if (
+      !formData.name.trim() ||
+      !formData.subject.trim() ||
+      !formData.email_body.trim()
+    ) {
       toast({
-        title: 'Error',
-        description: 'Please enter a name, subject, and email body',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please enter a name, subject, and email body",
+        variant: "destructive",
       });
       return;
     }
@@ -157,9 +194,9 @@ export const WelcomeEmails: React.FC = () => {
       await onboardingService.updateWelcomeEmail(selectedEmail.id, formData);
 
       toast({
-        title: 'Success',
-        description: 'Welcome email updated successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Welcome email updated successfully",
+        variant: "success",
       });
       setIsEditModalOpen(false);
       setSelectedEmail(null);
@@ -167,29 +204,29 @@ export const WelcomeEmails: React.FC = () => {
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update email',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to update email",
+        variant: "destructive",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this email?')) return;
+    if (!confirm("Are you sure you want to delete this email?")) return;
 
     try {
       await onboardingService.deleteWelcomeEmail(id);
       toast({
-        title: 'Success',
-        description: 'Email deleted successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Email deleted successfully",
+        variant: "success",
       });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete email',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to delete email",
+        variant: "destructive",
       });
     }
   };
@@ -197,9 +234,10 @@ export const WelcomeEmails: React.FC = () => {
   const handleSend = async (email: WelcomeEmail) => {
     // In a real implementation, this would trigger sending the email
     toast({
-      title: 'Info',
-      description: 'Email sending functionality will be implemented with email service integration',
-      variant: 'default',
+      title: "Info",
+      description:
+        "Email sending functionality will be implemented with email service integration",
+      variant: "default",
     });
   };
 
@@ -207,11 +245,11 @@ export const WelcomeEmails: React.FC = () => {
     setSelectedEmail(email);
     setFormData({
       name: email.name,
-      description: email.description || '',
+      description: email.description || "",
       email_type: email.email_type,
       subject: email.subject,
       email_body: email.email_body,
-      email_body_text: email.email_body_text || '',
+      email_body_text: email.email_body_text || "",
       template_variables: email.template_variables || [],
       send_automatically: email.send_automatically,
       send_days_before_start: email.send_days_before_start,
@@ -234,38 +272,41 @@ export const WelcomeEmails: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      email_type: 'standard',
-      subject: '',
-      email_body: '',
-      email_body_text: '',
+      name: "",
+      description: "",
+      email_type: "standard",
+      subject: "",
+      email_body: "",
+      email_body_text: "",
       template_variables: [],
       send_automatically: false,
       send_days_before_start: 0,
-      send_time: '09:00:00',
-      status: 'draft',
+      send_time: "09:00:00",
+      status: "draft",
       is_template: false,
     });
   };
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      archived: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+      draft: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      active:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      archived: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}
+      >
         {status}
       </span>
     );
   };
 
-  const filteredEmails = emails.filter(e => {
-    if (filter === 'templates') return e.is_template;
-    if (filter === 'active') return e.status === 'active';
-    if (filter === 'archived') return e.status === 'archived';
+  const filteredEmails = emails.filter((e) => {
+    if (filter === "templates") return e.is_template;
+    if (filter === "active") return e.status === "active";
+    if (filter === "archived") return e.status === "archived";
     return true;
   });
 
@@ -273,8 +314,10 @@ export const WelcomeEmails: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Emails</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+            Welcome Emails
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
             Create and manage welcome emails for new employees
           </p>
         </div>
@@ -293,30 +336,30 @@ export const WelcomeEmails: React.FC = () => {
       {/* Filters */}
       <div className="flex gap-2">
         <Button
-          variant={filter === 'all' ? 'default' : 'outline'}
+          variant={filter === "all" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter('all')}
+          onClick={() => setFilter("all")}
         >
           All
         </Button>
         <Button
-          variant={filter === 'templates' ? 'default' : 'outline'}
+          variant={filter === "templates" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter('templates')}
+          onClick={() => setFilter("templates")}
         >
           Templates
         </Button>
         <Button
-          variant={filter === 'active' ? 'default' : 'outline'}
+          variant={filter === "active" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter('active')}
+          onClick={() => setFilter("active")}
         >
           Active
         </Button>
         <Button
-          variant={filter === 'archived' ? 'default' : 'outline'}
+          variant={filter === "archived" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter('archived')}
+          onClick={() => setFilter("archived")}
         >
           Archived
         </Button>
@@ -324,12 +367,14 @@ export const WelcomeEmails: React.FC = () => {
 
       {/* Emails List */}
       {loading ? (
-        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
+        <div className="text-center py-12">
+          <LoadingSpinner size="md" />
+        </div>
       ) : filteredEmails.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Mail className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">No emails found</p>
+            <Mail className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
+            <p className="text-zinc-600 dark:text-zinc-400">No emails found</p>
           </CardContent>
         </Card>
       ) : (
@@ -349,12 +394,14 @@ export const WelcomeEmails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 mb-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Type:</span> {email.email_type}
+                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <span className="font-medium">Type:</span>{" "}
+                    {email.email_type}
                   </div>
                   {email.send_automatically && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Auto-send:</span> {email.send_days_before_start} days before start
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <span className="font-medium">Auto-send:</span>{" "}
+                      {email.send_days_before_start} days before start
                     </div>
                   )}
                   {email.is_template && (
@@ -431,7 +478,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
               <Textarea
                 name="description"
                 value={formData.description}
@@ -442,17 +491,19 @@ export const WelcomeEmails: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Email Type</label>
+                <label className="block text-sm font-medium mb-2">
+                  Email Type
+                </label>
                 <Select
                   name="email_type"
                   value={formData.email_type}
                   onChange={handleInputChange}
                   options={[
-                    { value: 'standard', label: 'Standard' },
-                    { value: 'pre-start', label: 'Pre-Start' },
-                    { value: 'first-day', label: 'First Day' },
-                    { value: 'first-week', label: 'First Week' },
-                    { value: 'custom', label: 'Custom' },
+                    { value: "standard", label: "Standard" },
+                    { value: "pre-start", label: "Pre-Start" },
+                    { value: "first-day", label: "First Day" },
+                    { value: "first-week", label: "First Week" },
+                    { value: "custom", label: "Custom" },
                   ]}
                 />
               </div>
@@ -463,9 +514,9 @@ export const WelcomeEmails: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                   options={[
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'active', label: 'Active' },
-                    { value: 'archived', label: 'Archived' },
+                    { value: "draft", label: "Draft" },
+                    { value: "active", label: "Active" },
+                    { value: "archived", label: "Archived" },
                   ]}
                 />
               </div>
@@ -484,7 +535,9 @@ export const WelcomeEmails: React.FC = () => {
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Subject *</label>
+              <label className="block text-sm font-medium mb-2">
+                Subject *
+              </label>
               <Input
                 name="subject"
                 value={formData.subject}
@@ -493,7 +546,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Email Body (HTML) *</label>
+              <label className="block text-sm font-medium mb-2">
+                Email Body (HTML) *
+              </label>
               <Textarea
                 name="email_body"
                 value={formData.email_body}
@@ -503,7 +558,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Email Body (Plain Text)</label>
+              <label className="block text-sm font-medium mb-2">
+                Email Body (Plain Text)
+              </label>
               <Textarea
                 name="email_body_text"
                 value={formData.email_body_text}
@@ -521,14 +578,19 @@ export const WelcomeEmails: React.FC = () => {
                 onChange={handleInputChange}
                 className="rounded"
               />
-              <label htmlFor="send_automatically" className="text-sm font-medium">
+              <label
+                htmlFor="send_automatically"
+                className="text-sm font-medium"
+              >
                 Send Automatically
               </label>
             </div>
             {formData.send_automatically && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Days Before Start</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Days Before Start
+                  </label>
                   <Input
                     type="number"
                     name="send_days_before_start"
@@ -537,7 +599,9 @@ export const WelcomeEmails: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Send Time</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Send Time
+                  </label>
                   <Input
                     type="time"
                     name="send_time"
@@ -549,7 +613,9 @@ export const WelcomeEmails: React.FC = () => {
             )}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium">Template Variables</label>
+                <label className="block text-sm font-medium">
+                  Template Variables
+                </label>
                 <Button
                   type="button"
                   variant="outline"
@@ -562,17 +628,28 @@ export const WelcomeEmails: React.FC = () => {
               </div>
               <div className="space-y-2">
                 {formData.template_variables.map((variable, index) => (
-                  <div key={index} className="flex gap-2 items-center p-2 border rounded">
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center p-2 border rounded"
+                  >
                     <Input
                       placeholder="Variable name (e.g., employee_name)"
                       value={variable.name}
-                      onChange={(e) => handleVariableChange(index, 'name', e.target.value)}
+                      onChange={(e) =>
+                        handleVariableChange(index, "name", e.target.value)
+                      }
                       className="flex-1"
                     />
                     <Input
                       placeholder="Description"
-                      value={variable.description || ''}
-                      onChange={(e) => handleVariableChange(index, 'description', e.target.value)}
+                      value={variable.description || ""}
+                      onChange={(e) =>
+                        handleVariableChange(
+                          index,
+                          "description",
+                          e.target.value,
+                        )
+                      }
                       className="flex-1"
                     />
                     <Button
@@ -589,7 +666,10 @@ export const WelcomeEmails: React.FC = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -621,7 +701,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
               <Textarea
                 name="description"
                 value={formData.description}
@@ -631,17 +713,19 @@ export const WelcomeEmails: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Email Type</label>
+                <label className="block text-sm font-medium mb-2">
+                  Email Type
+                </label>
                 <Select
                   name="email_type"
                   value={formData.email_type}
                   onChange={handleInputChange}
                   options={[
-                    { value: 'standard', label: 'Standard' },
-                    { value: 'pre-start', label: 'Pre-Start' },
-                    { value: 'first-day', label: 'First Day' },
-                    { value: 'first-week', label: 'First Week' },
-                    { value: 'custom', label: 'Custom' },
+                    { value: "standard", label: "Standard" },
+                    { value: "pre-start", label: "Pre-Start" },
+                    { value: "first-day", label: "First Day" },
+                    { value: "first-week", label: "First Week" },
+                    { value: "custom", label: "Custom" },
                   ]}
                 />
               </div>
@@ -652,9 +736,9 @@ export const WelcomeEmails: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                   options={[
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'active', label: 'Active' },
-                    { value: 'archived', label: 'Archived' },
+                    { value: "draft", label: "Draft" },
+                    { value: "active", label: "Active" },
+                    { value: "archived", label: "Archived" },
                   ]}
                 />
               </div>
@@ -673,7 +757,9 @@ export const WelcomeEmails: React.FC = () => {
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Subject *</label>
+              <label className="block text-sm font-medium mb-2">
+                Subject *
+              </label>
               <Input
                 name="subject"
                 value={formData.subject}
@@ -681,7 +767,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Email Body (HTML) *</label>
+              <label className="block text-sm font-medium mb-2">
+                Email Body (HTML) *
+              </label>
               <Textarea
                 name="email_body"
                 value={formData.email_body}
@@ -690,7 +778,9 @@ export const WelcomeEmails: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Email Body (Plain Text)</label>
+              <label className="block text-sm font-medium mb-2">
+                Email Body (Plain Text)
+              </label>
               <Textarea
                 name="email_body_text"
                 value={formData.email_body_text}
@@ -707,14 +797,19 @@ export const WelcomeEmails: React.FC = () => {
                 onChange={handleInputChange}
                 className="rounded"
               />
-              <label htmlFor="send_automatically_edit" className="text-sm font-medium">
+              <label
+                htmlFor="send_automatically_edit"
+                className="text-sm font-medium"
+              >
                 Send Automatically
               </label>
             </div>
             {formData.send_automatically && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Days Before Start</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Days Before Start
+                  </label>
                   <Input
                     type="number"
                     name="send_days_before_start"
@@ -723,7 +818,9 @@ export const WelcomeEmails: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Send Time</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Send Time
+                  </label>
                   <Input
                     type="time"
                     name="send_time"
@@ -735,7 +832,9 @@ export const WelcomeEmails: React.FC = () => {
             )}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium">Template Variables</label>
+                <label className="block text-sm font-medium">
+                  Template Variables
+                </label>
                 <Button
                   type="button"
                   variant="outline"
@@ -748,17 +847,28 @@ export const WelcomeEmails: React.FC = () => {
               </div>
               <div className="space-y-2">
                 {formData.template_variables.map((variable, index) => (
-                  <div key={index} className="flex gap-2 items-center p-2 border rounded">
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center p-2 border rounded"
+                  >
                     <Input
                       placeholder="Variable name"
                       value={variable.name}
-                      onChange={(e) => handleVariableChange(index, 'name', e.target.value)}
+                      onChange={(e) =>
+                        handleVariableChange(index, "name", e.target.value)
+                      }
                       className="flex-1"
                     />
                     <Input
                       placeholder="Description"
-                      value={variable.description || ''}
-                      onChange={(e) => handleVariableChange(index, 'description', e.target.value)}
+                      value={variable.description || ""}
+                      onChange={(e) =>
+                        handleVariableChange(
+                          index,
+                          "description",
+                          e.target.value,
+                        )
+                      }
                       className="flex-1"
                     />
                     <Button
@@ -793,29 +903,36 @@ export const WelcomeEmails: React.FC = () => {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedEmail?.name}</DialogTitle>
-            <DialogDescription>
-              {selectedEmail?.subject}
-            </DialogDescription>
+            <DialogDescription>{selectedEmail?.subject}</DialogDescription>
           </DialogHeader>
           {selectedEmail && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium">Type:</span>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedEmail.email_type}</p>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    {selectedEmail.email_type}
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium">Status:</span>
-                  <div className="mt-1">{getStatusBadge(selectedEmail.status)}</div>
+                  <div className="mt-1">
+                    {getStatusBadge(selectedEmail.status)}
+                  </div>
                 </div>
               </div>
               <div>
                 <span className="text-sm font-medium">Subject:</span>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedEmail.subject}</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                  {selectedEmail.subject}
+                </p>
               </div>
               <div>
                 <span className="text-sm font-medium">Email Body:</span>
-                <div className="mt-2 p-4 border rounded bg-gray-50 dark:bg-gray-800 whitespace-pre-wrap text-sm" dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }} />
+                <div
+                  className="mt-2 p-4 border rounded bg-zinc-50 dark:bg-zinc-800 whitespace-pre-wrap text-sm"
+                  dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }}
+                />
               </div>
             </div>
           )}
@@ -840,19 +957,28 @@ export const WelcomeEmails: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <span className="text-sm font-medium">To:</span>
-                <p className="text-sm text-gray-600 dark:text-gray-400">employee@example.com</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  employee@example.com
+                </p>
               </div>
               <div>
                 <span className="text-sm font-medium">Subject:</span>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{selectedEmail.subject}</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {selectedEmail.subject}
+                </p>
               </div>
-              <div className="border rounded p-4 bg-white dark:bg-gray-800">
-                <div dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }} />
+              <div className="border rounded p-4 bg-white dark:bg-zinc-800">
+                <div
+                  dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }}
+                />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPreviewModalOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

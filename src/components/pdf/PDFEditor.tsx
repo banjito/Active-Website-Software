@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Save, Download, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import React, { useState, useRef, useEffect } from "react";
+import { Save, Download, FileText } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface PDFEditorProps {
   fileUrl: string;
@@ -10,7 +10,13 @@ interface PDFEditorProps {
   onUrlUpdate?: (newUrl: string) => void;
 }
 
-export function PDFEditor({ fileUrl, fileName, onSave, onClose, onUrlUpdate }: PDFEditorProps) {
+export function PDFEditor({
+  fileUrl,
+  fileName,
+  onSave,
+  onClose,
+  onUrlUpdate,
+}: PDFEditorProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(fileUrl);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -26,7 +32,9 @@ export function PDFEditor({ fileUrl, fileName, onSave, onClose, onUrlUpdate }: P
       // Get the current iframe content
       const response = await fetch(currentUrl);
       if (!response.ok) {
-        throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch PDF: ${response.status} ${response.statusText}`,
+        );
       }
 
       const blob = await response.blob();
@@ -46,11 +54,10 @@ export function PDFEditor({ fileUrl, fileName, onSave, onClose, onUrlUpdate }: P
         iframeRef.current.src = `${currentUrl}?t=${timestamp}#toolbar=1&navpanes=0&scrollbar=1`;
       }
 
-      alert('PDF saved successfully!');
-
+      alert("PDF saved successfully!");
     } catch (error) {
-      console.error('Error saving PDF:', error);
-      alert('Failed to save PDF. Please try again.');
+      console.error("Error saving PDF:", error);
+      alert("Failed to save PDF. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -65,20 +72,20 @@ export function PDFEditor({ fileUrl, fileName, onSave, onClose, onUrlUpdate }: P
   return (
     <div className="flex flex-col h-full">
       {/* PDF Editor Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+      <div className="flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-white">
+          <FileText className="h-5 w-5 text-zinc-500" />
+          <span className="text-sm font-medium text-zinc-700 dark:text-white">
             {fileName}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-zinc-600 hover:text-zinc-800"
           >
             <Download className="h-4 w-4 mr-1" />
             Print
@@ -87,25 +94,25 @@ export function PDFEditor({ fileUrl, fileName, onSave, onClose, onUrlUpdate }: P
       </div>
 
       {/* PDF Viewer */}
-      <div className="flex-1 relative bg-gray-100">
+      <div className="flex-1 relative bg-zinc-100">
         <iframe
           ref={iframeRef}
           src={`${currentUrl}#toolbar=1&navpanes=0&scrollbar=1`}
           className="w-full h-full border-0"
           title={fileName}
           style={{
-            minHeight: '600px',
-            backgroundColor: 'white'
+            minHeight: "600px",
+            backgroundColor: "white",
           }}
         />
       </div>
-      
+
       {/* Status Bar */}
-      <div className="flex items-center justify-between p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 text-xs text-gray-500">
+      <div className="flex items-center justify-between p-2 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 text-xs text-zinc-500">
         <span>
           Use your browser's PDF tools to annotate. Click Save when done.
         </span>
       </div>
     </div>
   );
-} 
+}

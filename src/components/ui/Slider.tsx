@@ -38,7 +38,7 @@ export const Slider: React.FC<SliderProps> = ({
     <div className={`relative w-full ${className}`}>
       <div
         ref={trackRef}
-        className="relative h-1.5 w-full rounded-full bg-zinc-200 dark:bg-dark-150"
+        className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-dark-150"
       >
         <div
           className="absolute h-full rounded-full bg-blue-600 dark:bg-blue-500"
@@ -55,7 +55,7 @@ export const Slider: React.FC<SliderProps> = ({
         className="absolute inset-0 h-1.5 w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
         disabled={disabled}
       />
-      <div className="mt-2 flex justify-between text-xs text-zinc-500 dark:text-white">
+      <div className="mt-2 flex justify-between text-xs text-neutral-500 dark:text-white">
         <span>{min}</span>
         <span>{max}</span>
       </div>

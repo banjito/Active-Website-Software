@@ -722,7 +722,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                       className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
                         folderFilter === folder.id
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-zinc-200 dark:border-zinc-700 hover:bg-muted/50"
+                          : "border-neutral-200 dark:border-neutral-700 hover:bg-muted/50"
                       }`}
                     >
                       <button
@@ -834,7 +834,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                               </span>
                             )}
                             {doc.archived && (
-                              <span className="text-xs bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 px-2 py-1 rounded">
+                              <span className="text-xs bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 px-2 py-1 rounded">
                                 Archived
                               </span>
                             )}

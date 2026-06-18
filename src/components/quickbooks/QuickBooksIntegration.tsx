@@ -86,7 +86,7 @@ export default function QuickBooksIntegration({
     return (
       <div className="flex items-center justify-center p-4">
         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-        <span className="ml-2 text-zinc-600">
+        <span className="ml-2 text-neutral-600">
           <LoadingSpinner size="md" />
         </span>
       </div>
@@ -98,7 +98,7 @@ export default function QuickBooksIntegration({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">QuickBooks Integration</h3>
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-neutral-600">
             Connect your QuickBooks account to sync invoices, customers, and
             more.
           </p>
@@ -119,7 +119,7 @@ export default function QuickBooksIntegration({
           </div>
 
           {integration && (
-            <div className="bg-zinc-50 rounded p-4 space-y-2 text-sm">
+            <div className="bg-neutral-50 rounded p-4 space-y-2 text-sm">
               <div>
                 <span className="font-medium">Environment:</span>{" "}
                 <span className="capitalize">{integration.environment}</span>
@@ -163,7 +163,7 @@ export default function QuickBooksIntegration({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2 text-zinc-500">
+          <div className="flex items-center space-x-2 text-neutral-500">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"

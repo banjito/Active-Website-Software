@@ -1400,7 +1400,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1445,7 +1445,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
         </div>
       </div>
       {/* End Print Header */}
-      <div className="p-6 flex justify-center bg-zinc-50 dark:bg-dark-150">
+      <div className="p-6 flex justify-center bg-neutral-50 dark:bg-dark-150">
         <div className="max-w-7xl w-full space-y-2">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
@@ -1456,7 +1456,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Job Information (copied layout from 13-VoltagePotentialTransformerTestMTSReport) */}
             <section className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                 Job Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
@@ -1466,7 +1466,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     type="text"
                     value={maskCustomerName(formData.customer)}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
+                    className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
                   />
                 </div>
                 <div>
@@ -1475,7 +1475,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     type="text"
                     value={formData.jobNumber}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
+                    className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -1484,7 +1484,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     type="text"
                     value={maskCustomerAddress(formData.address)}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
+                    className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
                   />
                 </div>
                 <div>
@@ -1496,7 +1496,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleChange(null, "technicians", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1506,7 +1506,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => handleChange(null, "date", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1518,7 +1518,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleChange(null, "identifier", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center space-x-1">
@@ -1531,7 +1531,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         handleTemperatureChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-16 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="ml-1 text-xs">°F</span>
                   </div>
@@ -1541,7 +1541,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       type="number"
                       value={formData.temperature.celsius}
                       readOnly
-                      className="form-input w-16 bg-zinc-100 dark:bg-dark-150"
+                      className="form-input w-16 bg-neutral-100 dark:bg-dark-150"
                     />
                     <span className="ml-1 text-xs">°C</span>
                   </div>
@@ -1552,7 +1552,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     type="number"
                     value={formData.temperature.correctionFactor}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150 w-16"
+                    className="form-input bg-neutral-100 dark:bg-dark-150 w-16"
                   />
                 </div>
                 <div>
@@ -1578,7 +1578,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       );
                     }}
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-16 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="ml-1 text-xs">%</span>
                 </div>
@@ -1591,7 +1591,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleChange(null, "substation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1603,7 +1603,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleChange(null, "eqptLocation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -1615,7 +1615,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleChange(null, "userName", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1645,13 +1645,13 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Nameplate Data */}
             <section className="mb-6 nameplate-section">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
               <div className="grid grid-cols-4 gap-4 print:hidden nameplate-onscreen">
                 {/* Row 1: Manufacturer, Catalog Number, Serial Number, KVA */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Manufacturer
                   </label>
                   <input
@@ -1665,11 +1665,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Catalog Number
                   </label>
                   <input
@@ -1683,11 +1683,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Serial Number
                   </label>
                   <input
@@ -1701,11 +1701,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     KVA
                   </label>
                   <input
@@ -1715,7 +1715,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleNestedChange("nameplateData", "kva", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1723,7 +1723,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               <div className="grid grid-cols-4 gap-4 mt-4 print:hidden nameplate-onscreen">
                 {/* Row 2: Temp Rise, Impedance, Fluid Type, Fluid Volume */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Temp. Rise (°C)
                   </label>
                   <input
@@ -1737,11 +1737,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Impedance (%)
                   </label>
                   <input
@@ -1755,11 +1755,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Fluid Type
                   </label>
                   <input
@@ -1773,11 +1773,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Fluid Volume (gal)
                   </label>
                   <input
@@ -1791,7 +1791,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1799,18 +1799,18 @@ const LiquidFilledTransformerReport: React.FC = () => {
               <div className="mt-6 print:hidden nameplate-onscreen">
                 <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
                   <div></div>
-                  <div className="text-center text-sm font-medium text-zinc-700 dark:text-white">
+                  <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
                     Volts
                   </div>
-                  <div className="text-center text-sm font-medium text-zinc-700 dark:text-white">
+                  <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
                     Connections
                   </div>
-                  <div className="text-center text-sm font-medium text-zinc-700 dark:text-white">
+                  <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
                     Winding Material
                   </div>
 
                   {/* Primary Row */}
-                  <div className="text-sm font-medium text-zinc-700 dark:text-white">
+                  <div className="text-sm font-medium text-neutral-700 dark:text-white">
                     Primary
                   </div>
                   <div className="flex justify-center items-center space-x-2">
@@ -1824,9 +1824,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
-                    <span className="text-zinc-500 dark:text-white">/</span>
+                    <span className="text-neutral-500 dark:text-white">/</span>
                     <input
                       type="text"
                       value={
@@ -1839,7 +1839,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div className="flex justify-center space-x-4">
@@ -1862,9 +1862,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             })
                           }
                           disabled={!isEditing}
-                          className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
+                          className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
                         />
-                        <span className="ml-2 text-sm text-zinc-700 dark:text-white">
+                        <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                           {conn}
                         </span>
                       </label>
@@ -1890,9 +1890,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             })
                           }
                           disabled={!isEditing}
-                          className="form-radio h-4 w-4 text-[#f26722] border-zinc-300 dark:border-zinc-700 focus:ring-[#f26722]"
+                          className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
                         />
-                        <span className="ml-2 text-sm text-zinc-700 dark:text-white">
+                        <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                           {mat}
                         </span>
                       </label>
@@ -1900,7 +1900,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </div>
 
                   {/* Secondary Row */}
-                  <div className="text-sm font-medium text-zinc-700 dark:text-white">
+                  <div className="text-sm font-medium text-neutral-700 dark:text-white">
                     Secondary
                   </div>
                   <div className="flex justify-center items-center space-x-2">
@@ -1914,9 +1914,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-zinc-100" : ""}`}
+                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
                     />
-                    <span className="text-zinc-500 dark:text-white">/</span>
+                    <span className="text-neutral-500 dark:text-white">/</span>
                     <input
                       type="text"
                       value={
@@ -1929,7 +1929,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-zinc-100" : ""}`}
+                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
                     />
                   </div>
                   <div className="flex justify-center space-x-4">
@@ -1952,9 +1952,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             })
                           }
                           disabled={!isEditing}
-                          className="form-radio h-4 w-4 text-blue-600 border-zinc-300 focus:ring-blue-500"
+                          className="form-radio h-4 w-4 text-blue-600 border-neutral-300 focus:ring-blue-500"
                         />
-                        <span className="ml-2 text-sm text-zinc-700 dark:text-white">
+                        <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                           {conn}
                         </span>
                       </label>
@@ -1980,9 +1980,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             })
                           }
                           disabled={!isEditing}
-                          className="form-radio h-4 w-4 text-blue-600 border-zinc-300 focus:ring-blue-500"
+                          className="form-radio h-4 w-4 text-blue-600 border-neutral-300 focus:ring-blue-500"
                         />
-                        <span className="ml-2 text-sm text-zinc-700 dark:text-white">
+                        <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                           {mat}
                         </span>
                       </label>
@@ -1992,13 +1992,13 @@ const LiquidFilledTransformerReport: React.FC = () => {
               </div>
 
               {/* Tap Configuration */}
-              <div className="mt-6 border-t dark:border-zinc-700 pt-4 tap-configuration-section print:hidden nameplate-onscreen">
-                <h3 className="text-md font-semibold mb-4 text-zinc-800 dark:text-white">
+              <div className="mt-6 border-t dark:border-neutral-700 pt-4 tap-configuration-section print:hidden nameplate-onscreen">
+                <h3 className="text-md font-semibold mb-4 text-neutral-800 dark:text-white">
                   Tap Configuration
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center">
-                    <label className="w-32 text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
                       Tap Voltages
                     </label>
                     <div className="grid grid-cols-7 gap-2 flex-1">
@@ -2024,7 +2024,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`w-full text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             placeholder={index === 5 || index === 6 ? "-" : ""}
                           />
                         ),
@@ -2033,7 +2033,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </div>
 
                   <div className="flex items-center">
-                    <label className="w-32 text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
                       Tap Position
                     </label>
                     <div className="grid grid-cols-7 gap-2 flex-1">
@@ -2041,7 +2041,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         (position) => (
                           <div
                             key={`tap-pos-${position}`}
-                            className="text-center text-sm text-zinc-700 dark:text-white font-medium"
+                            className="text-center text-sm text-neutral-700 dark:text-white font-medium"
                           >
                             {position}
                           </div>
@@ -2051,7 +2051,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </div>
 
                   <div className="flex items-center">
-                    <label className="w-32 text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
                       Tap Position Left
                     </label>
                     <div className="flex items-center space-x-8">
@@ -2073,9 +2073,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
-                        <span className="text-zinc-500 dark:text-white">/</span>
+                        <span className="text-neutral-500 dark:text-white">
+                          /
+                        </span>
                         <input
                           type="text"
                           value={
@@ -2093,11 +2095,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-16 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                        <span className="text-sm font-medium text-neutral-700 dark:text-white">
                           Volts
                         </span>
                         <input
@@ -2117,11 +2119,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                        <span className="text-sm font-medium text-neutral-700 dark:text-white">
                           Percent
                         </span>
                         <input
@@ -2141,7 +2143,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-24 text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                     </div>
@@ -2152,7 +2154,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               {/* Print-only Nameplate Data tables */}
               <div className="hidden print:block space-y-4">
                 {/* Table 1: Basic Information */}
-                <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
                   <colgroup>
                     <col style={{ width: "25%" }} />
                     <col style={{ width: "25%" }} />
@@ -2161,25 +2163,25 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </colgroup>
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Manufacturer</div>
                         <div className="mt-0">
                           {formData.nameplateData.manufacturer || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Catalog Number</div>
                         <div className="mt-0">
                           {formData.nameplateData.catalogNumber || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Serial Number</div>
                         <div className="mt-0">
                           {formData.nameplateData.serialNumber || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">KVA</div>
                         <div className="mt-0">
                           {formData.nameplateData.kva || ""}
@@ -2187,25 +2189,25 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Temp. Rise (°C)</div>
                         <div className="mt-0">
                           {formData.nameplateData.tempRise || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Impedance (%)</div>
                         <div className="mt-0">
                           {formData.nameplateData.impedance || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Fluid Type</div>
                         <div className="mt-0">
                           {formData.nameplateData.fluidType || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Fluid Volume (gal)</div>
                         <div className="mt-0">
                           {formData.nameplateData.fluidVolume || ""}
@@ -2216,7 +2218,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 </table>
 
                 {/* Table 2: Primary/Secondary Details */}
-                <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
                   <colgroup>
                     <col style={{ width: "12%" }} />
                     <col style={{ width: "18%" }} />
@@ -2228,21 +2230,21 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </colgroup>
                   <thead>
                     <tr>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"></th>
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600"></th>
                       <th
-                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                        className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600"
                         colSpan={1}
                       >
                         Volts
                       </th>
                       <th
-                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                        className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600"
                         colSpan={3}
                       >
                         Connections
                       </th>
                       <th
-                        className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                        className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600"
                         colSpan={2}
                       >
                         Winding Materials
@@ -2251,39 +2253,39 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm font-medium text-neutral-900 dark:text-white">
                         Primary
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.volts || ""} /{" "}
                         {formData.nameplateData.primary.voltsSecondary || ""}
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.connection === "Delta"
                           ? "☒"
                           : "☐"}{" "}
                         Delta
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.connection === "Wye"
                           ? "☒"
                           : "☐"}{" "}
                         Wye
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.connection ===
                         "Single Phase"
                           ? "☒"
                           : "☐"}{" "}
                         Single Phase
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.material === "Aluminum"
                           ? "☒"
                           : "☐"}{" "}
                         Aluminum
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.primary.material === "Copper"
                           ? "☒"
                           : "☐"}{" "}
@@ -2291,40 +2293,40 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm font-medium text-neutral-900 dark:text-white">
                         Secondary
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.volts || ""} /{" "}
                         {formData.nameplateData.secondary.voltsSecondary || ""}
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.connection === "Delta"
                           ? "☒"
                           : "☐"}{" "}
                         Delta
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.connection === "Wye"
                           ? "☒"
                           : "☐"}{" "}
                         Wye
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.connection ===
                         "Single Phase"
                           ? "☒"
                           : "☐"}{" "}
                         Single Phase
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.material ===
                         "Aluminum"
                           ? "☒"
                           : "☐"}{" "}
                         Aluminum
                       </td>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center">
                         {formData.nameplateData.secondary.material === "Copper"
                           ? "☒"
                           : "☐"}{" "}
@@ -2335,45 +2337,45 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 </table>
 
                 {/* Table 3: Tap Configuration */}
-                <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+                <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
                   <thead>
                     <tr>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         Tap Position
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         1
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         2
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         3
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         4
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         5
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         6
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600">
                         7
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm font-medium text-neutral-900 dark:text-white">
                         Tap Voltages
                       </td>
                       {formData.nameplateData.tapConfiguration.voltages.map(
                         (voltage, index) => (
                           <td
                             key={index}
-                            className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white text-center"
+                            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white text-center"
                           >
                             {voltage || ""}
                           </td>
@@ -2381,12 +2383,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )}
                     </tr>
                     <tr>
-                      <td className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm font-medium text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm font-medium text-neutral-900 dark:text-white">
                         Tap Position Left
                       </td>
                       <td
                         colSpan={7}
-                        className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 text-sm text-zinc-900 dark:text-white"
+                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white"
                       >
                         Position:{" "}
                         {formData.nameplateData.tapConfiguration
@@ -2410,13 +2412,13 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Indicator Gauge Values */}
             <section className="mb-6 indicator-gauges-section">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Indicator Gauge Values
               </h2>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden indicator-gauges-onscreen">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Oil Level:
                     </label>
                     <input
@@ -2436,12 +2438,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil level"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Oil Temperature (°C):
                     </label>
                     <input
@@ -2462,12 +2464,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil temperature"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Oil Temp. Range:
                     </label>
                     <input
@@ -2488,12 +2490,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil temp range"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Tank Pressure:
                     </label>
                     <input
@@ -2514,12 +2516,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter tank pressure"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Winding Temperature (°C):
                     </label>
                     <input
@@ -2540,12 +2542,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter winding temperature"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Winding Temp. Range:
                     </label>
                     <input
@@ -2566,7 +2568,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter winding temp range"
                     />
                   </div>
@@ -2574,7 +2576,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
                 {/* Print-only compact Indicator Gauge Values table (3 columns x 2 rows) */}
                 <div className="hidden print:block">
-                  <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
+                  <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem]">
                     <colgroup>
                       <col style={{ width: "33.33%" }} />
                       <col style={{ width: "33.33%" }} />
@@ -2582,14 +2584,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     </colgroup>
                     <tbody>
                       <tr>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">Oil Level:</div>
                           <div className="mt-0">
                             {formData.nameplateData?.indicatorGauges
                               ?.oilLevel || ""}
                           </div>
                         </td>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">
                             Oil Temperature (°C):
                           </div>
@@ -2598,7 +2600,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.oilTemperature || ""}
                           </div>
                         </td>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">Oil Temp. Range:</div>
                           <div className="mt-0">
                             {formData.nameplateData?.indicatorGauges
@@ -2607,14 +2609,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">Tank Pressure:</div>
                           <div className="mt-0">
                             {formData.nameplateData?.indicatorGauges
                               ?.tankPressure || ""}
                           </div>
                         </td>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">
                             Winding Temperature (°C):
                           </div>
@@ -2623,7 +2625,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.windingTemperature || ""}
                           </div>
                         </td>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                           <div className="font-semibold">
                             Winding Temp. Range:
                           </div>
@@ -2642,12 +2644,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Visual and Mechanical Inspection */}
             <section className="mb-6 visual-mechanical-inspection">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Visual and Mechanical Inspection
               </h2>
               <div className="overflow-x-auto">
                 <table
-                  className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed"
+                  className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 visual-mechanical-table table-fixed"
                   style={{ width: "100%" }}
                 >
                   <colgroup>
@@ -2659,35 +2661,35 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       style={{ width: "15%" }}
                     />
                   </colgroup>
-                  <thead className="bg-zinc-50 dark:bg-dark-150">
+                  <thead className="bg-neutral-50 dark:bg-dark-150">
                     <tr>
                       <th
                         style={{ width: "12%" }}
-                        className="vmi-col-id px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                        className="vmi-col-id px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                       >
                         ID
                       </th>
                       <th
                         style={{ width: "58%" }}
-                        className="vmi-col-desc px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                        className="vmi-col-desc px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                       >
                         Description
                       </th>
                       <th
                         style={{ width: "15%" }}
-                        className="vmi-col-result px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                        className="vmi-col-result px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                       >
                         Result
                       </th>
                       <th
                         style={{ width: "15%" }}
-                        className="vmi-col-comments px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                        className="vmi-col-comments px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                       >
                         Comments
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                     {Object.keys(formData.visualInspection)
                       .filter((key) => !key.endsWith("_comments"))
                       .sort((a, b) => {
@@ -2699,13 +2701,13 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         <tr key={id}>
                           <td
                             style={{ width: "12%" }}
-                            className="vmi-col-id px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white"
+                            className="vmi-col-id px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white"
                           >
                             {id.replace("*", "")}
                           </td>
                           <td
                             style={{ width: "58%" }}
-                            className="vmi-col-desc px-3 py-2 text-sm text-zinc-700 dark:text-white whitespace-normal break-words"
+                            className="vmi-col-desc px-3 py-2 text-sm text-neutral-700 dark:text-white whitespace-normal break-words"
                           >
                             {getVisualInspectionDescription(id)}
                           </td>
@@ -2724,7 +2726,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {visualInspectionOptions.map((option) => (
                                   <option
@@ -2760,7 +2762,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                                 placeholder="Optional comments"
                               />
                             </div>
@@ -2779,7 +2781,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Insulation Resistance Tests */}
             <section className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Electrical Tests - Insulation Resistance
               </h2>
               <div className="space-y-6">
@@ -2787,38 +2789,38 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 <div className="grid grid-cols-2 gap-6">
                   {/* Insulation Resistance Values Table */}
                   <div>
-                    <table className="w-full border border-zinc-200 dark:border-zinc-700">
+                    <table className="w-full border border-neutral-200 dark:border-neutral-700">
                       <thead>
                         <tr>
                           <th
                             colSpan={6}
-                            className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700"
+                            className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700"
                           >
                             Insulation Resistance Values
                           </th>
                         </tr>
                         <tr>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700 w-24">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
                             Test
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700 w-20">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-20">
                             kV
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             0.5 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             1 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             10 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 w-16">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 w-16">
                             Unit
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                      <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                         {[
                           { id: "primaryToGround", label: "Primary to Ground" },
                           {
@@ -2831,10 +2833,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                           },
                         ].map((test) => (
                           <tr key={test.id}>
-                            <td className="px-2 py-1 text-sm text-zinc-900 dark:text-white border-r dark:border-zinc-700">
+                            <td className="px-2 py-1 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
                               {test.label}
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <select
                                 value={
                                   formData.insulationResistance[test.id]
@@ -2851,7 +2853,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {testVoltageOptions.map((voltage) => (
                                   <option
@@ -2864,7 +2866,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                 ))}
                               </select>
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -2881,10 +2883,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -2901,10 +2903,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -2921,7 +2923,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-1 py-1">
@@ -2941,7 +2943,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {insulationResistanceUnits.map((unit) => (
                                   <option
@@ -2962,39 +2964,39 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
                   {/* Temperature Corrected Values Table */}
                   <div>
-                    <table className="w-full border border-zinc-200 dark:border-zinc-700">
+                    <table className="w-full border border-neutral-200 dark:border-neutral-700">
                       <thead>
                         <tr>
                           <th
                             colSpan={4}
-                            className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-sm font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700"
+                            className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700"
                           >
                             Temperature Corrected Values
                           </th>
                         </tr>
                         <tr>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             0.5 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             1 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                             10 Min.
                           </th>
-                          <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700">
+                          <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700">
                             Unit
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                      <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                         {[
                           { id: "primaryToGround" },
                           { id: "secondaryToGround" },
                           { id: "primaryToSecondary" },
                         ].map((test) => (
                           <tr key={`${test.id}-corr`}>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -3002,10 +3004,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.halfMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -3013,10 +3015,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.oneMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
-                            <td className="px-1 py-1 border-r dark:border-zinc-700">
+                            <td className="px-1 py-1 border-r dark:border-neutral-700">
                               <input
                                 type="text"
                                 value={
@@ -3024,7 +3026,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.tenMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                             <td className="px-1 py-1">
@@ -3035,7 +3037,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.unit || "MΩ"
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                           </tr>
@@ -3046,35 +3048,35 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 </div>
 
                 {/* Dielectric Absorption and Polarization Index Table */}
-                <table className="w-full border border-zinc-200 dark:border-zinc-700">
-                  <thead className="bg-zinc-50 dark:bg-dark-150">
+                <table className="w-full border border-neutral-200 dark:border-neutral-700">
+                  <thead className="bg-neutral-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700 w-1/3">
+                      <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-1/3">
                         Calculated Values
                       </th>
-                      <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                      <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                         Primary
                       </th>
-                      <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                      <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                         Secondary
                       </th>
-                      <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700 border-r dark:border-zinc-700">
+                      <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
                         Pri-Sec
                       </th>
-                      <th className="px-2 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-700 dark:text-white border-b dark:border-zinc-700">
+                      <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700">
                         Acceptable
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                     <tr>
-                      <td className="px-2 py-2 text-sm text-zinc-900 dark:text-white border-r dark:border-zinc-700">
+                      <td className="px-2 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
                         Dielectric Absorption
-                        <div className="text-xs text-zinc-500 dark:text-white dark:text-white">
+                        <div className="text-xs text-neutral-500 dark:text-white dark:text-white">
                           (Ratio of 1 Min. to 0.5 Minute Result)
                         </div>
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3082,10 +3084,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3093,10 +3095,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3104,7 +3106,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1">
@@ -3115,26 +3117,26 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               .dielectricAbsorptionAcceptable
                           }
                           readOnly
-                          className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm ${
+                          className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
                             formData.insulationResistance
                               .dielectricAbsorptionAcceptable === "Yes"
                               ? "text-green-600 dark:text-green-400 font-medium"
                               : formData.insulationResistance
                                     .dielectricAbsorptionAcceptable === "No"
                                 ? "text-red-600 dark:text-red-400 font-medium"
-                                : "text-zinc-900 dark:text-white"
+                                : "text-neutral-900 dark:text-white"
                           }`}
                         />
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-2 text-sm text-zinc-900 dark:text-white border-r dark:border-zinc-700">
+                      <td className="px-2 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
                         Polarization Index
-                        <div className="text-xs text-zinc-500 dark:text-white dark:text-white">
+                        <div className="text-xs text-neutral-500 dark:text-white dark:text-white">
                           (Ratio of 10 Min. to 1 Min. Result)
                         </div>
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3142,10 +3144,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3153,10 +3155,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
-                      <td className="px-1 py-1 border-r dark:border-zinc-700">
+                      <td className="px-1 py-1 border-r dark:border-neutral-700">
                         <input
                           type="text"
                           value={
@@ -3164,7 +3166,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm text-zinc-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1">
@@ -3175,14 +3177,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               .polarizationIndexAcceptable
                           }
                           readOnly
-                          className={`w-full text-sm text-center rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm ${
+                          className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
                             formData.insulationResistance
                               .polarizationIndexAcceptable === "Yes"
                               ? "text-green-600 dark:text-green-400 font-medium"
                               : formData.insulationResistance
                                     .polarizationIndexAcceptable === "No"
                                 ? "text-red-600 dark:text-red-400 font-medium"
-                                : "text-zinc-900 dark:text-white"
+                                : "text-neutral-900 dark:text-white"
                           }`}
                         />
                       </td>
@@ -3195,14 +3197,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
             {/* Test Equipment Used */}
             <section className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Test Equipment Used
               </h2>
               <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
                 {/* Megohmmeter Section */}
-                <div className="grid grid-cols-4 gap-4 border-b dark:border-zinc-700 pb-4">
+                <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Megohmmeter
                     </label>
                     <EquipmentAutocomplete
@@ -3243,7 +3245,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Serial Number
                     </label>
                     <input
@@ -3256,11 +3258,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       AMP ID
                     </label>
                     <input
@@ -3273,11 +3275,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Cal Date
                     </label>
                     <input
@@ -3290,14 +3292,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                 </div>
               </div>
               {/* Print-only compact Test Equipment table */}
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print-comment-table">
                   <colgroup>
                     <col style={{ width: "30%" }} />
                     <col style={{ width: "25%" }} />
@@ -3306,26 +3308,26 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </colgroup>
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Megohmmeter</div>
                         <div className="mt-0">
                           {formData.testEquipment.megohmmeter.name || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Serial Number</div>
                         <div className="mt-0">
                           {formData.testEquipment.megohmmeter.serialNumber ||
                             ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">AMP ID</div>
                         <div className="mt-0">
                           {formData.testEquipment.megohmmeter.ampId || ""}
                         </div>
                       </td>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="font-semibold">Cal Date</div>
                         <div className="mt-0">
                           {formData.testEquipment.megohmmeter.calDate || ""}
@@ -3342,7 +3344,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
             >
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Comments
               </h2>
               <textarea
@@ -3350,14 +3352,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 onChange={(e) => handleChange(null, "comments", e.target.value)}
                 rows={4}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
+                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
               />
               {formData.comments?.trim() && (
                 <div className="hidden print:block">
-                  <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
+                  <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print-comment-table">
                     <tbody>
                       <tr>
-                        <td className="p-2 align-top border border-zinc-300 print:border-black">
+                        <td className="p-2 align-top border border-neutral-300 print:border-black">
                           <div className="mt-0 whitespace-pre-wrap break-words">
                             {formData.comments}
                           </div>

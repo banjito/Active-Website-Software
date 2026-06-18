@@ -43,7 +43,7 @@ const ToastContainer: React.FC<ToastProps> = ({
       case "info":
         return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
       default:
-        return "bg-white dark:bg-dark-150 border-zinc-200 dark:border-zinc-700";
+        return "bg-white dark:bg-dark-150 border-neutral-200 dark:border-neutral-700";
     }
   };
 
@@ -58,7 +58,7 @@ const ToastContainer: React.FC<ToastProps> = ({
       case "info":
         return <Info className="h-5 w-5 text-blue-500" />;
       default:
-        return <Info className="h-5 w-5 text-zinc-500 dark:text-white" />;
+        return <Info className="h-5 w-5 text-neutral-500 dark:text-white" />;
     }
   };
 
@@ -76,18 +76,18 @@ const ToastContainer: React.FC<ToastProps> = ({
       <div className="flex items-start">
         <div className="flex-shrink-0 mr-3 mt-0.5">{getIcon()}</div>
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             {title}
           </h3>
           {description && (
-            <div className="mt-1 text-sm text-zinc-700 dark:text-white">
+            <div className="mt-1 text-sm text-neutral-700 dark:text-white">
               {description}
             </div>
           )}
         </div>
         <button
           type="button"
-          className="ml-4 inline-flex flex-shrink-0 text-zinc-400 hover:text-zinc-500 focus:outline-none"
+          className="ml-4 inline-flex flex-shrink-0 text-neutral-400 hover:text-neutral-500 focus:outline-none"
           onClick={() => {
             setIsVisible(false);
             setTimeout(() => {

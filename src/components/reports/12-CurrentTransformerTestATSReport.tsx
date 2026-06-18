@@ -500,7 +500,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         .flex.items-center { display: inline-flex !important; margin-right: 10px !important; }
         section { page-break-inside: avoid !important; }
         .max-w-7xl { max-width: 100% !important; }
-        .border-b.dark\\:border-zinc-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
+        .border-b.dark\\:border-neutral-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
         section { margin-bottom: 2px !important; padding: 0 !important; }
         .print\\:flex { margin-bottom: 3px !important; }
         div[class*='print:border'] { border: none !important; box-shadow: none !important; background: transparent !important; }
@@ -1420,7 +1420,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           <div className="flex items-center">
             <label
               htmlFor={`ct-${item.topKey}`}
-              className="text-xs font-medium text-zinc-700 dark:text-white w-16"
+              className="text-xs font-medium text-neutral-700 dark:text-white w-16"
             >
               {item.label}:
             </label>
@@ -1437,13 +1437,13 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 handleChange(`ctIdentification.${item.topKey}`, e.target.value)
               }
               readOnly={!isEditing}
-              className={`ml-1 px-2 py-1 text-xs border border-zinc-300 dark:border-zinc-600 rounded w-16 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+              className={`ml-1 px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded w-16 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
             />
           </div>
           <div className="flex items-center">
             <label
               htmlFor={`ct-${item.serialKey}`}
-              className="text-xs font-medium text-zinc-700 dark:text-white w-16"
+              className="text-xs font-medium text-neutral-700 dark:text-white w-16"
             >
               Serial #:
             </label>
@@ -1463,7 +1463,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 )
               }
               readOnly={!isEditing}
-              className={`ml-1 px-2 py-1 text-xs border border-zinc-300 dark:border-zinc-600 rounded w-16 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+              className={`ml-1 px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded w-16 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
             />
           </div>
         </div>
@@ -1485,7 +1485,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     >
       <ReportWrapper isPrintMode={isPrintMode}>
         {/* Print Header - Only visible when printing */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
+        <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6 relative">
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
             alt="AMP Logo"
@@ -1545,7 +1545,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* Job Information Section */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             {/* Print-only table placed directly under the header */}
@@ -1569,37 +1569,37 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             <div className="grid grid-cols-2 gap-4 mb-8 print:hidden job-info-onscreen">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Job #
                   </label>
                   <input
                     type="text"
                     value={formData.jobNumber}
                     readOnly={true}
-                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Customer
                   </label>
                   <input
                     type="text"
                     value={maskCustomerName(formData.customerName)}
                     readOnly={true}
-                    className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
                   <div className="print:hidden">
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Address
                     </label>
                     <textarea
                       value={maskCustomerAddress(formData.customerAddress)}
                       readOnly={true}
                       rows={3}
-                      className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                      className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                     />
                   </div>
                   <div className="hidden print:flex print:items-baseline">
@@ -1627,7 +1627,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Identifier
                   </label>
                   <input
@@ -1635,14 +1635,14 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.identifier}
                     onChange={(e) => handleChange("identifier", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter Identifier"
                   />
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Technicians
                   </label>
                   <input
@@ -1652,11 +1652,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("technicians", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Substation
                   </label>
                   <input
@@ -1664,7 +1664,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.substation}
                     onChange={(e) => handleChange("substation", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 {/* Neutralized old print-only block (kept non-printing) */}
@@ -1688,7 +1688,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Equipment Location
                   </label>
                   <input
@@ -1698,11 +1698,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("eqptLocation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Date
                   </label>
                   <input
@@ -1710,11 +1710,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => handleChange("date", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     User
                   </label>
                   <input
@@ -1722,14 +1722,14 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.userName}
                     onChange={(e) => handleChange("userName", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter User Name"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       Temp. °F
                     </label>
                     <input
@@ -1739,11 +1739,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleFahrenheitChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       °C
                     </label>
                     <input
@@ -1753,18 +1753,18 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleCelsiusChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                       TCF
                     </label>
                     <input
                       type="number"
                       value={formData.temperature.tcf}
                       readOnly
-                      className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                      className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                     />
                   </div>
                 </div>
@@ -1774,10 +1774,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* Nameplate Data - print-only compact table */}
           <div className="mb-6 hidden print:block">
-            <h2 className="text-xl font-semibold mb-2 text-zinc-900 print:text-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-2 text-neutral-900 print:text-black print:font-bold">
               Device Data
             </h2>
-            <table className="w-full table-fixed border-collapse border border-zinc-200">
+            <table className="w-full table-fixed border-collapse border border-neutral-200">
               <colgroup>
                 <col style={{ width: "25%" }} />
                 <col style={{ width: "25%" }} />
@@ -1821,7 +1821,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* Device Data Section */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden device-onscreen">
@@ -1842,7 +1842,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.manufacturer", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1860,7 +1860,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.class", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1878,7 +1878,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.ctRatio", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1896,7 +1896,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.catalogNumber", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1917,7 +1917,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.voltageRating", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1935,7 +1935,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.polarityFacing", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1953,7 +1953,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.type", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1971,7 +1971,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("deviceData.frequency", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1980,11 +1980,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* Visual and Mechanical Inspection Section */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700 visual-mechanical-table">
+              <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700 visual-mechanical-table">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "58%" }} />
@@ -1993,16 +1993,16 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-200 dark:border-neutral-700">
                       NETA
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-200 dark:border-neutral-700">
                       Description
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-200 dark:border-neutral-700">
                       Result
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-200 dark:border-neutral-700">
                       Comments
                     </th>
                   </tr>
@@ -2010,13 +2010,13 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150">
                   {formData.visualMechanicalInspection.map((item, index) => (
                     <tr key={item.netaSection}>
-                      <td className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 align-top">
+                      <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top">
                         {item.netaSection}
                       </td>
-                      <td className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 align-top whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top whitespace-normal break-words">
                         {item.description}
                       </td>
-                      <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 align-top">
+                      <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 align-top">
                         <select
                           value={item.result}
                           onChange={(e) =>
@@ -2027,7 +2027,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionResultOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2042,7 +2042,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                           {item.result === "Select One" ? "" : item.result}
                         </span>
                       </td>
-                      <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 align-top">
+                      <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 align-top">
                         <input
                           type="text"
                           value={item.comments || ""}
@@ -2054,7 +2054,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           placeholder="Enter comments..."
                         />
                         <span
@@ -2073,14 +2073,14 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* CT Identification Section */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               CT Identification
             </h2>
             <div className="print:hidden ct-ident-onscreen">
               {renderCtIdentification()}
             </div>
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                 <tbody>
                   <tr>
                     <td>{`Phase 1: ${formData.ctIdentification.phase1 || ""}`}</td>
@@ -2101,14 +2101,14 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
           {/* Electrical Tests Section */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests
             </h2>
 
             {/* Ratio and Polarity Table */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100">
+                <h3 className="text-lg font-medium text-neutral-800 dark:text-neutral-100">
                   Ratio and Polarity
                 </h3>
                 {isEditing && (
@@ -2152,7 +2152,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     <col style={{ width: "10%" }} />
                     <col style={{ width: "28%" }} />
                   </colgroup>
-                  <thead className="bg-zinc-50 dark:bg-dark-150">
+                  <thead className="bg-neutral-50 dark:bg-dark-150">
                     <tr>
                       {[
                         "Identifier",
@@ -2169,7 +2169,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       ].map((header) => (
                         <th
                           key={header}
-                          className="px-2 py-3 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                          className="px-2 py-3 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                         >
                           {header === "Test Current" ||
                           header === "Test Voltage" ? (
@@ -2217,7 +2217,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                     {formData.electricalTests.ratioPolarity.map(
                       (item, index) => (
                         <tr key={item.id}>
@@ -2233,7 +2233,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2248,7 +2248,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2268,7 +2268,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                   ? "Enter voltage"
                                   : "Enter current"
                               }
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2283,7 +2283,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2298,7 +2298,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2313,7 +2313,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2328,7 +2328,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-2 py-2">
@@ -2342,7 +2342,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             >
                               <option value="Select One" disabled>
                                 Select One
@@ -2372,34 +2372,34 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
             {/* Primary Winding Insulation Table */}
             <div>
-              <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-100">
+              <h3 className="text-lg font-medium mb-2 text-neutral-800 dark:text-neutral-100">
                 Primary Winding - 1 min. Insulation Resistance to Ground
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-300 dark:border-zinc-600">
-                  <thead className="bg-zinc-50 dark:bg-dark-150">
+                <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-300 dark:border-neutral-600">
+                  <thead className="bg-neutral-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-nowrap">
                         Test Voltage
                       </th>
                       {["Phase 1", "Phase 2", "Phase 3", "Neutral"].map(
                         (header) => (
                           <th
                             key={header}
-                            className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                            className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                           >
                             {header}
                           </th>
                         ),
                       )}
-                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                         Units
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                     <tr>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-zinc-700 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-700 dark:text-white">
                         <select
                           value={
                             formData.electricalTests.primaryWindingInsulation
@@ -2412,7 +2412,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select inline-block w-auto p-1 text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select inline-block w-auto p-1 text-xs ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {insulationTestVoltageOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2461,7 +2461,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       ))}
@@ -2478,7 +2478,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {insulationResistanceUnitOptions.map((option) => (
                             <option key={option.symbol} value={option.symbol}>
@@ -2498,7 +2498,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-zinc-700 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-700 dark:text-white">
                         Temp. Correction 20°C
                       </td>
                       {[
@@ -2516,7 +2516,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                               ]
                             }
                             readOnly
-                            className="form-input w-full text-center bg-zinc-100 dark:bg-dark-150"
+                            className="form-input w-full text-center bg-neutral-100 dark:bg-dark-150"
                           />
                         </td>
                       ))}
@@ -2534,34 +2534,34 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
             {/* Secondary Winding Insulation Table */}
             <div>
-              <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-100">
+              <h3 className="text-lg font-medium mb-2 text-neutral-800 dark:text-neutral-100">
                 Secondary Winding - 1 min. Insulation Resistance to Ground
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-300 dark:border-zinc-600">
-                  <thead className="bg-zinc-50 dark:bg-dark-150">
+                <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-300 dark:border-neutral-600">
+                  <thead className="bg-neutral-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-nowrap">
                         Test Voltage
                       </th>
                       {["Phase 1", "Phase 2", "Phase 3", "Neutral"].map(
                         (header) => (
                           <th
                             key={header}
-                            className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                            className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                           >
                             {header}
                           </th>
                         ),
                       )}
-                      <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                         Units
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                     <tr>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-zinc-700 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-700 dark:text-white">
                         <select
                           value={
                             formData.electricalTests.secondaryWindingInsulation
@@ -2574,7 +2574,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select inline-block w-auto p-1 text-xs ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select inline-block w-auto p-1 text-xs ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {insulationTestVoltageOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2624,7 +2624,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       ))}
@@ -2641,7 +2641,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {insulationResistanceUnitOptions.map((option) => (
                             <option key={option.symbol} value={option.symbol}>
@@ -2661,7 +2661,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-zinc-700 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-700 dark:text-white">
                         Temp. Correction 20°C
                       </td>
                       {[
@@ -2680,7 +2680,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                               ]
                             }
                             readOnly
-                            className="form-input w-full text-center bg-zinc-100 dark:bg-dark-150"
+                            className="form-input w-full text-center bg-neutral-100 dark:bg-dark-150"
                           />
                         </td>
                       ))}
@@ -2701,7 +2701,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           <div className="mb-6 page-break-before">
             <h2
               id="equipment-heading"
-              className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold"
+              className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold"
             >
               Test Equipment Used
             </h2>
@@ -2774,7 +2774,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2795,7 +2795,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2816,7 +2816,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2839,7 +2839,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2860,7 +2860,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2881,7 +2881,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2902,14 +2902,14 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
             </div>
             {/* Print-only test equipment table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
                     <th>Equipment</th>
@@ -2945,7 +2945,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           >
             <h2
               id="comments-heading"
-              className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold"
+              className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold"
             >
               Comments
             </h2>
@@ -2954,7 +2954,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               onChange={(e) => handleChange("comments", e.target.value)}
               readOnly={!isEditing}
               rows={6}
-              className={`form-textarea w-full print:hidden ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+              className={`form-textarea w-full print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               placeholder="Enter comments here..."
             />
             {formData.comments?.trim() && (

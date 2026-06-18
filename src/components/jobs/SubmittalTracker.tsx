@@ -302,7 +302,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
     switch (category) {
       case "not_started":
         return (
-          <FileText className="w-5 h-5 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+          <FileText className="w-5 h-5 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
         );
       case "in_progress":
         return (
@@ -335,7 +335,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
     switch (category) {
       case "not_started":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400">
             Not Started
           </span>
         );
@@ -412,13 +412,13 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       } else {
         return (
           baseClass +
-          "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
+          "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
         );
       }
     }
     return (
       baseClass +
-      "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+      "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
     );
   };
 
@@ -484,10 +484,10 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Remote Submittal Tracking
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {getJobTypeLabel()} • {windowDays} day window (from submission to
             delivery)
           </p>
@@ -495,10 +495,10 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       </div>
 
       {/* KPI Card - On-Time Delivery */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-8">
+      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wide mb-2">
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide mb-2">
               On-Time Delivery
             </p>
             <p
@@ -512,32 +512,32 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {counts.sent_on_time}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Sent on time
               </p>
             </div>
-            <div className="w-px h-12 bg-zinc-200 dark:bg-zinc-700"></div>
+            <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700"></div>
             <div>
               <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                 {counts.sent_late}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Sent late
               </p>
             </div>
-            <div className="w-px h-12 bg-zinc-200 dark:bg-zinc-700"></div>
+            <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700"></div>
             <div>
-              <p className="text-3xl font-bold text-zinc-600 dark:text-zinc-400">
+              <p className="text-3xl font-bold text-neutral-600 dark:text-neutral-400">
                 {totalReports - counts.sent_on_time - counts.sent_late}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Pending
               </p>
             </div>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             {counts.sent_on_time + counts.sent_late > 0 ? (
               <>
                 {counts.sent_on_time} of{" "}
@@ -552,7 +552,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex space-x-1 bg-zinc-100 dark:bg-dark-150 p-1 rounded-lg overflow-x-auto">
+      <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg overflow-x-auto">
         {statusFilters.map((filter) => (
           <button
             key={filter.key}
@@ -566,28 +566,28 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
 
       {/* Report List */}
       {filteredReports.length > 0 && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
-          <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white uppercase tracking-wide">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wide">
               Report Status
             </h3>
           </div>
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+          <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {filteredReports.map((status) => (
               <div
                 key={status.assetId}
-                className="px-6 py-4 hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
+                className="px-6 py-4 hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {getCategoryIcon(status.category)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                         {status.assetName}
                       </p>
 
                       {/* Timestamps section */}
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 space-y-0.5">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 space-y-0.5">
                         {status.createdAt && (
                           <p>Created: {formatDateTime(status.createdAt)}</p>
                         )}
@@ -599,7 +599,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                             Approved: {formatDateTime(status.approvedAt)}
                             {status.hoursToApproved !== null &&
                               status.hoursToApproved > 0 && (
-                                <span className="ml-2 text-zinc-400">
+                                <span className="ml-2 text-neutral-400">
                                   ({formatHours(status.hoursToApproved)} to
                                   approve)
                                 </span>
@@ -611,7 +611,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                             {editingAssetId === status.assetId ? (
                               // Inline editing mode
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-zinc-500 dark:text-zinc-400">
+                                <span className="text-neutral-500 dark:text-neutral-400">
                                   Sent:
                                 </span>
                                 <input
@@ -620,7 +620,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                                   onChange={(e) =>
                                     setEditingSentDate(e.target.value)
                                   }
-                                  className="px-2 py-0.5 text-xs border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                                  className="px-2 py-0.5 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                                 />
                                 <input
                                   type="time"
@@ -628,7 +628,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                                   onChange={(e) =>
                                     setEditingSentTime(e.target.value)
                                   }
-                                  className="px-2 py-0.5 text-xs border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                                  className="px-2 py-0.5 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                                 />
                                 <button
                                   onClick={handleSaveSentDate}
@@ -641,7 +641,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                                 <button
                                   onClick={handleCancelEdit}
                                   disabled={isSaving}
-                                  className="p-0.5 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                                  className="p-0.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
                                   title="Cancel"
                                 >
                                   <X className="w-4 h-4" />
@@ -666,7 +666,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                                         status.sentAt,
                                       )
                                     }
-                                    className="ml-2 p-0.5 text-zinc-400 hover:text-[#f26722] dark:hover:text-[#f26722] transition-colors"
+                                    className="ml-2 p-0.5 text-neutral-400 hover:text-[#f26722] dark:hover:text-[#f26722] transition-colors"
                                     title="Edit sent date"
                                   >
                                     <Pencil className="w-3 h-3" />
@@ -695,7 +695,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                         {status.usingFallback &&
                           (status.category === "sent_on_time" ||
                             status.category === "sent_late") && (
-                            <p className="text-zinc-400 italic">
+                            <p className="text-neutral-400 italic">
                               * Time calculated from approval (no submission
                               date recorded)
                             </p>
@@ -711,7 +711,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                         Critical
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                         Normal
                       </span>
                     )}
@@ -724,8 +724,8 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       )}
 
       {filteredReports.length === 0 && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-8 text-center">
-          <p className="text-zinc-500 dark:text-zinc-400">
+        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8 text-center">
+          <p className="text-neutral-500 dark:text-neutral-400">
             No reports in this category
           </p>
         </div>

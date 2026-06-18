@@ -646,8 +646,8 @@ const VendorManagement: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-        <span className="ml-2 text-zinc-500">
+        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        <span className="ml-2 text-neutral-500">
           <LoadingSpinner size="md" />
         </span>
       </div>
@@ -688,7 +688,7 @@ const VendorManagement: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="relative flex-1">
               <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
                 size={18}
               />
               <Input
@@ -765,13 +765,13 @@ const VendorManagement: React.FC = () => {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-              <span className="ml-2 text-zinc-500">
+              <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+              <span className="ml-2 text-neutral-500">
                 <LoadingSpinner size="md" />
               </span>
             </div>
           ) : paginatedVendors.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500">
+            <div className="text-center py-12 text-neutral-500">
               {vendors.length === 0 ? (
                 <div>
                   <p className="mb-4">No vendors have been added yet.</p>
@@ -785,27 +785,27 @@ const VendorManagement: React.FC = () => {
               )}
             </div>
           ) : (
-            <ul className="divide-y divide-zinc-200 dark:divide-zinc-700">
+            <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {paginatedVendors.map((vendor) => (
                 <li
                   key={vendor.id}
                   onClick={() => setSelectedVendor(vendor)}
-                  className={`px-6 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer transition-colors ${
+                  className={`px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 cursor-pointer transition-colors ${
                     !vendor.active ? "opacity-75" : ""
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1 min-w-0">
                       <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center">
-                          <span className="text-zinc-500 dark:text-white text-lg font-medium">
+                        <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                          <span className="text-neutral-500 dark:text-white text-lg font-medium">
                             {vendor.company_name?.charAt(0) || "V"}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <div className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                             {vendor.company_name}
                           </div>
                           {!vendor.active && (
@@ -821,14 +821,14 @@ const VendorManagement: React.FC = () => {
                                   className={`h-3 w-3 ${
                                     i < vendor.rating
                                       ? "fill-amber-400 text-amber-400"
-                                      : "text-zinc-300"
+                                      : "text-neutral-300"
                                   }`}
                                 />
                               ))}
                             </div>
                           )}
                         </div>
-                        <div className="mt-1 flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                        <div className="mt-1 flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
                           {vendor.email && (
                             <span className="truncate">{vendor.email}</span>
                           )}
@@ -870,7 +870,7 @@ const VendorManagement: React.FC = () => {
                           e.stopPropagation();
                           openEditVendor(vendor);
                         }}
-                        className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                        className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
                       >
                         <Pencil className="h-5 w-5" />
                       </button>
@@ -880,7 +880,7 @@ const VendorManagement: React.FC = () => {
                           e.stopPropagation();
                           handleDeleteVendor(vendor);
                         }}
-                        className="text-zinc-400 hover:text-red-500 dark:hover:text-red-400"
+                        className="text-neutral-400 hover:text-red-500 dark:hover:text-red-400"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -896,7 +896,7 @@ const VendorManagement: React.FC = () => {
       {/* Pagination Controls */}
       {!loading && paginatedVendors.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             Showing {startIndex + 1} to{" "}
             {Math.min(endIndex, filteredVendorsByTab.length)} of{" "}
             {filteredVendorsByTab.length} vendors
@@ -910,7 +910,7 @@ const VendorManagement: React.FC = () => {
             >
               Previous
             </Button>
-            <span className="text-sm text-zinc-600 dark:text-white">
+            <span className="text-sm text-neutral-600 dark:text-white">
               Page {page} of {totalPages || 1}
             </span>
             <Button
@@ -978,7 +978,7 @@ const VendorManagement: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   Primary vendor category
                 </p>
               </div>
@@ -1330,23 +1330,23 @@ const VendorManagement: React.FC = () => {
                   </h4>
                   <div className="space-y-2 text-sm">
                     <p>
-                      <span className="text-zinc-500">Categories:</span>{" "}
+                      <span className="text-neutral-500">Categories:</span>{" "}
                       {(selectedVendor.category || []).join(", ") || "None"}
                     </p>
                     <p>
-                      <span className="text-zinc-500">Phone:</span>{" "}
+                      <span className="text-neutral-500">Phone:</span>{" "}
                       {selectedVendor.phone || "N/A"}
                     </p>
                     <p>
-                      <span className="text-zinc-500">Email:</span>{" "}
+                      <span className="text-neutral-500">Email:</span>{" "}
                       {selectedVendor.email || "N/A"}
                     </p>
                     <p>
-                      <span className="text-zinc-500">Website:</span>{" "}
+                      <span className="text-neutral-500">Website:</span>{" "}
                       {selectedVendor.website || "N/A"}
                     </p>
                     <p>
-                      <span className="text-zinc-500">Address:</span>{" "}
+                      <span className="text-neutral-500">Address:</span>{" "}
                       {[
                         selectedVendor.address_street,
                         selectedVendor.address_city,
@@ -1357,13 +1357,13 @@ const VendorManagement: React.FC = () => {
                         .join(", ") || "N/A"}
                     </p>
                     <p>
-                      <span className="text-zinc-500">Rating:</span>{" "}
+                      <span className="text-neutral-500">Rating:</span>{" "}
                       {"★".repeat(selectedVendor.rating || 0)}
                       {"☆".repeat(5 - (selectedVendor.rating || 0))}
                     </p>
                     {selectedVendor.notes && (
                       <p>
-                        <span className="text-zinc-500">Notes:</span>{" "}
+                        <span className="text-neutral-500">Notes:</span>{" "}
                         {selectedVendor.notes}
                       </p>
                     )}
@@ -1384,13 +1384,15 @@ const VendorManagement: React.FC = () => {
                     </Button>
                   </div>
                   {(selectedVendor.contacts || []).length === 0 ? (
-                    <p className="text-sm text-zinc-500">No contacts added.</p>
+                    <p className="text-sm text-neutral-500">
+                      No contacts added.
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {(selectedVendor.contacts || []).map((contact) => (
                         <div
                           key={contact.id}
-                          className="border dark:border-zinc-700 rounded p-2 text-sm"
+                          className="border dark:border-neutral-700 rounded p-2 text-sm"
                         >
                           <div className="flex justify-between">
                             <span className="font-medium dark:text-white">
@@ -1402,10 +1404,10 @@ const VendorManagement: React.FC = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-400">
+                          <p className="text-neutral-600 dark:text-neutral-400">
                             {contact.title}
                           </p>
-                          <p className="dark:text-zinc-300">
+                          <p className="dark:text-neutral-300">
                             {contact.email} • {contact.phone}
                           </p>
                         </div>
@@ -1447,10 +1449,10 @@ const VendorManagement: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="border dark:border-zinc-700 rounded-lg overflow-hidden">
+          <div className="border dark:border-neutral-700 rounded-lg overflow-hidden">
             <div className="max-h-[400px] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="bg-zinc-50 dark:bg-dark-200 sticky top-0">
+                <thead className="bg-neutral-50 dark:bg-dark-200 sticky top-0">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium dark:text-white">
                       Company Name
@@ -1469,25 +1471,25 @@ const VendorManagement: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {importPreview.map((vendor, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-zinc-50 dark:hover:bg-dark-100"
+                      className="hover:bg-neutral-50 dark:hover:bg-dark-100"
                     >
                       <td className="px-3 py-2 font-medium dark:text-white">
                         {vendor.company_name}
                       </td>
-                      <td className="px-3 py-2 dark:text-zinc-300">
+                      <td className="px-3 py-2 dark:text-neutral-300">
                         {vendor.address_city || "-"}
                       </td>
-                      <td className="px-3 py-2 dark:text-zinc-300">
+                      <td className="px-3 py-2 dark:text-neutral-300">
                         {vendor.address_state || "-"}
                       </td>
-                      <td className="px-3 py-2 dark:text-zinc-300">
+                      <td className="px-3 py-2 dark:text-neutral-300">
                         {vendor.phone || "-"}
                       </td>
-                      <td className="px-3 py-2 dark:text-zinc-300">
+                      <td className="px-3 py-2 dark:text-neutral-300">
                         {vendor.email || "-"}
                       </td>
                     </tr>

@@ -102,12 +102,12 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
             </div>
 
             <div className="max-w-3xl mx-auto">
-              <div className="mb-6 p-6 bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-100 dark:border-dark-300">
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-3 flex items-center">
+              <div className="mb-6 p-6 bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-100 dark:border-dark-300">
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-3 flex items-center">
                   <Check className="w-5 h-5 mr-2 text-green-500" />
                   Your account has been created
                 </h3>
-                <p className="text-zinc-600 dark:text-white mb-4">
+                <p className="text-neutral-600 dark:text-white mb-4">
                   {isNewUser
                     ? "Welcome to the AMP Portal System! Your account has been created and your admin has been notified."
                     : "Welcome back to the AMP Portal System!"}
@@ -119,10 +119,10 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <Globe className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                      <h4 className="font-medium text-neutral-900 dark:text-white">
                         Explore Our Portals
                       </h4>
-                      <p className="text-sm text-zinc-600 dark:text-white">
+                      <p className="text-sm text-neutral-600 dark:text-white">
                         Access a variety of specialized portals designed for
                         different aspects of our operations.
                       </p>
@@ -134,10 +134,10 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <ArrowRight className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                      <h4 className="font-medium text-neutral-900 dark:text-white">
                         Complete Your Profile
                       </h4>
-                      <p className="text-sm text-zinc-600 dark:text-white">
+                      <p className="text-sm text-neutral-600 dark:text-white">
                         Enhance your experience by updating your profile
                         information and preferences.
                       </p>
@@ -149,10 +149,10 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                       <Briefcase className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-zinc-900 dark:text-white">
+                      <h4 className="font-medium text-neutral-900 dark:text-white">
                         Access Your Tools
                       </h4>
-                      <p className="text-sm text-zinc-600 dark:text-white">
+                      <p className="text-sm text-neutral-600 dark:text-white">
                         Use our specialized tools and resources to enhance your
                         productivity and efficiency.
                       </p>

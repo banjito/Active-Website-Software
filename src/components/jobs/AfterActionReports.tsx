@@ -442,7 +442,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         return (
           <Badge
             variant="secondary"
-            className="bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+            className="bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300"
           >
             <Clock className="w-3 h-3 mr-1" />
             Draft
@@ -517,13 +517,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Project Information
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3">
                 Technician Name
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.technician_name || ""}
                   onChange={(e) =>
@@ -535,10 +535,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Date
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="date"
                   value={formData.report_date || ""}
@@ -551,10 +551,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Project / Job Number
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.project_job_number || ""}
                   onChange={(e) =>
@@ -566,10 +566,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Client / Site Name
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={maskCustomerName(formData.client_site_name)}
                   onChange={(e) =>
@@ -581,10 +581,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Phase / Scope Completed
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.phase_scope_completed || ""}
                   onChange={(e) =>
@@ -596,10 +596,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Crew Size / Roles (observed)
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.crew_size_roles || ""}
                   onChange={(e) =>
@@ -619,13 +619,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Safety & Incidents
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3">
                 Safety Incident?
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-1 cursor-pointer text-sm">
                     <input
@@ -637,7 +637,9 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                       disabled={!isEditMode}
                       className="w-3 h-3"
                     />
-                    <span className="text-zinc-700 dark:text-white">Yes</span>
+                    <span className="text-neutral-700 dark:text-white">
+                      Yes
+                    </span>
                   </label>
                   <label className="flex items-center gap-1 cursor-pointer text-sm">
                     <input
@@ -649,16 +651,16 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                       disabled={!isEditMode}
                       className="w-3 h-3"
                     />
-                    <span className="text-zinc-700 dark:text-white">No</span>
+                    <span className="text-neutral-700 dark:text-white">No</span>
                   </label>
                 </div>
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white align-top">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white align-top">
                 Incident Description
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <textarea
                   value={formData.incident_description || ""}
                   onChange={(e) =>
@@ -666,15 +668,15 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                   }
                   disabled={!isEditMode}
                   rows={1}
-                  className="w-full p-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-100 dark:text-white"
+                  className="w-full p-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-100 dark:text-white"
                 />
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white align-top">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white align-top">
                 Near Misses / Hazards Observed
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <textarea
                   value={formData.near_misses_hazards || ""}
                   onChange={(e) =>
@@ -682,7 +684,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                   }
                   disabled={!isEditMode}
                   rows={1}
-                  className="w-full p-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-100 dark:text-white"
+                  className="w-full p-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-100 dark:text-white"
                 />
               </td>
             </tr>
@@ -695,13 +697,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Project Notes
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3">
                 Delays Encountered
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.delays_encountered || ""}
                   onChange={(e) =>
@@ -713,10 +715,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Scope Changes
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.scope_changes || ""}
                   onChange={(e) =>
@@ -728,10 +730,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Equipment Issues
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.equipment_issues || ""}
                   onChange={(e) =>
@@ -743,10 +745,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Coordination Issues
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.coordination_issues || ""}
                   onChange={(e) =>
@@ -766,13 +768,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Time Allocation (approximate)
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <thead>
             <tr>
-              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-left text-zinc-700 dark:text-white font-semibold w-1/3">
+              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-left text-neutral-700 dark:text-white font-semibold w-1/3">
                 Category
               </th>
-              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-left text-zinc-700 dark:text-white font-semibold">
+              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-left text-neutral-700 dark:text-white font-semibold">
                 Hours
               </th>
             </tr>
@@ -780,10 +782,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
           <tbody>
             {(formData.time_allocation || []).map((item, index) => (
               <tr key={index}>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                   {item.category}
                 </td>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                   <Input
                     type="text"
                     value={item.hours}
@@ -819,13 +821,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Work Summary
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3">
                 Estimated Hours
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -842,10 +844,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Total Hours Worked
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -862,10 +864,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Variance (+/-)
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -882,10 +884,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Crew Size / Roles (confirmed)
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.crew_size_roles_confirmed || ""}
                   onChange={(e) =>
@@ -908,13 +910,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Cost Reconciliation
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3">
                 Labor Cost Total
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -931,10 +933,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Materials Cost Total
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -951,10 +953,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Rental Cost Total
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -971,10 +973,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white font-semibold">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white font-semibold">
                 Finalized Project Cost
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   type="number"
                   step="0.01"
@@ -999,13 +1001,13 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <h4 className="text-sm font-semibold text-[#1e5091] dark:text-blue-400 mb-1">
           Administrative Notes & Approval
         </h4>
-        <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-sm">
+        <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-sm">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white w-1/3 align-top">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white w-1/3 align-top">
                 Adjustments to Technician Report
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <textarea
                   value={formData.adjustments_to_technician_report || ""}
                   onChange={(e) =>
@@ -1016,15 +1018,15 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                   }
                   disabled={!isEditMode}
                   rows={2}
-                  className="w-full p-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-100 dark:text-white"
+                  className="w-full p-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-100 dark:text-white"
                 />
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white align-top">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white align-top">
                 Notes for Project Manager / Estimator
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <textarea
                   value={formData.notes_for_project_manager || ""}
                   onChange={(e) =>
@@ -1035,15 +1037,15 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                   }
                   disabled={!isEditMode}
                   rows={2}
-                  className="w-full p-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-100 dark:text-white"
+                  className="w-full p-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-100 dark:text-white"
                 />
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Admin Name
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                 <Input
                   value={formData.admin_name || ""}
                   onChange={(e) =>
@@ -1055,10 +1057,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
               </td>
             </tr>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 Submission Timestamp
               </td>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-zinc-700 dark:text-white">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-neutral-700 dark:text-white">
                 {formData.admin_submission_timestamp
                   ? format(
                       new Date(formData.admin_submission_timestamp),
@@ -1078,10 +1080,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
       {/* Header with action buttons */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             After-Action Reports
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Document project progress and close-out information
           </p>
         </div>
@@ -1113,7 +1115,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
       ) : reports.length === 0 ? (
         <Card className="dark:bg-dark-150">
           <CardContent className="py-12">
-            <div className="text-center text-zinc-500 dark:text-zinc-400">
+            <div className="text-center text-neutral-500 dark:text-neutral-400">
               <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No After-Action Reports Yet</p>
               <p className="text-sm mt-2">
@@ -1137,12 +1139,12 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                       {getStatusBadge(report.status)}
                     </div>
                     <div>
-                      <h3 className="font-medium text-zinc-900 dark:text-white">
+                      <h3 className="font-medium text-neutral-900 dark:text-white">
                         {report.report_type === "technician_progress"
                           ? "Technician Progress Report"
                           : "Admin Close-out Report"}
                       </h3>
-                      <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                      <div className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                         {report.technician_name && (
                           <span>By {report.technician_name} • </span>
                         )}
@@ -1167,7 +1169,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewReport(report)}
-                      className="text-zinc-600 dark:text-zinc-300"
+                      className="text-neutral-600 dark:text-neutral-300"
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View
@@ -1236,7 +1238,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                 setIsCreateDialogOpen(false);
                 setIsViewDialogOpen(false);
               }}
-              className="dark:text-white dark:border-zinc-600"
+              className="dark:text-white dark:border-neutral-600"
             >
               {isEditMode ? "Cancel" : "Close"}
             </Button>

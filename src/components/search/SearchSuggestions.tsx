@@ -91,7 +91,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     if (parts.length > 1) {
       return (
         <>
-          <span className="text-xs text-zinc-500 dark:text-dark-400 mr-1">
+          <span className="text-xs text-neutral-500 dark:text-dark-400 mr-1">
             {parts[0]}:
           </span>
           <span>{parts.slice(1).join(":")}</span>
@@ -107,11 +107,11 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   }
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-200 dark:border-dark-300">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300">
       {loading ? (
         <div className="p-3 text-center">
           <LoadingSpinner size="xs" />
-          <span className="ml-2 text-sm text-zinc-500 dark:text-dark-400">
+          <span className="ml-2 text-sm text-neutral-500 dark:text-dark-400">
             Searching...
           </span>
         </div>
@@ -121,13 +121,13 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
             <div
               key={index}
               onClick={() => handleSelectSuggestion(suggestion)}
-              className="flex items-center px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
+              className="flex items-center px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
             >
               <SearchIcon
                 size={16}
-                className="text-zinc-400 dark:text-dark-500 mr-2"
+                className="text-neutral-400 dark:text-dark-500 mr-2"
               />
-              <span className="text-sm text-zinc-800 dark:text-dark-200">
+              <span className="text-sm text-neutral-800 dark:text-dark-200">
                 {formatSuggestion(suggestion)}
               </span>
             </div>
@@ -136,10 +136,10 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
           {/* Show search by query option */}
           <div
             onClick={() => handleSelectSuggestion(query)}
-            className="flex items-center px-3 py-2 mt-1 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer rounded-md border-t border-zinc-200 dark:border-dark-300"
+            className="flex items-center px-3 py-2 mt-1 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-md border-t border-neutral-200 dark:border-dark-300"
           >
             <SearchIcon size={16} className="text-[#f26722] mr-2" />
-            <span className="text-sm text-zinc-800 dark:text-dark-200">
+            <span className="text-sm text-neutral-800 dark:text-dark-200">
               Search for "{query}"
             </span>
           </div>

@@ -512,10 +512,10 @@ export default function FieldTechJobsPage() {
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       <div className="mb-6 sm:mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-zinc-900 dark:text-dark-900">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-dark-900">
             All Field Tech Jobs
           </h1>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-zinc-600 dark:text-dark-400">
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-600 dark:text-dark-400">
             Aggregated from Alabama, Tennessee, Georgia, and International
           </p>
         </div>
@@ -568,7 +568,7 @@ export default function FieldTechJobsPage() {
           <LoadingSpinner size="md" />
         </div>
       ) : jobs.length === 0 ? (
-        <div className="text-zinc-500">No jobs found.</div>
+        <div className="text-neutral-500">No jobs found.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {jobs.map((job) => (
@@ -579,16 +579,16 @@ export default function FieldTechJobsPage() {
                     <p className="font-medium text-[#f26722] truncate">
                       {maskJobTitle(job.title)}
                     </p>
-                    <p className="text-xs text-zinc-600 dark:text-white mt-1 truncate">
+                    <p className="text-xs text-neutral-600 dark:text-white mt-1 truncate">
                       {maskCustomerName(
                         job.customers?.company_name || job.customers?.name,
                       ) || "No customer"}
                     </p>
-                    <div className="mt-2 text-xs text-zinc-500 dark:text-white">
+                    <div className="mt-2 text-xs text-neutral-500 dark:text-white">
                       Division: {job.division}
                     </div>
                   </div>
-                  <div className="ml-3 flex items-center text-xs text-zinc-500 dark:text-white">
+                  <div className="ml-3 flex items-center text-xs text-neutral-500 dark:text-white">
                     <BriefcaseIcon className="h-4 w-4 mr-1" />
                     {job.job_number || "N/A"}
                   </div>
@@ -629,7 +629,7 @@ export default function FieldTechJobsPage() {
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
-                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-zinc-200"
+                className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-neutral-200"
                 onClick={() => {
                   setShowTMModal(false);
                   setShowNewCustomer(false);
@@ -654,7 +654,7 @@ export default function FieldTechJobsPage() {
               </button>
             </div>
 
-            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
               Add T&M Opportunity
             </Dialog.Title>
 
@@ -662,12 +662,12 @@ export default function FieldTechJobsPage() {
               {showNewCustomer && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
+                    <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Customer
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-zinc-600 dark:text-zinc-400"
+                      className="text-xs text-neutral-600 dark:text-neutral-400"
                       onClick={() => setShowNewCustomer(false)}
                     >
                       Cancel
@@ -749,12 +749,12 @@ export default function FieldTechJobsPage() {
               {showNewContact && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-zinc-800 dark:text-white">
+                    <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Contact
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-zinc-600 dark:text-zinc-400"
+                      className="text-xs text-neutral-600 dark:text-neutral-400"
                       onClick={() => setShowNewContact(false)}
                     >
                       Cancel
@@ -823,7 +823,7 @@ export default function FieldTechJobsPage() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Customer *
                 </label>
                 <input
@@ -831,10 +831,10 @@ export default function FieldTechJobsPage() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
-                  <div className="text-xs text-zinc-600 dark:text-white mb-1">
+                  <div className="text-xs text-neutral-600 dark:text-white mb-1">
                     Selected:{" "}
                     {customers.find((c) => c.id === TMFormData.customer_id)
                       ?.company_name ||
@@ -852,7 +852,7 @@ export default function FieldTechJobsPage() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-zinc-300 dark:border-zinc-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = TMFormData.customer_id === customer.id;
                     return (
@@ -869,8 +869,8 @@ export default function FieldTechJobsPage() {
                         }}
                         className={`w-full text-left px-3 py-2 text-sm ${
                           isSelected
-                            ? "bg-orange-50 text-zinc-900 dark:bg-orange-900/20 dark:text-white"
-                            : "hover:bg-zinc-50 dark:hover:bg-dark-200 text-zinc-700 dark:text-zinc-200"
+                            ? "bg-orange-50 text-neutral-900 dark:bg-orange-900/20 dark:text-white"
+                            : "hover:bg-neutral-50 dark:hover:bg-dark-200 text-neutral-700 dark:text-neutral-200"
                         }`}
                       >
                         {customer.company_name || customer.name}
@@ -878,7 +878,7 @@ export default function FieldTechJobsPage() {
                     );
                   })}
                   {filteredCustomers.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-zinc-500 dark:text-white">
+                    <div className="px-3 py-2 text-sm text-neutral-500 dark:text-white">
                       No matches
                     </div>
                   )}
@@ -903,14 +903,14 @@ export default function FieldTechJobsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Contact
                 </label>
                 <select
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -939,7 +939,7 @@ export default function FieldTechJobsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Title *
                 </label>
                 <input
@@ -947,20 +947,20 @@ export default function FieldTechJobsPage() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Division *
                 </label>
                 <select
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -994,7 +994,7 @@ export default function FieldTechJobsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Description
                 </label>
                 <textarea
@@ -1002,7 +1002,7 @@ export default function FieldTechJobsPage() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>
@@ -1010,7 +1010,7 @@ export default function FieldTechJobsPage() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => {
                     setShowTMModal(false);
                     setShowNewCustomer(false);

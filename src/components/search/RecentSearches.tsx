@@ -85,8 +85,8 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
   // If there are no recent searches, don't render anything
   if (recentSearches.length === 0) {
     return (
-      <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-200 dark:border-dark-300 p-3">
-        <div className="text-sm text-zinc-500 dark:text-dark-400 italic">
+      <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300 p-3">
+        <div className="text-sm text-neutral-500 dark:text-dark-400 italic">
           No recent searches
         </div>
       </div>
@@ -94,14 +94,14 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
   }
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-200 dark:border-dark-300">
-      <div className="flex items-center justify-between p-3 border-b border-zinc-200 dark:border-dark-300">
-        <h3 className="text-sm font-medium text-zinc-700 dark:text-dark-300">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300">
+      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-dark-300">
+        <h3 className="text-sm font-medium text-neutral-700 dark:text-dark-300">
           Recent Searches
         </h3>
         <button
           onClick={clearAllRecentSearches}
-          className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
+          className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-dark-400 dark:hover:text-dark-300"
         >
           Clear All
         </button>
@@ -112,20 +112,20 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
           <div
             key={index}
             onClick={() => handleSelect(searchTerm)}
-            className="flex items-center justify-between px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
+            className="flex items-center justify-between px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
           >
             <div className="flex items-center">
               <Clock
                 size={16}
-                className="text-zinc-400 dark:text-dark-500 mr-2"
+                className="text-neutral-400 dark:text-dark-500 mr-2"
               />
-              <span className="text-sm text-zinc-800 dark:text-dark-200">
+              <span className="text-sm text-neutral-800 dark:text-dark-200">
                 {searchTerm}
               </span>
             </div>
             <button
               onClick={(e) => removeRecentSearch(searchTerm, e)}
-              className="text-zinc-400 hover:text-zinc-600 dark:text-dark-500 dark:hover:text-dark-300"
+              className="text-neutral-400 hover:text-neutral-600 dark:text-dark-500 dark:hover:text-dark-300"
             >
               <X size={14} />
             </button>

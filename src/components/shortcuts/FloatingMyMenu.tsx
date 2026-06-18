@@ -89,10 +89,10 @@ export const FloatingMyMenu: React.FC = () => {
               setOpen(false);
             }
           }}
-          className="rounded-md px-2 py-2 bg-white/90 dark:bg-dark-150 shadow border border-zinc-200 dark:border-dark-200 hover:bg-white dark:hover:bg-dark-100"
+          className="rounded-md px-2 py-2 bg-white/90 dark:bg-dark-150 shadow border border-neutral-200 dark:border-dark-200 hover:bg-white dark:hover:bg-dark-100"
           aria-label="Open My Menu"
         >
-          <PanelLeftOpen className="h-5 w-5 text-zinc-700 dark:text-white" />
+          <PanelLeftOpen className="h-5 w-5 text-neutral-700 dark:text-white" />
         </button>
       </div>
 
@@ -106,7 +106,7 @@ export const FloatingMyMenu: React.FC = () => {
           />
           {/* Floating popover near the left center */}
           <div
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] h-[70vh] bg-white dark:bg-dark-150 border border-zinc-200 dark:border-dark-200 shadow-2xl rounded-xl flex flex-col overflow-hidden"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] h-[70vh] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 shadow-2xl rounded-xl flex flex-col overflow-hidden"
             onMouseEnter={() => {
               setHoveringDrawer(true);
               if (closeTimer) {
@@ -125,16 +125,16 @@ export const FloatingMyMenu: React.FC = () => {
               }
             }}
           >
-            <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-dark-200">
-              <div className="text-sm font-semibold text-zinc-900 dark:text-white">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-200 dark:border-dark-200">
+              <div className="text-sm font-semibold text-neutral-900 dark:text-white">
                 My Menu
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
                 aria-label="Close"
               >
-                <X className="h-4 w-4 text-zinc-600 dark:text-white" />
+                <X className="h-4 w-4 text-neutral-600 dark:text-white" />
               </button>
             </div>
             <div className="p-3 overflow-y-auto">

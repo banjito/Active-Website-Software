@@ -367,7 +367,7 @@ export function TechnicianProfileManagement({
       case 5:
         return "bg-emerald-100 text-emerald-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -445,27 +445,27 @@ export function TechnicianProfileManagement({
           )}
 
           {technicians.length === 0 ? (
-            <div className="text-center p-8 bg-zinc-50 rounded-md">
-              <UserCircle className="h-12 w-12 mx-auto text-zinc-400 mb-2" />
+            <div className="text-center p-8 bg-neutral-50 rounded-md">
+              <UserCircle className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
               <h3 className="text-lg font-medium mb-1">No Technicians Found</h3>
-              <p className="text-zinc-600 mb-4">
+              <p className="text-neutral-600 mb-4">
                 To use this feature, you need to add users with the "NETA
                 Technician" role.
               </p>
               <div className="text-left max-w-lg mx-auto">
                 <h4 className="font-medium mb-1">How to add technicians:</h4>
-                <ol className="list-decimal pl-5 space-y-2 text-zinc-700">
+                <ol className="list-decimal pl-5 space-y-2 text-neutral-700">
                   <li>Go to your Supabase Authentication dashboard</li>
                   <li>Create new users or edit existing users</li>
                   <li>
                     Set their user metadata to include{" "}
-                    <code className="px-1 py-0.5 bg-zinc-100 rounded">
+                    <code className="px-1 py-0.5 bg-neutral-100 rounded">
                       {'{"role": "NETA Technician"}'}
                     </code>
                   </li>
                   <li>
                     Optionally assign them to a division with{" "}
-                    <code className="px-1 py-0.5 bg-zinc-100 rounded">
+                    <code className="px-1 py-0.5 bg-neutral-100 rounded">
                       {'{"division": "division_name"}'}
                     </code>
                   </li>
@@ -486,7 +486,7 @@ export function TechnicianProfileManagement({
                       <h2 className="text-xl font-semibold">
                         {technicianData.user_metadata?.name || "Unknown"}
                       </h2>
-                      <p className="text-zinc-600">{technicianData.email}</p>
+                      <p className="text-neutral-600">{technicianData.email}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <Badge className="bg-blue-100 text-blue-800">
                           {technicianData.user_metadata?.role || "Technician"}
@@ -548,7 +548,7 @@ export function TechnicianProfileManagement({
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Skill Name
                             </label>
                             <input
@@ -561,11 +561,11 @@ export function TechnicianProfileManagement({
                                 })
                               }
                               placeholder="e.g., Circuit Troubleshooting, Cable Testing"
-                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Proficiency Level
                             </label>
                             <Select
@@ -586,7 +586,7 @@ export function TechnicianProfileManagement({
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Certification
                             </label>
                             <Select
@@ -609,7 +609,7 @@ export function TechnicianProfileManagement({
                           {skillForm.certification && (
                             <>
                               <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                                   Certification Date
                                 </label>
                                 <input
@@ -621,11 +621,11 @@ export function TechnicianProfileManagement({
                                       certificationDate: e.target.value,
                                     })
                                   }
-                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                                 />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                                   Expiration Date
                                 </label>
                                 <input
@@ -637,13 +637,13 @@ export function TechnicianProfileManagement({
                                       expirationDate: e.target.value,
                                     })
                                   }
-                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                                 />
                               </div>
                             </>
                           )}
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Notes
                             </label>
                             <textarea
@@ -655,7 +655,7 @@ export function TechnicianProfileManagement({
                                 })
                               }
                               placeholder="Additional details about experience or certification"
-                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700 min-h-[100px]"
+                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
                             />
                           </div>
                         </div>
@@ -699,7 +699,7 @@ export function TechnicianProfileManagement({
                           return (
                             <Card
                               key={skill.id}
-                              className="border border-zinc-200 hover:shadow-md transition-shadow"
+                              className="border border-neutral-200 hover:shadow-md transition-shadow"
                             >
                               <CardContent className="p-4">
                                 <div className="flex justify-between">
@@ -720,7 +720,7 @@ export function TechnicianProfileManagement({
                                     {/* Certification info */}
                                     {skill.certification && (
                                       <div className="mt-2">
-                                        <div className="flex items-center text-sm text-zinc-600">
+                                        <div className="flex items-center text-sm text-neutral-600">
                                           <Award className="h-4 w-4 mr-1" />
                                           <span>
                                             Certified:{" "}
@@ -742,7 +742,7 @@ export function TechnicianProfileManagement({
                                                   : certStatus.status ===
                                                       "approaching"
                                                     ? "text-amber-600"
-                                                    : "text-zinc-600"
+                                                    : "text-neutral-600"
                                               }
                                             >
                                               Expires:{" "}
@@ -772,7 +772,7 @@ export function TechnicianProfileManagement({
 
                                     {/* Notes (if any) */}
                                     {skill.notes && (
-                                      <p className="mt-2 text-sm text-zinc-600 dark:text-white truncate max-w-md">
+                                      <p className="mt-2 text-sm text-neutral-600 dark:text-white truncate max-w-md">
                                         {skill.notes}
                                       </p>
                                     )}
@@ -809,12 +809,12 @@ export function TechnicianProfileManagement({
                 </TabsContent>
 
                 <TabsContent value="schedule">
-                  <div className="p-4 bg-zinc-50 rounded-md text-center">
-                    <Clock className="h-12 w-12 mx-auto text-zinc-400 mb-2" />
+                  <div className="p-4 bg-neutral-50 rounded-md text-center">
+                    <Clock className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                     <h3 className="text-lg font-medium mb-1">
                       Schedule Management
                     </h3>
-                    <p className="text-zinc-600 mb-3">
+                    <p className="text-neutral-600 mb-3">
                       View and manage technician availability in the Schedule
                       Management page.
                     </p>
@@ -825,12 +825,12 @@ export function TechnicianProfileManagement({
                 </TabsContent>
 
                 <TabsContent value="assignments">
-                  <div className="p-4 bg-zinc-50 rounded-md text-center">
-                    <Award className="h-12 w-12 mx-auto text-zinc-400 mb-2" />
+                  <div className="p-4 bg-neutral-50 rounded-md text-center">
+                    <Award className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                     <h3 className="text-lg font-medium mb-1">
                       Job Assignment Management
                     </h3>
-                    <p className="text-zinc-600 mb-3">
+                    <p className="text-neutral-600 mb-3">
                       View and manage technician job assignments in the Job
                       Assignment page.
                     </p>

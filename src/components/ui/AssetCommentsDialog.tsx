@@ -199,7 +199,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
       case "ready_for_review":
         return "text-blue-600 dark:text-blue-400";
       default:
-        return "text-zinc-600 dark:text-white";
+        return "text-neutral-600 dark:text-white";
     }
   };
 
@@ -224,10 +224,10 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center">
             <MessageCircle className="h-5 w-5 text-[#f26722] mr-2" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Review Comments
             </h2>
           </div>
@@ -235,15 +235,15 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-white"
+            className="text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-white"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Asset Info */}
-        <div className="px-6 py-3 bg-zinc-50 dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700">
-          <p className="text-sm text-zinc-600 dark:text-white">
+        <div className="px-6 py-3 bg-neutral-50 dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700">
+          <p className="text-sm text-neutral-600 dark:text-white">
             <span className="font-medium">Asset:</span> {assetName}
           </p>
         </div>
@@ -261,11 +261,11 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
             </div>
           ) : comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <MessageCircle className="h-12 w-12 text-zinc-400 dark:text-white mb-3" />
-              <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">
+              <MessageCircle className="h-12 w-12 text-neutral-400 dark:text-white mb-3" />
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
                 No Review Comments
               </h3>
-              <p className="text-zinc-600 dark:text-white">
+              <p className="text-neutral-600 dark:text-white">
                 This asset doesn't have any review comments yet.
               </p>
             </div>
@@ -274,7 +274,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
               {comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-zinc-50 dark:bg-dark-150"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-dark-150"
                 >
                   {/* Comment Header */}
                   <div className="flex items-start justify-between mb-3">
@@ -283,15 +283,15 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
                         {getStatusIcon(comment.status)}
                       </span>
                       <div>
-                        <h4 className="font-medium text-zinc-900 dark:text-white">
+                        <h4 className="font-medium text-neutral-900 dark:text-white">
                           {comment.title}
                         </h4>
-                        <p className="text-sm text-zinc-600 dark:text-white">
+                        <p className="text-sm text-neutral-600 dark:text-white">
                           {comment.report_type}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right text-xs text-zinc-500 dark:text-white">
+                    <div className="text-right text-xs text-neutral-500 dark:text-white">
                       <div
                         className={`font-medium ${getStatusColor(comment.status)}`}
                       >
@@ -311,15 +311,15 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
                   </div>
 
                   {/* Comment Content */}
-                  <div className="bg-white dark:bg-dark-150 rounded-md p-3 border border-zinc-200 dark:border-zinc-600">
+                  <div className="bg-white dark:bg-dark-150 rounded-md p-3 border border-neutral-200 dark:border-neutral-600">
                     <div className="flex items-start gap-2">
-                      <User className="h-4 w-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+                      <User className="h-4 w-4 text-neutral-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-sm text-zinc-900 dark:text-white whitespace-pre-wrap">
+                        <p className="text-sm text-neutral-900 dark:text-white whitespace-pre-wrap">
                           {comment.review_comments}
                         </p>
                         {comment.reviewed_by && (
-                          <p className="text-xs text-zinc-500 dark:text-white mt-2">
+                          <p className="text-xs text-neutral-500 dark:text-white mt-2">
                             Reviewed by:{" "}
                             {reviewerDisplayMap[comment.reviewed_by] ??
                               comment.reviewed_by}
@@ -335,12 +335,12 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150">
+        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
           <div className="flex justify-end">
             <Button
               variant="outline"
               onClick={onClose}
-              className="text-zinc-700 dark:text-white"
+              className="text-neutral-700 dark:text-white"
             >
               Close
             </Button>

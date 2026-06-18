@@ -46,11 +46,11 @@ const CurrencyInput: React.FC<{
 
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
         {label}
       </label>
       <div className="relative">
-        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-500 dark:text-zinc-400">
+        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-neutral-500 dark:text-neutral-400">
           $
         </span>
         <input
@@ -59,13 +59,13 @@ const CurrencyInput: React.FC<{
           min="0"
           value={value || ""}
           onChange={handleChange}
-          className="block w-full pl-8 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm
+          className="block w-full pl-8 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
-                     bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                     bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
         />
       </div>
       {helpText && (
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
           {helpText}
         </p>
       )}
@@ -97,7 +97,7 @@ const NumberInput: React.FC<{
 
     return (
       <div className="mb-4">
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           {label}
         </label>
         <div className="relative">
@@ -107,18 +107,18 @@ const NumberInput: React.FC<{
             min={min}
             value={value || ""}
             onChange={handleChange}
-            className="block w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm
+            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
-                     bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                     bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           {suffix && (
-            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 dark:text-zinc-400 text-sm">
+            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-500 dark:text-neutral-400 text-sm">
               {suffix}
             </span>
           )}
         </div>
         {helpText && (
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             {helpText}
           </p>
         )}
@@ -149,7 +149,7 @@ const FactorInput: React.FC<{
 
     return (
       <div className="mb-4">
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           {label}
         </label>
         <div className="flex items-center gap-2">
@@ -159,18 +159,18 @@ const FactorInput: React.FC<{
             min="0"
             value={value || ""}
             onChange={handleChange}
-            className="block w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm
+            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
-                     bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                     bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           {showPercentage && (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
               ({((value - 1) * 100).toFixed(0)}%)
             </span>
           )}
         </div>
         {helpText && (
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             {helpText}
           </p>
         )}
@@ -313,7 +313,7 @@ export default function EstimatingPresetsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
               <Calculator className="h-7 w-7 text-[#f26722]" />
               Estimating Presets
             </h1>
@@ -322,9 +322,9 @@ export default function EstimatingPresetsPage() {
             <button
               onClick={handleReset}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300
-                         bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded-md
-                         hover:bg-zinc-50 dark:hover:bg-dark-200 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300
+                         bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md
+                         hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50 transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
               Reset to Defaults
@@ -373,10 +373,10 @@ export default function EstimatingPresetsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Estimating Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
             <DollarSign className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               General Estimating Variables
             </h2>
           </div>
@@ -448,10 +448,10 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Vehicle Travel Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
             <Truck className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Vehicle Travel Variables
             </h2>
           </div>
@@ -497,10 +497,10 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Per Diem & Lodging Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
             <Users className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Per Diem & Lodging
             </h2>
           </div>
@@ -525,10 +525,10 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Flight Travel Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
             <Plane className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Flight Travel Variables
             </h2>
           </div>
@@ -562,10 +562,10 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Rental Car Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 lg:col-span-2">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
             <Clock className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Rental Car Variables
             </h2>
           </div>
@@ -593,7 +593,7 @@ export default function EstimatingPresetsPage() {
 
       {/* Last Updated Info */}
       {presets.updated_at && (
-        <div className="mt-6 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+        <div className="mt-6 text-sm text-neutral-500 dark:text-neutral-400 text-center">
           Last updated: {new Date(presets.updated_at).toLocaleString()}
         </div>
       )}

@@ -310,7 +310,7 @@ export const ITEquipmentTasks: React.FC = () => {
       completed:
         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
       cancelled:
-        "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     };
     return (
       <span
@@ -323,7 +323,7 @@ export const ITEquipmentTasks: React.FC = () => {
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      low: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      low: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
       medium: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
       high: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
       urgent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
@@ -351,10 +351,10 @@ export const ITEquipmentTasks: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             IT Equipment Tasks
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage IT equipment provisioning tasks for new employees
           </p>
         </div>
@@ -422,8 +422,10 @@ export const ITEquipmentTasks: React.FC = () => {
       ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Laptop className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
-            <p className="text-zinc-600 dark:text-zinc-400">No tasks found</p>
+            <Laptop className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">
+              No tasks found
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -447,26 +449,26 @@ export const ITEquipmentTasks: React.FC = () => {
                       {getStatusBadge(task.status)}
                       {getPriorityBadge(task.priority)}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Type:</span>{" "}
                       {task.task_type}
                     </div>
                     {task.equipment_category && (
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         <span className="font-medium">Category:</span>{" "}
                         {task.equipment_category}
                       </div>
                     )}
                     {task.is_template && (
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         <span className="font-medium">Template</span>
                       </div>
                     )}
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Software:</span>{" "}
                       {task.software_requirements?.length || 0}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Access:</span>{" "}
                       {task.access_requirements?.length || 0}
                     </div>
@@ -502,8 +504,8 @@ export const ITEquipmentTasks: React.FC = () => {
             ))}
           </div>
           {filteredTasks.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page {page} of {totalPages} ({filteredTasks.length} total)
               </span>
               <div className="flex gap-2">
@@ -633,7 +635,7 @@ export const ITEquipmentTasks: React.FC = () => {
                     is_template: e.target.checked,
                   }))
                 }
-                className="rounded border-zinc-300"
+                className="rounded border-neutral-300"
               />
               <label
                 htmlFor="create-is_template"
@@ -899,7 +901,7 @@ export const ITEquipmentTasks: React.FC = () => {
                     is_template: e.target.checked,
                   }))
                 }
-                className="rounded border-zinc-300"
+                className="rounded border-neutral-300"
               />
               <label htmlFor="edit-is_template" className="text-sm font-medium">
                 Save as template (assign from Onboarding Tracking)
@@ -1070,7 +1072,7 @@ export const ITEquipmentTasks: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium">Type:</span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {selectedTask.task_type}
                   </p>
                 </div>
@@ -1089,7 +1091,7 @@ export const ITEquipmentTasks: React.FC = () => {
                 {selectedTask.is_template && (
                   <div>
                     <span className="text-sm font-medium">Template:</span>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
                       Yes (reusable for assignments)
                     </p>
                   </div>
@@ -1100,7 +1102,7 @@ export const ITEquipmentTasks: React.FC = () => {
                   <span className="text-sm font-medium">
                     Equipment Category:
                   </span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {selectedTask.equipment_category}
                   </p>
                 </div>
@@ -1149,13 +1151,13 @@ export const ITEquipmentTasks: React.FC = () => {
                             {access.system}
                           </div>
                           {access.role && (
-                            <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                            <div className="text-xs text-neutral-600 dark:text-neutral-400">
                               Role: {access.role}
                             </div>
                           )}
                           {access.permissions &&
                             access.permissions.length > 0 && (
-                              <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                              <div className="text-xs text-neutral-600 dark:text-neutral-400">
                                 Permissions: {access.permissions.join(", ")}
                               </div>
                             )}
@@ -1167,7 +1169,7 @@ export const ITEquipmentTasks: React.FC = () => {
               {selectedTask.notes && (
                 <div>
                   <span className="text-sm font-medium">Notes:</span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                     {selectedTask.notes}
                   </p>
                 </div>

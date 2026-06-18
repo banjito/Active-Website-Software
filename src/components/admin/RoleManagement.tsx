@@ -326,7 +326,7 @@ export default function RoleManagement() {
       </div>
 
       <Card className="border-0 shadow-sm">
-        <CardHeader className="bg-zinc-50 dark:bg-dark-150 pb-2">
+        <CardHeader className="bg-neutral-50 dark:bg-dark-150 pb-2">
           <CardTitle className="text-lg">System Roles</CardTitle>
           <CardDescription>
             Built-in roles with predefined permissions. These roles cannot be
@@ -341,7 +341,7 @@ export default function RoleManagement() {
       </Card>
 
       <Card className="border-0 shadow-sm mt-8">
-        <CardHeader className="bg-zinc-50 dark:bg-dark-150 pb-2">
+        <CardHeader className="bg-neutral-50 dark:bg-dark-150 pb-2">
           <CardTitle className="text-lg">Custom Roles</CardTitle>
           <CardDescription>
             Custom roles that you've created. These can be freely edited and
@@ -350,7 +350,7 @@ export default function RoleManagement() {
         </CardHeader>
         <CardContent className="pt-4">
           {customRoles.length === 0 ? (
-            <div className="p-6 text-center text-zinc-500 border border-dashed rounded-lg">
+            <div className="p-6 text-center text-neutral-500 border border-dashed rounded-lg">
               No custom roles defined. Click "Create New Role" to add one.
             </div>
           ) : (
@@ -366,7 +366,7 @@ export default function RoleManagement() {
   // Role card component
   const renderRoleCard = (role: Role, isSystem: boolean) => (
     <Card key={role} className="overflow-hidden">
-      <CardHeader className="bg-zinc-50 dark:bg-dark-150 py-4">
+      <CardHeader className="bg-neutral-50 dark:bg-dark-150 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Shield className="h-5 w-5 mr-2 text-purple-500" />
@@ -409,7 +409,7 @@ export default function RoleManagement() {
         </div>
       </CardHeader>
       <CardContent className="py-3">
-        <div className="text-xs text-zinc-500 space-y-2">
+        <div className="text-xs text-neutral-500 space-y-2">
           {ROLES[role]?.parentRole && (
             <div>
               Inherits from:{" "}
@@ -417,7 +417,7 @@ export default function RoleManagement() {
             </div>
           )}
           <div>
-            <span className="text-xs text-zinc-500 block mb-1">
+            <span className="text-xs text-neutral-500 block mb-1">
               Access to portals:
             </span>
             <div className="flex flex-wrap gap-1">
@@ -428,7 +428,7 @@ export default function RoleManagement() {
                 >
                   {portal}
                 </span>
-              )) || <span className="text-zinc-500">None</span>}
+              )) || <span className="text-neutral-500">None</span>}
             </div>
           </div>
         </div>
@@ -507,7 +507,7 @@ export default function RoleManagement() {
                   </option>
                 ))}
             </select>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-neutral-500">
               Child roles inherit all permissions from their parent role
             </p>
           </div>
@@ -593,7 +593,7 @@ export default function RoleManagement() {
         </CardHeader>
         <CardContent>
           {permissions.length === 0 ? (
-            <div className="text-center text-zinc-500 p-4 border border-dashed rounded-md">
+            <div className="text-center text-neutral-500 p-4 border border-dashed rounded-md">
               No permissions defined. Add at least one permission or use a
               Parent Role.
             </div>
@@ -687,10 +687,10 @@ export default function RoleManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Role Management
           </h2>
-          <p className="text-zinc-600 dark:text-white mt-1">
+          <p className="text-neutral-600 dark:text-white mt-1">
             Create and manage roles with fine-grained permissions.
           </p>
         </div>

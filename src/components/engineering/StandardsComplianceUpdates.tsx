@@ -220,7 +220,7 @@ export function StandardsComplianceUpdates() {
       case "completed":
         return <Badge className="bg-blue-500">Completed</Badge>;
       default:
-        return <Badge className="bg-zinc-500">{status}</Badge>;
+        return <Badge className="bg-neutral-500">{status}</Badge>;
     }
   };
 
@@ -231,7 +231,9 @@ export function StandardsComplianceUpdates() {
       case "minor":
         return <Badge className="bg-amber-500">Minor Change</Badge>;
       case "none":
-        return <Badge className="bg-zinc-300 text-zinc-700">No Change</Badge>;
+        return (
+          <Badge className="bg-neutral-300 text-neutral-700">No Change</Badge>
+        );
       default:
         return null;
     }
@@ -317,7 +319,7 @@ export function StandardsComplianceUpdates() {
         {/* Search and filter */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative w-full sm:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
             <Input
               type="search"
               placeholder="Search standards or compliance items..."
@@ -355,7 +357,7 @@ export function StandardsComplianceUpdates() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{standards.length}</div>
-                  <p className="text-xs text-zinc-500">Tracked standards</p>
+                  <p className="text-xs text-neutral-500">Tracked standards</p>
                 </CardContent>
               </Card>
 
@@ -372,7 +374,7 @@ export function StandardsComplianceUpdates() {
                         .length
                     }
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     Standards with upcoming changes
                   </p>
                 </CardContent>
@@ -388,7 +390,7 @@ export function StandardsComplianceUpdates() {
                   <div className="text-2xl font-bold">
                     {standards.filter((s) => s.changeType === "major").length}
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     Standards with significant updates
                   </p>
                 </CardContent>
@@ -412,7 +414,7 @@ export function StandardsComplianceUpdates() {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="text-center py-4 text-zinc-500"
+                        className="text-center py-4 text-neutral-500"
                       >
                         No standards match your search criteria
                       </TableCell>
@@ -422,7 +424,7 @@ export function StandardsComplianceUpdates() {
                       <TableRow key={standard.id}>
                         <TableCell className="font-medium">
                           <div>{standard.title}</div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="text-xs text-neutral-500">
                             {standard.description}
                           </div>
                         </TableCell>
@@ -455,7 +457,9 @@ export function StandardsComplianceUpdates() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{compliance.length}</div>
-                  <p className="text-xs text-zinc-500">Active requirements</p>
+                  <p className="text-xs text-neutral-500">
+                    Active requirements
+                  </p>
                 </CardContent>
               </Card>
 
@@ -467,7 +471,7 @@ export function StandardsComplianceUpdates() {
                   <div className="text-2xl font-bold">
                     {compliance.filter((c) => c.status === "at-risk").length}
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     Items requiring attention
                   </p>
                 </CardContent>
@@ -483,7 +487,7 @@ export function StandardsComplianceUpdates() {
                   <div className="text-2xl font-bold">
                     {compliance.filter((c) => c.status === "completed").length}
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     Requirements satisfied
                   </p>
                 </CardContent>
@@ -507,7 +511,7 @@ export function StandardsComplianceUpdates() {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="text-center py-4 text-zinc-500"
+                        className="text-center py-4 text-neutral-500"
                       >
                         No compliance items match your search criteria
                       </TableCell>
@@ -555,12 +559,12 @@ export function StandardsComplianceUpdates() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-600">
+                <p className="text-sm text-neutral-600">
                   Amendment to include new requirements for grid support
                   functions and interoperability. This update will affect
                   multiple existing projects.
                 </p>
-                <div className="flex items-center mt-3 text-xs text-zinc-500">
+                <div className="flex items-center mt-3 text-xs text-neutral-500">
                   <CalendarDays className="h-3.5 w-3.5 mr-1" />
                   <span>Expected release: April 15, 2024</span>
                 </div>
@@ -585,12 +589,12 @@ export function StandardsComplianceUpdates() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-600">
+                <p className="text-sm text-neutral-600">
                   Updates to our internal safety procedures based on the most
                   recent NFPA 70E standard. Includes revised arc flash
                   calculation methods and PPE requirements.
                 </p>
-                <div className="flex items-center mt-3 text-xs text-zinc-500">
+                <div className="flex items-center mt-3 text-xs text-neutral-500">
                   <AlertCircle className="h-3.5 w-3.5 mr-1" />
                   <span>Training sessions scheduled for Jan 15-20, 2024</span>
                 </div>
@@ -608,7 +612,7 @@ export function StandardsComplianceUpdates() {
       {/* Add Standard Modal */}
       {showStandardModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">Add New Standard</h3>
               <Button
@@ -752,7 +756,7 @@ export function StandardsComplianceUpdates() {
       {/* Add Compliance Modal */}
       {showComplianceModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">
                 Add Compliance Requirement

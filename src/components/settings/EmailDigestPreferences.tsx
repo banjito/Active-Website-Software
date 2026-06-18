@@ -131,23 +131,25 @@ export function EmailDigestPreferences({
 
   return (
     <div
-      className={`${inset} py-3 border-t border-zinc-200 dark:border-zinc-700`}
+      className={`${inset} py-3 border-t border-neutral-200 dark:border-neutral-700`}
     >
       <div className={`flex items-center gap-2 mb-1 ${compact ? "" : ""}`}>
         <Mail
-          className={`${iconClass} text-zinc-400 dark:text-[#f26722] shrink-0`}
+          className={`${iconClass} text-neutral-400 dark:text-[#f26722] shrink-0`}
         />
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
           Email digests
         </h3>
       </div>
-      <p className={`text-xs text-zinc-500 dark:text-zinc-400 mb-3 ${descPad}`}>
+      <p
+        className={`text-xs text-neutral-500 dark:text-neutral-400 mb-3 ${descPad}`}
+      >
         Scheduled ampOS summary emails
         {userEmail ? (
           <>
             {" "}
             to{" "}
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-neutral-700 dark:text-neutral-300">
               {userEmail}
             </span>
           </>
@@ -167,9 +169,11 @@ export function EmailDigestPreferences({
           {DIGEST_OPTIONS.map(({ key, label, description }) => (
             <div key={key} className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-zinc-900 dark:text-white">{label}</p>
+                <p className="text-sm text-neutral-900 dark:text-white">
+                  {label}
+                </p>
                 {!compact && (
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {description}
                   </p>
                 )}

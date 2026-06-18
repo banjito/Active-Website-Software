@@ -182,13 +182,13 @@ export const CustomFormTemplates: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-dark-200 p-6">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
                 Custom Form Templates
               </h1>
             </div>
@@ -203,7 +203,7 @@ export const CustomFormTemplates: React.FC = () => {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" />
             <Input
               type="text"
               placeholder="Search templates..."
@@ -219,11 +219,11 @@ export const CustomFormTemplates: React.FC = () => {
           <Card>
             <CardContent className="py-12">
               <div className="text-center">
-                <FileText className="w-16 h-16 mx-auto text-zinc-400 dark:text-zinc-500 mb-4" />
-                <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
+                <FileText className="w-16 h-16 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                   {searchQuery ? "No templates found" : "No templates yet"}
                 </h3>
-                <p className="text-zinc-500 dark:text-zinc-400 mb-6">
+                <p className="text-neutral-500 dark:text-neutral-400 mb-6">
                   {searchQuery
                     ? "Try adjusting your search criteria"
                     : "Create your first custom form template to get started"}
@@ -260,7 +260,7 @@ export const CustomFormTemplates: React.FC = () => {
                             Published
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400 rounded-full">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 rounded-full">
                             <Lock className="w-3 h-3" />
                             Draft
                           </span>
@@ -276,12 +276,12 @@ export const CustomFormTemplates: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   {template.description && (
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-2">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
                       {template.description}
                     </p>
                   )}
 
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
                     Updated {new Date(template.updated_at).toLocaleDateString()}
                   </div>
 

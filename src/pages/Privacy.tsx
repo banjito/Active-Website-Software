@@ -2,18 +2,18 @@ import React from "react";
 
 const Privacy: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900">
+    <div className="min-h-screen bg-white dark:bg-neutral-900">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
           Privacy Policy
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8">
           Last Updated: December 17, 2024
         </p>
 
-        <div className="prose dark:prose-invert max-w-none space-y-6 text-zinc-700 dark:text-zinc-300">
+        <div className="prose dark:prose-invert max-w-none space-y-6 text-neutral-700 dark:text-neutral-300">
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               1. Introduction
             </h2>
             <p>
@@ -30,11 +30,11 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               2. Information We Collect
             </h2>
 
-            <h3 className="text-lg font-medium text-zinc-900 dark:text-white mt-6 mb-3">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-white mt-6 mb-3">
               2.1 Information You Provide
             </h3>
             <ul className="list-disc pl-6 space-y-1">
@@ -45,7 +45,7 @@ const Privacy: React.FC = () => {
               <li>Communications with us</li>
             </ul>
 
-            <h3 className="text-lg font-medium text-zinc-900 dark:text-white mt-6 mb-3">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-white mt-6 mb-3">
               2.2 Information from QuickBooks Integration
             </h3>
             <p>
@@ -87,7 +87,7 @@ const Privacy: React.FC = () => {
               </li>
             </ul>
 
-            <h3 className="text-lg font-medium text-zinc-900 dark:text-white mt-6 mb-3">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-white mt-6 mb-3">
               2.3 Automatically Collected Information
             </h3>
             <ul className="list-disc pl-6 space-y-1">
@@ -99,7 +99,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               3. How We Use Your Information
             </h2>
             <p>We use the collected information for the following purposes:</p>
@@ -140,7 +140,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               4. Data Sharing and Disclosure
             </h2>
             <p>
@@ -174,7 +174,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               5. Data Security
             </h2>
             <p>
@@ -199,7 +199,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               6. Data Retention
             </h2>
             <p>
@@ -223,7 +223,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               7. Your Rights and Choices
             </h2>
             <p>You have the following rights regarding your information:</p>
@@ -258,7 +258,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               8. QuickBooks-Specific Provisions
             </h2>
             <p>
@@ -288,7 +288,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               9. Third-Party Links and Services
             </h2>
             <p>
@@ -300,7 +300,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               10. Children's Privacy
             </h2>
             <p>
@@ -312,7 +312,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               11. International Data Transfers
             </h2>
             <p>
@@ -324,7 +324,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               12. Changes to This Privacy Policy
             </h2>
             <p>
@@ -336,7 +336,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               13. Contact Us
             </h2>
             <p>
@@ -353,7 +353,7 @@ const Privacy: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               14. California Privacy Rights
             </h2>
             <p>
@@ -367,8 +367,8 @@ const Privacy: React.FC = () => {
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             © {new Date().getFullYear()} AMP OS. All rights reserved.
           </p>
         </div>

@@ -61,8 +61,8 @@ export const BackToJobButtonTest: React.FC = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 p-6">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
           Back to Job Button Test
         </h1>
 
@@ -89,24 +89,24 @@ export const BackToJobButtonTest: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
             Test URL Analysis:
           </h3>
 
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+            <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
               <thead>
-                <tr className="bg-zinc-50 dark:bg-dark-150">
-                  <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left">
+                <tr className="bg-neutral-50 dark:bg-dark-150">
+                  <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-left">
                     URL
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                  <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                     Is Report?
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                  <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                     Job ID
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                  <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                     Show Button?
                   </th>
                 </tr>
@@ -117,18 +117,18 @@ export const BackToJobButtonTest: React.FC = () => {
                   return (
                     <tr
                       key={index}
-                      className="hover:bg-zinc-50 dark:hover:bg-dark-100"
+                      className="hover:bg-neutral-50 dark:hover:bg-dark-100"
                     >
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 font-mono text-sm">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 font-mono text-sm">
                         {url}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                         {result.isReport ? "✅" : "❌"}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                         {result.jobId || "-"}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                         {result.isReport && result.jobId ? "✅" : "❌"}
                       </td>
                     </tr>

@@ -19,7 +19,7 @@ export const Switch: React.FC<SwitchProps> = ({
   return (
     <div
       className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors
-        ${checked ? checkedClassName : "bg-zinc-200 dark:bg-dark-150"}
+        ${checked ? checkedClassName : "bg-neutral-200 dark:bg-dark-150"}
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         ${className}`}
       onClick={() => !disabled && onCheckedChange(!checked)}

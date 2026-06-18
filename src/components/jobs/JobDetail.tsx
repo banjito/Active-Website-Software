@@ -133,7 +133,7 @@ const AcceptedLetter: React.FC<{ jobId: string }> = ({ jobId }) => {
   }, [jobId]);
   if (!link)
     return (
-      <p className="text-sm text-zinc-500 dark:text-white">None selected</p>
+      <p className="text-sm text-neutral-500 dark:text-white">None selected</p>
     );
   return (
     <a
@@ -6054,7 +6054,7 @@ export default function JobDetail() {
           <div className="px-6 pt-4">
             <label
               htmlFor="doc-save-name"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+              className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2"
             >
               Document Name (optional)
             </label>
@@ -6064,7 +6064,7 @@ export default function JobDetail() {
               value={docSaveName}
               onChange={(e) => setDocSaveName(e.target.value)}
               placeholder="e.g., Main Substation Cover Letter"
-              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
             />
           </div>
 
@@ -6112,7 +6112,7 @@ export default function JobDetail() {
             })()}
 
           {/* Document editor */}
-          <div className="max-h-[40vh] overflow-auto border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm bg-zinc-50 dark:bg-dark-200 mx-6 p-6">
+          <div className="max-h-[40vh] overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm bg-neutral-50 dark:bg-dark-200 mx-6 p-6">
             <style>{`
               /* Preview-only styles - override print styles for better preview */
               #generated-doc-editor .amp-page {
@@ -7208,13 +7208,13 @@ ${newBodyHtml}
     if (err) return <div className="p-4 text-red-600">{err}</div>;
     if (!items.length)
       return (
-        <div className="p-4 text-zinc-600 dark:text-white">
+        <div className="p-4 text-neutral-600 dark:text-white">
           No saved documents yet.
         </div>
       );
 
     return (
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-700">
+      <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
         {items.map((d) => (
           <li
             key={d.id}
@@ -7234,7 +7234,7 @@ ${newBodyHtml}
                           ? "Executive Summary"
                           : "Document Name"
                     }
-                    className="flex-1 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                    className="flex-1 px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                     autoFocus
                   />
                   <Button
@@ -7255,7 +7255,7 @@ ${newBodyHtml}
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-zinc-900 dark:text-white">
+                    <span className="font-medium text-neutral-900 dark:text-white">
                       {d.name ||
                         (d.doc_type === "cover"
                           ? "Cover Letter"
@@ -7265,7 +7265,7 @@ ${newBodyHtml}
                     </span>
                     <button
                       onClick={() => handleStartEdit(d)}
-                      className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                       title="Edit name"
                     >
                       <svg
@@ -7283,7 +7283,7 @@ ${newBodyHtml}
                       </svg>
                     </button>
                   </div>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-neutral-500">
                     {new Date(d.created_at).toLocaleString()}
                   </span>
                 </>
@@ -7366,10 +7366,10 @@ ${newBodyHtml}
     return (
       <div className="p-8">
         <div className="flex flex-col justify-center items-center h-64">
-          <p className="text-zinc-500 dark:text-white text-lg mb-2">
+          <p className="text-neutral-500 dark:text-white text-lg mb-2">
             Job not found or has been deleted
           </p>
-          <p className="text-zinc-400 dark:text-zinc-500 text-sm mb-4">
+          <p className="text-neutral-400 dark:text-neutral-500 text-sm mb-4">
             Redirecting to jobs list...
           </p>
           <Link
@@ -7439,34 +7439,34 @@ ${newBodyHtml}
                 : "Click Edit to make changes to this document"}
             </DialogDescription>
             {isEditingViewer && (
-              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Font Size:
                 </span>
                 <button
                   onClick={() =>
                     setViewerFontSize((prev) => Math.max(8, prev - 1))
                   }
-                  className="px-2 py-1 text-sm bg-zinc-200 dark:bg-dark-100 hover:bg-zinc-300 dark:hover:bg-dark-200 rounded text-zinc-900 dark:text-white"
+                  className="px-2 py-1 text-sm bg-neutral-200 dark:bg-dark-100 hover:bg-neutral-300 dark:hover:bg-dark-200 rounded text-neutral-900 dark:text-white"
                   title="Decrease font size"
                 >
                   -
                 </button>
-                <span className="text-sm font-mono min-w-[3rem] text-center text-zinc-900 dark:text-white">
+                <span className="text-sm font-mono min-w-[3rem] text-center text-neutral-900 dark:text-white">
                   {viewerFontSize}px
                 </span>
                 <button
                   onClick={() =>
                     setViewerFontSize((prev) => Math.min(32, prev + 1))
                   }
-                  className="px-2 py-1 text-sm bg-zinc-200 dark:bg-dark-100 hover:bg-zinc-300 dark:hover:bg-dark-200 rounded text-zinc-900 dark:text-white"
+                  className="px-2 py-1 text-sm bg-neutral-200 dark:bg-dark-100 hover:bg-neutral-300 dark:hover:bg-dark-200 rounded text-neutral-900 dark:text-white"
                   title="Increase font size"
                 >
                   +
                 </button>
                 <button
                   onClick={() => setViewerFontSize(16)}
-                  className="px-2 py-1 text-xs bg-zinc-200 dark:bg-dark-100 hover:bg-zinc-300 dark:hover:bg-dark-200 rounded text-zinc-900 dark:text-white"
+                  className="px-2 py-1 text-xs bg-neutral-200 dark:bg-dark-100 hover:bg-neutral-300 dark:hover:bg-dark-200 rounded text-neutral-900 dark:text-white"
                   title="Reset to default"
                 >
                   Reset
@@ -7480,7 +7480,7 @@ ${newBodyHtml}
                   ? "summary"
                   : null;
                 return docTypeFromViewer === "summary" ? (
-                  <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                  <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                     <Button
                       variant="outline"
                       onClick={() => setIsSignatureProfileSelectorOpen(true)}
@@ -7655,7 +7655,7 @@ ${newBodyHtml}
                 );
                 if (sortedSubs.length === 0) {
                   return (
-                    <p className="text-zinc-500 dark:text-zinc-400">
+                    <p className="text-neutral-500 dark:text-neutral-400">
                       No substations found for this job.
                     </p>
                   );
@@ -7663,7 +7663,7 @@ ${newBodyHtml}
                 return sortedSubs.map((sub) => (
                   <label
                     key={sub}
-                    className="flex items-center gap-2 p-2 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded cursor-pointer"
+                    className="flex items-center gap-2 p-2 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -7677,9 +7677,11 @@ ${newBodyHtml}
                         }
                         setSelectedSubstations(updated);
                       }}
-                      className="rounded border-zinc-300 dark:border-zinc-600"
+                      className="rounded border-neutral-300 dark:border-neutral-600"
                     />
-                    <span className="text-zinc-900 dark:text-white">{sub}</span>
+                    <span className="text-neutral-900 dark:text-white">
+                      {sub}
+                    </span>
                   </label>
                 ));
               })()}
@@ -7714,7 +7716,7 @@ ${newBodyHtml}
             <button
               type="button"
               onClick={() => navigate(getJobsListPath())}
-              className="text-zinc-600 hover:text-zinc-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+              className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
               Back to Jobs
@@ -7729,7 +7731,7 @@ ${newBodyHtml}
                 disabled={!adjacentJobIds.previous}
                 aria-label="Previous Job"
                 title="Previous Job"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -7742,7 +7744,7 @@ ${newBodyHtml}
                 disabled={!adjacentJobIds.next}
                 aria-label="Next Job"
                 title="Next Job"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -7797,16 +7799,16 @@ ${newBodyHtml}
         {isEditing ? (
           <div>
             {/* Edit Form Header */}
-            <CardHeader className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150">
+            <CardHeader className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-[#f26722]/10 rounded-lg">
                   <Edit3 className="h-5 w-5 text-[#f26722]" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-zinc-900 dark:text-white">
+                  <CardTitle className="text-xl text-neutral-900 dark:text-white">
                     Edit Job Details
                   </CardTitle>
-                  <CardDescription className="text-zinc-600 dark:text-white">
+                  <CardDescription className="text-neutral-600 dark:text-white">
                     Update job information and settings
                   </CardDescription>
                 </div>
@@ -7823,9 +7825,9 @@ ${newBodyHtml}
               >
                 {/* Basic Information Section */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="w-1 h-5 bg-[#f26722] rounded-full"></div>
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                       Basic Information
                     </h3>
                   </div>
@@ -7834,7 +7836,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="job_number"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Job Number
                       </label>
@@ -7849,14 +7851,14 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white font-mono text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white font-mono text-sm"
                         placeholder="JOB-0000"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="division"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Division
                       </label>
@@ -7868,7 +7870,7 @@ ${newBodyHtml}
                             prev ? { ...prev, division: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
                         <option value="north_alabama">Alabama Division</option>
@@ -7884,7 +7886,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="fireteam_lead"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Fireteam Lead
                       </label>
@@ -7899,14 +7901,14 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter fireteam lead name"
                       />
                     </div>
                     <div className="md:col-span-2">
                       <label
                         htmlFor="title"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Job Title *
                       </label>
@@ -7919,7 +7921,7 @@ ${newBodyHtml}
                             prev ? { ...prev, title: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter job title"
                       />
                     </div>
@@ -7927,7 +7929,7 @@ ${newBodyHtml}
                     <div className="md:col-span-2">
                       <label
                         htmlFor="description"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Description
                       </label>
@@ -7942,7 +7944,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
                         placeholder="Enter job description"
                       />
                     </div>
@@ -7950,10 +7952,10 @@ ${newBodyHtml}
                     <div className="md:col-span-2">
                       <label
                         htmlFor="site_address"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Site Address{" "}
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
                           (for reports)
                         </span>
                       </label>
@@ -7968,7 +7970,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
                         placeholder="Enter physical site address"
                       />
                     </div>
@@ -7977,9 +7979,9 @@ ${newBodyHtml}
 
                 {/* Status, Priority, Timeline & Quoted Amount Section */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                       Status, Timeline & Quoted Amount
                     </h3>
                   </div>
@@ -7988,7 +7990,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="status"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Status *
                       </label>
@@ -8000,7 +8002,7 @@ ${newBodyHtml}
                             prev ? { ...prev, status: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In Progress</option>
@@ -8018,7 +8020,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="priority"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Priority *
                       </label>
@@ -8030,7 +8032,7 @@ ${newBodyHtml}
                             prev ? { ...prev, priority: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -8041,7 +8043,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="start_date"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Start Date
                       </label>
@@ -8056,14 +8058,14 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="due_date"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Due Date
                       </label>
@@ -8076,14 +8078,14 @@ ${newBodyHtml}
                             prev ? { ...prev, due_date: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="budget"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Quoted Amount ($)
                       </label>
@@ -8105,14 +8107,14 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="0.00"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="estimated_man_hours"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Estimated Man Hours
                       </label>
@@ -8134,10 +8136,10 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="From estimate or enter manually"
                       />
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         From linked opportunity estimate when set; otherwise
                         enter manually (e.g. when no letter proposal).
                       </p>
@@ -8146,7 +8148,7 @@ ${newBodyHtml}
 
                   {/* Accepted Letter Proposal display */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                       Accepted Letter Proposal
                     </label>
                     <AcceptedLetter jobId={job.id} />
@@ -8155,9 +8157,9 @@ ${newBodyHtml}
 
                 {/* Submittal Tracking Configuration Section */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                       Remote Submittal Tracking
                     </h3>
                   </div>
@@ -8166,7 +8168,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="submittal_job_type"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Job Type
                       </label>
@@ -8189,14 +8191,14 @@ ${newBodyHtml}
                               : null,
                           );
                         }}
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="standard">Standard (7 days)</option>
                         <option value="data_center">
                           Data Center (48-72 hours)
                         </option>
                       </select>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         Determines the default submittal timeline window
                       </p>
                     </div>
@@ -8204,7 +8206,7 @@ ${newBodyHtml}
                     <div>
                       <label
                         htmlFor="submittal_window_hours"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                       >
                         Submittal Window (hours)
                       </label>
@@ -8223,7 +8225,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         {editFormData?.submittal_job_type === "data_center" ? (
                           <>
@@ -8238,7 +8240,7 @@ ${newBodyHtml}
                           </>
                         )}
                       </select>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         Time allowed between report approval and sending
                       </p>
                     </div>
@@ -8256,9 +8258,9 @@ ${newBodyHtml}
               </form>
             </CardContent>
 
-            <CardFooter className="border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 px-6 py-4">
+            <CardFooter className="border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 px-6 py-4">
               <div className="flex justify-between items-center w-full">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   * Required fields
                 </p>
                 <div className="flex gap-2">
@@ -8280,7 +8282,7 @@ ${newBodyHtml}
                       setIsEditing(false);
                       setEditFormData(null);
                     }}
-                    className="px-4 py-2 text-sm border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="px-4 py-2 text-sm border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <X className="h-4 w-4 mr-1.5" />
                     Cancel
@@ -8302,12 +8304,12 @@ ${newBodyHtml}
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                  <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
                     {mergedTitles && mergedTitles.length > 0
                       ? mergedTitles.map((t) => maskJobTitle(t)).join(", ")
                       : maskJobTitle(job.title)}
                   </h1>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-white">
+                  <p className="mt-1 text-sm text-neutral-600 dark:text-white">
                     Job #{job.job_number || "Pending"}
                   </p>
                 </div>
@@ -8353,15 +8355,15 @@ ${newBodyHtml}
               {/* Additional job overview content would go here */}
             </div>
 
-            <div className="border-t border-zinc-200 dark:border-zinc-700">
+            <div className="border-t border-neutral-200 dark:border-neutral-700">
               <div className="px-6">
-                <div className="flex border-b border-zinc-200 dark:border-zinc-700">
+                <div className="flex border-b border-neutral-200 dark:border-neutral-700">
                   <button
                     onClick={() => handleTabChange("assets")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "assets"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Reports
@@ -8371,7 +8373,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "reports"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     } ${user?.user_metadata?.role !== "Admin" ? "opacity-50 cursor-not-allowed" : ""}`}
                     disabled={user?.user_metadata?.role !== "Admin"}
                   >
@@ -8383,7 +8385,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "report-audit"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Report Audit
@@ -8393,7 +8395,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "tracking"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Tracking
@@ -8403,7 +8405,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "overview"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Overview
@@ -8413,7 +8415,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "deliverables"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Deliverables
@@ -8423,7 +8425,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "notes"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Job Notes
@@ -8433,7 +8435,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "pictures"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     Pictures
@@ -8443,7 +8445,7 @@ ${newBodyHtml}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "after-action"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
                     After-Action Reports
@@ -8456,19 +8458,19 @@ ${newBodyHtml}
                   <div className="space-y-6">
                     {/* QuickBooks project & hours - hidden per request */}
                     {false && (
-                      <Card className="border-[#f26722]/30 bg-zinc-50/50 dark:bg-dark-200/50">
+                      <Card className="border-[#f26722]/30 bg-neutral-50/50 dark:bg-dark-200/50">
                         <CardHeader>
-                          <CardTitle className="text-base font-semibold text-zinc-900 dark:text-white">
+                          <CardTitle className="text-base font-semibold text-neutral-900 dark:text-white">
                             QuickBooks project & hours
                           </CardTitle>
-                          <CardDescription className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <CardDescription className="text-sm text-neutral-600 dark:text-neutral-400">
                             Link a QuickBooks project or customer to compare
                             estimated vs actual hours worked.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {!qbConnected ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               Connect QuickBooks in{" "}
                               <strong>Admin Dashboard → Integrations</strong> to
                               search and link projects.
@@ -8477,10 +8479,10 @@ ${newBodyHtml}
                             <div className="space-y-3">
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
-                                  <span className="text-sm font-medium text-zinc-600 dark:text-white">
+                                  <span className="text-sm font-medium text-neutral-600 dark:text-white">
                                     Linked:{" "}
                                   </span>
-                                  <span className="text-zinc-900 dark:text-white font-medium">
+                                  <span className="text-neutral-900 dark:text-white font-medium">
                                     {job.quickbooks_project_name ||
                                       job.quickbooks_project_id}
                                   </span>
@@ -8489,17 +8491,17 @@ ${newBodyHtml}
                                   type="button"
                                   onClick={handleUnlinkQuickBooksProject}
                                   disabled={qbAssigning}
-                                  className="px-3 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-100 dark:hover:bg-dark-100 text-zinc-700 dark:text-white disabled:opacity-50"
+                                  className="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-white disabled:opacity-50"
                                 >
                                   {qbAssigning ? "Unlinking..." : "Unlink"}
                                 </button>
                               </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-zinc-200 dark:border-zinc-700">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-neutral-200 dark:border-neutral-700">
                                 <div>
-                                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Estimated hours
                                   </span>
-                                  <p className="font-mono text-zinc-900 dark:text-white">
+                                  <p className="font-mono text-neutral-900 dark:text-white">
                                     {job.estimated_man_hours != null &&
                                     !Number.isNaN(
                                       Number(job.estimated_man_hours),
@@ -8509,10 +8511,10 @@ ${newBodyHtml}
                                   </p>
                                 </div>
                                 <div>
-                                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Actual hours (QuickBooks)
                                   </span>
-                                  <p className="font-mono text-zinc-900 dark:text-white">
+                                  <p className="font-mono text-neutral-900 dark:text-white">
                                     {qbHoursLoading
                                       ? "..."
                                       : qbActualHours != null
@@ -8521,7 +8523,7 @@ ${newBodyHtml}
                                   </p>
                                 </div>
                                 <div>
-                                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Difference
                                   </span>
                                   <p className="font-mono">
@@ -8541,7 +8543,7 @@ ${newBodyHtml}
                                               ? "text-amber-600 dark:text-amber-400"
                                               : diff < 0
                                                 ? "text-green-600 dark:text-green-400"
-                                                : "text-zinc-700 dark:text-zinc-300";
+                                                : "text-neutral-700 dark:text-neutral-300";
                                           return (
                                             <span className={color}>
                                               {diff >= 0 ? "+" : ""}
@@ -8555,7 +8557,7 @@ ${newBodyHtml}
                             </div>
                           ) : (
                             <div className="relative">
-                              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                                 Search and assign
                               </label>
                               <input
@@ -8567,12 +8569,12 @@ ${newBodyHtml}
                                   setQbProjectSearchOpen(true);
                                 }}
                                 onFocus={() => setQbProjectSearchOpen(true)}
-                                className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                               />
                               {qbProjectSearchOpen && (
-                                <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg">
+                                <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg">
                                   {qbProjectSearching ? (
-                                    <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                    <div className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                                       Searching...
                                     </div>
                                   ) : qbProjectError ? (
@@ -8580,7 +8582,7 @@ ${newBodyHtml}
                                       Error: {qbProjectError}
                                     </div>
                                   ) : qbProjectSearchResults.length === 0 ? (
-                                    <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                    <div className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                                       {qbProjectSearchQuery.trim()
                                         ? "No results."
                                         : "Type to search or click a result to assign."}
@@ -8597,16 +8599,16 @@ ${newBodyHtml}
                                             p.Name || p.DisplayName || p.Id,
                                           )
                                         }
-                                        className="w-full text-left px-3 py-2 hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0 text-zinc-900 dark:text-white disabled:opacity-50"
+                                        className="w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0 text-neutral-900 dark:text-white disabled:opacity-50"
                                       >
                                         {p.Name || p.DisplayName || p.Id}
                                       </button>
                                     ))
                                   )}
-                                  <div className="p-2 border-t border-zinc-200 dark:border-zinc-700">
+                                  <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
                                     <button
                                       type="button"
-                                      className="w-full text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200"
+                                      className="w-full text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
                                       onClick={() => {
                                         setQbProjectSearchOpen(false);
                                         setQbProjectSearchQuery("");
@@ -8627,7 +8629,7 @@ ${newBodyHtml}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-zinc-600 dark:text-white">
+                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
                             Project Status
                           </CardTitle>
                         </CardHeader>
@@ -8648,17 +8650,17 @@ ${newBodyHtml}
                                             ? "bg-orange-500"
                                             : job.status === "billed"
                                               ? "bg-indigo-500"
-                                              : "bg-zinc-500"
+                                              : "bg-neutral-500"
                                 }`}
                               />
-                              <span className="text-lg font-semibold capitalize text-zinc-900 dark:text-white">
+                              <span className="text-lg font-semibold capitalize text-neutral-900 dark:text-white">
                                 {job.status.replace("_", " ")}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               {!isStatusEditing ? (
                                 <button
-                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
+                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                   onClick={() => setIsStatusEditing(true)}
                                 >
                                   Change
@@ -8677,7 +8679,7 @@ ${newBodyHtml}
                                           : prev,
                                       )
                                     }
-                                    className="mt-0 block w-full p-2 bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded-md text-zinc-900 dark:text-white"
+                                    className="mt-0 block w-full p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-900 dark:text-white"
                                   >
                                     <option value="pending">Pending</option>
                                     <option value="in_progress">
@@ -8703,7 +8705,7 @@ ${newBodyHtml}
                                     Save
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() => setIsStatusEditing(false)}
                                   >
                                     Cancel
@@ -8717,7 +8719,7 @@ ${newBodyHtml}
 
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-zinc-600 dark:text-white">
+                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
                             Priority
                           </CardTitle>
                         </CardHeader>
@@ -8730,7 +8732,7 @@ ${newBodyHtml}
                             ) : (
                               <CheckCircle className="h-4 w-4 text-green-500" />
                             )}
-                            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
                               {formatStatusLabel(job.priority)}
                             </span>
                           </div>
@@ -8739,7 +8741,7 @@ ${newBodyHtml}
 
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-zinc-600 dark:text-white">
+                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
                             Fireteam Lead
                           </CardTitle>
                         </CardHeader>
@@ -8747,13 +8749,13 @@ ${newBodyHtml}
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center space-x-2">
                               <User className="h-4 w-4 text-[#f26722]" />
-                              <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+                              <span className="text-lg font-semibold text-neutral-900 dark:text-white">
                                 {job.fireteam_lead || "Not assigned"}
                               </span>
                             </div>
                             <div className="relative fireteam-lead-selector">
                               <button
-                                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
+                                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                 onClick={() =>
                                   setIsFireteamLeadSelectorOpen(
                                     !isFireteamLeadSelectorOpen,
@@ -8765,7 +8767,7 @@ ${newBodyHtml}
 
                               {/* User Selection Dropdown */}
                               {isFireteamLeadSelectorOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-lg shadow-lg z-50">
+                                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-lg z-50">
                                   <div className="p-3">
                                     <input
                                       type="text"
@@ -8774,7 +8776,7 @@ ${newBodyHtml}
                                       onChange={(e) =>
                                         setUserSearchQuery(e.target.value)
                                       }
-                                      className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md text-sm bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                                     />
                                   </div>
                                   <div className="max-h-60 overflow-y-auto">
@@ -8796,20 +8798,20 @@ ${newBodyHtml}
                                       .map((u) => (
                                         <div
                                           key={u.id}
-                                          className="px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0"
+                                          className="px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
                                           onClick={() =>
                                             handleFireteamLeadSelect(u)
                                           }
                                         >
                                           <div className="flex flex-col">
-                                            <span className="font-medium text-zinc-900 dark:text-white">
+                                            <span className="font-medium text-neutral-900 dark:text-white">
                                               {displayUserName(u)}
                                             </span>
-                                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                               {u.email}
                                             </span>
                                             {u.user_metadata?.role && (
-                                              <span className="text-xs text-zinc-600 dark:text-zinc-300">
+                                              <span className="text-xs text-neutral-600 dark:text-neutral-300">
                                                 Role: {u.user_metadata.role}
                                               </span>
                                             )}
@@ -8830,14 +8832,14 @@ ${newBodyHtml}
                                         name.includes(searchLower)
                                       );
                                     }).length === 0 && (
-                                      <div className="px-3 py-4 text-center text-zinc-500 dark:text-zinc-400">
+                                      <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400">
                                         No users found
                                       </div>
                                     )}
                                   </div>
-                                  <div className="p-2 border-t border-zinc-200 dark:border-zinc-700">
+                                  <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
                                     <button
-                                      className="w-full px-3 py-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                      className="w-full px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
                                       onClick={() => {
                                         setIsFireteamLeadSelectorOpen(false);
                                         setUserSearchQuery("");
@@ -8866,28 +8868,28 @@ ${newBodyHtml}
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Job Number
                             </label>
-                            <p className="text-zinc-900 dark:text-white font-mono">
+                            <p className="text-neutral-900 dark:text-white font-mono">
                               {job.job_number || "Pending"}
                             </p>
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Title
                             </label>
-                            <p className="text-zinc-900 dark:text-white">
+                            <p className="text-neutral-900 dark:text-white">
                               {maskJobTitle(job.title)}
                             </p>
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Job Site Address
                             </label>
                             <div className="flex items-start space-x-2">
-                              <MapPin className="h-4 w-4 text-zinc-500 mt-0.5" />
-                              <p className="text-zinc-900 dark:text-white text-sm">
+                              <MapPin className="h-4 w-4 text-neutral-500 mt-0.5" />
+                              <p className="text-neutral-900 dark:text-white text-sm">
                                 {maskCustomerAddress(job.site_address) ||
                                   "Not set"}
                               </p>
@@ -8895,17 +8897,17 @@ ${newBodyHtml}
                           </div>
                           {job.description && !isDemoMode && (
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Description
                               </label>
-                              <p className="text-zinc-900 dark:text-white text-sm">
+                              <p className="text-neutral-900 dark:text-white text-sm">
                                 {job.description}
                               </p>
                             </div>
                           )}
                           {opportunity && (
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Opportunity
                               </label>
                               <div className="flex items-center gap-2">
@@ -8932,10 +8934,10 @@ ${newBodyHtml}
                             </div>
                           )}
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Estimated Man Hours
                             </label>
-                            <p className="text-zinc-900 dark:text-white">
+                            <p className="text-neutral-900 dark:text-white">
                               {(() => {
                                 const fromJob =
                                   job.estimated_man_hours != null
@@ -8959,7 +8961,7 @@ ${newBodyHtml}
                             /T&M|time.*material/i.test(job.notes) &&
                             !opportunity && (
                               <div>
-                                <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                                <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                   Source
                                 </label>
                                 <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
@@ -8969,12 +8971,12 @@ ${newBodyHtml}
                             )}
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Start Date
                               </label>
                               <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-zinc-500" />
-                                <p className="text-zinc-900 dark:text-white text-sm">
+                                <Calendar className="h-4 w-4 text-neutral-500" />
+                                <p className="text-neutral-900 dark:text-white text-sm">
                                   {job.start_date
                                     ? format(
                                         new Date(job.start_date),
@@ -8985,12 +8987,12 @@ ${newBodyHtml}
                               </div>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Due Date
                               </label>
                               <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-zinc-500" />
-                                <p className="text-zinc-900 dark:text-white text-sm">
+                                <Calendar className="h-4 w-4 text-neutral-500" />
+                                <p className="text-neutral-900 dark:text-white text-sm">
                                   {job.due_date
                                     ? format(
                                         new Date(job.due_date),
@@ -9003,33 +9005,33 @@ ${newBodyHtml}
                           </div>
                           {job.division && (
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Division
                               </label>
-                              <p className="text-zinc-900 dark:text-white">
+                              <p className="text-neutral-900 dark:text-white">
                                 {formatDivisionDisplay(job.division)}
                               </p>
                             </div>
                           )}
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Fireteam Lead
                             </label>
                             <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-zinc-500" />
-                              <p className="text-zinc-900 dark:text-white text-sm">
+                              <User className="h-4 w-4 text-neutral-500" />
+                              <p className="text-neutral-900 dark:text-white text-sm">
                                 {job.fireteam_lead || "Not assigned"}
                               </p>
                             </div>
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Progress Billing Status
                             </label>
                             <div className="flex items-center justify-between gap-2 mt-1">
                               {!isProgressBillingStatusEditing ? (
                                 <>
-                                  <p className="text-zinc-900 dark:text-white text-sm capitalize">
+                                  <p className="text-neutral-900 dark:text-white text-sm capitalize">
                                     {job.progress_billing_status
                                       ? job.progress_billing_status.replace(
                                           "_",
@@ -9038,7 +9040,7 @@ ${newBodyHtml}
                                       : "Not set"}
                                   </p>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() =>
                                       setIsProgressBillingStatusEditing(true)
                                     }
@@ -9065,7 +9067,7 @@ ${newBodyHtml}
                                           : prev,
                                       )
                                     }
-                                    className="flex-1 p-2 bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded-md text-zinc-900 dark:text-white text-sm"
+                                    className="flex-1 p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-900 dark:text-white text-sm"
                                   >
                                     <option value="">Not set</option>
                                     <option value="not_started">
@@ -9148,7 +9150,7 @@ ${newBodyHtml}
                                     Save
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-100 text-zinc-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() => {
                                       setIsProgressBillingStatusEditing(false);
                                       // Reset to original value
@@ -9184,10 +9186,10 @@ ${newBodyHtml}
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div>
-                            <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Company
                             </label>
-                            <p className="text-zinc-900 dark:text-white font-semibold">
+                            <p className="text-neutral-900 dark:text-white font-semibold">
                               {maskCustomerName(
                                 job.customers.company_name ||
                                   job.customers.name,
@@ -9196,12 +9198,12 @@ ${newBodyHtml}
                           </div>
                           {job.customers.address && (
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Customer Address
                               </label>
                               <div className="flex items-start space-x-2">
-                                <MapPin className="h-4 w-4 text-zinc-500 mt-0.5" />
-                                <p className="text-zinc-900 dark:text-white text-sm">
+                                <MapPin className="h-4 w-4 text-neutral-500 mt-0.5" />
+                                <p className="text-neutral-900 dark:text-white text-sm">
                                   {maskCustomerAddress(job.customers.address)}
                                 </p>
                               </div>
@@ -9209,26 +9211,26 @@ ${newBodyHtml}
                           )}
                           {contacts.length > 0 && (
                             <div>
-                              <label className="text-sm font-medium text-zinc-600 dark:text-white">
+                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                 Primary Contact
                               </label>
                               {contacts
                                 .filter((c) => c.is_primary)
                                 .map((contact) => (
                                   <div key={contact.id} className="space-y-2">
-                                    <p className="text-zinc-900 dark:text-white font-medium">
+                                    <p className="text-neutral-900 dark:text-white font-medium">
                                       {contact.first_name} {contact.last_name}
                                     </p>
                                     <div className="space-y-1">
                                       <div className="flex items-center space-x-2">
-                                        <Mail className="h-4 w-4 text-zinc-500" />
-                                        <p className="text-zinc-900 dark:text-white text-sm">
+                                        <Mail className="h-4 w-4 text-neutral-500" />
+                                        <p className="text-neutral-900 dark:text-white text-sm">
                                           {contact.email}
                                         </p>
                                       </div>
                                       <div className="flex items-center space-x-2">
-                                        <Phone className="h-4 w-4 text-zinc-500" />
-                                        <p className="text-zinc-900 dark:text-white text-sm">
+                                        <Phone className="h-4 w-4 text-neutral-500" />
+                                        <p className="text-neutral-900 dark:text-white text-sm">
                                           {contact.phone}
                                         </p>
                                       </div>
@@ -9250,10 +9252,10 @@ ${newBodyHtml}
                             <span>Contracts / Agreements / Invoices / etc</span>
                           </CardTitle>
                           <div className="flex items-center gap-4 flex-wrap">
-                            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                            <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               Total Contract Value:{" "}
                               <span
-                                className={`font-semibold ${totalContractValue < 0 ? "text-red-600 dark:text-red-400" : totalContractValue > 0 ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}
+                                className={`font-semibold ${totalContractValue < 0 ? "text-red-600 dark:text-red-400" : totalContractValue > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-900 dark:text-white"}`}
                               >
                                 {totalContractValue < 0 ? "-" : ""}$
                                 {Math.abs(totalContractValue).toLocaleString(
@@ -9265,10 +9267,10 @@ ${newBodyHtml}
                                 )}
                               </span>
                             </span>
-                            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                            <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               Remaining Balance Left to Bill:{" "}
                               <span
-                                className={`font-semibold ${remainingBalance < 0 ? "text-red-600 dark:text-red-400" : remainingBalance > 0 ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}
+                                className={`font-semibold ${remainingBalance < 0 ? "text-red-600 dark:text-red-400" : remainingBalance > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-900 dark:text-white"}`}
                               >
                                 {remainingBalance < 0 ? "-" : ""}$
                                 {Math.abs(remainingBalance).toLocaleString(
@@ -9292,7 +9294,7 @@ ${newBodyHtml}
                       </CardHeader>
                       <CardContent>
                         {contracts.length === 0 ? (
-                          <div className="text-center py-8 text-zinc-500 dark:text-white">
+                          <div className="text-center py-8 text-neutral-500 dark:text-white">
                             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p>No actions added yet</p>
                             <p className="text-sm">
@@ -9321,17 +9323,17 @@ ${newBodyHtml}
                               return (
                                 <div
                                   key={contract.id}
-                                  className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4"
+                                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                       <div className="flex items-center space-x-3">
                                         <FileText className="h-5 w-5 text-[#f26722]" />
                                         <div>
-                                          <h4 className="font-medium text-zinc-900 dark:text-white">
+                                          <h4 className="font-medium text-neutral-900 dark:text-white">
                                             {contract.name}
                                           </h4>
-                                          <div className="flex items-center space-x-4 text-sm text-zinc-500 dark:text-white flex-wrap gap-y-1">
+                                          <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-white flex-wrap gap-y-1">
                                             <span className="capitalize">
                                               {contract.type.replace("_", " ")}
                                             </span>
@@ -9345,7 +9347,7 @@ ${newBodyHtml}
                                                     : contract.status ===
                                                         "expired"
                                                       ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                                                      : "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100"
+                                                      : "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100"
                                               }
                                             >
                                               {contract.status}
@@ -9374,7 +9376,7 @@ ${newBodyHtml}
                                             </span>
                                           </div>
                                           {contract.description && (
-                                            <p className="text-sm text-zinc-600 dark:text-white mt-1">
+                                            <p className="text-sm text-neutral-600 dark:text-white mt-1">
                                               {contract.description}
                                             </p>
                                           )}
@@ -9453,7 +9455,7 @@ ${newBodyHtml}
                       </CardHeader>
                       <CardContent>
                         {oneLineDrawings.length === 0 ? (
-                          <div className="text-center py-8 text-zinc-500 dark:text-white">
+                          <div className="text-center py-8 text-neutral-500 dark:text-white">
                             <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p>No drawings uploaded yet</p>
                             <p className="text-sm">
@@ -9465,21 +9467,21 @@ ${newBodyHtml}
                             {oneLineDrawings.map((drawing) => (
                               <div
                                 key={drawing.id}
-                                className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                               >
-                                <div className="aspect-video bg-zinc-100 dark:bg-dark-150 rounded-lg mb-3 flex items-center justify-center">
-                                  <Image className="h-8 w-8 text-zinc-400" />
+                                <div className="aspect-video bg-neutral-100 dark:bg-dark-150 rounded-lg mb-3 flex items-center justify-center">
+                                  <Image className="h-8 w-8 text-neutral-400" />
                                 </div>
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between">
-                                    <h4 className="font-medium text-zinc-900 dark:text-white text-sm truncate">
+                                    <h4 className="font-medium text-neutral-900 dark:text-white text-sm truncate">
                                       {drawing.name}
                                     </h4>
                                     <Badge
                                       className={
                                         drawing.is_current
                                           ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                                          : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
+                                          : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100"
                                       }
                                     >
                                       {drawing.is_current
@@ -9487,7 +9489,7 @@ ${newBodyHtml}
                                         : "Previous"}
                                     </Badge>
                                   </div>
-                                  <div className="text-xs text-zinc-500 dark:text-white">
+                                  <div className="text-xs text-neutral-500 dark:text-white">
                                     <p>Version {drawing.version}</p>
                                     <p>
                                       {format(
@@ -9543,7 +9545,7 @@ ${newBodyHtml}
                       </CardHeader>
                       <CardContent>
                         {miscellaneousDocuments.length === 0 ? (
-                          <div className="text-center py-8 text-zinc-500 dark:text-white">
+                          <div className="text-center py-8 text-neutral-500 dark:text-white">
                             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p>No documents uploaded yet</p>
                             <p className="text-sm">
@@ -9555,17 +9557,17 @@ ${newBodyHtml}
                             {miscellaneousDocuments.map((document) => (
                               <div
                                 key={document.id}
-                                className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4"
+                                className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-3">
                                       <FileText className="h-5 w-5 text-[#f26722]" />
                                       <div>
-                                        <h4 className="font-medium text-zinc-900 dark:text-white">
+                                        <h4 className="font-medium text-neutral-900 dark:text-white">
                                           {document.name}
                                         </h4>
-                                        <div className="flex items-center space-x-4 text-sm text-zinc-500 dark:text-white">
+                                        <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-white">
                                           <span>
                                             {format(
                                               new Date(document.created_at),
@@ -9582,7 +9584,7 @@ ${newBodyHtml}
                                           )}
                                         </div>
                                         {document.description && (
-                                          <p className="text-sm text-zinc-600 dark:text-white mt-1">
+                                          <p className="text-sm text-neutral-600 dark:text-white mt-1">
                                             {document.description}
                                           </p>
                                         )}
@@ -9652,11 +9654,11 @@ ${newBodyHtml}
                               role="menu"
                               aria-orientation="vertical"
                             >
-                              <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white">
+                              <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white">
                                 Upload Document
                               </div>
                               <button
-                                className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                 onClick={() => {
                                   setShowUploadDialog(true);
                                   setIsDropdownOpen(false);
@@ -9669,7 +9671,7 @@ ${newBodyHtml}
                               </button>
 
                               <button
-                                className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                 onClick={() => {
                                   handleImportReport();
                                   setIsDropdownOpen(false);
@@ -9682,7 +9684,7 @@ ${newBodyHtml}
                               </button>
 
                               <button
-                                className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                 onClick={() => {
                                   handleBatchImportReport();
                                   setIsDropdownOpen(false);
@@ -9695,7 +9697,7 @@ ${newBodyHtml}
                               </button>
 
                               <button
-                                className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                 onClick={() => {
                                   setShowPdfReportUploadDialog(true);
                                   setIsDropdownOpen(false);
@@ -9707,9 +9709,9 @@ ${newBodyHtml}
                                 </div>
                               </button>
 
-                              <div className="border-t border-zinc-100 dark:border-zinc-700 my-1"></div>
+                              <div className="border-t border-neutral-100 dark:border-neutral-700 my-1"></div>
 
-                              <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white">
+                              <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white">
                                 Create Report
                               </div>
 
@@ -9727,13 +9729,13 @@ ${newBodyHtml}
 
                               <div className="max-h-60 overflow-y-auto">
                                 {filteredReportTemplates.length === 0 ? (
-                                  <div className="px-4 py-2 text-sm text-zinc-500">
+                                  <div className="px-4 py-2 text-sm text-neutral-500">
                                     No matching reports found
                                   </div>
                                 ) : (
                                   <>
                                     {/* ATS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white bg-zinc-50 dark:bg-dark-150">
+                                    <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                       ATS Reports
                                     </div>
                                     {filteredReportTemplates
@@ -9745,7 +9747,7 @@ ${newBodyHtml}
                                         <Link
                                           key={asset.id}
                                           to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                          className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                           onClick={() =>
                                             setIsDropdownOpen(false)
                                           }
@@ -9763,7 +9765,7 @@ ${newBodyHtml}
                                       ))}
 
                                     {/* MTS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white bg-zinc-50 dark:bg-dark-150">
+                                    <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                       MTS Reports
                                     </div>
                                     {filteredReportTemplates
@@ -9775,7 +9777,7 @@ ${newBodyHtml}
                                         <Link
                                           key={asset.id}
                                           to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                          className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                           onClick={() =>
                                             setIsDropdownOpen(false)
                                           }
@@ -9797,7 +9799,7 @@ ${newBodyHtml}
                                       (asset) => !asset.template_type,
                                     ) && (
                                       <>
-                                        <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white bg-zinc-50 dark:bg-dark-150">
+                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Other Reports
                                         </div>
                                         {filteredReportTemplates
@@ -9808,7 +9810,7 @@ ${newBodyHtml}
                                             <Link
                                               key={asset.id}
                                               to={getReportEditPath(asset)}
-                                              className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                              className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                               onClick={() =>
                                                 setIsDropdownOpen(false)
                                               }
@@ -9830,15 +9832,15 @@ ${newBodyHtml}
                                     {/* Custom Forms */}
                                     {customFormTemplates.length > 0 && (
                                       <>
-                                        <div className="border-t border-zinc-100 dark:border-zinc-700 my-1" />
-                                        <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white bg-zinc-50 dark:bg-dark-150">
+                                        <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
+                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Custom Forms
                                         </div>
                                         {customFormTemplates.map((t) => (
                                           <Link
                                             key={t.id}
                                             to={`/jobs/${id}/custom-form/${t.id}/new`}
-                                            className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                             onClick={() =>
                                               setIsDropdownOpen(false)
                                             }
@@ -9849,7 +9851,7 @@ ${newBodyHtml}
                                                 {t.name}
                                               </span>
                                               {t.neta_section && (
-                                                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+                                                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
                                                   ({t.neta_section})
                                                 </span>
                                               )}
@@ -9862,15 +9864,15 @@ ${newBodyHtml}
                                     {/* Internal Forms */}
                                     {INTERNAL_FORM_TEMPLATES.length > 0 && (
                                       <>
-                                        <div className="border-t border-zinc-100 dark:border-zinc-700 my-1" />
-                                        <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-white bg-zinc-50 dark:bg-dark-150">
+                                        <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
+                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Internal Forms
                                         </div>
                                         {INTERNAL_FORM_TEMPLATES.map((t) => (
                                           <Link
                                             key={t.slug}
                                             to={`/jobs/${id}/${t.slug}`}
-                                            className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                             onClick={() =>
                                               setIsDropdownOpen(false)
                                             }
@@ -9912,13 +9914,13 @@ ${newBodyHtml}
 
                       {/* Status filter tabs */}
                       <div className="mt-4">
-                        <div className="flex space-x-1 bg-zinc-100 dark:bg-dark-150 p-1 rounded-lg">
+                        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg">
                           <button
                             onClick={() => setAssetStatusFilter("all")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "all"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             All ({totalAssetCount})
@@ -9927,8 +9929,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("not started")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "not started"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Not Started (
@@ -9943,8 +9945,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("in_progress")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "in_progress"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             In Progress (
@@ -9964,7 +9966,7 @@ ${newBodyHtml}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "ready_for_review"
                                 ? "bg-blue-600 text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Ready for Review (
@@ -9979,8 +9981,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("approved")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "approved"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Approved (
@@ -9999,8 +10001,8 @@ ${newBodyHtml}
                             }
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "approved_internal_forms"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Approved Internal Forms (
@@ -10017,8 +10019,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("sent")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "sent"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Sent (
@@ -10033,8 +10035,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("issue")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "issue"
-                                ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Issues (
@@ -10049,8 +10051,8 @@ ${newBodyHtml}
                             onClick={() => setAssetStatusFilter("archived")}
                             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               assetStatusFilter === "archived"
-                                ? "bg-zinc-500 text-white shadow-sm"
-                                : "text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                ? "bg-neutral-500 text-white shadow-sm"
+                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
                             Archived (
@@ -10125,8 +10127,8 @@ ${newBodyHtml}
                               )}
                             </div>
                             {isPrinting && (
-                              <div className="text-sm text-zinc-600 dark:text-white">
-                                <div className="w-full bg-zinc-200 dark:bg-dark-150 rounded-full h-2 mb-1">
+                              <div className="text-sm text-neutral-600 dark:text-white">
+                                <div className="w-full bg-neutral-200 dark:bg-dark-150 rounded-full h-2 mb-1">
                                   <div
                                     className="bg-[#f26722] h-2 rounded-full"
                                     style={{ width: `${printProgress}%` }}
@@ -10181,11 +10183,11 @@ ${newBodyHtml}
                     </CardHeader>
                     <CardContent>
                       {jobAssets.length === 0 ? (
-                        <div className="text-center py-4 text-zinc-500 dark:text-white">
+                        <div className="text-center py-4 text-neutral-500 dark:text-white">
                           <p>No assets have been linked to this job yet.</p>
                         </div>
                       ) : filteredJobAssets.length === 0 ? (
-                        <div className="text-center py-4 text-zinc-500 dark:text-white">
+                        <div className="text-center py-4 text-neutral-500 dark:text-white">
                           <p>No matching assets found</p>
                         </div>
                       ) : (
@@ -10256,21 +10258,21 @@ ${newBodyHtml}
                                 key={folderKey}
                                 className="group border rounded-md overflow-hidden"
                               >
-                                <summary className="cursor-pointer select-none bg-zinc-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
+                                <summary className="cursor-pointer select-none bg-neutral-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-zinc-800 dark:text-white">
+                                    <span className="font-semibold text-neutral-800 dark:text-white">
                                       {folderKey === "Imported"
                                         ? "Imported"
                                         : folderKey === "Other"
                                           ? "Other"
                                           : `${folderKey}`}
                                     </span>
-                                    <span className="text-xs text-zinc-500">
+                                    <span className="text-xs text-neutral-500">
                                       ({groups[folderKey].length})
                                     </span>
                                   </div>
                                   <svg
-                                    className="w-4 h-4 text-zinc-500 transform group-open:rotate-180 transition-transform"
+                                    className="w-4 h-4 text-neutral-500 transform group-open:rotate-180 transition-transform"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -10375,7 +10377,7 @@ ${newBodyHtml}
                                                 className={`px-2 py-1 rounded text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                                                   asset.urgency === "critical"
                                                     ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                                    : "bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                                                    : "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300"
                                                 }`}
                                               >
                                                 <option value="normal">
@@ -10398,7 +10400,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                                                 >
                                                   <option value="not started">
                                                     Not Started
@@ -10497,7 +10499,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
                                                 >
                                                   <option value="archived">
                                                     Archived
@@ -10536,7 +10538,7 @@ ${newBodyHtml}
                                                       : (asset.status ||
                                                             "not started") ===
                                                           "not started"
-                                                        ? "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                                                        ? "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                                                         : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                                                   }`}
                                                 >
@@ -10654,7 +10656,7 @@ ${newBodyHtml}
                                                         <Button
                                                           variant="ghost"
                                                           size="sm"
-                                                          className="text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 p-0 h-auto"
+                                                          className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 p-0 h-auto"
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleEditPdfReport(
@@ -10796,7 +10798,7 @@ ${newBodyHtml}
                     </CardHeader>
                     <CardContent>
                       {reportAuditRows.length === 0 ? (
-                        <div className="text-center py-6 text-zinc-500 dark:text-white">
+                        <div className="text-center py-6 text-neutral-500 dark:text-white">
                           <p>No reports found for this project.</p>
                         </div>
                       ) : (
@@ -10818,7 +10820,7 @@ ${newBodyHtml}
                                   <TableCell className="font-medium min-w-[240px]">
                                     <div>{row.displayName}</div>
                                     {row.substation && (
-                                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                                         {row.substation}
                                       </div>
                                     )}
@@ -10832,19 +10834,19 @@ ${newBodyHtml}
                                     <div>
                                       {formatAuditDate(row.submittedAt)}
                                     </div>
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                                       {getAuditUserName(row.submittedBy)}
                                     </div>
                                   </TableCell>
                                   <TableCell className="min-w-[180px]">
                                     <div>{formatAuditDate(row.approvedAt)}</div>
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                                       {getAuditUserName(row.approvedBy)}
                                     </div>
                                   </TableCell>
                                   <TableCell className="min-w-[180px]">
                                     <div>{formatAuditDate(row.sentAt)}</div>
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                                       {getAuditUserName(row.sentBy)}
                                     </div>
                                   </TableCell>
@@ -10863,7 +10865,7 @@ ${newBodyHtml}
                                         View
                                       </Button>
                                     ) : (
-                                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
                                         None
                                       </span>
                                     )}
@@ -10947,7 +10949,7 @@ ${newBodyHtml}
                 onChange={handleFileChange}
               />
               {selectedFile && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   {selectedFile.name} ({Math.round(selectedFile.size / 1024)}{" "}
                   KB)
                 </p>
@@ -10956,7 +10958,7 @@ ${newBodyHtml}
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-zinc-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600 rounded-full"
                     style={{ width: `${uploadProgress}%` }}
@@ -10970,7 +10972,7 @@ ${newBodyHtml}
 
             {isBatchUploading && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-zinc-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-600 rounded-full"
                     style={{ width: `${batchUploadProgress}%` }}
@@ -10979,7 +10981,7 @@ ${newBodyHtml}
                 <p className="text-sm text-center">
                   {batchUploadProgress}% Complete
                 </p>
-                <p className="text-xs text-zinc-500 text-center">
+                <p className="text-xs text-neutral-500 text-center">
                   {batchUploadStatus}
                 </p>
               </div>
@@ -11045,7 +11047,7 @@ ${newBodyHtml}
                 onChange={(e) => setPdfReportSubstation(e.target.value)}
                 placeholder="e.g., Main Substation"
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-neutral-500">
                 You can edit this later if needed
               </p>
             </div>
@@ -11061,7 +11063,7 @@ ${newBodyHtml}
                 onChange={handlePdfReportFileChange}
               />
               {pdfReportFile && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   {pdfReportFile.name} ({Math.round(pdfReportFile.size / 1024)}{" "}
                   KB)
                 </p>
@@ -11070,7 +11072,7 @@ ${newBodyHtml}
 
             {isUploadingPdfReport && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-zinc-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600 rounded-full"
                     style={{ width: `${pdfUploadProgress}%` }}
@@ -11193,18 +11195,18 @@ ${newBodyHtml}
 
           {assetToDelete && (
             <div className="py-4">
-              <div className="flex items-center p-3 bg-zinc-50 dark:bg-dark-150 rounded">
-                <FileText className="h-5 w-5 min-w-[20px] flex-shrink-0 text-zinc-500 mr-2" />
+              <div className="flex items-center p-3 bg-neutral-50 dark:bg-dark-150 rounded">
+                <FileText className="h-5 w-5 min-w-[20px] flex-shrink-0 text-neutral-500 mr-2" />
                 <span className="font-medium">{assetToDelete.name}</span>
               </div>
 
               {assetToDelete.file_url.startsWith("report:") ? (
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-neutral-500">
                   This will only remove the link between the report and this
                   job. The report will still be accessible from its direct URL.
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-neutral-500">
                   This will permanently delete this document from the system.
                 </p>
               )}
@@ -11249,16 +11251,16 @@ ${newBodyHtml}
 
           {job && (
             <div className="py-4">
-              <div className="flex items-center p-3 bg-zinc-50 dark:bg-dark-150 rounded">
-                <Building className="h-5 w-5 min-w-[20px] flex-shrink-0 text-zinc-500 mr-2" />
+              <div className="flex items-center p-3 bg-neutral-50 dark:bg-dark-150 rounded">
+                <Building className="h-5 w-5 min-w-[20px] flex-shrink-0 text-neutral-500 mr-2" />
                 <div>
                   <span className="font-medium">{maskJobTitle(job.title)}</span>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     Job #{job.job_number || "Pending"}
                   </p>
                 </div>
               </div>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 This will permanently remove the job from the system. All
                 associated data will be hidden but preserved in the database.
               </p>
@@ -11325,7 +11327,7 @@ ${newBodyHtml}
                       type: e.target.value as Contract["type"],
                     }))
                   }
-                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                 >
                   <option value="main">Main Contract</option>
                   <option value="subcontract">Subcontract</option>
@@ -11355,7 +11357,7 @@ ${newBodyHtml}
                   }
                   placeholder="0.00"
                 />
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   Optional. Leave blank if you only have a PO number or
                   reference.
                 </p>
@@ -11503,7 +11505,7 @@ ${newBodyHtml}
                     }))
                   }
                   placeholder="Brief description (optional)"
-                  className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                   rows={3}
                 />
               </div>
@@ -11519,12 +11521,12 @@ ${newBodyHtml}
                   onChange={(e) => setContractFile(e.target.files?.[0] || null)}
                 />
                 {contractFile && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     {contractFile.name} ({Math.round(contractFile.size / 1024)}{" "}
                     KB)
                   </p>
                 )}
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   Attach a file if you have one; not required (e.g. PO number
                   only).
                 </p>
@@ -11612,7 +11614,7 @@ ${newBodyHtml}
 
           <div className="flex-1 overflow-hidden">
             {selectedContract?.file_url && (
-              <div className="w-full h-full bg-zinc-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
                 <iframe
                   src={selectedContract.file_url}
                   className="w-full h-full rounded-lg border-0"
@@ -11622,7 +11624,7 @@ ${newBodyHtml}
               </div>
             )}
             {selectedContract && !selectedContract.file_url && (
-              <div className="flex items-center justify-center p-8 text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-center p-8 text-neutral-500 dark:text-neutral-400">
                 No attachment for this action.
               </div>
             )}
@@ -11672,7 +11674,7 @@ ${newBodyHtml}
                   }))
                 }
                 placeholder="Brief description of the drawing..."
-                className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                 rows={3}
               />
             </div>
@@ -11688,7 +11690,7 @@ ${newBodyHtml}
                 onChange={(e) => setDrawingFile(e.target.files?.[0] || null)}
               />
               {drawingFile && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   {drawingFile.name} ({Math.round(drawingFile.size / 1024)} KB)
                 </p>
               )}
@@ -11767,7 +11769,7 @@ ${newBodyHtml}
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {selectedDrawing && (
-              <div className="w-full h-full bg-zinc-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
                 {selectedDrawing.file_url.toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={selectedDrawing.file_url}
@@ -11827,7 +11829,7 @@ ${newBodyHtml}
                   }))
                 }
                 placeholder="Brief description of the document..."
-                className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                 rows={3}
               />
             </div>
@@ -11843,7 +11845,7 @@ ${newBodyHtml}
                 onChange={(e) => setMiscFile(e.target.files?.[0] || null)}
               />
               {miscFile && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   {miscFile.name} ({Math.round(miscFile.size / 1024)} KB)
                 </p>
               )}
@@ -11908,7 +11910,7 @@ ${newBodyHtml}
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {selectedMiscDocument && (
-              <div className="w-full h-full bg-zinc-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
                 {selectedMiscDocument.file_url
                   .toLowerCase()
                   .endsWith(".pdf") ? (
@@ -11929,8 +11931,8 @@ ${newBodyHtml}
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <FileText className="h-16 w-16 mx-auto mb-4 text-zinc-400" />
-                      <p className="text-zinc-600 dark:text-zinc-400">
+                      <FileText className="h-16 w-16 mx-auto mb-4 text-neutral-400" />
+                      <p className="text-neutral-600 dark:text-neutral-400">
                         Preview not available
                       </p>
                       <Button

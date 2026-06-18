@@ -172,14 +172,14 @@ export const JobTitleHistoryView: React.FC<JobTitleHistoryViewProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {currentTitle ? (
-            <p className="text-lg text-zinc-900 dark:text-white">
+            <p className="text-lg text-neutral-900 dark:text-white">
               {currentTitle}
             </p>
           ) : (
             <p className="text-muted-foreground">No job title on file.</p>
           )}
           {canEdit && (
-            <div className="pt-4 border-t border-zinc-200 dark:border-dark-200 space-y-4">
+            <div className="pt-4 border-t border-neutral-200 dark:border-dark-200 space-y-4">
               <Label htmlFor="title-input">Update job title</Label>
               <div className="flex gap-2">
                 <Input
@@ -219,7 +219,7 @@ export const JobTitleHistoryView: React.FC<JobTitleHistoryViewProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-dark-300">
+                  <tr className="border-b border-neutral-200 dark:border-dark-300">
                     <th className="text-left py-3 px-2 font-medium">Title</th>
                     <th className="text-left py-3 px-2 font-medium">
                       Effective from
@@ -233,7 +233,7 @@ export const JobTitleHistoryView: React.FC<JobTitleHistoryViewProps> = ({
                   {history.map((entry) => (
                     <tr
                       key={entry.id}
-                      className="border-b border-zinc-100 dark:border-dark-200"
+                      className="border-b border-neutral-100 dark:border-dark-200"
                     >
                       <td className="py-2 px-2">{entry.title}</td>
                       <td className="py-2 px-2 text-muted-foreground">

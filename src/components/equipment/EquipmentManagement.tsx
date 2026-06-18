@@ -308,9 +308,9 @@ export default function EquipmentManagement({
       case "out-of-service":
         return "bg-red-100 text-red-800";
       case "retired":
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 

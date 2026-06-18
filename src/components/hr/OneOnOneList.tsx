@@ -132,7 +132,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
     <>
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-[#f26722]" />
             One-on-One Check-Ins
           </h3>
@@ -152,7 +152,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-zinc-500 py-2">
+          <div className="flex items-center gap-2 text-sm text-neutral-500 py-2">
             <LoadingSpinner size="sm" />
           </div>
         ) : checkins.length === 0 ? (
@@ -170,10 +170,10 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
               return (
                 <li
                   key={c.id}
-                  className="group flex items-center justify-between gap-3 rounded-lg border border-zinc-200 dark:border-dark-300 p-3 hover:border-zinc-300 dark:hover:border-dark-200 transition-colors"
+                  className="group flex items-center justify-between gap-3 rounded-lg border border-neutral-200 dark:border-dark-300 p-3 hover:border-neutral-300 dark:hover:border-dark-200 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0">
                       <Calendar className="h-3.5 w-3.5" />
                       {formatDate(c.meeting_date)}
                     </div>
@@ -186,7 +186,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                       </span>
                     )}
                     {c.period_covered && (
-                      <span className="text-xs text-zinc-400 truncate">
+                      <span className="text-xs text-neutral-400 truncate">
                         {c.period_covered}
                       </span>
                     )}
@@ -195,7 +195,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                     <button
                       type="button"
                       onClick={() => setViewingCheckin(c)}
-                      className="p-1.5 rounded text-zinc-400 hover:text-[#4a4e8a] hover:bg-zinc-100 dark:hover:bg-dark-200"
+                      className="p-1.5 rounded text-neutral-400 hover:text-[#4a4e8a] hover:bg-neutral-100 dark:hover:bg-dark-200"
                       title="View"
                     >
                       <Eye className="h-3.5 w-3.5" />
@@ -208,7 +208,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                             setEditingCheckin(c);
                             setShowForm(true);
                           }}
-                          className="p-1.5 rounded text-zinc-400 hover:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-200"
+                          className="p-1.5 rounded text-neutral-400 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
                           title="Edit"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
@@ -217,7 +217,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                           type="button"
                           onClick={() => handleDelete(c.id)}
                           disabled={deletingId === c.id}
-                          className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-dark-200"
+                          className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-dark-200"
                           title="Delete"
                         >
                           {deletingId === c.id ? (
@@ -335,15 +335,15 @@ function OneOnOneViewer({
       <div className="relative w-full max-w-3xl bg-white dark:bg-dark-150 rounded-xl shadow-2xl my-6 overflow-hidden">
         <div className="h-1.5 bg-gradient-to-r from-[#4a4e8a] via-[#52b788] to-[#c9a84c]" />
 
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-dark-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-[#4a4e8a] dark:text-[#8b8fd4]">
               One-on-One Check-In
             </p>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white mt-0.5">
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mt-0.5">
               {formatDate(checkin.meeting_date)}
               {checkin.period_covered && (
-                <span className="text-zinc-400 font-normal">
+                <span className="text-neutral-400 font-normal">
                   {" "}
                   - {checkin.period_covered}
                 </span>
@@ -372,7 +372,7 @@ function OneOnOneViewer({
               {checkin.key_events.map((e, i) => (
                 <div
                   key={i}
-                  className="text-sm text-zinc-700 dark:text-zinc-300 mb-2 pl-4 border-l-2 border-[#4a4e8a]/30"
+                  className="text-sm text-neutral-700 dark:text-neutral-300 mb-2 pl-4 border-l-2 border-[#4a4e8a]/30"
                 >
                   {e.description}
                 </div>
@@ -385,11 +385,11 @@ function OneOnOneViewer({
             <ViewSection title="Strengths & Wins">
               {checkin.strengths.map((s, i) => (
                 <div key={i} className="mb-2">
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
                     {i + 1}. {s.text}
                   </p>
                   {s.followUp && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 italic ml-4">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 italic ml-4">
                       Follow-up: {s.followUp}
                     </p>
                   )}
@@ -403,11 +403,11 @@ function OneOnOneViewer({
             <ViewSection title="Areas to Develop">
               {checkin.development_areas.map((d, i) => (
                 <div key={i} className="mb-2">
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
                     {i + 1}. {d.text}
                   </p>
                   {d.followUp && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 italic ml-4">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 italic ml-4">
                       Action plan: {d.followUp}
                     </p>
                   )}
@@ -423,11 +423,11 @@ function OneOnOneViewer({
                 {checkin.goals.map((g, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300"
+                    className="flex items-start gap-3 text-sm text-neutral-700 dark:text-neutral-300"
                   >
                     <span className="flex-1">{g.goal}</span>
                     {g.status && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 flex-shrink-0">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 flex-shrink-0">
                         {g.status}
                       </span>
                     )}
@@ -444,10 +444,10 @@ function OneOnOneViewer({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {checkin.employee_commitments?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-zinc-500 mb-1">
+                    <p className="text-xs font-semibold text-neutral-500 mb-1">
                       Employee:
                     </p>
-                    <ul className="list-disc list-inside text-sm text-zinc-700 dark:text-zinc-300 space-y-0.5">
+                    <ul className="list-disc list-inside text-sm text-neutral-700 dark:text-neutral-300 space-y-0.5">
                       {checkin.employee_commitments.map((c, i) => (
                         <li key={i}>{c}</li>
                       ))}
@@ -456,10 +456,10 @@ function OneOnOneViewer({
                 )}
                 {checkin.manager_commitments?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-zinc-500 mb-1">
+                    <p className="text-xs font-semibold text-neutral-500 mb-1">
                       Manager:
                     </p>
-                    <ul className="list-disc list-inside text-sm text-zinc-700 dark:text-zinc-300 space-y-0.5">
+                    <ul className="list-disc list-inside text-sm text-neutral-700 dark:text-neutral-300 space-y-0.5">
                       {checkin.manager_commitments.map((c, i) => (
                         <li key={i}>{c}</li>
                       ))}
@@ -473,20 +473,20 @@ function OneOnOneViewer({
           {/* Notes */}
           {checkin.additional_notes && (
             <ViewSection title="Additional Notes">
-              <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
                 {checkin.additional_notes}
               </p>
             </ViewSection>
           )}
 
           {/* Signatures */}
-          <div className="border-t-2 border-zinc-200 dark:border-dark-300 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border-t-2 border-neutral-200 dark:border-dark-300 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
+              <p className="text-xs uppercase tracking-wider text-neutral-500 mb-1">
                 Employee Signature
               </p>
               {checkin.employee_signature ? (
-                <p className="font-serif text-zinc-900 dark:text-white">
+                <p className="font-serif text-neutral-900 dark:text-white">
                   {checkin.employee_signature}
                 </p>
               ) : canSign ? (
@@ -495,7 +495,7 @@ function OneOnOneViewer({
                     value={sigValue}
                     onChange={(e) => setSigValue(e.target.value)}
                     placeholder="Type your name to sign"
-                    className="w-full bg-transparent border-b-2 border-zinc-400 dark:border-zinc-500 outline-none text-base font-serif text-zinc-900 dark:text-white pb-1 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                    className="w-full bg-transparent border-b-2 border-neutral-400 dark:border-neutral-500 outline-none text-base font-serif text-neutral-900 dark:text-white pb-1 placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                   />
                   <Button
                     size="sm"
@@ -514,19 +514,23 @@ function OneOnOneViewer({
                   </Button>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-400 italic">Not yet signed</p>
+                <p className="text-sm text-neutral-400 italic">
+                  Not yet signed
+                </p>
               )}
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
+              <p className="text-xs uppercase tracking-wider text-neutral-500 mb-1">
                 Manager Signature
               </p>
               {checkin.manager_signature ? (
-                <p className="font-serif text-zinc-900 dark:text-white">
+                <p className="font-serif text-neutral-900 dark:text-white">
                   {checkin.manager_signature}
                 </p>
               ) : (
-                <p className="text-sm text-zinc-400 italic">Not yet signed</p>
+                <p className="text-sm text-neutral-400 italic">
+                  Not yet signed
+                </p>
               )}
             </div>
           </div>
@@ -545,7 +549,7 @@ function ViewSection({
 }) {
   return (
     <div>
-      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
         {title}
       </h4>
       {children}

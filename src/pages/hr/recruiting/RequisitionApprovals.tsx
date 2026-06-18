@@ -285,9 +285,9 @@ export const RequisitionApprovals: React.FC = () => {
       case "medium":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case "low":
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -328,7 +328,7 @@ export const RequisitionApprovals: React.FC = () => {
           <React.Fragment key={approver.id}>
             {idx > 0 && (
               <ArrowRight
-                className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-zinc-300 dark:text-zinc-600 shrink-0`}
+                className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-neutral-300 dark:text-neutral-600 shrink-0`}
               />
             )}
             <div
@@ -339,7 +339,7 @@ export const RequisitionApprovals: React.FC = () => {
                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                     : isCurrentStep
                       ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-2 ring-yellow-300 dark:ring-yellow-700"
-                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                      : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
               }`}
             >
               {approver.status === "approved" && (
@@ -363,10 +363,10 @@ export const RequisitionApprovals: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Requisition Approvals
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Review and approve job requisitions assigned to you
           </p>
         </div>
@@ -382,7 +382,7 @@ export const RequisitionApprovals: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="border-l-4 border-l-[#f26722]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Assigned to Me
             </CardTitle>
           </CardHeader>
@@ -419,13 +419,13 @@ export const RequisitionApprovals: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-zinc-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-neutral-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
         <button
           onClick={() => setViewTab("mine")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             viewTab === "mine"
-              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
           My Approvals ({myPendingItems.length})
@@ -434,8 +434,8 @@ export const RequisitionApprovals: React.FC = () => {
           onClick={() => setViewTab("all")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             viewTab === "all"
-              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
           All Pending ({allPending.length})
@@ -447,21 +447,21 @@ export const RequisitionApprovals: React.FC = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
+              <Filter className="h-4 w-4 text-neutral-400" />
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -474,7 +474,7 @@ export const RequisitionApprovals: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -482,7 +482,7 @@ export const RequisitionApprovals: React.FC = () => {
               <option value="low">Low</option>
             </select>
           </div>
-          <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
             Showing {filteredRequisitions.length}{" "}
             {viewTab === "mine" ? "assigned to you" : "pending"} requisition
             {filteredRequisitions.length !== 1 ? "s" : ""}
@@ -503,13 +503,13 @@ export const RequisitionApprovals: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <FileCheck className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <FileCheck className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 {viewTab === "mine"
                   ? "No approvals assigned to you"
                   : "No pending approvals"}
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {viewTab === "mine"
                   ? "You have no requisitions waiting for your approval"
                   : "All requisitions have been reviewed"}
@@ -577,10 +577,10 @@ export const RequisitionApprovals: React.FC = () => {
                 <CardContent>
                   {/* Approval Chain */}
                   {approvers.length > 0 && (
-                    <div className="mb-4 pb-3 border-b border-zinc-100 dark:border-dark-200">
+                    <div className="mb-4 pb-3 border-b border-neutral-100 dark:border-dark-200">
                       <div className="flex items-center gap-2 mb-2">
-                        <Users className="h-4 w-4 text-zinc-400" />
-                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                        <Users className="h-4 w-4 text-neutral-400" />
+                        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                           Approval Chain
                         </span>
                       </div>
@@ -592,7 +592,7 @@ export const RequisitionApprovals: React.FC = () => {
                   )}
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         Submitted {getTimeSinceSubmission(submittedAt)}
@@ -656,36 +656,36 @@ export const RequisitionApprovals: React.FC = () => {
           {selectedRequisition && (
             <div className="space-y-6 py-4">
               {/* Key Information Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                     Department
                   </label>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-1">
                     {selectedRequisition.department}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                     Location
                   </label>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-1">
                     {selectedRequisition.location}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                     Employment Type
                   </label>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-1">
                     {selectedRequisition.employment_type}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                     Priority
                   </label>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-1 capitalize">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-1 capitalize">
                     {selectedRequisition.priority}
                   </p>
                 </div>
@@ -694,10 +694,10 @@ export const RequisitionApprovals: React.FC = () => {
               {/* Salary Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Salary Range
                   </label>
-                  <p className="text-zinc-900 dark:text-white font-medium">
+                  <p className="text-neutral-900 dark:text-white font-medium">
                     {formatSalaryRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
@@ -705,10 +705,10 @@ export const RequisitionApprovals: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Status
                   </label>
-                  <p className="text-zinc-900 dark:text-white font-medium">
+                  <p className="text-neutral-900 dark:text-white font-medium">
                     {selectedRequisition.status
                       .split("_")
                       .map(
@@ -722,10 +722,10 @@ export const RequisitionApprovals: React.FC = () => {
               {/* Approval Chain in Detail */}
               {allApproversMap[selectedRequisition.id] &&
                 allApproversMap[selectedRequisition.id].length > 0 && (
-                  <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
-                      <Users className="h-4 w-4 text-zinc-500" />
-                      <label className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <Users className="h-4 w-4 text-neutral-500" />
+                      <label className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Approval Chain Progress
                       </label>
                     </div>
@@ -745,7 +745,7 @@ export const RequisitionApprovals: React.FC = () => {
                                     ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
                                     : isCurrentStep
                                       ? "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20"
-                                      : "border-zinc-200 bg-white dark:border-dark-200 dark:bg-dark-150"
+                                      : "border-neutral-200 bg-white dark:border-dark-200 dark:bg-dark-150"
                               }`}
                             >
                               <div
@@ -756,7 +756,7 @@ export const RequisitionApprovals: React.FC = () => {
                                       ? "bg-red-500 text-white"
                                       : isCurrentStep
                                         ? "bg-yellow-500 text-white"
-                                        : "bg-zinc-300 text-zinc-600 dark:bg-zinc-600 dark:text-zinc-300"
+                                        : "bg-neutral-300 text-neutral-600 dark:bg-neutral-600 dark:text-neutral-300"
                                 }`}
                               >
                                 {approver.status === "approved" ? (
@@ -768,7 +768,7 @@ export const RequisitionApprovals: React.FC = () => {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                                <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                   {getUserName(approver.approver_user_id)}
                                   {approver.approver_user_id === user?.id && (
                                     <span className="ml-2 text-xs text-[#f26722]">
@@ -776,7 +776,7 @@ export const RequisitionApprovals: React.FC = () => {
                                     </span>
                                   )}
                                 </p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {approver.status === "approved"
                                     ? `Approved ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ""}`
                                     : approver.status === "rejected"
@@ -805,12 +805,12 @@ export const RequisitionApprovals: React.FC = () => {
                 selectedRequisition.requirements ||
                 selectedRequisition.notes) && (
                 <div>
-                  <label className="text-sm font-semibold text-zinc-900 dark:text-white mb-2 block">
+                  <label className="text-sm font-semibold text-neutral-900 dark:text-white mb-2 block">
                     Job Description, Requirements & Notes
                   </label>
-                  <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
                     <div
-                      className="text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
+                      className="text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
                       dangerouslySetInnerHTML={{
                         __html:
                           getJobRequisitionDisplayHtml(selectedRequisition),
@@ -821,29 +821,29 @@ export const RequisitionApprovals: React.FC = () => {
               )}
 
               {/* Timeline Information */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-200 dark:border-dark-200">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-200 dark:border-dark-200">
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                     Created
                   </label>
-                  <p className="text-sm text-zinc-900 dark:text-white">
+                  <p className="text-sm text-neutral-900 dark:text-white">
                     {new Date(selectedRequisition.created_at).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                     Last Updated
                   </label>
-                  <p className="text-sm text-zinc-900 dark:text-white">
+                  <p className="text-sm text-neutral-900 dark:text-white">
                     {new Date(selectedRequisition.updated_at).toLocaleString()}
                   </p>
                 </div>
                 {selectedRequisition.submitted_for_approval_at && (
                   <div>
-                    <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                       Submitted for Approval
                     </label>
-                    <p className="text-sm text-zinc-900 dark:text-white">
+                    <p className="text-sm text-neutral-900 dark:text-white">
                       {new Date(
                         selectedRequisition.submitted_for_approval_at,
                       ).toLocaleString()}
@@ -899,20 +899,20 @@ export const RequisitionApprovals: React.FC = () => {
           </DialogHeader>
           {selectedRequisition && (
             <div className="space-y-4 py-4">
-              <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+              <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+                <p className="text-sm font-medium text-neutral-900 dark:text-white">
                   Rejecting:{" "}
                   <span className="font-semibold">
                     {selectedRequisition.title}
                   </span>
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                   {selectedRequisition.department} &bull;{" "}
                   {selectedRequisition.location}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-zinc-900 dark:text-white mb-2 block">
+                <label className="text-sm font-medium text-neutral-900 dark:text-white mb-2 block">
                   Rejection Reason <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -922,7 +922,7 @@ export const RequisitionApprovals: React.FC = () => {
                   rows={5}
                   className="w-full"
                 />
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                   This reason will be visible to the requisition creator and all
                   approvers
                 </p>

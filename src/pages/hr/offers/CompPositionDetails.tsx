@@ -244,10 +244,10 @@ export const CompPositionDetails: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Compensation & Position Details
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Set up pay, title, department, and other position details for offers
           </p>
         </div>
@@ -274,11 +274,11 @@ export const CompPositionDetails: React.FC = () => {
         <CardContent>
           {offers.length === 0 ? (
             <div className="text-center py-12">
-              <Briefcase className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Briefcase className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No offers
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Create your first offer with compensation and position details
               </p>
             </div>
@@ -287,24 +287,24 @@ export const CompPositionDetails: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-white">
+                    <div className="font-medium text-neutral-900 dark:text-white">
                       {offer.candidate
                         ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                         : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                       {offer.base_salary
                         ? `$${offer.base_salary.toLocaleString()}`
                         : "Salary not set"}
                       {offer.pay_frequency && ` / ${offer.pay_frequency}`}
                     </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                       Employment Type: {offer.employment_type} | Location:{" "}
                       {offer.location || "N/A"}
                     </div>
@@ -434,7 +434,7 @@ export const CompPositionDetails: React.FC = () => {
             />
 
             <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 Compensation Details
               </h3>
 
@@ -541,47 +541,47 @@ export const CompPositionDetails: React.FC = () => {
             {selectedOffer && (
               <>
                 <div>
-                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
                     Position Details
                   </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Position Title:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.position_title}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Department:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.department}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Employment Type:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.employment_type}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Location:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.location || "N/A"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Start Date:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.start_date
                           ? new Date(
                               selectedOffer.start_date,
@@ -590,10 +590,10 @@ export const CompPositionDetails: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Reporting Manager:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.reporting_manager || "N/A"}
                       </span>
                     </div>
@@ -601,41 +601,41 @@ export const CompPositionDetails: React.FC = () => {
                 </div>
 
                 <div className="border-t pt-4">
-                  <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
                     Compensation Details
                   </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Base Salary:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.base_salary
                           ? `$${selectedOffer.base_salary.toLocaleString()}`
                           : "N/A"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Pay Frequency:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.pay_frequency || "N/A"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Currency:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.salary_currency}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Bonus Amount:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.bonus_amount
                           ? `$${selectedOffer.bonus_amount.toLocaleString()}`
                           : "N/A"}
@@ -643,30 +643,30 @@ export const CompPositionDetails: React.FC = () => {
                     </div>
                     {selectedOffer.bonus_description && (
                       <div className="col-span-2">
-                        <span className="text-zinc-600 dark:text-zinc-400">
+                        <span className="text-neutral-600 dark:text-neutral-400">
                           Bonus Description:
                         </span>
-                        <p className="mt-1 text-zinc-900 dark:text-white">
+                        <p className="mt-1 text-neutral-900 dark:text-white">
                           {selectedOffer.bonus_description}
                         </p>
                       </div>
                     )}
                     {selectedOffer.equity_compensation && (
                       <div className="col-span-2">
-                        <span className="text-zinc-600 dark:text-zinc-400">
+                        <span className="text-neutral-600 dark:text-neutral-400">
                           Equity Compensation:
                         </span>
-                        <p className="mt-1 text-zinc-900 dark:text-white">
+                        <p className="mt-1 text-neutral-900 dark:text-white">
                           {selectedOffer.equity_compensation}
                         </p>
                       </div>
                     )}
                     {selectedOffer.benefits_summary && (
                       <div className="col-span-2">
-                        <span className="text-zinc-600 dark:text-zinc-400">
+                        <span className="text-neutral-600 dark:text-neutral-400">
                           Benefits Summary:
                         </span>
-                        <p className="mt-1 text-zinc-900 dark:text-white whitespace-pre-wrap">
+                        <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap">
                           {selectedOffer.benefits_summary}
                         </p>
                       </div>

@@ -355,12 +355,12 @@ export const HelpCenterDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-dark-200">
-      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200 dark:border-dark-200">
+    <div className="min-h-screen bg-neutral-100 dark:bg-dark-200">
+      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-neutral-200 dark:border-dark-200">
         <HeaderBar />
       </div>
 
-      <div className="bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700 shadow-sm">
+      <div className="bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -368,10 +368,10 @@ export const HelpCenterDashboard: React.FC = () => {
                 <HelpCircle className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-zinc-900 dark:text-white">
+                <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white">
                   Help Center
                 </h1>
-                <p className="text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-neutral-500 dark:text-neutral-400 mt-1">
                   Guides and documentation for all ampOS tasks
                 </p>
               </div>
@@ -398,13 +398,13 @@ export const HelpCenterDashboard: React.FC = () => {
 
           {/* Search Bar */}
           <div className="mt-6 relative max-w-xl">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search guides, topics, or keywords..."
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             />
           </div>
         </div>
@@ -413,10 +413,10 @@ export const HelpCenterDashboard: React.FC = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         {/* Filters Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-dark-150 rounded-lg p-4 shadow-sm border border-zinc-200 dark:border-zinc-700">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-dark-150 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4 text-zinc-400" />
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <Filter className="w-4 h-4 text-neutral-400" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Filter:
             </span>
             <select
@@ -424,7 +424,7 @@ export const HelpCenterDashboard: React.FC = () => {
               onChange={(e) =>
                 setSelectedCategory(e.target.value as PortalCategory | "all")
               }
-              className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-50 dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             >
               <option value="all">All Categories</option>
               {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
@@ -434,13 +434,13 @@ export const HelpCenterDashboard: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-dark-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === "grid"
                   ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
               title="Grid view"
             >
@@ -451,7 +451,7 @@ export const HelpCenterDashboard: React.FC = () => {
               className={`p-2 rounded-md transition-colors ${
                 viewMode === "list"
                   ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
               title="List view"
             >
@@ -466,34 +466,34 @@ export const HelpCenterDashboard: React.FC = () => {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 overflow-hidden animate-pulse"
+                className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden animate-pulse"
               >
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-zinc-200 dark:bg-dark-100 rounded-xl" />
+                    <div className="w-12 h-12 bg-neutral-200 dark:bg-dark-100 rounded-xl" />
                     <div>
-                      <div className="h-5 w-40 bg-zinc-200 dark:bg-dark-100 rounded mb-2" />
-                      <div className="h-4 w-24 bg-zinc-100 dark:bg-dark-200 rounded" />
+                      <div className="h-5 w-40 bg-neutral-200 dark:bg-dark-100 rounded mb-2" />
+                      <div className="h-4 w-24 bg-neutral-100 dark:bg-dark-200 rounded" />
                     </div>
                   </div>
-                  <div className="w-8 h-8 bg-zinc-100 dark:bg-dark-100 rounded-full" />
+                  <div className="w-8 h-8 bg-neutral-100 dark:bg-dark-100 rounded-full" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredGuides.length === 0 && searchQuery === "" ? (
           /* Empty State */
-          <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 p-12">
+          <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-zinc-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <BookOpen className="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
+              <div className="w-20 h-20 bg-neutral-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="w-10 h-10 text-neutral-400 dark:text-neutral-500" />
               </div>
-              <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">
+              <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
                 {isAdmin
                   ? "Welcome to the Help Center"
                   : "No guides available yet"}
               </h3>
-              <p className="text-zinc-500 dark:text-zinc-400 mb-8 text-lg">
+              <p className="text-neutral-500 dark:text-neutral-400 mb-8 text-lg">
                 {isAdmin
                   ? "Create helpful guides and documentation to assist your team with common tasks and workflows."
                   : "Check back soon for helpful guides and documentation."}
@@ -531,11 +531,11 @@ export const HelpCenterDashboard: React.FC = () => {
                 return (
                   <div
                     key={category}
-                    className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 overflow-hidden"
+                    className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
                   >
                     <button
                       onClick={() => toggleCategory(category as PortalCategory)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
+                      className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
                     >
                       <div className="flex items-center gap-4">
                         <div
@@ -544,10 +544,10 @@ export const HelpCenterDashboard: React.FC = () => {
                           {PORTAL_ICONS[category as PortalCategory]}
                         </div>
                         <div className="text-left">
-                          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
                             {PORTAL_CATEGORY_LABELS[category as PortalCategory]}
                           </h2>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
                             {categoryGuides.length} guide
                             {categoryGuides.length !== 1 ? "s" : ""}
                             {categoryDocs.length > 0 && (
@@ -561,22 +561,22 @@ export const HelpCenterDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? "bg-[#f26722]/10" : "bg-zinc-100 dark:bg-dark-100"}`}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? "bg-[#f26722]/10" : "bg-neutral-100 dark:bg-dark-100"}`}
                       >
                         {isExpanded ? (
                           <ChevronDown className="w-5 h-5 text-[#f26722]" />
                         ) : (
-                          <ChevronRight className="w-5 h-5 text-zinc-400" />
+                          <ChevronRight className="w-5 h-5 text-neutral-400" />
                         )}
                       </div>
                     </button>
 
                     {isExpanded && (
-                      <div className="px-4 pb-4 border-t border-zinc-100 dark:border-zinc-700 pt-4 space-y-6">
+                      <div className="px-4 pb-4 border-t border-neutral-100 dark:border-neutral-700 pt-4 space-y-6">
                         {/* Guides */}
                         {categoryGuides.length > 0 && (
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                            <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                               Guides
                             </h3>
                             {viewMode === "grid" ? (
@@ -625,7 +625,7 @@ export const HelpCenterDashboard: React.FC = () => {
                         {/* Documents (PDFs & Videos) */}
                         {categoryDocs.length > 0 && (
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                            <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                               Documents
                             </h3>
                             {viewMode === "grid" ? (
@@ -671,16 +671,16 @@ export const HelpCenterDashboard: React.FC = () => {
             {filteredGuides.length === 0 &&
               filteredDocuments.length === 0 &&
               searchQuery !== "" && (
-                <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 p-12 text-center">
-                  <div className="w-16 h-16 bg-zinc-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-zinc-400" />
+                <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+                  <div className="w-16 h-16 bg-neutral-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-8 h-8 text-neutral-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
                     No guides found
                   </h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
+                  <p className="text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
                     No guides match your search for "
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    <span className="font-medium text-neutral-700 dark:text-neutral-300">
                       {searchQuery}
                     </span>
                     ". Try adjusting your search terms or filter.
@@ -737,7 +737,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-zinc-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+    className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
   >
     {/* Admin actions */}
     {isAdmin && (
@@ -747,7 +747,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
             e.stopPropagation();
             onEdit();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
           title="Edit"
         >
           <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -757,7 +757,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
             e.stopPropagation();
             onDelete();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
           title="Delete"
         >
           <Trash2 className="w-4 h-4 text-red-500" />
@@ -773,13 +773,13 @@ const GuideCard: React.FC<GuideCardProps> = ({
     </div>
 
     {/* Title */}
-    <h3 className="font-bold text-zinc-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
+    <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
       {guide.title}
     </h3>
 
     {/* Description */}
     {guide.description && (
-      <p className="text-zinc-600 dark:text-zinc-400 mt-2 line-clamp-2 text-sm">
+      <p className="text-neutral-600 dark:text-neutral-400 mt-2 line-clamp-2 text-sm">
         {guide.description}
       </p>
     )}
@@ -796,7 +796,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
           </span>
         ))}
         {guide.tags.length > 3 && (
-          <span className="px-2.5 py-1 text-xs text-zinc-400 font-medium">
+          <span className="px-2.5 py-1 text-xs text-neutral-400 font-medium">
             +{guide.tags.length - 3}
           </span>
         )}
@@ -804,14 +804,14 @@ const GuideCard: React.FC<GuideCardProps> = ({
     )}
 
     {/* Footer */}
-    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-600">
+    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-600">
       {guide.viewCount !== undefined && (
-        <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
           <Eye className="w-3.5 h-3.5" />
           {guide.viewCount} views
         </span>
       )}
-      <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+      <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
         <Clock className="w-3.5 h-3.5" />
         {guide.updatedAt
           ? new Date(guide.updatedAt).toLocaleDateString()
@@ -841,7 +841,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group flex items-center gap-4 p-4 bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-zinc-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+    className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
   >
     <div
       className={`w-11 h-11 ${PORTAL_COLORS[guide.category]} text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}
@@ -849,17 +849,17 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
       <BookOpen className="w-5 h-5" />
     </div>
     <div className="flex-1 min-w-0">
-      <h3 className="font-semibold text-zinc-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
+      <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
         {guide.title}
       </h3>
       {guide.description && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
           {guide.description}
         </p>
       )}
     </div>
     <div className="flex items-center gap-3 flex-shrink-0">
-      <span className="text-sm text-zinc-400 hidden sm:flex items-center gap-1.5">
+      <span className="text-sm text-neutral-400 hidden sm:flex items-center gap-1.5">
         <Clock className="w-3.5 h-3.5" />
         {formatDate(guide.updatedAt)}
       </span>
@@ -871,7 +871,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
                 e.stopPropagation();
                 onEdit();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Edit"
             >
               <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -881,7 +881,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Delete"
             >
               <Trash2 className="w-4 h-4 text-red-500" />
@@ -893,7 +893,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
             e.stopPropagation();
             onView();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600"
           title="View"
         >
           <ExternalLink className="w-4 h-4 text-[#f26722]" />
@@ -921,7 +921,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   return (
     <div
       onClick={onView}
-      className="group bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-zinc-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+      className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
     >
       {/* Admin actions */}
       {isAdmin && (
@@ -931,7 +931,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+            className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
             title="Delete"
           >
             <Trash2 className="w-4 h-4 text-red-500" />
@@ -951,26 +951,26 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
       </div>
 
       {/* Title */}
-      <h3 className="font-bold text-zinc-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
+      <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
         {document.name}
       </h3>
 
       {/* File info */}
-      <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500 dark:text-neutral-400">
         <span>{isVideo ? "Video" : "PDF"}</span>
         <span>•</span>
         <span>{(document.file_size / 1024 / 1024).toFixed(2)} MB</span>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-600">
+      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-600">
         {document.viewCount !== undefined && (
-          <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
             <Eye className="w-3.5 h-3.5" />
             {document.viewCount} views
           </span>
         )}
-        <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
           <Clock className="w-3.5 h-3.5" />
           {document.updatedAt
             ? new Date(document.updatedAt).toLocaleDateString()
@@ -1001,7 +1001,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
   return (
     <div
       onClick={onView}
-      className="group flex items-center gap-4 p-4 bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-zinc-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+      className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
     >
       <div
         className={`w-11 h-11 ${PORTAL_COLORS[document.category]} text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}
@@ -1013,16 +1013,16 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-zinc-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
+        <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
           {document.name}
         </h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
           {isVideo ? "Video" : "PDF"} •{" "}
           {(document.file_size / 1024 / 1024).toFixed(2)} MB
         </p>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <span className="text-sm text-zinc-400 hidden sm:flex items-center gap-1.5">
+        <span className="text-sm text-neutral-400 hidden sm:flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5" />
           {formatDate(document.updatedAt)}
         </span>
@@ -1033,7 +1033,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Delete"
             >
               <Trash2 className="w-4 h-4 text-red-500" />
@@ -1044,7 +1044,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
               e.stopPropagation();
               onView();
             }}
-            className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600"
+            className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600"
             title="View"
           >
             <ExternalLink className="w-4 h-4 text-[#f26722]" />

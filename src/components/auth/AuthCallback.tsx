@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { processAuthToken } from '../../lib/utils';
-import { User } from '@supabase/supabase-js';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
+import { processAuthToken } from "../../lib/utils";
+import { User } from "@supabase/supabase-js";
 
 export default function AuthCallback() {
   const [loading, setLoading] = useState(true);
@@ -18,110 +18,124 @@ export default function AuthCallback() {
       try {
         // Get the full URL including the hash fragment
         const fullUrl = window.location.href;
-        console.log('Processing auth callback from URL:', fullUrl);
-        
+        console.log("Processing auth callback from URL:", fullUrl);
+
         // Check if the URL contains an access token from Supabase (hash fragment)
-        if (window.location.hash.includes('access_token=')) {
-          console.log('Detected access_token in URL hash, extracting token...');
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-          const authType = hashParams.get('type');
+        if (window.location.hash.includes("access_token=")) {
+          console.log("Detected access_token in URL hash, extracting token...");
+          const hashParams = new URLSearchParams(
+            window.location.hash.substring(1),
+          );
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          const authType = hashParams.get("type");
 
           if (accessToken) {
-            console.log('Found access token, setting session...');
+            console.log("Found access token, setting session...");
 
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
-              refresh_token: refreshToken || ''
+              refresh_token: refreshToken || "",
             });
 
             if (sessionError) {
-              console.error('Error setting session:', sessionError);
+              console.error("Error setting session:", sessionError);
               throw sessionError;
             }
 
-            if (authType === 'recovery') {
+            if (authType === "recovery") {
               setSuccess(true);
               setTimeout(() => {
-                navigate('/reset-password', { replace: true });
+                navigate("/reset-password", { replace: true });
               }, 1000);
               return;
             }
 
             setSuccess(true);
             setTimeout(() => {
-              navigate('/profile-setup', { replace: true });
+              navigate("/profile-setup", { replace: true });
             }, 2000);
             return;
           }
         }
-        
+
         // Standard token processing
-        const { success, data, error: authError } = await processAuthToken(fullUrl);
-        
+        const {
+          success,
+          data,
+          error: authError,
+        } = await processAuthToken(fullUrl);
+
         if (!success || authError) {
-          console.error('Error during auth verification:', authError);
-          setError('There was a problem verifying your email. Please try again or request a new verification link.');
+          console.error("Error during auth verification:", authError);
+          setError(
+            "There was a problem verifying your email. Please try again or request a new verification link.",
+          );
         } else {
-          console.log('Auth verification successful:', data);
+          console.log("Auth verification successful:", data);
 
           const isRecoveryFlow =
             !!data &&
-            typeof data === 'object' &&
-            'type' in data &&
-            data.type === 'recovery';
+            typeof data === "object" &&
+            "type" in data &&
+            data.type === "recovery";
 
           if (isRecoveryFlow) {
             setSuccess(true);
             setTimeout(() => {
-              navigate('/reset-password', { replace: true });
+              navigate("/reset-password", { replace: true });
             }, 1000);
             return;
           }
 
           // Extract user ID safely with type checking
           let userId: string | null = null;
-          
+
           // Handle different response formats
-          if (data && typeof data === 'object') {
-            if ('session' in data && data.session && typeof data.session === 'object' && 
-                'user' in data.session && data.session.user && 'id' in data.session.user) {
+          if (data && typeof data === "object") {
+            if (
+              "session" in data &&
+              data.session &&
+              typeof data.session === "object" &&
+              "user" in data.session &&
+              data.session.user &&
+              "id" in data.session.user
+            ) {
               userId = data.session.user.id;
-            } else if ('user' in data && data.user && 'id' in data.user) {
+            } else if ("user" in data && data.user && "id" in data.user) {
               userId = (data.user as User).id;
             }
           }
-          
+
           if (userId) {
             try {
               // Example of how to safely check if the user exists in the profiles table
               // Note: We use text casting and proper comparison to avoid numeric literal errors
               const { data: profileData, error: profileError } = await supabase
-                .schema('common')
-                .from('profiles')
-                .select('id')
-                .filter('id::text', 'eq', userId);
-              
+                .schema("common")
+                .from("profiles")
+                .select("id")
+                .filter("id::text", "eq", userId);
+
               if (profileError) {
-                console.error('Error checking user profile:', profileError);
+                console.error("Error checking user profile:", profileError);
               } else {
-                console.log('Profile check result:', profileData);
+                console.log("Profile check result:", profileData);
               }
             } catch (err) {
-              console.error('Error verifying user data:', err);
+              console.error("Error verifying user data:", err);
             }
           }
-          
+
           setSuccess(true);
           // Redirect to profile setup after a short delay to show success message
           setTimeout(() => {
-            navigate('/profile-setup', { replace: true });
+            navigate("/profile-setup", { replace: true });
           }, 2000);
         }
       } catch (err) {
-        console.error('Unexpected error during auth callback:', err);
-        setError('An unexpected error occurred. Please try again later.');
+        console.error("Unexpected error during auth callback:", err);
+        setError("An unexpected error occurred. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -136,7 +150,9 @@ export default function AuthCallback() {
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
         <h2 className="text-xl font-semibold mb-2">Verifying your email...</h2>
-        <p className="text-zinc-600">Please wait while we complete the verification process.</p>
+        <p className="text-neutral-600">
+          Please wait while we complete the verification process.
+        </p>
       </div>
     );
   }
@@ -148,8 +164,8 @@ export default function AuthCallback() {
           <h2 className="text-xl font-semibold mb-2">Verification Failed</h2>
           <p>{error}</p>
         </div>
-        <button 
-          onClick={() => navigate('/login', { replace: true })}
+        <button
+          onClick={() => navigate("/login", { replace: true })}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Return to Login
@@ -175,4 +191,4 @@ export default function AuthCallback() {
       <p>Processing your verification...</p>
     </div>
   );
-} 
+}

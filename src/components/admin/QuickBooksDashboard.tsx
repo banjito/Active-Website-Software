@@ -208,14 +208,14 @@ export const QuickBooksDashboard: React.FC = () => {
 
     return (
       <div className="flex items-center justify-between mt-4 pt-4 border-t">
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-neutral-500">
           Showing {startItem}-{endItem} of {totalItems}
         </span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
-            className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="First page"
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -223,7 +223,7 @@ export const QuickBooksDashboard: React.FC = () => {
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -237,13 +237,13 @@ export const QuickBooksDashboard: React.FC = () => {
                 className={`px-3 py-1 text-sm rounded ${
                   currentPage === page
                     ? "bg-[#f26722] text-white"
-                    : "hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                    : "hover:bg-neutral-100 dark:hover:bg-neutral-700"
                 }`}
               >
                 {page}
               </button>
             ) : (
-              <span key={idx} className="px-2 text-zinc-400">
+              <span key={idx} className="px-2 text-neutral-400">
                 ...
               </span>
             ),
@@ -252,7 +252,7 @@ export const QuickBooksDashboard: React.FC = () => {
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Next page"
           >
             <ChevronRight className="h-4 w-4" />
@@ -260,7 +260,7 @@ export const QuickBooksDashboard: React.FC = () => {
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Last page"
           >
             <ChevronsRight className="h-4 w-4" />
@@ -430,7 +430,7 @@ export const QuickBooksDashboard: React.FC = () => {
     <select
       value={cashFlowPeriod}
       onChange={(e) => setCashFlowPeriod(e.target.value as CashFlowPeriod)}
-      className="text-sm border rounded px-2 py-1 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 cursor-pointer hover:border-zinc-400"
+      className="text-sm border rounded px-2 py-1 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 cursor-pointer hover:border-neutral-400"
       onClick={(e) => e.stopPropagation()}
     >
       <option value="12months">12 months</option>
@@ -452,7 +452,7 @@ export const QuickBooksDashboard: React.FC = () => {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as DateRangeType)}
-      className={`text-sm border rounded px-2 py-1 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 cursor-pointer hover:border-zinc-400 ${className}`}
+      className={`text-sm border rounded px-2 py-1 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 cursor-pointer hover:border-neutral-400 ${className}`}
     >
       <optgroup label="Current Period">
         <option value="last30days">Last 30 days</option>
@@ -2271,7 +2271,7 @@ export const QuickBooksDashboard: React.FC = () => {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold">QuickBooks Dashboard</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-2">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-green-600" />
             {companyInfo?.CompanyName || "Connected to QuickBooks"}
           </p>
@@ -2379,7 +2379,7 @@ export const QuickBooksDashboard: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold text-zinc-700 flex items-center gap-2">
+              <CardTitle className="text-base font-semibold text-neutral-700 flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-500" />
                 PROFIT & LOSS
               </CardTitle>
@@ -2392,7 +2392,7 @@ export const QuickBooksDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <p className="text-sm text-zinc-500">Net profit</p>
+              <p className="text-sm text-neutral-500">Net profit</p>
               <div className="flex items-center gap-2">
                 <span
                   className={`text-3xl font-bold ${pnlSummary.netIncome >= 0 ? "text-green-600" : "text-red-600"}`}
@@ -2419,12 +2419,12 @@ export const QuickBooksDashboard: React.FC = () => {
             {/* Income Bar */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-zinc-600">Income</span>
+                <span className="text-sm text-neutral-600">Income</span>
                 <span className="text-lg font-semibold text-green-600">
                   {formatCurrency(pnlSummary.income)}
                 </span>
               </div>
-              <div className="w-full bg-zinc-200 rounded h-4">
+              <div className="w-full bg-neutral-200 rounded h-4">
                 <div
                   className="bg-green-500 h-full rounded"
                   style={{
@@ -2437,12 +2437,12 @@ export const QuickBooksDashboard: React.FC = () => {
             {/* Expenses Bar */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-zinc-600">Expenses</span>
+                <span className="text-sm text-neutral-600">Expenses</span>
                 <span className="text-lg font-semibold text-red-600">
                   {formatCurrency(pnlSummary.expenses)}
                 </span>
               </div>
-              <div className="w-full bg-zinc-200 rounded h-4">
+              <div className="w-full bg-neutral-200 rounded h-4">
                 <div
                   className="bg-red-400 h-full rounded"
                   style={{
@@ -2458,7 +2458,7 @@ export const QuickBooksDashboard: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold text-zinc-700 flex items-center gap-2">
+              <CardTitle className="text-base font-semibold text-neutral-700 flex items-center gap-2">
                 <TrendingDown className="h-5 w-5 text-red-500" />
                 EXPENSES
               </CardTitle>
@@ -2471,15 +2471,15 @@ export const QuickBooksDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <p className="text-sm text-zinc-500">Total spending</p>
+              <p className="text-sm text-neutral-500">Total spending</p>
               <span className="text-3xl font-bold">
                 {formatCurrency(pnlSummary.expenses)}
               </span>
-              <span className="text-sm text-zinc-500 ml-2">
+              <span className="text-sm text-neutral-500 ml-2">
                 {expenseBreakdown.length} categories
               </span>
               {pnlSummary.cogs > 0 && (
-                <div className="mt-1 text-xs text-zinc-500">
+                <div className="mt-1 text-xs text-neutral-500">
                   (COGS: {formatCurrency(pnlSummary.cogs)} + Operating:{" "}
                   {formatCurrency(pnlSummary.operatingExpenses)})
                 </div>
@@ -2489,7 +2489,7 @@ export const QuickBooksDashboard: React.FC = () => {
             {/* Expense Categories */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {expenseBreakdown.length === 0 ? (
-                <div className="text-zinc-500 text-sm">
+                <div className="text-neutral-500 text-sm">
                   <p>No expense categories found</p>
                   {pnlSummary.expenses > 0 && (
                     <p className="text-xs mt-1">
@@ -2536,7 +2536,7 @@ export const QuickBooksDashboard: React.FC = () => {
                         <span className="text-sm font-medium">
                           {formatCurrency(item.amount)}
                         </span>
-                        <span className="text-xs text-zinc-500 ml-2">
+                        <span className="text-xs text-neutral-500 ml-2">
                           {percentage}%
                         </span>
                       </div>
@@ -2552,7 +2552,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Cash Flow / Bank Transactions */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("cashFlow")}
         >
           <div className="flex items-center justify-between">
@@ -2565,15 +2565,15 @@ export const QuickBooksDashboard: React.FC = () => {
               <CashFlowPeriodSelector />
               {/* View Mode Toggle */}
               <div
-                className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1"
+                className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => setCashFlowViewMode("balance")}
                   className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                     cashFlowViewMode === "balance"
-                      ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                      ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm"
+                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                   }`}
                 >
                   Cash balance
@@ -2582,8 +2582,8 @@ export const QuickBooksDashboard: React.FC = () => {
                   onClick={() => setCashFlowViewMode("moneyInOut")}
                   className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                     cashFlowViewMode === "moneyInOut"
-                      ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                      ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm"
+                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                   }`}
                 >
                   Money in/out
@@ -2602,10 +2602,10 @@ export const QuickBooksDashboard: React.FC = () => {
         <CardContent className="pt-0 pb-4">
           {/* Today's Cash Balance - Prominent Display */}
           <div className="mb-6">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">
               Today's cash balance
             </p>
-            <p className="text-4xl font-bold text-zinc-900 dark:text-white">
+            <p className="text-4xl font-bold text-neutral-900 dark:text-white">
               {formatCurrency(totalCashBalance)}
             </p>
           </div>
@@ -2739,31 +2739,31 @@ export const QuickBooksDashboard: React.FC = () => {
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <ArrowDownCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   Money In
                 </span>
               </div>
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(moneyFlow.moneyIn)}
               </p>
-              <p className="text-xs text-zinc-500">Payments & deposits</p>
+              <p className="text-xs text-neutral-500">Payments & deposits</p>
             </div>
             <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <ArrowUpCircle className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   Money Out
                 </span>
               </div>
               <p className="text-2xl font-bold text-red-600">
                 {formatCurrency(moneyFlow.moneyOut)}
               </p>
-              <p className="text-xs text-zinc-500">Purchases & expenses</p>
+              <p className="text-xs text-neutral-500">Purchases & expenses</p>
             </div>
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-4 w-4 text-blue-500" />
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   Net Cash Flow
                 </span>
               </div>
@@ -2772,7 +2772,7 @@ export const QuickBooksDashboard: React.FC = () => {
               >
                 {formatCurrency(moneyFlow.moneyIn - moneyFlow.moneyOut)}
               </p>
-              <p className="text-xs text-zinc-500">In selected period</p>
+              <p className="text-xs text-neutral-500">In selected period</p>
             </div>
           </div>
         </CardContent>
@@ -2780,11 +2780,11 @@ export const QuickBooksDashboard: React.FC = () => {
         {/* Bank Transactions List (expandable) */}
         {expandedSection === "cashFlow" && (
           <CardContent className="pt-0 border-t">
-            <h4 className="font-medium text-zinc-700 mt-4 mb-3">
+            <h4 className="font-medium text-neutral-700 mt-4 mb-3">
               Recent Bank Transactions
             </h4>
             {moneyFlow.transactions.length === 0 ? (
-              <p className="text-center text-zinc-500 py-4">
+              <p className="text-center text-neutral-500 py-4">
                 No transactions in selected period
               </p>
             ) : (
@@ -2816,7 +2816,7 @@ export const QuickBooksDashboard: React.FC = () => {
                         .map((txn) => (
                           <tr
                             key={`${txn.type}-${txn.id}`}
-                            className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                            className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                           >
                             <td className="p-2 text-sm">
                               {formatDate(txn.date)}
@@ -2904,7 +2904,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Employees & Time Tracking Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("employees")}
         >
           <div className="flex items-center justify-between">
@@ -2913,7 +2913,7 @@ export const QuickBooksDashboard: React.FC = () => {
               Employees & Time Tracking
             </CardTitle>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {employeeStats.totals.totalEmployees} employee
                 {employeeStats.totals.totalEmployees !== 1 ? "s" : ""}
               </span>
@@ -2933,39 +2933,41 @@ export const QuickBooksDashboard: React.FC = () => {
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-4 w-4 text-indigo-500" />
-                <span className="text-sm text-zinc-600">Total Employees</span>
+                <span className="text-sm text-neutral-600">
+                  Total Employees
+                </span>
               </div>
               <p className="text-2xl font-bold text-indigo-600">
                 {employeeStats.totals.totalEmployees}
               </p>
-              <p className="text-xs text-zinc-500">Active employees</p>
+              <p className="text-xs text-neutral-500">Active employees</p>
             </div>
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <Timer className="h-4 w-4 text-blue-500" />
-                <span className="text-sm text-zinc-600">Hours Tracked</span>
+                <span className="text-sm text-neutral-600">Hours Tracked</span>
               </div>
               <p className="text-2xl font-bold text-blue-600">
                 {employeeStats.totals.totalTrackedHours.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">In selected period</p>
+              <p className="text-xs text-neutral-500">In selected period</p>
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <Briefcase className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-zinc-600">Billable Hours</span>
+                <span className="text-sm text-neutral-600">Billable Hours</span>
               </div>
               <p className="text-2xl font-bold text-green-600">
                 {employeeStats.totals.totalBillableHours.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-neutral-500">
                 {employeeStats.totals.billablePercentage}% billable rate
               </p>
             </div>
             <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <DollarSign className="h-4 w-4 text-emerald-500" />
-                <span className="text-sm text-zinc-600">Gross Pay</span>
+                <span className="text-sm text-neutral-600">Gross Pay</span>
               </div>
               <p className="text-2xl font-bold text-emerald-600">
                 {formatCurrency(
@@ -2974,17 +2976,17 @@ export const QuickBooksDashboard: React.FC = () => {
                     0,
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Total payroll (period)</p>
+              <p className="text-xs text-neutral-500">Total payroll (period)</p>
             </div>
             <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <DollarSign className="h-4 w-4 text-orange-500" />
-                <span className="text-sm text-zinc-600">Labour Cost</span>
+                <span className="text-sm text-neutral-600">Labour Cost</span>
               </div>
               <p className="text-2xl font-bold text-orange-600">
                 {formatCurrency(employeeStats.totals.totalLabourCost)}
               </p>
-              <p className="text-xs text-zinc-500">Based on cost rates</p>
+              <p className="text-xs text-neutral-500">Based on cost rates</p>
             </div>
           </div>
 
@@ -2994,43 +2996,43 @@ export const QuickBooksDashboard: React.FC = () => {
               <p className="text-lg font-bold text-cyan-600">
                 {employeeStats.totals.totalPaidTimeOff.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Paid Time Off</p>
+              <p className="text-xs text-neutral-500">Paid Time Off</p>
             </div>
             <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-purple-600">
                 {employeeStats.totals.totalVacation.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Vacation</p>
+              <p className="text-xs text-neutral-500">Vacation</p>
             </div>
             <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-rose-600">
                 {employeeStats.totals.totalSick.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Sick Time</p>
+              <p className="text-xs text-neutral-500">Sick Time</p>
             </div>
             <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-amber-600">
                 {employeeStats.totals.totalHoliday.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Holiday</p>
+              <p className="text-xs text-neutral-500">Holiday</p>
             </div>
             <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-teal-600">
                 {employeeStats.totals.totalPTO.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">PTO Used</p>
+              <p className="text-xs text-neutral-500">PTO Used</p>
             </div>
             <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-red-600">
                 {employeeStats.totals.totalUnpaid.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Unpaid Leave</p>
+              <p className="text-xs text-neutral-500">Unpaid Leave</p>
             </div>
             <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
               <p className="text-lg font-bold text-yellow-600">
                 {employeeStats.totals.totalOvertime.toFixed(1)}
               </p>
-              <p className="text-xs text-zinc-500">Overtime</p>
+              <p className="text-xs text-neutral-500">Overtime</p>
             </div>
           </div>
         </CardContent>
@@ -3038,18 +3040,18 @@ export const QuickBooksDashboard: React.FC = () => {
         {/* Employee Details List (expandable) */}
         {expandedSection === "employees" && (
           <CardContent className="pt-0 border-t">
-            <h4 className="font-medium text-zinc-700 mt-4 mb-3">
+            <h4 className="font-medium text-neutral-700 mt-4 mb-3">
               Employee Details
             </h4>
             {employeeStats.employees.length === 0 ? (
-              <p className="text-center text-zinc-500 py-4">
+              <p className="text-center text-neutral-500 py-4">
                 No employees found in QuickBooks
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b text-left bg-zinc-50 dark:bg-zinc-800/50">
+                    <tr className="border-b text-left bg-neutral-50 dark:bg-neutral-800/50">
                       <th className="p-2 font-semibold">Employee</th>
                       <th className="p-2 font-semibold">Status</th>
                       <th className="p-2 font-semibold text-right">Pay Type</th>
@@ -3081,7 +3083,7 @@ export const QuickBooksDashboard: React.FC = () => {
                     {employeeStats.employees.map((emp) => (
                       <tr
                         key={emp.id}
-                        className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                        className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                       >
                         <td className="p-2">
                           <div className="flex items-center gap-2">
@@ -3091,7 +3093,7 @@ export const QuickBooksDashboard: React.FC = () => {
                             <div className="min-w-0">
                               <p className="font-medium truncate">{emp.name}</p>
                               {emp.email && (
-                                <p className="text-xs text-zinc-500 truncate">
+                                <p className="text-xs text-neutral-500 truncate">
                                   {emp.email}
                                 </p>
                               )}
@@ -3103,7 +3105,7 @@ export const QuickBooksDashboard: React.FC = () => {
                             className={`px-2 py-0.5 rounded text-xs ${
                               emp.active
                                 ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
-                                : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+                                : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
                             }`}
                           >
                             {emp.active ? "Active" : "Inactive"}
@@ -3127,7 +3129,7 @@ export const QuickBooksDashboard: React.FC = () => {
                               ${emp.hourlyRate}/hr
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            <span className="px-2 py-0.5 rounded bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                               —
                             </span>
                           )}
@@ -3167,7 +3169,7 @@ export const QuickBooksDashboard: React.FC = () => {
                               <span className="font-mono text-green-600">
                                 {emp.billableHours.toFixed(1)}
                               </span>
-                              <span className="text-xs text-zinc-500 ml-1">
+                              <span className="text-xs text-neutral-500 ml-1">
                                 (
                                 {Math.round(
                                   (emp.billableHours / emp.totalHours) * 100,
@@ -3192,7 +3194,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-medium">
+                  <tfoot className="bg-neutral-100 dark:bg-neutral-800 font-medium">
                     <tr>
                       <td colSpan={3} className="p-2 text-right">
                         Totals:
@@ -3245,7 +3247,7 @@ export const QuickBooksDashboard: React.FC = () => {
             {/* Recent Time Activities */}
             {timeActivities.length > 0 && (
               <>
-                <h4 className="font-medium text-zinc-700 mt-6 mb-3">
+                <h4 className="font-medium text-neutral-700 mt-6 mb-3">
                   Recent Time Entries
                 </h4>
                 <div className="overflow-x-auto">
@@ -3289,7 +3291,7 @@ export const QuickBooksDashboard: React.FC = () => {
                           return (
                             <tr
                               key={activity.Id}
-                              className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                              className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                             >
                               <td className="p-2 text-sm">
                                 {formatDate(activity.TxnDate)}
@@ -3310,7 +3312,7 @@ export const QuickBooksDashboard: React.FC = () => {
                                   className={`px-2 py-1 rounded text-xs ${
                                     activity.BillableStatus === "Billable"
                                       ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
-                                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                      : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                                   }`}
                                 >
                                   {activity.BillableStatus === "Billable"
@@ -3347,7 +3349,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Customers Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("customers")}
         >
           <div className="flex items-center justify-between">
@@ -3356,7 +3358,7 @@ export const QuickBooksDashboard: React.FC = () => {
               Customers
             </CardTitle>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {customers.filter((c) => c.Active !== false).length} active /{" "}
                 {customers.length} total
               </span>
@@ -3375,7 +3377,7 @@ export const QuickBooksDashboard: React.FC = () => {
               <p className="text-2xl font-bold text-blue-600">
                 {customers.filter((c) => c.Active !== false).length}
               </p>
-              <p className="text-xs text-zinc-500">Active Customers</p>
+              <p className="text-xs text-neutral-500">Active Customers</p>
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <p className="text-2xl font-bold text-green-600">
@@ -3383,19 +3385,19 @@ export const QuickBooksDashboard: React.FC = () => {
                   customers.reduce((sum, c) => sum + (c.Balance || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Total Outstanding</p>
+              <p className="text-xs text-neutral-500">Total Outstanding</p>
             </div>
             <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <p className="text-2xl font-bold text-purple-600">
                 {customers.filter((c) => c.Balance > 0).length}
               </p>
-              <p className="text-xs text-zinc-500">With Balance Due</p>
+              <p className="text-xs text-neutral-500">With Balance Due</p>
             </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
-              <p className="text-2xl font-bold text-zinc-600">
+            <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <p className="text-2xl font-bold text-neutral-600">
                 {customers.filter((c) => c.Active === false).length}
               </p>
-              <p className="text-xs text-zinc-500">Inactive</p>
+              <p className="text-xs text-neutral-500">Inactive</p>
             </div>
           </div>
         </CardContent>
@@ -3427,7 +3429,7 @@ export const QuickBooksDashboard: React.FC = () => {
                     .map((customer) => (
                       <tr
                         key={customer.Id}
-                        className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                        className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                       >
                         <td className="p-2 text-sm font-medium">
                           {customer.DisplayName || customer.FullyQualifiedName}
@@ -3446,7 +3448,7 @@ export const QuickBooksDashboard: React.FC = () => {
                         </td>
                         <td className="p-2 text-center">
                           <span
-                            className={`px-2 py-1 rounded text-xs ${customer.Active !== false ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-600"}`}
+                            className={`px-2 py-1 rounded text-xs ${customer.Active !== false ? "bg-green-100 text-green-800" : "bg-neutral-100 text-neutral-600"}`}
                           >
                             {customer.Active !== false ? "Active" : "Inactive"}
                           </span>
@@ -3469,7 +3471,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Bills Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("bills")}
         >
           <div className="flex items-center justify-between">
@@ -3478,7 +3480,7 @@ export const QuickBooksDashboard: React.FC = () => {
               Bills & Payables
             </CardTitle>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {filteredBills.length} bills / {billPayments.length} payments
               </span>
               {expandedSection === "bills" ? (
@@ -3498,13 +3500,13 @@ export const QuickBooksDashboard: React.FC = () => {
                   bills.reduce((sum, b) => sum + (b.Balance || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Outstanding Bills</p>
+              <p className="text-xs text-neutral-500">Outstanding Bills</p>
             </div>
             <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
               <p className="text-2xl font-bold text-orange-600">
                 {bills.filter((b) => b.Balance > 0).length}
               </p>
-              <p className="text-xs text-zinc-500">Unpaid Bills</p>
+              <p className="text-xs text-neutral-500">Unpaid Bills</p>
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <p className="text-2xl font-bold text-green-600">
@@ -3512,7 +3514,7 @@ export const QuickBooksDashboard: React.FC = () => {
                   billPayments.reduce((sum, p) => sum + (p.TotalAmt || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Total Paid</p>
+              <p className="text-xs text-neutral-500">Total Paid</p>
             </div>
             <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <p className="text-2xl font-bold text-purple-600">
@@ -3520,7 +3522,7 @@ export const QuickBooksDashboard: React.FC = () => {
                   vendorCredits.reduce((sum, c) => sum + (c.TotalAmt || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Vendor Credits</p>
+              <p className="text-xs text-neutral-500">Vendor Credits</p>
             </div>
           </div>
         </CardContent>
@@ -3528,7 +3530,7 @@ export const QuickBooksDashboard: React.FC = () => {
         {expandedSection === "bills" && (
           <CardContent className="pt-0 border-t">
             {filteredBills.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500">
+              <div className="text-center py-8 text-neutral-500">
                 <ReceiptText className="h-12 w-12 mx-auto mb-2 opacity-30" />
                 <p>No bills found in QuickBooks</p>
                 <p className="text-xs mt-1">
@@ -3561,7 +3563,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       .map((bill) => (
                         <tr
                           key={bill.Id}
-                          className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         >
                           <td className="p-2 text-sm font-medium">
                             {bill.DocNumber || bill.Id}
@@ -3602,7 +3604,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Sales Receipts & Credit Memos Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("salesReceipts")}
         >
           <div className="flex items-center justify-between">
@@ -3611,7 +3613,7 @@ export const QuickBooksDashboard: React.FC = () => {
               Sales Receipts & Credits
             </CardTitle>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {salesReceipts.length} receipts / {creditMemos.length} credits /{" "}
                 {refundReceipts.length} refunds
               </span>
@@ -3632,7 +3634,7 @@ export const QuickBooksDashboard: React.FC = () => {
                   salesReceipts.reduce((sum, r) => sum + (r.TotalAmt || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Sales Receipts Total</p>
+              <p className="text-xs text-neutral-500">Sales Receipts Total</p>
             </div>
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
               <p className="text-2xl font-bold text-yellow-600">
@@ -3640,7 +3642,7 @@ export const QuickBooksDashboard: React.FC = () => {
                   creditMemos.reduce((sum, c) => sum + (c.TotalAmt || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Credit Memos</p>
+              <p className="text-xs text-neutral-500">Credit Memos</p>
             </div>
             <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <p className="text-2xl font-bold text-red-600">
@@ -3648,13 +3650,13 @@ export const QuickBooksDashboard: React.FC = () => {
                   refundReceipts.reduce((sum, r) => sum + (r.TotalAmt || 0), 0),
                 )}
               </p>
-              <p className="text-xs text-zinc-500">Refunds Issued</p>
+              <p className="text-xs text-neutral-500">Refunds Issued</p>
             </div>
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p className="text-2xl font-bold text-blue-600">
                 {salesReceipts.length}
               </p>
-              <p className="text-xs text-zinc-500">Receipt Count</p>
+              <p className="text-xs text-neutral-500">Receipt Count</p>
             </div>
           </div>
         </CardContent>
@@ -3663,7 +3665,7 @@ export const QuickBooksDashboard: React.FC = () => {
           <CardContent className="pt-0 border-t">
             {filteredSalesReceipts.length > 0 && (
               <>
-                <h4 className="font-medium text-zinc-700 mt-4 mb-3">
+                <h4 className="font-medium text-neutral-700 mt-4 mb-3">
                   Sales Receipts
                 </h4>
                 <div className="overflow-x-auto">
@@ -3690,7 +3692,7 @@ export const QuickBooksDashboard: React.FC = () => {
                         .map((receipt) => (
                           <tr
                             key={receipt.Id}
-                            className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                            className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                           >
                             <td className="p-2 text-sm font-medium">
                               {receipt.DocNumber || receipt.Id}
@@ -3723,7 +3725,7 @@ export const QuickBooksDashboard: React.FC = () => {
 
             {creditMemos.length > 0 && (
               <>
-                <h4 className="font-medium text-zinc-700 mt-6 mb-3">
+                <h4 className="font-medium text-neutral-700 mt-6 mb-3">
                   Credit Memos
                 </h4>
                 <div className="overflow-x-auto">
@@ -3750,7 +3752,7 @@ export const QuickBooksDashboard: React.FC = () => {
                         .map((credit) => (
                           <tr
                             key={credit.Id}
-                            className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                            className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                           >
                             <td className="p-2 text-sm font-medium">
                               {credit.DocNumber || credit.Id}
@@ -3788,7 +3790,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {journalEntries.length > 0 && (
         <Card>
           <CardHeader
-            className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
             onClick={() => toggleSection("journalEntries")}
           >
             <div className="flex items-center justify-between">
@@ -3797,7 +3799,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 Journal Entries
               </CardTitle>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-500">
+                <span className="text-sm text-neutral-500">
                   {journalEntries.length} entries
                 </span>
                 {expandedSection === "journalEntries" ? (
@@ -3832,7 +3834,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       .map((entry) => (
                         <tr
                           key={entry.Id}
-                          className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         >
                           <td className="p-2 text-sm font-medium">
                             {entry.DocNumber || entry.Id}
@@ -3866,7 +3868,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {purchaseOrders.length > 0 && (
         <Card>
           <CardHeader
-            className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
             onClick={() => toggleSection("purchaseOrders")}
           >
             <div className="flex items-center justify-between">
@@ -3875,7 +3877,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 Purchase Orders
               </CardTitle>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-500">
+                <span className="text-sm text-neutral-500">
                   {purchaseOrders.length} orders
                 </span>
                 {expandedSection === "purchaseOrders" ? (
@@ -3893,13 +3895,13 @@ export const QuickBooksDashboard: React.FC = () => {
                 <p className="text-2xl font-bold text-teal-600">
                   {purchaseOrders.filter((p) => p.POStatus === "Open").length}
                 </p>
-                <p className="text-xs text-zinc-500">Open Orders</p>
+                <p className="text-xs text-neutral-500">Open Orders</p>
               </div>
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">
                   {purchaseOrders.filter((p) => p.POStatus === "Closed").length}
                 </p>
-                <p className="text-xs text-zinc-500">Closed Orders</p>
+                <p className="text-xs text-neutral-500">Closed Orders</p>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">
@@ -3910,7 +3912,7 @@ export const QuickBooksDashboard: React.FC = () => {
                     ),
                   )}
                 </p>
-                <p className="text-xs text-zinc-500">Total Value</p>
+                <p className="text-xs text-neutral-500">Total Value</p>
               </div>
             </div>
           </CardContent>
@@ -3941,7 +3943,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       .map((po) => (
                         <tr
                           key={po.Id}
-                          className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         >
                           <td className="p-2 text-sm font-medium">
                             {po.DocNumber || po.Id}
@@ -3986,7 +3988,7 @@ export const QuickBooksDashboard: React.FC = () => {
       {transfers.length > 0 && (
         <Card>
           <CardHeader
-            className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
             onClick={() => toggleSection("transfers")}
           >
             <div className="flex items-center justify-between">
@@ -3995,7 +3997,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 Account Transfers
               </CardTitle>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-500">
+                <span className="text-sm text-neutral-500">
                   {transfers.length} transfers
                 </span>
                 {expandedSection === "transfers" ? (
@@ -4032,7 +4034,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       .map((transfer) => (
                         <tr
                           key={transfer.Id}
-                          className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         >
                           <td className="p-2 text-sm">
                             {formatDate(transfer.TxnDate)}
@@ -4065,16 +4067,16 @@ export const QuickBooksDashboard: React.FC = () => {
       {/* Settings & Configuration Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           onClick={() => toggleSection("settings")}
         >
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-zinc-500" />
+              <Layers className="h-5 w-5 text-neutral-500" />
               Settings & Configuration
             </CardTitle>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {classes.length} classes, {departments.length} depts,{" "}
                 {taxCodes.length} tax codes
               </span>
@@ -4089,30 +4091,30 @@ export const QuickBooksDashboard: React.FC = () => {
 
         <CardContent className="pt-0 pb-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
               <GitBranch className="h-5 w-5 mx-auto mb-1 text-blue-500" />
               <p className="text-xl font-bold">{classes.length}</p>
-              <p className="text-xs text-zinc-500">Classes</p>
+              <p className="text-xs text-neutral-500">Classes</p>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
               <Building className="h-5 w-5 mx-auto mb-1 text-purple-500" />
               <p className="text-xl font-bold">{departments.length}</p>
-              <p className="text-xs text-zinc-500">Departments</p>
+              <p className="text-xs text-neutral-500">Departments</p>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
               <BadgePercent className="h-5 w-5 mx-auto mb-1 text-green-500" />
               <p className="text-xl font-bold">{taxCodes.length}</p>
-              <p className="text-xs text-zinc-500">Tax Codes</p>
+              <p className="text-xs text-neutral-500">Tax Codes</p>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
               <CreditCard className="h-5 w-5 mx-auto mb-1 text-orange-500" />
               <p className="text-xl font-bold">{paymentMethods.length}</p>
-              <p className="text-xs text-zinc-500">Payment Methods</p>
+              <p className="text-xs text-neutral-500">Payment Methods</p>
             </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
               <CalendarDays className="h-5 w-5 mx-auto mb-1 text-cyan-500" />
               <p className="text-xl font-bold">{terms.length}</p>
-              <p className="text-xs text-zinc-500">Payment Terms</p>
+              <p className="text-xs text-neutral-500">Payment Terms</p>
             </div>
           </div>
         </CardContent>
@@ -4124,7 +4126,7 @@ export const QuickBooksDashboard: React.FC = () => {
             taxCodes.length === 0 &&
             paymentMethods.length === 0 &&
             terms.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500">
+              <div className="text-center py-8 text-neutral-500">
                 <Layers className="h-12 w-12 mx-auto mb-2 opacity-30" />
                 <p>No configuration data found in QuickBooks</p>
                 <p className="text-xs mt-1">
@@ -4137,18 +4139,18 @@ export const QuickBooksDashboard: React.FC = () => {
                 {/* Classes */}
                 {classes.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                       <GitBranch className="h-4 w-4" /> Classes
                     </h4>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {classes.map((cls) => (
                         <div
                           key={cls.Id}
-                          className="flex items-center justify-between text-sm p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
+                          className="flex items-center justify-between text-sm p-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded"
                         >
                           <span>{cls.FullyQualifiedName || cls.Name}</span>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs ${cls.Active !== false ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-600"}`}
+                            className={`px-2 py-0.5 rounded text-xs ${cls.Active !== false ? "bg-green-100 text-green-800" : "bg-neutral-100 text-neutral-600"}`}
                           >
                             {cls.Active !== false ? "Active" : "Inactive"}
                           </span>
@@ -4161,18 +4163,18 @@ export const QuickBooksDashboard: React.FC = () => {
                 {/* Departments */}
                 {departments.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                       <Building className="h-4 w-4" /> Departments
                     </h4>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {departments.map((dept) => (
                         <div
                           key={dept.Id}
-                          className="flex items-center justify-between text-sm p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
+                          className="flex items-center justify-between text-sm p-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded"
                         >
                           <span>{dept.FullyQualifiedName || dept.Name}</span>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs ${dept.Active !== false ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-600"}`}
+                            className={`px-2 py-0.5 rounded text-xs ${dept.Active !== false ? "bg-green-100 text-green-800" : "bg-neutral-100 text-neutral-600"}`}
                           >
                             {dept.Active !== false ? "Active" : "Inactive"}
                           </span>
@@ -4185,17 +4187,17 @@ export const QuickBooksDashboard: React.FC = () => {
                 {/* Tax Codes */}
                 {taxCodes.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                       <BadgePercent className="h-4 w-4" /> Tax Codes
                     </h4>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {taxCodes.map((tax) => (
                         <div
                           key={tax.Id}
-                          className="flex items-center justify-between text-sm p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
+                          className="flex items-center justify-between text-sm p-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded"
                         >
                           <span>{tax.Name}</span>
-                          <span className="text-xs text-zinc-500">
+                          <span className="text-xs text-neutral-500">
                             {tax.Description || "—"}
                           </span>
                         </div>
@@ -4207,18 +4209,18 @@ export const QuickBooksDashboard: React.FC = () => {
                 {/* Payment Methods */}
                 {paymentMethods.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                       <CreditCard className="h-4 w-4" /> Payment Methods
                     </h4>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {paymentMethods.map((method) => (
                         <div
                           key={method.Id}
-                          className="flex items-center justify-between text-sm p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
+                          className="flex items-center justify-between text-sm p-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded"
                         >
                           <span>{method.Name}</span>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs ${method.Active !== false ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-600"}`}
+                            className={`px-2 py-0.5 rounded text-xs ${method.Active !== false ? "bg-green-100 text-green-800" : "bg-neutral-100 text-neutral-600"}`}
                           >
                             {method.Active !== false ? "Active" : "Inactive"}
                           </span>
@@ -4231,17 +4233,17 @@ export const QuickBooksDashboard: React.FC = () => {
                 {/* Payment Terms */}
                 {terms.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                       <CalendarDays className="h-4 w-4" /> Payment Terms
                     </h4>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {terms.map((term) => (
                         <div
                           key={term.Id}
-                          className="flex items-center justify-between text-sm p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
+                          className="flex items-center justify-between text-sm p-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded"
                         >
                           <span>{term.Name}</span>
-                          <span className="text-xs text-zinc-500">
+                          <span className="text-xs text-neutral-500">
                             {term.DueDays ? `Due in ${term.DueDays} days` : "—"}
                           </span>
                         </div>
@@ -4252,7 +4254,7 @@ export const QuickBooksDashboard: React.FC = () => {
 
                 {/* Chart of Accounts Summary */}
                 <div>
-                  <h4 className="font-medium text-zinc-700 mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-neutral-700 mb-2 flex items-center gap-2">
                     <ClipboardList className="h-4 w-4" /> Chart of Accounts
                   </h4>
                   <div className="space-y-1">
@@ -4276,7 +4278,7 @@ export const QuickBooksDashboard: React.FC = () => {
                           key={type}
                           className="flex items-center justify-between text-sm p-1"
                         >
-                          <span className="text-zinc-600">{type}</span>
+                          <span className="text-neutral-600">{type}</span>
                           <span className="font-medium">{count}</span>
                         </div>
                       );

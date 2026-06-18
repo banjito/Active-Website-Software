@@ -93,7 +93,7 @@ const STATUS_OPTIONS = [
   {
     value: "archived",
     label: "Archived",
-    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+    color: "text-neutral-500 bg-neutral-100 dark:bg-neutral-800",
   },
 ];
 
@@ -120,7 +120,7 @@ const ASSIGNMENT_STATUS_OPTIONS = [
     value: "waived",
     label: "Waived",
     icon: FileCheck,
-    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+    color: "text-neutral-500 bg-neutral-100 dark:bg-neutral-800",
   },
 ];
 
@@ -349,11 +349,11 @@ export const FinalDocs: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <FileText className="h-6 w-6 text-[#f26722]" />
             Final Documents
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             Release agreements, property returns, and other offboarding
             documents
           </p>
@@ -369,14 +369,14 @@ export const FinalDocs: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                <FileText className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+              <div className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+                <FileText className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-semibold text-neutral-900 dark:text-white">
                   {stats.total}
                 </p>
-                <p className="text-sm text-zinc-500">Total Templates</p>
+                <p className="text-sm text-neutral-500">Total Templates</p>
               </div>
             </div>
           </CardContent>
@@ -388,10 +388,10 @@ export const FinalDocs: React.FC = () => {
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-semibold text-neutral-900 dark:text-white">
                   {stats.active}
                 </p>
-                <p className="text-sm text-zinc-500">Active</p>
+                <p className="text-sm text-neutral-500">Active</p>
               </div>
             </div>
           </CardContent>
@@ -403,10 +403,10 @@ export const FinalDocs: React.FC = () => {
                 <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-semibold text-neutral-900 dark:text-white">
                   {stats.required}
                 </p>
-                <p className="text-sm text-zinc-500">Required</p>
+                <p className="text-sm text-neutral-500">Required</p>
               </div>
             </div>
           </CardContent>
@@ -418,7 +418,7 @@ export const FinalDocs: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <Input
                 placeholder="Search documents..."
                 value={search}
@@ -429,7 +429,7 @@ export const FinalDocs: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm min-w-[180px]"
+              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm min-w-[180px]"
             >
               <option value="all">All Types</option>
               {DOC_TYPE_OPTIONS.map((opt) => (
@@ -456,11 +456,11 @@ export const FinalDocs: React.FC = () => {
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <FileText className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
-              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+              <FileText className="h-12 w-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">
                 No documents found
               </p>
-              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
                 {search || filterType !== "all"
                   ? "Try adjusting your filters"
                   : "Create your first document template"}
@@ -476,41 +476,41 @@ export const FinalDocs: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Document
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Type
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {filteredTemplates.map((t) => (
                     <tr
                       key={t.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-zinc-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             {t.name}
                           </p>
                           {t.description && (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
                               {t.description}
                             </p>
                           )}
                           <div className="flex flex-wrap gap-1 mt-1">
                             {t.attachment_name && (
                               <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300"
                                 title={t.attachment_name}
                               >
                                 <FileText className="h-3 w-3" />
@@ -528,7 +528,7 @@ export const FinalDocs: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-300">
+                        <span className="text-sm text-neutral-600 dark:text-neutral-300">
                           {getDocTypeLabel(t.doc_type)}
                         </span>
                       </td>
@@ -594,7 +594,7 @@ export const FinalDocs: React.FC = () => {
 
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Document Name *
               </label>
               <Input
@@ -607,7 +607,7 @@ export const FinalDocs: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Document Type
               </label>
               <select
@@ -618,7 +618,7 @@ export const FinalDocs: React.FC = () => {
                     doc_type: e.target.value as FinalDocType,
                   }))
                 }
-                className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
               >
                 {DOC_TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -629,7 +629,7 @@ export const FinalDocs: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Description
               </label>
               <Textarea
@@ -643,7 +643,7 @@ export const FinalDocs: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Instructions for Employee
               </label>
               <Textarea
@@ -657,17 +657,17 @@ export const FinalDocs: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Upload document (optional)
               </label>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                 Attach a file if you don’t want to create the document here —
                 e.g. .doc, .docx, .pdf, .txt (max {MAX_FILE_MB} MB).
               </p>
               {formData.attachment_name ? (
-                <div className="flex items-center justify-between gap-2 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex items-center gap-2">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-zinc-500" />
+                <div className="flex items-center justify-between gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <span className="text-sm font-medium text-neutral-900 dark:text-white truncate flex items-center gap-2">
+                    <FileText className="h-4 w-4 flex-shrink-0 text-neutral-500" />
                     {formData.attachment_name}
                   </span>
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -683,9 +683,9 @@ export const FinalDocs: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                  <Upload className="h-5 w-5 text-zinc-400" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                  <Upload className="h-5 w-5 text-neutral-400" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     Choose file to upload
                   </span>
                   <input
@@ -700,7 +700,7 @@ export const FinalDocs: React.FC = () => {
 
             <div className="flex items-center gap-6">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Status
                 </label>
                 <select
@@ -711,7 +711,7 @@ export const FinalDocs: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                  className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -728,9 +728,9 @@ export const FinalDocs: React.FC = () => {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, required: e.target.checked }))
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Required for offboarding
                   </span>
                 </label>
@@ -777,14 +777,16 @@ export const FinalDocs: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-zinc-500 dark:text-zinc-400">Type</p>
-                  <p className="font-medium text-zinc-900 dark:text-white mt-0.5">
+                  <p className="text-neutral-500 dark:text-neutral-400">Type</p>
+                  <p className="font-medium text-neutral-900 dark:text-white mt-0.5">
                     {getDocTypeLabel(selectedTemplate.doc_type)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-zinc-500 dark:text-zinc-400">Created</p>
-                  <p className="font-medium text-zinc-900 dark:text-white mt-0.5">
+                  <p className="text-neutral-500 dark:text-neutral-400">
+                    Created
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white mt-0.5">
                     {new Date(selectedTemplate.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -792,10 +794,10 @@ export const FinalDocs: React.FC = () => {
 
               {selectedTemplate.instructions && (
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Instructions
                   </p>
-                  <p className="text-sm text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg">
+                  <p className="text-sm text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-lg">
                     {selectedTemplate.instructions}
                   </p>
                 </div>
@@ -804,7 +806,7 @@ export const FinalDocs: React.FC = () => {
               {selectedTemplate.attachment_name &&
                 selectedTemplate.attachment_data && (
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                       Attached file
                     </p>
                     <Button

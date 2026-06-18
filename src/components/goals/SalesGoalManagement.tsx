@@ -136,7 +136,7 @@ const SalesGoalManagement: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold mb-0">Sales Goal Management</h1>
-          <p className="text-zinc-500">
+          <p className="text-neutral-500">
             Create, track, and manage sales goals across your organization
           </p>
         </div>
@@ -174,7 +174,7 @@ const SalesGoalManagement: React.FC = () => {
           {filteredGoals.length > 0 ? (
             <>
               <Card className="mb-4">
-                <div className="p-4 bg-zinc-50">
+                <div className="p-4 bg-neutral-50">
                   <div className="flex items-center">
                     <div className="flex-1">
                       <h5 className="font-medium flex items-center">
@@ -220,7 +220,7 @@ const SalesGoalManagement: React.FC = () => {
                 </div>
                 <div className="md:col-span-4">
                   <Card>
-                    <div className="p-4 bg-zinc-50 border-b">
+                    <div className="p-4 bg-neutral-50 border-b">
                       <h5 className="font-medium flex items-center">
                         <BarChart2 size={18} className="mr-2" />
                         Goal Metrics
@@ -283,7 +283,7 @@ const SalesGoalManagement: React.FC = () => {
             <Card className="text-center p-5">
               <div className="p-8">
                 <h4 className="text-xl font-bold">No Sales Goals Found</h4>
-                <p className="text-zinc-500 my-3">
+                <p className="text-neutral-500 my-3">
                   You don't have any sales goals yet. Create your first goal to
                   get started.
                 </p>

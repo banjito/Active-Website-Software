@@ -946,10 +946,10 @@ export const OnboardingTracking: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           Onboarding Tracking
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="text-neutral-600 dark:text-neutral-400 mt-2">
           Assign people to onboarding (ampOS users), then assign packets and
           send tasks. Packets and tasks sync to Your Onboarding, Checklists, and
           IT/Equipment Tasks.
@@ -967,7 +967,7 @@ export const OnboardingTracking: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-wrap items-center gap-4">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Status
             </label>
             <select
@@ -976,7 +976,7 @@ export const OnboardingTracking: React.FC = () => {
                 setFilterStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
             >
               {statusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -995,11 +995,11 @@ export const OnboardingTracking: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-              <UserPlus className="mx-auto h-12 w-12 text-zinc-400 mb-4" />
+            <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
+              <UserPlus className="mx-auto h-12 w-12 text-neutral-400 mb-4" />
               <p>No onboarding records yet.</p>
               <p className="text-sm mt-2">
                 Click &quot;Add person&quot; to assign an ampOS user to
@@ -1012,22 +1012,22 @@ export const OnboardingTracking: React.FC = () => {
                 {paginated.map((record) => (
                   <div
                     key={record.id}
-                    className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <button
                       type="button"
                       onClick={() => setSelectedTracking(record)}
                       className="flex-1 text-left min-w-0"
                     >
-                      <div className="font-medium text-zinc-900 dark:text-white flex items-center gap-1">
+                      <div className="font-medium text-neutral-900 dark:text-white flex items-center gap-1">
                         {record.user
                           ? record.user.name || record.user.email
                           : record.candidate
                             ? `${record.candidate.first_name} ${record.candidate.last_name}`
                             : "Unknown"}
-                        <ChevronRight className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                        <ChevronRight className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {record.offer
                           ? `${record.offer.position_title} – ${record.offer.department}`
                           : record.candidate?.email
@@ -1037,12 +1037,12 @@ export const OnboardingTracking: React.FC = () => {
                               : "—"}
                         {record.candidate?.position_applied &&
                           !record.offer && (
-                            <span className="ml-2 text-xs text-zinc-400">
+                            <span className="ml-2 text-xs text-neutral-400">
                               ({record.candidate.position_applied})
                             </span>
                           )}
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1 flex flex-wrap items-center gap-x-2">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1 flex flex-wrap items-center gap-x-2">
                         <span>
                           Added{" "}
                           {new Date(record.created_at).toLocaleDateString(
@@ -1110,7 +1110,7 @@ export const OnboardingTracking: React.FC = () => {
                                 {chips.map((c) => (
                                   <span
                                     key={c.label}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
                                   >
                                     {c.icon}
                                     <span>{c.label}</span>
@@ -1123,7 +1123,7 @@ export const OnboardingTracking: React.FC = () => {
                             )}
                             {prog.total > 0 && (
                               <div className="flex items-center gap-2 max-w-md">
-                                <div className="flex-1 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                <div className="flex-1 h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
                                   <div
                                     className={`h-full transition-all ${
                                       prog.percent === 100
@@ -1133,7 +1133,7 @@ export const OnboardingTracking: React.FC = () => {
                                     style={{ width: `${prog.percent}%` }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 tabular-nums w-24 text-right">
+                                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 tabular-nums w-24 text-right">
                                   {prog.done}/{prog.total} · {prog.percent}%
                                 </span>
                               </div>
@@ -1157,7 +1157,7 @@ export const OnboardingTracking: React.FC = () => {
                               | "completed",
                           )
                         }
-                        className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In progress</option>
@@ -1177,8 +1177,8 @@ export const OnboardingTracking: React.FC = () => {
                 ))}
               </div>
               {filtered.length > PAGE_SIZE && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     Page {page} of {totalPages} ({filtered.length} total)
                   </span>
                   <div className="flex gap-2">
@@ -1245,18 +1245,18 @@ export const OnboardingTracking: React.FC = () => {
             <div className="space-y-4 py-2">
               {/* Applicant info (reference only, not a linked account) */}
               {selectedTracking.candidate && (
-                <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
-                  <Mail className="h-5 w-5 text-zinc-400 flex-shrink-0" />
+                <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
+                  <Mail className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                       Applicant Email
                     </p>
-                    <p className="text-sm text-zinc-900 dark:text-white truncate">
+                    <p className="text-sm text-neutral-900 dark:text-white truncate">
                       {selectedTracking.candidate.email}
                     </p>
                   </div>
                   {selectedTracking.candidate.position_applied && (
-                    <span className="text-xs bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 px-2 py-1 rounded-full whitespace-nowrap">
+                    <span className="text-xs bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-1 rounded-full whitespace-nowrap">
                       {selectedTracking.candidate.position_applied}
                     </span>
                   )}
@@ -1265,11 +1265,11 @@ export const OnboardingTracking: React.FC = () => {
 
               {/* Link Work Account – search users */}
               <div className="border-2 border-[#f26722]/30 rounded-lg p-4 bg-orange-50 dark:bg-orange-900/10">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
                   <Link2 className="h-4 w-4 text-[#f26722]" />
                   Work Account
                 </h3>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3">
                   Link this onboarding to the employee's work account so they
                   see their packets, forms, and checklists when they log in.
                 </p>
@@ -1279,11 +1279,11 @@ export const OnboardingTracking: React.FC = () => {
                     <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                       <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-zinc-900 dark:text-white">
+                        <p className="font-medium text-sm text-neutral-900 dark:text-white">
                           {selectedTracking.user.name ||
                             selectedTracking.user.email}
                         </p>
-                        <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
                           {selectedTracking.user.email}
                         </p>
                       </div>
@@ -1307,20 +1307,20 @@ export const OnboardingTracking: React.FC = () => {
                       </span>
                     </div>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
                       <input
                         type="text"
                         placeholder="Search by name or email..."
                         value={linkAccountSearch}
                         onChange={(e) => searchWorkAccounts(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       />
                       {linkAccountLoading && (
-                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-zinc-400" />
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
                       )}
                     </div>
                     {linkAccountResults.length > 0 && (
-                      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                      <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-40 overflow-y-auto">
                         {linkAccountResults.map((u) => (
                           <button
                             key={u.id}
@@ -1333,14 +1333,14 @@ export const OnboardingTracking: React.FC = () => {
                               )
                             }
                             disabled={linkingAccount}
-                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-left border-b last:border-0 border-zinc-100 dark:border-zinc-700"
+                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left border-b last:border-0 border-neutral-100 dark:border-neutral-700"
                           >
-                            <User className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                            <User className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                                 {u.name}
                               </p>
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                                 {u.email}
                               </p>
                             </div>
@@ -1352,7 +1352,7 @@ export const OnboardingTracking: React.FC = () => {
                     {linkAccountSearch.length >= 2 &&
                       linkAccountResults.length === 0 &&
                       !linkAccountLoading && (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">
                           No matching accounts found. Make sure the employee has
                           created their account first.
                         </p>
@@ -1362,7 +1362,7 @@ export const OnboardingTracking: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Once a work account is linked, the employee sees their
                   onboarding at <strong>Your Onboarding</strong>.
                 </p>
@@ -1393,16 +1393,16 @@ export const OnboardingTracking: React.FC = () => {
               {(() => {
                 const prog = computeProgress(selectedTracking);
                 return (
-                  <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 p-4">
+                  <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Onboarding progress
                       </span>
-                      <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 tabular-nums">
+                      <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 tabular-nums">
                         {prog.done}/{prog.total} items · {prog.percent}%
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden mb-3">
+                    <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden mb-3">
                       <div
                         className={`h-full transition-all ${prog.percent === 100 ? "bg-green-500" : "bg-[#f26722]"}`}
                         style={{ width: `${prog.percent}%` }}
@@ -1412,18 +1412,18 @@ export const OnboardingTracking: React.FC = () => {
                       {prog.buckets.map((b) => (
                         <div
                           key={b.label}
-                          className="flex items-center justify-between px-2 py-1.5 rounded bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                          className="flex items-center justify-between px-2 py-1.5 rounded bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700"
                         >
-                          <span className="text-zinc-600 dark:text-zinc-400">
+                          <span className="text-neutral-600 dark:text-neutral-400">
                             {b.label}
                           </span>
                           <span
                             className={`font-semibold tabular-nums ${
                               b.total === 0
-                                ? "text-zinc-400"
+                                ? "text-neutral-400"
                                 : b.done === b.total
                                   ? "text-green-600 dark:text-green-400"
-                                  : "text-zinc-900 dark:text-white"
+                                  : "text-neutral-900 dark:text-white"
                             }`}
                           >
                             {b.done}/{b.total}
@@ -1454,11 +1454,11 @@ export const OnboardingTracking: React.FC = () => {
 
                 <TabsContent value="documents" className="space-y-4 pt-3">
                   <div>
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Assigned packets
                     </p>
                     {(selectedTracking.assigned_packets?.length ?? 0) === 0 ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
                         No packets assigned yet.
                       </p>
                     ) : (
@@ -1466,9 +1466,9 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_packets!.map((p) => (
                           <li
                             key={p.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800"
+                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800"
                           >
-                            <span className="text-sm text-zinc-900 dark:text-white truncate flex-1">
+                            <span className="text-sm text-neutral-900 dark:text-white truncate flex-1">
                               {p.name}
                             </span>
                             <Button
@@ -1494,7 +1494,7 @@ export const OnboardingTracking: React.FC = () => {
                       return (
                         <>
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign packets
                               {packetIdsToAssign.length > 0 && (
                                 <span className="ml-2 text-xs text-[#f26722]">
@@ -1525,12 +1525,12 @@ export const OnboardingTracking: React.FC = () => {
                             )}
                           </div>
                           {availablePackets.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               No packets – create one in New Hire Packets.
                             </p>
                           ) : (
                             <>
-                              <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {availablePackets.map((t) => {
                                   const isChecked = packetIdsToAssign.includes(
                                     t.id,
@@ -1538,7 +1538,7 @@ export const OnboardingTracking: React.FC = () => {
                                   return (
                                     <label
                                       key={t.id}
-                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
                                           ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                           : ""
@@ -1550,18 +1550,18 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           togglePacketToAssign(t.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                         disabled={assigningInModal}
                                       />
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                        <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                           <Folder className="h-3.5 w-3.5 flex-shrink-0" />
                                           <span className="truncate">
                                             {t.name}
                                           </span>
                                         </div>
                                         {t.description && (
-                                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                             {t.description}
                                           </p>
                                         )}
@@ -1611,11 +1611,11 @@ export const OnboardingTracking: React.FC = () => {
                     })()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Assigned E-Sign forms
                     </p>
                     {(selectedTracking.assigned_forms?.length ?? 0) === 0 ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
                         No E-Sign forms assigned. Assign forms below for the
                         employee to sign in Your Onboarding.
                       </p>
@@ -1624,16 +1624,16 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_forms!.map((f) => (
                           <li
                             key={f.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                           >
-                            <span className="text-sm text-zinc-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                            <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                               <FileSignature className="h-3.5 w-3.5 flex-shrink-0" />
                               {f.name}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-zinc-500 hover:text-red-600 h-8 w-8 p-0"
+                              className="text-neutral-500 hover:text-red-600 h-8 w-8 p-0"
                               onClick={() =>
                                 handleRemoveForm(selectedTracking.id, f.id)
                               }
@@ -1657,7 +1657,7 @@ export const OnboardingTracking: React.FC = () => {
                       return (
                         <>
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign E-Sign forms
                               {formIdsToAssign.length > 0 && (
                                 <span className="ml-2 text-xs text-[#f26722]">
@@ -1687,17 +1687,17 @@ export const OnboardingTracking: React.FC = () => {
                             )}
                           </div>
                           {eSignForms.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               No active E-Sign forms – create one in E-Sign
                               Forms.
                             </p>
                           ) : available.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               Every available form is already assigned.
                             </p>
                           ) : (
                             <>
-                              <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {available.map((form) => {
                                   const isChecked = formIdsToAssign.includes(
                                     form.id,
@@ -1705,7 +1705,7 @@ export const OnboardingTracking: React.FC = () => {
                                   return (
                                     <label
                                       key={form.id}
-                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
                                           ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                           : ""
@@ -1717,18 +1717,18 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           toggleFormToAssign(form.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                         disabled={assigningForm}
                                       />
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                        <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                           <FileSignature className="h-3.5 w-3.5 flex-shrink-0" />
                                           <span className="truncate">
                                             {form.name}
                                           </span>
                                         </div>
                                         {form.description && (
-                                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                             {form.description}
                                           </p>
                                         )}
@@ -1781,12 +1781,12 @@ export const OnboardingTracking: React.FC = () => {
 
                 <TabsContent value="checklists" className="space-y-4 pt-3">
                   <div>
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Assigned checklists
                     </p>
                     {(selectedTracking.assigned_checklists?.length ?? 0) ===
                     0 ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
                         No checklists assigned. Assign checklists below for the
                         employee to complete in Your Onboarding.
                       </p>
@@ -1795,9 +1795,9 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_checklists!.map((c) => (
                           <li
                             key={c.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                           >
-                            <span className="text-sm text-zinc-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                            <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                               <CheckSquare className="h-3.5 w-3.5 flex-shrink-0" />
                               {c.name}
                             </span>
@@ -1816,7 +1816,7 @@ export const OnboardingTracking: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-zinc-500 hover:text-red-600 h-8 w-8 p-0"
+                                className="text-neutral-500 hover:text-red-600 h-8 w-8 p-0"
                                 onClick={() =>
                                   handleRemoveChecklist(
                                     selectedTracking.id,
@@ -1844,7 +1844,7 @@ export const OnboardingTracking: React.FC = () => {
                       return (
                         <>
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign checklists
                               {checklistIdsToAssign.length > 0 && (
                                 <span className="ml-2 text-xs text-[#f26722]">
@@ -1875,23 +1875,23 @@ export const OnboardingTracking: React.FC = () => {
                             )}
                           </div>
                           {checklists.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               No checklists – create one in Checklists.
                             </p>
                           ) : availableChecklists.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                               Every available checklist is already assigned.
                             </p>
                           ) : (
                             <>
-                              <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {availableChecklists.map((cl) => {
                                   const isChecked =
                                     checklistIdsToAssign.includes(cl.id);
                                   return (
                                     <label
                                       key={cl.id}
-                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                      className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
                                           ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                           : ""
@@ -1903,18 +1903,18 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           toggleChecklistToAssign(cl.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                         disabled={assigningChecklist}
                                       />
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                        <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                           <CheckSquare className="h-3.5 w-3.5 flex-shrink-0" />
                                           <span className="truncate">
                                             {cl.name}
                                           </span>
                                         </div>
                                         {cl.description && (
-                                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                             {cl.description}
                                           </p>
                                         )}
@@ -1967,19 +1967,19 @@ export const OnboardingTracking: React.FC = () => {
 
                 <TabsContent value="tasks" className="space-y-6 pt-3">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-1 border-b border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
                       <Laptop className="h-4 w-4 text-[#f26722]" />
-                      <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         IT / Equipment
                       </h4>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                         Assigned IT/Equipment tasks
                       </p>
                       {(selectedTracking.assigned_it_tasks?.length ?? 0) ===
                       0 ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                           No IT/Equipment tasks assigned. Assign below to create
                           a copy for this person.
                         </p>
@@ -1988,9 +1988,9 @@ export const OnboardingTracking: React.FC = () => {
                           {selectedTracking.assigned_it_tasks!.map((t) => (
                             <li
                               key={t.id}
-                              className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                              className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                             >
-                              <span className="text-sm text-zinc-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                              <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                 <Laptop className="h-3.5 w-3.5 flex-shrink-0" />
                                 {t.name}
                               </span>
@@ -2009,7 +2009,7 @@ export const OnboardingTracking: React.FC = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-zinc-500 hover:text-red-600 h-8 w-8 p-0"
+                                  className="text-neutral-500 hover:text-red-600 h-8 w-8 p-0"
                                   onClick={() =>
                                     handleRemoveITTask(
                                       selectedTracking.id,
@@ -2032,7 +2032,7 @@ export const OnboardingTracking: React.FC = () => {
                         return (
                           <>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign IT/Equipment tasks
                                 {itTaskIdsToAssign.length > 0 && (
                                   <span className="ml-2 text-xs text-[#f26722]">
@@ -2062,24 +2062,24 @@ export const OnboardingTracking: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                               A copy of each selected task will be created and
                               assigned to this person.
                             </p>
                             {availableITTasks.length === 0 ? (
-                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                 No IT tasks – create one in IT/Equipment Tasks.
                               </p>
                             ) : (
                               <>
-                                <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {availableITTasks.map((task) => {
                                     const isChecked =
                                       itTaskIdsToAssign.includes(task.id);
                                     return (
                                       <label
                                         key={task.id}
-                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
                                             ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                             : ""
@@ -2091,18 +2091,18 @@ export const OnboardingTracking: React.FC = () => {
                                           onChange={() =>
                                             toggleITTaskToAssign(task.id)
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                           disabled={assigningITTask}
                                         />
                                         <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                          <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                             <Laptop className="h-3.5 w-3.5 flex-shrink-0" />
                                             <span className="truncate">
                                               {task.name}
                                             </span>
                                           </div>
                                           {task.description && (
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                               {task.description}
                                             </p>
                                           )}
@@ -2154,19 +2154,19 @@ export const OnboardingTracking: React.FC = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-1 border-b border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
                       <Briefcase className="h-4 w-4 text-[#f26722]" />
-                      <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Office Admin
                       </h4>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                         Assigned Office Admin tasks
                       </p>
                       {(selectedTracking.assigned_office_admin_tasks?.length ??
                         0) === 0 ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                           No Office Admin tasks assigned. Assign below to create
                           a copy for this person.
                         </p>
@@ -2176,9 +2176,9 @@ export const OnboardingTracking: React.FC = () => {
                             (t) => (
                               <li
                                 key={t.id}
-                                className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                                className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                               >
-                                <span className="text-sm text-zinc-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                                <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                   <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
                                   {t.name}
                                 </span>
@@ -2197,7 +2197,7 @@ export const OnboardingTracking: React.FC = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-zinc-500 hover:text-red-600 h-8 w-8 p-0"
+                                    className="text-neutral-500 hover:text-red-600 h-8 w-8 p-0"
                                     onClick={() =>
                                       handleRemoveOfficeAdminTask(
                                         selectedTracking.id,
@@ -2221,7 +2221,7 @@ export const OnboardingTracking: React.FC = () => {
                         return (
                           <>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign Office Admin tasks
                                 {officeAdminTaskIdsToAssign.length > 0 && (
                                   <span className="ml-2 text-xs text-[#f26722]">
@@ -2252,18 +2252,18 @@ export const OnboardingTracking: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                               A copy of each selected task will be created and
                               assigned to this person.
                             </p>
                             {available.length === 0 ? (
-                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                 No Office Admin tasks – create one in Office
                                 Admin Tasks.
                               </p>
                             ) : (
                               <>
-                                <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {available.map((task) => {
                                     const isChecked =
                                       officeAdminTaskIdsToAssign.includes(
@@ -2272,7 +2272,7 @@ export const OnboardingTracking: React.FC = () => {
                                     return (
                                       <label
                                         key={task.id}
-                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
                                             ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                             : ""
@@ -2286,18 +2286,18 @@ export const OnboardingTracking: React.FC = () => {
                                               task.id,
                                             )
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                           disabled={assigningOfficeAdminTask}
                                         />
                                         <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                          <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                             <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
                                             <span className="truncate">
                                               {task.name}
                                             </span>
                                           </div>
                                           {task.description && (
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                               {task.description}
                                             </p>
                                           )}
@@ -2351,19 +2351,19 @@ export const OnboardingTracking: React.FC = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-1 border-b border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
                       <Users className="h-4 w-4 text-[#f26722]" />
-                      <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         HR
                       </h4>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                         Assigned HR tasks
                       </p>
                       {(selectedTracking.assigned_hr_tasks?.length ?? 0) ===
                       0 ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                           No HR tasks assigned. Assign below to create a copy
                           for this person.
                         </p>
@@ -2372,9 +2372,9 @@ export const OnboardingTracking: React.FC = () => {
                           {selectedTracking.assigned_hr_tasks!.map((t) => (
                             <li
                               key={t.id}
-                              className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                              className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                             >
-                              <span className="text-sm text-zinc-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                              <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                 <Users className="h-3.5 w-3.5 flex-shrink-0" />
                                 {t.name}
                               </span>
@@ -2393,7 +2393,7 @@ export const OnboardingTracking: React.FC = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-zinc-500 hover:text-red-600 h-8 w-8 p-0"
+                                  className="text-neutral-500 hover:text-red-600 h-8 w-8 p-0"
                                   onClick={() =>
                                     handleRemoveHRTask(
                                       selectedTracking.id,
@@ -2416,7 +2416,7 @@ export const OnboardingTracking: React.FC = () => {
                         return (
                           <>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign HR tasks
                                 {hrTaskIdsToAssign.length > 0 && (
                                   <span className="ml-2 text-xs text-[#f26722]">
@@ -2446,24 +2446,24 @@ export const OnboardingTracking: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                               A copy of each selected task will be created and
                               assigned to this person.
                             </p>
                             {available.length === 0 ? (
-                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                 No HR tasks – create one in HR Tasks.
                               </p>
                             ) : (
                               <>
-                                <div className="border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 max-h-48 overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {available.map((task) => {
                                     const isChecked =
                                       hrTaskIdsToAssign.includes(task.id);
                                     return (
                                       <label
                                         key={task.id}
-                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm ${
+                                        className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
                                             ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
                                             : ""
@@ -2475,18 +2475,18 @@ export const OnboardingTracking: React.FC = () => {
                                           onChange={() =>
                                             toggleHRTaskToAssign(task.id)
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                           disabled={assigningHRTask}
                                         />
                                         <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                          <div className="flex items-center gap-1.5 text-neutral-900 dark:text-white">
                                             <Users className="h-3.5 w-3.5 flex-shrink-0" />
                                             <span className="truncate">
                                               {task.name}
                                             </span>
                                           </div>
                                           {task.description && (
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                                               {task.description}
                                             </p>
                                           )}
@@ -2586,7 +2586,7 @@ export const OnboardingTracking: React.FC = () => {
             ) : (
               <>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
                   <Input
                     type="text"
                     placeholder="Search users by name or email..."
@@ -2597,9 +2597,9 @@ export const OnboardingTracking: React.FC = () => {
                     name="onboarding-user-search"
                   />
                 </div>
-                <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
                   {filteredAddPersonUsers.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="p-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
                       No users match your search.
                     </div>
                   ) : (
@@ -2610,18 +2610,18 @@ export const OnboardingTracking: React.FC = () => {
                         onClick={() =>
                           setSelectedUserId(selectedUserId === u.id ? "" : u.id)
                         }
-                        className={`w-full text-left px-3 py-2.5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${
+                        className={`w-full text-left px-3 py-2.5 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${
                           selectedUserId === u.id
                             ? "bg-[#f26722]/10 dark:bg-[#f26722]/20"
                             : ""
                         }`}
                       >
-                        <User className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                        <User className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-zinc-900 dark:text-white truncate">
+                          <div className="font-medium text-neutral-900 dark:text-white truncate">
                             {u.name}
                           </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                             {u.email}
                           </div>
                         </div>

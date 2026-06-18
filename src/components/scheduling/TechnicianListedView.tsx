@@ -446,7 +446,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setIsTechFilterOpen(!isTechFilterOpen)}
-                  className="w-full px-3 py-2 text-left text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                  className="w-full px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
                 >
                   <span>
                     {selectedTechIds.length === 0
@@ -473,8 +473,8 @@ export const TechnicianListedView: React.FC<Props> = ({
                       className="fixed inset-0 z-40"
                       onClick={() => setIsTechFilterOpen(false)}
                     />
-                    <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 shadow-lg">
-                      <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-zinc-200 dark:border-zinc-700">
+                    <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 shadow-lg">
+                      <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-neutral-200 dark:border-neutral-700">
                         <Input
                           placeholder="Search technician..."
                           value={techFilter}
@@ -500,7 +500,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                               e.stopPropagation();
                               setSelectedTechIds([]);
                             }}
-                            className="flex-1 px-2 py-1 text-xs bg-zinc-500 text-white rounded hover:bg-zinc-600"
+                            className="flex-1 px-2 py-1 text-xs bg-neutral-500 text-white rounded hover:bg-neutral-600"
                           >
                             Clear All
                           </button>
@@ -534,7 +534,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                           return (
                             <div
                               key={tech.user_id}
-                              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-dark-200 cursor-pointer"
+                              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleToggle();
@@ -548,14 +548,14 @@ export const TechnicianListedView: React.FC<Props> = ({
                                   handleToggle();
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="rounded border-zinc-300 dark:border-zinc-600"
+                                className="rounded border-neutral-300 dark:border-neutral-600"
                               />
                               <span>{displayName}</span>
                             </div>
                           );
                         })}
                       {displayTechs.length === 0 && (
-                        <div className="px-3 py-2 text-sm text-zinc-500">
+                        <div className="px-3 py-2 text-sm text-neutral-500">
                           No technicians
                         </div>
                       )}
@@ -580,13 +580,13 @@ export const TechnicianListedView: React.FC<Props> = ({
                   gridTemplateColumns: `240px repeat(${dateList.length}, minmax(120px, 1fr))`,
                 }}
               >
-                <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 px-3 py-2 font-semibold">
+                <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-3 py-2 font-semibold">
                   Technician
                 </div>
                 {dateList.map((d) => (
                   <div
                     key={d}
-                    className="border border-zinc-200 dark:border-zinc-700 text-center px-2 py-2 text-sm bg-zinc-50 dark:bg-dark-200"
+                    className="border border-neutral-200 dark:border-neutral-700 text-center px-2 py-2 text-sm bg-neutral-50 dark:bg-dark-200"
                   >
                     <div className="font-medium">{dayjs(d).format("ddd")}</div>
                     <div className="text-xs">{dayjs(d).format("MM/DD")}</div>
@@ -616,7 +616,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                         gridTemplateColumns: `240px repeat(${dateList.length}, minmax(120px, 1fr))`,
                       }}
                     >
-                      <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-sm truncate">
+                      <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm truncate">
                         {name}
                       </div>
                       {dateList.map((d) => {
@@ -624,7 +624,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                         return (
                           <div
                             key={d}
-                            className="border border-zinc-200 dark:border-zinc-700 px-2 py-1 min-h-[44px] cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100"
+                            className="border border-neutral-200 dark:border-neutral-700 px-2 py-1 min-h-[44px] cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100"
                             onClick={() => {
                               setQaSelectedTechnicians([techId]);
                               setQaForm((prev) => ({
@@ -637,7 +637,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                             title={`Click to add assignment for ${dayjs(d).format("MMM D")}`}
                           >
                             {list.length === 0 ? (
-                              <div className="w-full h-full text-xs text-zinc-400">
+                              <div className="w-full h-full text-xs text-neutral-400">
                                 —
                               </div>
                             ) : (
@@ -676,7 +676,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                                       <div
                                         key={a.id}
                                         title={`${maskJobTitle(a.job?.title) || ""}\nClick to view assignment details`}
-                                        className={`text-[11px] px-2 py-1 rounded border overflow-hidden whitespace-nowrap text-ellipsis cursor-pointer hover:opacity-80 transition-opacity ${!jobColor ? "border-zinc-200 dark:border-zinc-600 bg-white dark:bg-dark-150" : ""}`}
+                                        className={`text-[11px] px-2 py-1 rounded border overflow-hidden whitespace-nowrap text-ellipsis cursor-pointer hover:opacity-80 transition-opacity ${!jobColor ? "border-neutral-200 dark:border-neutral-600 bg-white dark:bg-dark-150" : ""}`}
                                         style={colorStyles}
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -717,7 +717,7 @@ export const TechnicianListedView: React.FC<Props> = ({
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Technicians
               </label>
               <input
@@ -725,9 +725,9 @@ export const TechnicianListedView: React.FC<Props> = ({
                 placeholder="Search technicians..."
                 value={qaTechSearch}
                 onChange={(e) => setQaTechSearch(e.target.value)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
-              <div className="max-h-48 overflow-auto border rounded-md dark:border-zinc-700">
+              <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
                 {displayTechs
                   .filter(
                     (t) =>
@@ -739,7 +739,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                   .map((tech) => (
                     <label
                       key={tech.user_id}
-                      className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-200"
+                      className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
                     >
                       <input
                         type="checkbox"
@@ -765,14 +765,14 @@ export const TechnicianListedView: React.FC<Props> = ({
                       .toLowerCase()
                       .includes(qaTechSearch.toLowerCase()),
                 ).length === 0 && (
-                  <div className="px-3 py-2 text-sm text-zinc-500">
+                  <div className="px-3 py-2 text-sm text-neutral-500">
                     No matching technicians
                   </div>
                 )}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Job
               </label>
               <input
@@ -782,10 +782,10 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) => setQaJobSearch(e.target.value)}
                 onFocus={() => setQaJobOpen(true)}
                 onBlur={() => setTimeout(() => setQaJobOpen(false), 100)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
               {qaJobOpen && (
-                <div className="max-h-48 overflow-auto border rounded-md dark:border-zinc-700">
+                <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
                   {[...jobs]
                     .filter(
                       (j) =>
@@ -798,7 +798,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                       <button
                         key={j.id}
                         type="button"
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-dark-200 ${qaForm.jobId === j.id ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 ${qaForm.jobId === j.id ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
                         onMouseDown={() => {
                           setQaForm((prev) => ({ ...prev, jobId: j.id }));
                           setQaJobSearch(j.label);
@@ -815,7 +815,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                         .toLowerCase()
                         .includes(qaJobSearch.toLowerCase()),
                   ).length === 0 && (
-                    <div className="px-3 py-2 text-sm text-zinc-500">
+                    <div className="px-3 py-2 text-sm text-neutral-500">
                       No matching jobs
                     </div>
                   )}
@@ -823,7 +823,7 @@ export const TechnicianListedView: React.FC<Props> = ({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Start Date
               </label>
               <input
@@ -832,11 +832,11 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 End Date
               </label>
               <input
@@ -845,11 +845,11 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, endDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Job Color
               </label>
               <div className="space-y-2">
@@ -868,7 +868,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                       key={color}
                       type="button"
                       onClick={() => setQaForm((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600"}`}
+                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-neutral-900 dark:border-white" : "border-neutral-300 dark:border-neutral-600"}`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -879,11 +879,11 @@ export const TechnicianListedView: React.FC<Props> = ({
                     onChange={(e) =>
                       setQaForm((prev) => ({ ...prev, color: e.target.value }))
                     }
-                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-zinc-700"
+                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-neutral-700"
                     title="Custom color"
                   />
                 </div>
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                <span className="text-xs text-neutral-600 dark:text-neutral-400">
                   {qaForm.jobId && jobColors[qaForm.jobId]
                     ? "Using saved color for this job"
                     : "New color will be saved for this job"}
@@ -891,7 +891,7 @@ export const TechnicianListedView: React.FC<Props> = ({
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Start Time
               </label>
               <input
@@ -900,12 +900,12 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startTime: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                 disabled={qaForm.isAllDay}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 End Time
               </label>
               <input
@@ -915,9 +915,9 @@ export const TechnicianListedView: React.FC<Props> = ({
                   setQaForm((prev) => ({ ...prev, endTime: e.target.value }))
                 }
                 disabled={qaForm.unknownHours || qaForm.isAllDay}
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700 disabled:opacity-60"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
               />
-              <label className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-white">
+              <label className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                 <input
                   type="checkbox"
                   checked={qaForm.unknownHours}
@@ -931,7 +931,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 />
                 Unknown hours
               </label>
-              <label className="mt-2 ml-4 inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-white">
+              <label className="mt-2 ml-4 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                 <input
                   type="checkbox"
                   checked={qaForm.isAllDay}
@@ -950,7 +950,7 @@ export const TechnicianListedView: React.FC<Props> = ({
             </div>
           </div>
           <div className="mt-4">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
               Notes
             </label>
             <Textarea

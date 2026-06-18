@@ -517,7 +517,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                 filteredMetrics.filter((m) => m.status === "within-threshold")
                   .length
               }
-              <span className="text-sm text-zinc-500 font-normal ml-2">
+              <span className="text-sm text-neutral-500 font-normal ml-2">
                 (
                 {Math.round(
                   (filteredMetrics.filter(
@@ -544,7 +544,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                 filteredMetrics.filter((m) => m.status === "below-threshold")
                   .length
               }
-              <span className="text-sm text-zinc-500 font-normal ml-2">
+              <span className="text-sm text-neutral-500 font-normal ml-2">
                 (
                 {Math.round(
                   (filteredMetrics.filter((m) => m.status === "below-threshold")
@@ -570,7 +570,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                 filteredMetrics.filter((m) => m.status === "above-threshold")
                   .length
               }
-              <span className="text-sm text-zinc-500 font-normal ml-2">
+              <span className="text-sm text-neutral-500 font-normal ml-2">
                 (
                 {Math.round(
                   (filteredMetrics.filter((m) => m.status === "above-threshold")
@@ -595,7 +595,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
           {alertsEnabled ? (
             <Bell className="mr-2 h-4 w-4 text-blue-600" />
           ) : (
-            <BellOff className="mr-2 h-4 w-4 text-zinc-400" />
+            <BellOff className="mr-2 h-4 w-4 text-neutral-400" />
           )}
           Configure Alerts
         </Button>
@@ -606,7 +606,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
         <div className="flex-1">
           <div className="relative">
             <Search
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-400"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
               size={18}
             />
             <Input
@@ -675,11 +675,11 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
             <>
               {filteredMetrics.length === 0 ? (
                 <div className="text-center py-10 border rounded-md">
-                  <BarChart className="mx-auto h-10 w-10 text-zinc-400" />
-                  <h3 className="mt-2 text-sm font-medium text-zinc-900">
+                  <BarChart className="mx-auto h-10 w-10 text-neutral-400" />
+                  <h3 className="mt-2 text-sm font-medium text-neutral-900">
                     No quality metrics found
                   </h3>
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm text-neutral-500">
                     Add your first quality metric to start tracking.
                   </p>
                   <div className="mt-6">
@@ -717,7 +717,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                             </span>
                           </Badge>
                         </div>
-                        <p className="text-sm text-zinc-500">
+                        <p className="text-sm text-neutral-500">
                           Recorded on{" "}
                           {new Date(metric.date_recorded).toLocaleDateString()}
                         </p>
@@ -1015,7 +1015,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1">
+                  <label className="block text-xs text-neutral-500 mb-1">
                     From
                   </label>
                   <Input
@@ -1030,7 +1030,9 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1">To</label>
+                  <label className="block text-xs text-neutral-500 mb-1">
+                    To
+                  </label>
                   <Input
                     type="date"
                     value={reportDateRange.end}
@@ -1087,7 +1089,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                   onChange={() => setAlertsEnabled(!alertsEnabled)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
 
@@ -1126,11 +1128,11 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                           thresholdAlerts: !alertSettings.thresholdAlerts,
                         })
                       }
-                      className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
                     />
                     <label
                       htmlFor="threshold-alerts"
-                      className="ml-2 block text-sm text-zinc-700"
+                      className="ml-2 block text-sm text-neutral-700"
                     >
                       Immediate alerts for metrics outside thresholds
                     </label>
@@ -1147,11 +1149,11 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                           dailySummary: !alertSettings.dailySummary,
                         })
                       }
-                      className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
                     />
                     <label
                       htmlFor="daily-summary"
-                      className="ml-2 block text-sm text-zinc-700"
+                      className="ml-2 block text-sm text-neutral-700"
                     >
                       Daily summary report
                     </label>
@@ -1168,11 +1170,11 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                           weeklyReport: !alertSettings.weeklyReport,
                         })
                       }
-                      className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
                     />
                     <label
                       htmlFor="weekly-report"
-                      className="ml-2 block text-sm text-zinc-700"
+                      className="ml-2 block text-sm text-neutral-700"
                     >
                       Weekly comprehensive report
                     </label>

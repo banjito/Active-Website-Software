@@ -195,10 +195,10 @@ export const PortalConfiguration: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Portal Configuration
           </h2>
-          <p className="text-zinc-600 dark:text-white mt-1">
+          <p className="text-neutral-600 dark:text-white mt-1">
             Customize the appearance and functionality of the portals.
           </p>
         </div>
@@ -359,7 +359,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="sidebar-visible">Sidebar Visible</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Show sidebar navigation by default
                     </p>
                   </div>
@@ -375,7 +375,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="compact-mode">Compact Mode</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Use more condensed layouts
                     </p>
                   </div>
@@ -403,7 +403,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="analytics-enabled">Analytics</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Enable usage analytics and tracking
                     </p>
                   </div>
@@ -419,7 +419,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="documentation-enabled">Documentation</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Enable access to documentation and help resources
                     </p>
                   </div>
@@ -435,7 +435,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="notifications-enabled">Notifications</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Enable in-app notifications
                     </p>
                   </div>
@@ -451,7 +451,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="feedback-enabled">Feedback</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Allow users to submit feedback
                     </p>
                   </div>
@@ -467,7 +467,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="chat-enabled">Support Chat</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Enable support chat functionality
                     </p>
                   </div>
@@ -518,7 +518,7 @@ export const PortalConfiguration: React.FC = () => {
                       handleSecurityChange("sessionTimeout", value)
                     }
                   />
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     How long until user sessions expire due to inactivity
                   </p>
                 </div>
@@ -526,7 +526,7 @@ export const PortalConfiguration: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="inactivity-logout">Inactivity Logout</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Automatically log out inactive users
                     </p>
                   </div>
@@ -572,7 +572,7 @@ export const PortalConfiguration: React.FC = () => {
                     <Label htmlFor="mfa-required">
                       Require Two-Factor Authentication
                     </Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Require MFA for all users
                     </p>
                   </div>
@@ -608,7 +608,7 @@ export const PortalConfiguration: React.FC = () => {
                     placeholder="Enter welcome message"
                     rows={2}
                   />
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     Message displayed to users on the dashboard
                   </p>
                 </div>

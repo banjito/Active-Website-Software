@@ -974,7 +974,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
           {/* Header - fixed height */}
           <div className="relative flex-shrink-0">
             {/* Cover Image Area */}
-            <div className="h-40 bg-gradient-to-r from-zinc-300 to-zinc-400 dark:from-dark-200 dark:to-dark-300 relative group">
+            <div className="h-40 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 relative group">
               {coverImage ? (
                 <img
                   src={coverImage}
@@ -982,7 +982,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-500 dark:text-dark-400">
+                <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-dark-400">
                   {/* Placeholder content if no cover image */}
                   <Image className="w-10 h-10 opacity-50" />
                 </div>
@@ -1005,13 +1005,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
             </div>
 
             {/* Profile Image & Info Row */}
-            <div className="p-4 flex items-end justify-between border-b border-zinc-200 dark:border-dark-200 relative -mt-12 z-10">
+            <div className="p-4 flex items-end justify-between border-b border-neutral-200 dark:border-dark-200 relative -mt-12 z-10">
               {/* Left side: Profile Image and Edit Profile Title */}
               <div className="flex items-end space-x-4">
                 {/* Profile Image with Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                   <div
-                    className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl cursor-pointer bg-zinc-200 dark:bg-dark-150"
+                    className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl cursor-pointer bg-neutral-200 dark:bg-dark-150"
                     onClick={() => setShowDropdown(!showDropdown)}
                     onMouseEnter={() => setIsImageHovering(true)}
                     onMouseLeave={() => setIsImageHovering(false)}
@@ -1024,7 +1024,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <UserIcon className="w-8 h-8 text-zinc-400 dark:text-white" />
+                        <UserIcon className="w-8 h-8 text-neutral-400 dark:text-white" />
                       </div>
                     )}
                     {isImageHovering && (
@@ -1036,21 +1036,21 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
                   {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-dark-150 rounded-md shadow-lg z-20 border border-zinc-200 dark:border-dark-300">
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-dark-150 rounded-md shadow-lg z-20 border border-neutral-200 dark:border-dark-300">
                       <div className="py-1">
                         <button
                           onClick={() => {
                             fileInputRef.current?.click();
                             setShowDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-200 flex items-center"
+                          className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-200 flex items-center"
                         >
                           <Camera className="h-4 w-4 mr-2" />
                           Change Photo
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-200 flex items-center"
+                          className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-200 flex items-center"
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View Profile
@@ -1070,10 +1070,10 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
                 {/* Edit Profile Title and Step */}
                 <div className="pb-2">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                     Edit Profile
                   </h2>
-                  <p className="text-sm text-zinc-500 dark:text-white">
+                  <p className="text-sm text-neutral-500 dark:text-white">
                     Step {step} of 3
                   </p>
                 </div>
@@ -1082,7 +1082,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
               {/* Right side: Close Button */}
               <button
                 onClick={onClose}
-                className="text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200 mb-2"
+                className="text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-200 mb-2"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -1101,7 +1101,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                         ? "bg-[#f26722] text-white"
                         : step > i
                           ? "bg-[#f26722]/20 text-[#f26722]"
-                          : "bg-zinc-100 dark:bg-dark-150 text-zinc-500 dark:text-white"
+                          : "bg-neutral-100 dark:bg-dark-150 text-neutral-500 dark:text-white"
                     }`}
                   >
                     {step > i ? <Check className="h-4 w-4" /> : i}
@@ -1111,7 +1111,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       className={`h-1 flex-1 ${
                         step > i
                           ? "bg-[#f26722]"
-                          : "bg-zinc-100 dark:bg-dark-150"
+                          : "bg-neutral-100 dark:bg-dark-150"
                       }`}
                     />
                   )}
@@ -1131,33 +1131,33 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                 >
                   {step === 1 && (
                     <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Basic Information
                       </h3>
                       <div className="space-y-4">
                         {/* Name and Role in a row */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Display Name
                             </label>
                             <input
                               type="text"
                               value={name}
                               onChange={(e) => setName(e.target.value)}
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                               placeholder="Enter your name"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Role
                             </label>
-                            <p className="w-full px-3 py-2 border border-zinc-200 dark:border-dark-600 bg-zinc-100 dark:bg-dark-800 rounded-md text-zinc-700 dark:text-white">
+                            <p className="w-full px-3 py-2 border border-neutral-200 dark:border-dark-600 bg-neutral-100 dark:bg-dark-800 rounded-md text-neutral-700 dark:text-white">
                               {user?.user_metadata?.role || "Not Assigned"}
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                            <p className="text-xs text-neutral-500 dark:text-white mt-1">
                               Your role is assigned by an administrator.
                             </p>
                           </div>
@@ -1165,21 +1165,21 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
                         {/* Email Address */}
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                             Email Address
                           </label>
                           <input
                             type="email"
                             value={user?.email || ""}
                             disabled
-                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm bg-zinc-50 dark:bg-dark-150 text-zinc-500 dark:text-white cursor-not-allowed"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm bg-neutral-50 dark:bg-dark-150 text-neutral-500 dark:text-white cursor-not-allowed"
                           />
                         </div>
 
                         {/* Phone Numbers */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Work Phone
                             </label>
                             <input
@@ -1188,12 +1188,12 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                               onChange={(e) =>
                                 setWorkPhone(formatPhoneNumber(e.target.value))
                               }
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                               placeholder="(555) 123-4567"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Personal Phone
                             </label>
                             <input
@@ -1204,7 +1204,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                   formatPhoneNumber(e.target.value),
                                 )
                               }
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                               placeholder="(555) 987-6543"
                             />
                           </div>
@@ -1215,19 +1215,19 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
                   {step === 2 && (
                     <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Additional Details
                       </h3>
                       <div className="space-y-4">
                         {/* Bio */}
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                             Bio
                           </label>
                           <textarea
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
-                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white min-h-[100px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white min-h-[100px]"
                             placeholder="Tell us about yourself..."
                           />
                         </div>
@@ -1235,7 +1235,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                         {/* Job title & Department */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Job title
                             </label>
                             <input
@@ -1243,11 +1243,11 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                               value={jobTitle}
                               onChange={(e) => setJobTitle(e.target.value)}
                               placeholder="e.g. Senior Engineer"
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Department
                             </label>
                             <input
@@ -1255,7 +1255,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                               value={department}
                               onChange={(e) => setDepartment(e.target.value)}
                               placeholder="e.g. Engineering, HR"
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                             />
                           </div>
                         </div>
@@ -1263,13 +1263,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                         {/* Division and Birthday in a row */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               NETA Division
                             </label>
                             <select
                               value={division}
                               onChange={(e) => setDivision(e.target.value)}
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                             >
                               <option value="">Select a division</option>
                               {divisions.map((div) => (
@@ -1281,26 +1281,26 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Birthday
                             </label>
                             <input
                               type="date"
                               value={birthday}
                               onChange={(e) => setBirthday(e.target.value)}
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                             />
                           </div>
                         </div>
 
                         {/* Emergency Contact */}
-                        <div className="pt-2 border-t border-zinc-200 dark:border-dark-200">
-                          <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+                        <div className="pt-2 border-t border-neutral-200 dark:border-dark-200">
+                          <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                             <Phone className="h-4 w-4" /> Emergency Contact
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="sm:col-span-2">
-                              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                                 Name
                               </label>
                               <input
@@ -1310,11 +1310,11 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                   setEmergencyContactName(e.target.value)
                                 }
                                 placeholder="Full name"
-                                className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                                className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                                 Relationship
                               </label>
                               <input
@@ -1326,12 +1326,12 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                   )
                                 }
                                 placeholder="e.g. Spouse, Parent"
-                                className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                                className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                               />
                             </div>
                           </div>
                           <div className="mt-3">
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                               Phone
                             </label>
                             <input
@@ -1343,21 +1343,21 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                 )
                               }
                               placeholder="(555) 123-4567"
-                              className="w-full max-w-xs px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                              className="w-full max-w-xs px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                             />
                           </div>
                         </div>
 
                         {/* Goals */}
-                        <div className="pt-2 border-t border-zinc-200 dark:border-dark-200">
-                          <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+                        <div className="pt-2 border-t border-neutral-200 dark:border-dark-200">
+                          <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                             <Target className="h-4 w-4" /> Goals
                           </h4>
                           <textarea
                             value={goals}
                             onChange={(e) => setGoals(e.target.value)}
                             placeholder="Personal or career goals (visible on your profile)"
-                            className="w-full px-3 py-2 border border-zinc-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-zinc-900 dark:text-white min-h-[80px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white min-h-[80px]"
                           />
                         </div>
                       </div>
@@ -1366,80 +1366,80 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
                   {step === 3 && (
                     <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Review & Submit
                       </h3>
                       <div className="space-y-4">
-                        <div className="p-4 bg-zinc-50 dark:bg-dark-150 rounded-lg">
-                          <h4 className="font-medium text-zinc-900 dark:text-white mb-2">
+                        <div className="p-4 bg-neutral-50 dark:bg-dark-150 rounded-lg">
+                          <h4 className="font-medium text-neutral-900 dark:text-white mb-2">
                             Profile Summary
                           </h4>
                           <dl className="space-y-2">
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Name:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {name || "Not set"}
                               </dd>
                             </div>
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Role:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {user?.user_metadata?.role || "Not Assigned"}
                               </dd>
                             </div>
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Job title:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {jobTitle || "Not set"}
                               </dd>
                             </div>
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Department:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {department || "Not set"}
                               </dd>
                             </div>
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Division:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {formatDivisionDisplay(division) || "Not set"}
                               </dd>
                             </div>
                             {workPhone && (
                               <div className="flex justify-between">
-                                <dt className="text-zinc-500 dark:text-white">
+                                <dt className="text-neutral-500 dark:text-white">
                                   Work phone:
                                 </dt>
-                                <dd className="text-zinc-900 dark:text-white">
+                                <dd className="text-neutral-900 dark:text-white">
                                   {workPhone}
                                 </dd>
                               </div>
                             )}
                             {personalPhone && (
                               <div className="flex justify-between">
-                                <dt className="text-zinc-500 dark:text-white">
+                                <dt className="text-neutral-500 dark:text-white">
                                   Personal phone:
                                 </dt>
-                                <dd className="text-zinc-900 dark:text-white">
+                                <dd className="text-neutral-900 dark:text-white">
                                   {personalPhone}
                                 </dd>
                               </div>
                             )}
                             <div className="flex justify-between">
-                              <dt className="text-zinc-500 dark:text-white">
+                              <dt className="text-neutral-500 dark:text-white">
                                 Birthday:
                               </dt>
-                              <dd className="text-zinc-900 dark:text-white">
+                              <dd className="text-neutral-900 dark:text-white">
                                 {birthday
                                   ? new Date(
                                       birthday + "T00:00:00Z",
@@ -1454,10 +1454,10 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                             {(emergencyContactName ||
                               emergencyContactPhone) && (
                               <div className="flex flex-col space-y-1">
-                                <dt className="text-zinc-500 dark:text-white">
+                                <dt className="text-neutral-500 dark:text-white">
                                   Emergency contact:
                                 </dt>
-                                <dd className="text-zinc-900 dark:text-white text-sm">
+                                <dd className="text-neutral-900 dark:text-white text-sm">
                                   {emergencyContactName}
                                   {emergencyContactRelationship
                                     ? ` (${emergencyContactRelationship})`
@@ -1469,20 +1469,20 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                             )}
                             {goals && (
                               <div className="flex flex-col space-y-1">
-                                <dt className="text-zinc-500 dark:text-white">
+                                <dt className="text-neutral-500 dark:text-white">
                                   Goals:
                                 </dt>
-                                <dd className="text-zinc-900 dark:text-white text-sm whitespace-pre-wrap">
+                                <dd className="text-neutral-900 dark:text-white text-sm whitespace-pre-wrap">
                                   {goals}
                                 </dd>
                               </div>
                             )}
                             {bio && (
                               <div className="flex flex-col space-y-1">
-                                <dt className="text-zinc-500 dark:text-white">
+                                <dt className="text-neutral-500 dark:text-white">
                                   Bio:
                                 </dt>
-                                <dd className="text-zinc-900 dark:text-white text-sm">
+                                <dd className="text-neutral-900 dark:text-white text-sm">
                                   {bio}
                                 </dd>
                               </div>
@@ -1578,7 +1578,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
               className="w-full max-w-4xl bg-white dark:bg-dark-150 rounded-lg shadow-xl p-6 overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">
+              <h3 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white">
                 Adjust Cover Photo
               </h3>
               <div className="flex-grow overflow-auto mb-4 flex items-center justify-center">
@@ -1599,7 +1599,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   />
                 </ReactCrop>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-dark-300">
+              <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200 dark:border-dark-300">
                 <Button
                   variant="outline"
                   onClick={() => setIsCropping(false)}
@@ -1611,7 +1611,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   variant="secondary"
                   onClick={handleFitImage}
                   disabled={isSubmitting}
-                  className="bg-zinc-200 hover:bg-zinc-300 dark:bg-dark-150 dark:hover:bg-dark-300 dark:text-white"
+                  className="bg-neutral-200 hover:bg-neutral-300 dark:bg-dark-150 dark:hover:bg-dark-300 dark:text-white"
                 >
                   Fit Image (No Crop)
                 </Button>

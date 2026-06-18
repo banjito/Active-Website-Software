@@ -1093,7 +1093,7 @@ ${interviewFormData.overallFeedback || "N/A"}
       case "rescheduled":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -1117,7 +1117,7 @@ ${interviewFormData.overallFeedback || "N/A"}
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Interview Scheduling
           </h1>
         </div>
@@ -1154,48 +1154,48 @@ ${interviewFormData.overallFeedback || "N/A"}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Scheduled
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {interviews.filter((i) => i.status === "scheduled").length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Completed
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {interviews.filter((i) => i.status === "completed").length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Today
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {filteredInterviews.length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Upcoming
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {upcomingInterviews.length}
             </div>
           </CardContent>
@@ -1220,25 +1220,25 @@ ${interviewFormData.overallFeedback || "N/A"}
                 return (
                   <div
                     key={interview.id}
-                    className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
                         {getInterviewTypeIcon(interview.interview_type)}
-                        <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                        <span className="text-sm font-medium text-neutral-900 dark:text-white">
                           {candidate
                             ? `${candidate.first_name} ${candidate.last_name}`
                             : "Unknown Candidate"}
                         </span>
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {interviewDateTime.toLocaleDateString()} at{" "}
                         {interviewDateTime.toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {interview.duration_minutes} min
                       </div>
                       <span
@@ -1305,11 +1305,11 @@ ${interviewFormData.overallFeedback || "N/A"}
             </div>
           ) : filteredInterviews.length === 0 ? (
             <div className="text-center py-12">
-              <Calendar className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No interviews found
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {selectedDate.toDateString() === new Date().toDateString()
                   ? "No interviews scheduled for today"
                   : `No interviews scheduled for ${selectedDate.toLocaleDateString()}`}
@@ -1327,23 +1327,23 @@ ${interviewFormData.overallFeedback || "N/A"}
                 return (
                   <div
                     key={interview.id}
-                    className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
                         {getInterviewTypeIcon(interview.interview_type)}
                         <div>
-                          <div className="font-medium text-zinc-900 dark:text-white">
+                          <div className="font-medium text-neutral-900 dark:text-white">
                             {candidate
                               ? `${candidate.first_name} ${candidate.last_name}`
                               : "Unknown Candidate"}
                           </div>
-                          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <div className="text-sm text-neutral-600 dark:text-neutral-400">
                             {candidate?.position_applied}
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         <div>{interviewDateTime.toLocaleDateString()}</div>
                         <div>
                           {interviewDateTime.toLocaleTimeString([], {
@@ -1352,20 +1352,20 @@ ${interviewFormData.overallFeedback || "N/A"}
                           })}
                         </div>
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {interview.duration_minutes} minutes
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {getStageDisplayName(interview.interview_stage)}
                       </div>
                       {interview.location && (
-                        <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
                           <MapPin className="h-4 w-4 inline mr-1" />
                           {interview.location}
                         </div>
                       )}
                       {interview.video_link && (
-                        <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
                           <Video className="h-4 w-4 inline mr-1" />
                           <a
                             href={interview.video_link}
@@ -1479,7 +1479,7 @@ ${interviewFormData.overallFeedback || "N/A"}
               />
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Interview Stage *
                   </label>
                   <div className="flex gap-2 shrink-0">
@@ -1503,7 +1503,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                     </Button>
                   </div>
                 </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                   Premade questions for the selected stage are shown when you
                   conduct the interview.
                 </p>
@@ -1578,7 +1578,7 @@ ${interviewFormData.overallFeedback || "N/A"}
               />
             )}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Interviewers *{" "}
                 {formErrors.interviewer_ids && (
                   <span className="text-red-600 text-xs ml-2">
@@ -1586,7 +1586,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   </span>
                 )}
               </label>
-              <div className="border border-zinc-300 dark:border-zinc-600 rounded-md p-3 max-h-40 overflow-y-auto">
+              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md p-3 max-h-40 overflow-y-auto">
                 {users.length === 0 ? (
                   <div className="flex justify-center py-4">
                     <LoadingSpinner size="md" />
@@ -1602,9 +1602,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                           type="checkbox"
                           checked={formData.interviewer_ids.includes(user.id)}
                           onChange={() => handleInterviewerToggle(user.id)}
-                          className="h-4 w-4 rounded border-zinc-300"
+                          className="h-4 w-4 rounded border-neutral-300"
                         />
-                        <span className="text-sm text-zinc-900 dark:text-white">
+                        <span className="text-sm text-neutral-900 dark:text-white">
                           {user.user_metadata?.name || user.email}
                         </span>
                       </label>
@@ -1709,9 +1709,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                     is_final_stage: e.target.checked,
                   }))
                 }
-                className="h-4 w-4 rounded border-zinc-300"
+                className="h-4 w-4 rounded border-neutral-300"
               />
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Final stage (approve/deny only)
               </span>
             </label>
@@ -1757,16 +1757,16 @@ ${interviewFormData.overallFeedback || "N/A"}
             {!templateStage ? (
               <ul className="space-y-2">
                 {stages.length === 0 ? (
-                  <p className="text-zinc-500 text-sm">
+                  <p className="text-neutral-500 text-sm">
                     No stages yet. Create one with &quot;New stage&quot; first.
                   </p>
                 ) : (
                   stages.map((stage) => (
                     <li
                       key={stage.id}
-                      className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-md"
+                      className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-md"
                     >
-                      <span className="font-medium text-zinc-900 dark:text-white">
+                      <span className="font-medium text-neutral-900 dark:text-white">
                         {stage.name}
                       </span>
                       <Button
@@ -1793,7 +1793,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   </Button>
                 </div>
                 {templateQuestions.length === 0 ? (
-                  <p className="text-zinc-500 text-sm">
+                  <p className="text-neutral-500 text-sm">
                     No questions yet. Add questions to show when conducting an
                     interview at this stage.
                   </p>
@@ -1802,14 +1802,14 @@ ${interviewFormData.overallFeedback || "N/A"}
                     {templateQuestions.map((q, index) => (
                       <li
                         key={q.id}
-                        className="flex items-center gap-2 p-3 border border-zinc-200 dark:border-zinc-700 rounded-md"
+                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-neutral-700 rounded-md"
                       >
                         <div className="flex flex-col gap-0">
                           <button
                             type="button"
                             onClick={() => moveTemplateQuestion(index, "up")}
                             disabled={index === 0}
-                            className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40"
+                            className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-40"
                           >
                             <ChevronUp className="h-4 w-4" />
                           </button>
@@ -1817,16 +1817,16 @@ ${interviewFormData.overallFeedback || "N/A"}
                             type="button"
                             onClick={() => moveTemplateQuestion(index, "down")}
                             disabled={index === templateQuestions.length - 1}
-                            className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40"
+                            className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-40"
                           >
                             <ChevronDown className="h-4 w-4" />
                           </button>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                          <span className="text-sm font-medium text-neutral-900 dark:text-white">
                             {q.label}
                           </span>
-                          <span className="ml-2 text-xs text-zinc-500">
+                          <span className="ml-2 text-xs text-neutral-500">
                             {q.question_type}
                             {q.required ? " · Required" : ""}
                           </span>
@@ -1908,9 +1908,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                     required: e.target.checked,
                   }))
                 }
-                className="h-4 w-4 rounded border-zinc-300"
+                className="h-4 w-4 rounded border-neutral-300"
               />
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Required
               </span>
             </label>
@@ -1943,63 +1943,63 @@ ${interviewFormData.overallFeedback || "N/A"}
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Date & Time
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {new Date(
                       `${selectedInterview.scheduled_date}T${selectedInterview.scheduled_time}`,
                     ).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Duration
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedInterview.duration_minutes} minutes
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Type
                   </label>
-                  <p className="text-zinc-900 dark:text-white capitalize">
+                  <p className="text-neutral-900 dark:text-white capitalize">
                     {selectedInterview.interview_type}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Stage
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {getStageDisplayName(selectedInterview.interview_stage)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Status
                   </label>
-                  <p className="text-zinc-900 dark:text-white capitalize">
+                  <p className="text-neutral-900 dark:text-white capitalize">
                     {selectedInterview.status}
                   </p>
                 </div>
                 {selectedInterview.location && (
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Location
                     </label>
-                    <p className="text-zinc-900 dark:text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       {selectedInterview.location}
                     </p>
                   </div>
                 )}
                 {selectedInterview.video_link && (
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Video Link
                     </label>
-                    <p className="text-zinc-900 dark:text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       <a
                         href={selectedInterview.video_link}
                         target="_blank"
@@ -2014,20 +2014,20 @@ ${interviewFormData.overallFeedback || "N/A"}
               </div>
               {selectedInterview.notes && (
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Notes
                   </label>
-                  <p className="text-zinc-900 dark:text-white whitespace-pre-wrap">
+                  <p className="text-neutral-900 dark:text-white whitespace-pre-wrap">
                     {selectedInterview.notes}
                   </p>
                 </div>
               )}
               {selectedInterview.feedback && (
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Feedback
                   </label>
-                  <div className="text-zinc-900 dark:text-white whitespace-pre-wrap">
+                  <div className="text-neutral-900 dark:text-white whitespace-pre-wrap">
                     {(() => {
                       try {
                         const feedbackData = JSON.parse(
@@ -2190,10 +2190,10 @@ ${interviewFormData.overallFeedback || "N/A"}
               )}
               {selectedInterview.rating && (
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Rating
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedInterview.rating}/5
                   </p>
                 </div>
@@ -2242,9 +2242,9 @@ ${interviewFormData.overallFeedback || "N/A"}
               </div>
               {selectedInterview &&
                 !getStageIsFinal(selectedInterview.interview_stage) && (
-                  <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg">
+                  <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-lg">
                     <Timer className="h-5 w-5 text-[#f26722]" />
-                    <span className="text-lg font-mono font-semibold text-zinc-900 dark:text-white">
+                    <span className="text-lg font-mono font-semibold text-neutral-900 dark:text-white">
                       {formatTime(elapsedTime)}
                     </span>
                   </div>
@@ -2261,7 +2261,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                       <div key={q.id}>
                         {q.question_type === "text" ? (
                           <>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                               {q.label}
                             </label>
                             <Textarea
@@ -2308,9 +2308,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                                     { ...prev, checked },
                                   );
                                 }}
-                                className="h-4 w-4 rounded border-zinc-300"
+                                className="h-4 w-4 rounded border-neutral-300"
                               />
-                              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 {q.label}
                               </span>
                             </label>
@@ -2362,7 +2362,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                       "initial_culture" && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                             Getting to know candidate
                           </label>
                           <Textarea
@@ -2379,7 +2379,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           />
                         </div>
                         <div className="border-t pt-4">
-                          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+                          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                             General Questions
                           </h3>
                           <div className="mb-4">
@@ -2393,9 +2393,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                                     e.target.checked,
                                   )
                                 }
-                                className="h-4 w-4 rounded border-zinc-300"
+                                className="h-4 w-4 rounded border-neutral-300"
                               />
-                              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Why are they applying to AMP?
                               </span>
                             </label>
@@ -2425,9 +2425,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                                     e.target.checked,
                                   )
                                 }
-                                className="h-4 w-4 rounded border-zinc-300"
+                                className="h-4 w-4 rounded border-neutral-300"
                               />
-                              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 What do they love about their job?
                               </span>
                             </label>
@@ -2457,9 +2457,9 @@ ${interviewFormData.overallFeedback || "N/A"}
                                     e.target.checked,
                                   )
                                 }
-                                className="h-4 w-4 rounded border-zinc-300"
+                                className="h-4 w-4 rounded border-neutral-300"
                               />
-                              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 What do they not love about their job?
                               </span>
                             </label>
@@ -2480,7 +2480,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           </div>
                         </div>
                         <div className="border-t pt-4">
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                             Do they fit and can they get excited about the
                             culture?
                           </label>
@@ -2501,7 +2501,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                     {selectedInterview.interview_stage === "technical" && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                             Focus on work experience
                           </label>
                           <Textarea
@@ -2517,7 +2517,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                             How do they react in situations?
                           </label>
                           <Textarea
@@ -2541,10 +2541,10 @@ ${interviewFormData.overallFeedback || "N/A"}
               {getStageIsFinal(selectedInterview.interview_stage) && (
                 <div className="text-center py-12 space-y-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
+                    <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                       Final Interview Decision
                     </h3>
-                    <p className="text-zinc-600 dark:text-zinc-400">
+                    <p className="text-neutral-600 dark:text-neutral-400">
                       Review the candidate's interview history and make a final
                       decision.
                     </p>
@@ -2575,7 +2575,7 @@ ${interviewFormData.overallFeedback || "N/A"}
               {!getStageIsFinal(selectedInterview.interview_stage) && (
                 <div className="border-t pt-4 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Overall Feedback
                     </label>
                     <Textarea
@@ -2593,7 +2593,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Rating (1-5)
                     </label>
                     <div className="flex gap-2">
@@ -2607,7 +2607,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-semibold transition-colors ${
                             interviewFormData.rating === rating
                               ? "bg-[#f26722] border-[#f26722] text-white"
-                              : "border-zinc-300 text-zinc-700 dark:text-zinc-300 hover:border-[#f26722]"
+                              : "border-neutral-300 text-neutral-700 dark:text-neutral-300 hover:border-[#f26722]"
                           }`}
                         >
                           {rating}

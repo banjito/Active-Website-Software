@@ -35,7 +35,7 @@ export const AuthorAvatar: React.FC<AuthorAvatarProps> = ({
       href={email ? `mailto:${email}` : undefined}
       title={`${displayName}${email ? ` · ${email}` : ""}`}
       onClick={(e) => e.stopPropagation()}
-      className={`inline-flex shrink-0 rounded-full overflow-hidden ring-1 ring-zinc-200 dark:ring-zinc-600 hover:ring-[#f26722] transition-shadow ${className}`}
+      className={`inline-flex shrink-0 rounded-full overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-600 hover:ring-[#f26722] transition-shadow ${className}`}
       style={dim}
     >
       {avatarUrl ? (

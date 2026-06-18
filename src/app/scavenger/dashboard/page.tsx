@@ -16,7 +16,7 @@ export default function ScavengerDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold border-b border-zinc-200 dark:border-zinc-700 pb-3 text-zinc-900 dark:text-white">
+      <h1 className="text-2xl font-bold border-b border-neutral-200 dark:border-neutral-700 pb-3 text-neutral-900 dark:text-white">
         Scavenger Division Dashboard
       </h1>
 

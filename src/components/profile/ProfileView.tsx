@@ -1316,10 +1316,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="rounded-full bg-red-100 p-3 mb-4">
               <User className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
               Profile Not Found
             </h3>
-            <p className="text-zinc-600 dark:text-white mb-4">
+            <p className="text-neutral-600 dark:text-white mb-4">
               We couldn't find the user profile for ID:{" "}
               {userId ? userId.substring(0, 8) + "..." : "Unknown"}. The user
               may have been deleted or you may not have permission to view this
@@ -1327,7 +1327,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </p>
 
             {/* Debug information */}
-            <div className="text-left text-xs text-zinc-500 border-t border-zinc-200 pt-3 mt-2 mb-4 w-full">
+            <div className="text-left text-xs text-neutral-500 border-t border-neutral-200 pt-3 mt-2 mb-4 w-full">
               <p className="font-medium mb-1">
                 Debug Info (Attempted methods):
               </p>
@@ -1520,7 +1520,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
             {/* Cover Image */}
             <div
-              className="h-40 flex-shrink-0 bg-gradient-to-r from-zinc-300 to-zinc-400 dark:from-dark-200 dark:to-dark-300 relative overflow-hidden cursor-pointer"
+              className="h-40 flex-shrink-0 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 relative overflow-hidden cursor-pointer"
               onClick={(e) => coverImage && handlePhotoClick(e, coverImage)}
             >
               {coverImage ? (
@@ -1530,7 +1530,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-500 dark:text-dark-400">
+                <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-dark-400">
                   <Image className="w-10 h-10 opacity-50" />
                 </div>
               )}
@@ -1541,7 +1541,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {/* Profile Image */}
               <div className="relative -mt-16 mb-4">
                 <div
-                  className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl bg-zinc-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
+                  className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl bg-neutral-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
                   onClick={(e) =>
                     profileImage && handlePhotoClick(e, profileImage)
                   }
@@ -1553,8 +1553,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-200 dark:bg-dark-150">
-                      <span className="text-4xl text-zinc-400 dark:text-white">
+                    <div className="w-full h-full flex items-center justify-center bg-neutral-200 dark:bg-dark-150">
+                      <span className="text-4xl text-neutral-400 dark:text-white">
                         {name ? name.charAt(0).toUpperCase() : "?"}
                       </span>
                     </div>
@@ -1567,7 +1567,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 {/* Name and Role */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {displayName}
                     </h1>
                     {role && (
@@ -1576,7 +1576,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </div>
                     )}
                     {!limitedView && (
-                      <p className="text-zinc-500 dark:text-white mt-1">
+                      <p className="text-neutral-500 dark:text-white mt-1">
                         {profileUser?.email}
                       </p>
                     )}
@@ -1622,25 +1622,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 {/* Bio */}
                 {bio && (
                   <div>
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                       Bio
                     </h2>
-                    <p className="text-zinc-700 dark:text-white">{bio}</p>
+                    <p className="text-neutral-700 dark:text-white">{bio}</p>
                   </div>
                 )}
 
                 {/* Contact & Personal Info */}
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                     Personal Information
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {jobTitle && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <Briefcase className="mr-2 h-4 w-4 text-zinc-500 dark:text-white flex-shrink-0" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Job title
                           </p>
                           <p>{jobTitle}</p>
@@ -1648,20 +1648,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </div>
                     )}
                     {department && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <Building2 className="mr-2 h-4 w-4 text-zinc-500 dark:text-white flex-shrink-0" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <Building2 className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Department
                           </p>
                           <p>{department}</p>
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center text-zinc-700 dark:text-white">
-                      <Briefcase className="mr-2 h-4 w-4 text-zinc-500 dark:text-white flex-shrink-0" />
+                    <div className="flex items-center text-neutral-700 dark:text-white">
+                      <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
                       <div>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           NETA Division
                         </p>
                         <p>
@@ -1670,10 +1670,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </div>
                     </div>
                     {!limitedView && formattedBirthday && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <MapPin className="mr-2 h-4 w-4 text-zinc-500 dark:text-white" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <MapPin className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Birthday
                           </p>
                           <p>{formattedBirthday}</p>
@@ -1682,10 +1682,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     )}
 
                     {!limitedView && profileUser?.email && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <Mail className="mr-2 h-4 w-4 text-zinc-500 dark:text-white" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <Mail className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Email
                           </p>
                           <a
@@ -1698,10 +1698,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </div>
                     )}
                     {workPhone && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <Phone className="mr-2 h-4 w-4 text-zinc-500 dark:text-white flex-shrink-0" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Work Phone
                           </p>
                           <a
@@ -1714,10 +1714,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </div>
                     )}
                     {personalPhone && (
-                      <div className="flex items-center text-zinc-700 dark:text-white">
-                        <Phone className="mr-2 h-4 w-4 text-zinc-500 dark:text-white flex-shrink-0" />
+                      <div className="flex items-center text-neutral-700 dark:text-white">
+                        <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-white">
+                          <p className="text-sm text-neutral-500 dark:text-white">
                             Personal Phone
                           </p>
                           <a
@@ -1734,12 +1734,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   {/* Emergency Contact - hidden in limited view */}
                   {!limitedView &&
                     (emergencyContactName || emergencyContactPhone) && (
-                      <div className="pt-4 border-t border-zinc-200 dark:border-dark-200">
-                        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+                      <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                           <Phone className="h-4 w-4 text-[#f26722]" />
                           Emergency Contact
                         </h2>
-                        <div className="text-sm text-zinc-700 dark:text-zinc-200 space-y-1">
+                        <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
                           <p className="font-medium">{emergencyContactName}</p>
                           {emergencyContactRelationship && (
                             <p className="text-muted-foreground">
@@ -1760,12 +1760,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                   {/* Goals */}
                   {goalsText && (
-                    <div className="pt-4 border-t border-zinc-200 dark:border-dark-200">
-                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+                    <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                         <Target className="h-4 w-4 text-[#f26722]" />
                         Goals
                       </h2>
-                      <p className="text-sm text-zinc-700 dark:text-zinc-200 whitespace-pre-wrap">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-200 whitespace-pre-wrap">
                         {goalsText}
                       </p>
                     </div>
@@ -1775,7 +1775,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   {!limitedView &&
                   canViewSensitiveSection &&
                   profileIdToFetch ? (
-                    <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-dark-200 space-y-5">
+                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-dark-200 space-y-5">
                       {loadingMyData ? (
                         <div className="flex justify-center py-6">
                           <LoadingSpinner size="md" />
@@ -1783,7 +1783,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       ) : (
                         <>
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                               <FileText className="h-4 w-4 text-[#f26722]" />
                               {viewingOwnProfile ? "My documents" : "Documents"}
                             </h3>
@@ -1798,7 +1798,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                     key={doc.id}
                                     className="flex items-center justify-between gap-2 text-sm group"
                                   >
-                                    <span className="text-zinc-700 dark:text-zinc-200 truncate flex-1 min-w-0">
+                                    <span className="text-neutral-700 dark:text-neutral-200 truncate flex-1 min-w-0">
                                       {doc.name}
                                     </span>
                                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -1820,7 +1820,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                                   : "",
                                             })
                                           }
-                                          className="p-1 rounded text-zinc-500 hover:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-200"
+                                          className="p-1 rounded text-neutral-500 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
                                           title="Edit document"
                                         >
                                           <Edit2 className="h-3.5 w-3.5" />
@@ -1842,7 +1842,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             )}
                           </div>
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                               <Award className="h-4 w-4 text-[#f26722]" />
                               {viewingOwnProfile
                                 ? "My certifications"
@@ -1857,14 +1857,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 {myCertifications.map((cert) => (
                                   <li
                                     key={cert.id}
-                                    className="text-sm text-zinc-700 dark:text-zinc-200 flex items-center justify-between gap-2 group"
+                                    className="text-sm text-neutral-700 dark:text-neutral-200 flex items-center justify-between gap-2 group"
                                   >
                                     <span className="flex-1 min-w-0">
                                       {cert.cert_name}
                                     </span>
                                     <div className="flex items-center gap-2 flex-shrink-0">
                                       <span
-                                        className={`text-xs px-1.5 py-0.5 rounded ${cert.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200" : "bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"}`}
+                                        className={`text-xs px-1.5 py-0.5 rounded ${cert.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300"}`}
                                       >
                                         {cert.status}
                                       </span>
@@ -1892,7 +1892,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                               notes: cert.notes ?? "",
                                             })
                                           }
-                                          className="p-1 rounded text-zinc-500 hover:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-200"
+                                          className="p-1 rounded text-neutral-500 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
                                           title="Edit certification"
                                         >
                                           <Edit2 className="h-3.5 w-3.5" />
@@ -1905,7 +1905,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             )}
                           </div>
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                               <History className="h-4 w-4 text-[#f26722]" />
                               Title history
                             </h3>
@@ -1918,7 +1918,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 {myTitleHistory.map((entry) => (
                                   <li
                                     key={entry.id}
-                                    className="text-sm text-zinc-700 dark:text-zinc-200 flex justify-between gap-2"
+                                    className="text-sm text-neutral-700 dark:text-neutral-200 flex justify-between gap-2"
                                   >
                                     <span>{entry.title}</span>
                                     <span className="text-muted-foreground text-xs flex-shrink-0">
@@ -1930,12 +1930,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             )}
                           </div>
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                               <DollarSign className="h-4 w-4 text-[#f26722]" />
                               Compensation
                             </h3>
                             {compensationAmount != null ? (
-                              <p className="text-sm text-zinc-700 dark:text-zinc-200">
+                              <p className="text-sm text-neutral-700 dark:text-neutral-200">
                                 {formatCompensation(
                                   compensationAmount,
                                   payType,
@@ -1975,7 +1975,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           {/* FR (Flame-Resistant) clothing sizes - EE can edit; visible to profile owner and manager */}
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                                 <Shirt className="h-4 w-4 text-[#f26722]" />
                                 FR clothing sizes
                               </h3>
@@ -2085,7 +2085,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 {frSizes.shirt ||
                                 frSizes.pant ||
                                 frSizes.jacket ? (
-                                  <div className="text-sm text-zinc-700 dark:text-zinc-200 space-y-1">
+                                  <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
                                     {frSizes.shirt && (
                                       <p>
                                         <span className="text-muted-foreground">
@@ -2155,7 +2155,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                           {/* Career Development - placeholder */}
                           <div>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                               <TrendingUp className="h-4 w-4 text-[#f26722]" />
                               Career Development
                             </h3>
@@ -2168,7 +2168,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       )}
                     </div>
                   ) : !limitedView && !canViewSensitiveSection ? (
-                    <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-dark-200">
+                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-dark-200">
                       <p className="text-sm text-muted-foreground">
                         Documents, certifications, title history, and
                         compensation are only visible to the profile owner,

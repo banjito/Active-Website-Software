@@ -187,7 +187,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
           type="button"
           onClick={openComposer}
           aria-label="Start a post"
-          className="flex h-9 w-full items-center rounded-md border-none bg-zinc-100 px-3 text-left text-sm text-zinc-500 shadow-sm hover:bg-zinc-50 focus:outline-none dark:border-zinc-600 dark:bg-dark-100 dark:text-zinc-400 dark:hover:bg-dark-200"
+          className="flex h-9 w-full items-center rounded-md border-none bg-neutral-100 px-3 text-left text-sm text-neutral-500 shadow-sm hover:bg-neutral-50 focus:outline-none dark:border-neutral-600 dark:bg-dark-100 dark:text-neutral-400 dark:hover:bg-dark-200"
         >
           <span className="truncate">Share an update…</span>
         </button>
@@ -201,7 +201,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
             placeholder="Share an update…"
             rows={1}
             aria-label="Post body"
-            className="mt-0 box-border w-full min-h-0 resize-none rounded-md border border-zinc-300 bg-zinc-100 px-2 py-2 text-sm leading-snug text-zinc-900 shadow-sm focus:outline-none  focus:ring-[#f26722] dark:border-zinc-600 dark:bg-dark-100 dark:text-white dark:focus:border-[#f26722]"
+            className="mt-0 box-border w-full min-h-0 resize-none rounded-md border border-neutral-300 bg-neutral-100 px-2 py-2 text-sm leading-snug text-neutral-900 shadow-sm focus:outline-none  focus:ring-[#f26722] dark:border-neutral-600 dark:bg-dark-100 dark:text-white dark:focus:border-[#f26722]"
             style={{
               height: taHeightPx,
               maxHeight: TEXTAREA_MAX_PX,
@@ -211,14 +211,14 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
           />
           <div className="flex justify-between items-center mt-1 mb-2">
             <span
-              className={`text-xs ${body.length >= MAX_CHARS ? "text-amber-600" : "text-zinc-500 dark:text-zinc-400"}`}
+              className={`text-xs ${body.length >= MAX_CHARS ? "text-amber-600" : "text-neutral-500 dark:text-neutral-400"}`}
             >
               {body.length}/{MAX_CHARS}
             </span>
           </div>
 
           {files.length > 0 && (
-            <ul className="text-xs text-zinc-600 dark:text-zinc-400 mb-3 space-y-1">
+            <ul className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 space-y-1">
               {files.map((f, i) => (
                 <li
                   key={`${f.name}-${i}`}

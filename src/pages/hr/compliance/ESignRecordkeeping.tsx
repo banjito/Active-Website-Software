@@ -411,10 +411,10 @@ export const ESignRecordkeeping: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             E-Sign Recordkeeping
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Audit trail of all HR e-signatures: Onboarding / Document
             Acknowledgment and Offers.
           </p>
@@ -530,7 +530,7 @@ export const ESignRecordkeeping: React.FC = () => {
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                             r.source === "offers"
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                              : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                           }`}
                         >
                           {r.source === "offers" ? "Offers" : "Onboarding"}
@@ -620,7 +620,7 @@ export const ESignRecordkeeping: React.FC = () => {
                   </div>
                 ) : detail.documentHtml ? (
                   <div
-                    className="border rounded-lg p-4 bg-white dark:bg-zinc-900 max-h-[420px] overflow-auto prose prose-sm dark:prose-invert max-w-none"
+                    className="border rounded-lg p-4 bg-white dark:bg-neutral-900 max-h-[420px] overflow-auto prose prose-sm dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: detail.documentHtml }}
                   />
                 ) : (
@@ -641,7 +641,7 @@ export const ESignRecordkeeping: React.FC = () => {
                       sig.signature_image ? (
                         <div
                           key={idx}
-                          className="border rounded-lg p-3 bg-white dark:bg-zinc-900"
+                          className="border rounded-lg p-3 bg-white dark:bg-neutral-900"
                         >
                           {sig.field_name && (
                             <p className="text-xs text-muted-foreground mb-1">
@@ -651,7 +651,7 @@ export const ESignRecordkeeping: React.FC = () => {
                           <img
                             src={sig.signature_image}
                             alt={sig.field_name || "Signature"}
-                            className="max-h-24 w-auto border-b border-zinc-200 dark:border-zinc-700"
+                            className="max-h-24 w-auto border-b border-neutral-200 dark:border-neutral-700"
                           />
                         </div>
                       ) : null,

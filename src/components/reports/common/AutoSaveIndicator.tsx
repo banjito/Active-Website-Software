@@ -18,7 +18,7 @@ export const AutoSaveIndicator = ({
       title={label}
       className={`inline-flex items-center transition-colors ${
         isSaving
-          ? "text-zinc-400 opacity-60 animate-pulse"
+          ? "text-neutral-400 opacity-60 animate-pulse"
           : "text-green-800 dark:text-green-200"
       } ${className}`}
     >

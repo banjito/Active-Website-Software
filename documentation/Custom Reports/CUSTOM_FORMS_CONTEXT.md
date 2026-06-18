@@ -452,7 +452,7 @@ handleFieldChange(cellId, column.field.id, value);
 .form-label    /* Standard label */
 
 /* Read-only fields */
-bg-zinc-100 dark:bg-dark-200  /* Read-only background */
+bg-neutral-100 dark:bg-dark-200  /* Read-only background */
 
 /* Brand color */
 bg-[#f26722] hover:bg-[#e55611]  /* AMP orange */

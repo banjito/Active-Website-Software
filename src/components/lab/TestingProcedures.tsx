@@ -283,7 +283,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-grow relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
             placeholder="Search procedures..."
             className="pl-10"
@@ -293,7 +293,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
         </div>
         <div className="flex gap-2">
           <select
-            className="border border-zinc-300 rounded-md shadow-sm px-3 py-2 text-sm"
+            className="border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
             value={statusFilter || ""}
             onChange={(e) => setStatusFilter(e.target.value || null)}
           >
@@ -305,7 +305,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
             ))}
           </select>
           <select
-            className="border border-zinc-300 rounded-md shadow-sm px-3 py-2 text-sm"
+            className="border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
             value={categoryFilter || ""}
             onChange={(e) => setCategoryFilter(e.target.value || null)}
           >
@@ -359,7 +359,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                       {procedure.status}
                     </Badge>
                   </div>
-                  <div className="flex justify-between text-sm text-zinc-500">
+                  <div className="flex justify-between text-sm text-neutral-500">
                     <span>Version: {procedure.version}</span>
                     <span>{procedure.category}</span>
                   </div>
@@ -370,7 +370,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                       {procedure.description}
                     </p>
 
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-neutral-500">
                       <div>Created by: {procedure.creator_name}</div>
                       {procedure.approver_name && (
                         <div>Approved by: {procedure.approver_name}</div>
@@ -476,7 +476,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                       value={form.status || ""}
                       onChange={handleInputChange}
                       required
-                      className="w-full border border-zinc-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                      className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
                     >
                       {statusOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -500,7 +500,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                     value={form.category || ""}
                     onChange={handleInputChange}
                     required
-                    className="w-full border border-zinc-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                    className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
                   >
                     {procedureCategories.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -523,7 +523,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                     value={form.description || ""}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full border border-zinc-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                    className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
                   />
                 </div>
 

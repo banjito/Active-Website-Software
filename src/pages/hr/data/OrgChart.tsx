@@ -80,14 +80,14 @@ const getRoleColor = (
   role?: string,
   dynamicRoles?: Array<{ value: string; color: string }>,
 ) => {
-  if (!role) return "bg-zinc-100 text-zinc-600 border-zinc-300";
+  if (!role) return "bg-neutral-100 text-neutral-600 border-neutral-300";
   if (dynamicRoles && dynamicRoles.length > 0) {
     const found = dynamicRoles.find((r) => r.value === role);
     if (found) return getRoleColorFromPalette(found.color);
   }
   const fallback = DEFAULT_ROLE_OPTIONS.find((r) => r.value === role);
   if (fallback) return getRoleColorFromPalette(fallback.color);
-  return "bg-zinc-100 text-zinc-600 border-zinc-300";
+  return "bg-neutral-100 text-neutral-600 border-neutral-300";
 };
 
 const getRoleLabel = (
@@ -179,11 +179,11 @@ const COLOR_PALETTE = [
   },
   {
     name: "gray",
-    bg: "bg-zinc-100",
-    border: "border-zinc-300",
-    text: "text-zinc-900",
-    ring: "ring-zinc-400",
-    preview: "bg-zinc-400",
+    bg: "bg-neutral-100",
+    border: "border-neutral-300",
+    text: "text-neutral-900",
+    ring: "ring-neutral-400",
+    preview: "bg-neutral-400",
   },
 ];
 
@@ -218,10 +218,10 @@ const LEVEL_COLORS: Record<
     ring: "ring-amber-400",
   },
   3: {
-    bg: "bg-zinc-100",
-    border: "border-zinc-300",
-    text: "text-zinc-900",
-    ring: "ring-zinc-400",
+    bg: "bg-neutral-100",
+    border: "border-neutral-300",
+    text: "text-neutral-900",
+    ring: "ring-neutral-400",
   },
 };
 
@@ -611,7 +611,7 @@ const FlowchartNode: React.FC<{
           transition-all duration-200
           ${colors.bg} ${colors.border}
           min-w-[160px] max-w-[200px]
-          ${groupPalette ? `ring-2 ${groupPalette.ring} ring-offset-2 ring-offset-white dark:ring-offset-zinc-800` : ""}
+          ${groupPalette ? `ring-2 ${groupPalette.ring} ring-offset-2 ring-offset-white dark:ring-offset-neutral-800` : ""}
           ${isDragging ? "opacity-50 scale-95 cursor-grabbing" : canEdit ? "cursor-grab hover:shadow-md hover:scale-[1.02]" : "cursor-pointer hover:shadow-md hover:scale-[1.02]"}
           ${isDragOver && isValidDropTarget ? `ring-4 ${colors.ring} ring-opacity-60 scale-105` : ""}
           ${draggedId && !isValidDropTarget && draggedId !== node.id ? "opacity-40" : ""}
@@ -626,7 +626,7 @@ const FlowchartNode: React.FC<{
         {/* Drag handle indicator */}
         {canEdit && (
           <div className="absolute top-1 left-1 opacity-40 group-hover:opacity-70 transition-opacity pointer-events-none">
-            <GripVertical className="h-4 w-4 text-zinc-500" />
+            <GripVertical className="h-4 w-4 text-neutral-500" />
           </div>
         )}
 
@@ -641,10 +641,10 @@ const FlowchartNode: React.FC<{
                 e.preventDefault();
                 onEdit(node);
               }}
-              className="p-1.5 rounded-full bg-white shadow-md border border-zinc-200 hover:bg-blue-50"
+              className="p-1.5 rounded-full bg-white shadow-md border border-neutral-200 hover:bg-blue-50"
               title="Edit title"
             >
-              <Edit2 className="h-3 w-3 text-zinc-600 hover:text-blue-500" />
+              <Edit2 className="h-3 w-3 text-neutral-600 hover:text-blue-500" />
             </button>
             <button
               draggable="false"
@@ -654,10 +654,10 @@ const FlowchartNode: React.FC<{
                 e.preventDefault();
                 onDelete(node.id);
               }}
-              className="p-1.5 rounded-full bg-white shadow-md border border-zinc-200 hover:bg-red-50"
+              className="p-1.5 rounded-full bg-white shadow-md border border-neutral-200 hover:bg-red-50"
               title="Remove from chart"
             >
-              <Trash2 className="h-3 w-3 text-zinc-600 hover:text-red-500" />
+              <Trash2 className="h-3 w-3 text-neutral-600 hover:text-red-500" />
             </button>
           </div>
         )}
@@ -675,7 +675,7 @@ const FlowchartNode: React.FC<{
         <div className="px-4 py-3 text-center pointer-events-none">
           {!isRoot && (
             <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 ring-2 ring-white dark:ring-zinc-600">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 ring-2 ring-white dark:ring-neutral-600">
                 {node.avatar_url ? (
                   <img
                     src={node.avatar_url}
@@ -684,7 +684,7 @@ const FlowchartNode: React.FC<{
                     draggable="false"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-zinc-500 dark:text-zinc-300">
+                  <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-neutral-500 dark:text-neutral-300">
                     {initials}
                   </div>
                 )}
@@ -695,7 +695,7 @@ const FlowchartNode: React.FC<{
             {node.full_name || "Unknown"}
           </h3>
           {node.job_title && (
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 truncate px-1">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 truncate px-1">
               {node.job_title}
             </p>
           )}
@@ -717,7 +717,7 @@ const FlowchartNode: React.FC<{
           </div>
           {secondaryManagerNames.length > 0 && (
             <p
-              className="text-[10px] text-zinc-600 dark:text-zinc-300 mt-1 px-1"
+              className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1 px-1"
               title={(node.reports_to_ids || [])
                 .filter((id) => id && id !== node.reports_to)
                 .map((id) => peopleLookup[id]?.full_name || "Unknown")
@@ -741,7 +741,7 @@ const FlowchartNode: React.FC<{
               e.preventDefault();
               onUngroup(node.id);
             }}
-            className="absolute -bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-white shadow border border-zinc-200 hover:bg-zinc-50 pointer-events-auto z-10"
+            className="absolute -bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-white shadow border border-neutral-200 hover:bg-neutral-50 pointer-events-auto z-10"
             title="Remove from manager group"
           >
             Ungroup
@@ -758,12 +758,12 @@ const FlowchartNode: React.FC<{
               e.preventDefault();
               toggleCollapse(node.id);
             }}
-            className="absolute -bottom-3 left-1/2 -translate-x-1/2 p-0.5 rounded-full bg-white shadow border border-zinc-200 hover:bg-zinc-50 z-10 pointer-events-auto"
+            className="absolute -bottom-3 left-1/2 -translate-x-1/2 p-0.5 rounded-full bg-white shadow border border-neutral-200 hover:bg-neutral-50 z-10 pointer-events-auto"
           >
             {isCollapsed ? (
-              <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+              <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+              <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
             )}
           </button>
         )}
@@ -778,7 +778,7 @@ const FlowchartNode: React.FC<{
             e.stopPropagation();
             onAddUnder(node.id);
           }}
-          className="mt-4 text-xs text-zinc-400 hover:text-[#f26722] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="mt-4 text-xs text-neutral-400 hover:text-[#f26722] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <Plus className="h-3 w-3" />
           Add
@@ -787,7 +787,7 @@ const FlowchartNode: React.FC<{
 
       {/* Connector line down from parent to horizontal bus (own subtree only) */}
       {showOwnSubtree && (
-        <div className="h-4 w-[2px] shrink-0 rounded-sm bg-zinc-500 dark:bg-zinc-400" />
+        <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
       )}
 
       {/* Children row — group peers in the same manager group side by side with shared lines */}
@@ -826,18 +826,22 @@ const FlowchartNode: React.FC<{
                           <>
                             <div
                               className={`absolute top-0 left-0 right-1/2 h-[2px] ${
-                                isFirst ? "" : "bg-zinc-500 dark:bg-zinc-400"
+                                isFirst
+                                  ? ""
+                                  : "bg-neutral-500 dark:bg-neutral-400"
                               }`}
                             />
                             <div
                               className={`absolute top-0 left-1/2 right-0 h-[2px] ${
-                                isLast ? "" : "bg-zinc-500 dark:bg-zinc-400"
+                                isLast
+                                  ? ""
+                                  : "bg-neutral-500 dark:bg-neutral-400"
                               }`}
                             />
                           </>
                         )}
                       </div>
-                      <div className="h-4 w-[2px] shrink-0 rounded-sm bg-zinc-500 dark:bg-zinc-400" />
+                      <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
                       <FlowchartNode
                         node={child}
                         orgTree={orgTree}
@@ -898,17 +902,21 @@ const FlowchartNode: React.FC<{
                         }`}
                       >
                         {onlyCluster ? (
-                          <div className="absolute inset-0 h-[2px] bg-zinc-500 dark:bg-zinc-400" />
+                          <div className="absolute inset-0 h-[2px] bg-neutral-500 dark:bg-neutral-400" />
                         ) : (
                           <>
                             <div
                               className={`absolute top-0 left-0 right-1/2 h-[2px] ${
-                                isFirst ? "" : "bg-zinc-500 dark:bg-zinc-400"
+                                isFirst
+                                  ? ""
+                                  : "bg-neutral-500 dark:bg-neutral-400"
                               }`}
                             />
                             <div
                               className={`absolute top-0 left-1/2 right-0 h-[2px] ${
-                                isLast ? "" : "bg-zinc-500 dark:bg-zinc-400"
+                                isLast
+                                  ? ""
+                                  : "bg-neutral-500 dark:bg-neutral-400"
                               }`}
                             />
                           </>
@@ -920,7 +928,7 @@ const FlowchartNode: React.FC<{
                             key={child.id}
                             className="flex w-[200px] min-w-[160px] max-w-[200px] shrink-0 flex-col items-center"
                           >
-                            <div className="h-4 w-[2px] shrink-0 rounded-sm bg-zinc-500 dark:bg-zinc-400" />
+                            <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
                             <FlowchartNode
                               node={child}
                               orgTree={orgTree}
@@ -946,7 +954,7 @@ const FlowchartNode: React.FC<{
                               canEdit={canEdit}
                             />
                             {mergedDirects.length > 0 && !mergeCollapsed && (
-                              <div className="h-4 w-[2px] shrink-0 rounded-sm bg-zinc-500 dark:bg-zinc-400" />
+                              <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
                             )}
                           </div>
                         ))}
@@ -970,15 +978,15 @@ const FlowchartNode: React.FC<{
                             e.preventDefault();
                             toggleCollapse(mergeCollapseKey);
                           }}
-                          className="absolute -top-1 right-0 z-20 rounded-full border border-zinc-200 bg-white p-0.5 shadow hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800"
+                          className="absolute -top-1 right-0 z-20 rounded-full border border-neutral-200 bg-white p-0.5 shadow hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800"
                           title={
                             mergeCollapsed ? "Expand team" : "Collapse team"
                           }
                         >
                           {mergeCollapsed ? (
-                            <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+                            <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
                           ) : (
-                            <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                            <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
                           )}
                         </button>
                         {!mergeCollapsed && (
@@ -990,7 +998,7 @@ const FlowchartNode: React.FC<{
                               }}
                             >
                               <div
-                                className="h-[2px] bg-zinc-500 dark:bg-zinc-400"
+                                className="h-[2px] bg-neutral-500 dark:bg-neutral-400"
                                 style={{ gridColumn: "1 / -1" }}
                               />
                               {mergedDirects.map((sub) => {
@@ -999,7 +1007,7 @@ const FlowchartNode: React.FC<{
                                     key={`${sub.id}-${dataVersion}-mg`}
                                     className="flex min-w-0 flex-col items-center px-1.5"
                                   >
-                                    <div className="h-4 w-[2px] shrink-0 rounded-sm bg-zinc-500 dark:bg-zinc-400" />
+                                    <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
                                     <FlowchartNode
                                       node={sub}
                                       orgTree={orgTree}
@@ -1119,7 +1127,7 @@ const ManagerPicker: React.FC<{
         </div>
       )}
       <div className="relative mt-1.5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
         <Input
           value={query}
           onFocus={() => setIsOpen(true)}
@@ -1132,9 +1140,9 @@ const ManagerPicker: React.FC<{
         />
       </div>
       {isOpen && (
-        <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 shadow-lg divide-y divide-zinc-100 dark:divide-zinc-700">
+        <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 shadow-lg divide-y divide-neutral-100 dark:divide-neutral-700">
           {filtered.length === 0 ? (
-            <p className="p-3 text-sm text-zinc-500">
+            <p className="p-3 text-sm text-neutral-500">
               {query
                 ? "No matches"
                 : selected.length === people.length
@@ -1150,9 +1158,9 @@ const ManagerPicker: React.FC<{
                   onChange(Array.from(new Set([...selectedIds, p.id])));
                   setQuery("");
                 }}
-                className="w-full flex items-center gap-2 p-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                className="w-full flex items-center gap-2 p-2 text-sm text-left hover:bg-neutral-50 dark:hover:bg-neutral-700"
               >
-                <div className="w-7 h-7 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex-shrink-0">
+                <div className="w-7 h-7 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                   {p.avatar_url ? (
                     <img
                       src={p.avatar_url}
@@ -1160,17 +1168,17 @@ const ManagerPicker: React.FC<{
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] font-medium text-zinc-500">
+                    <div className="w-full h-full flex items-center justify-center text-[10px] font-medium text-neutral-500">
                       {(p.full_name || "?")[0].toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-zinc-900 dark:text-white">
+                  <p className="truncate text-neutral-900 dark:text-white">
                     {p.full_name}
                   </p>
                   {p.job_title && (
-                    <p className="truncate text-xs text-zinc-500">
+                    <p className="truncate text-xs text-neutral-500">
                       {p.job_title}
                     </p>
                   )}
@@ -1180,7 +1188,7 @@ const ManagerPicker: React.FC<{
           )}
         </div>
       )}
-      <p className="mt-1 text-xs text-zinc-500">{helperText}</p>
+      <p className="mt-1 text-xs text-neutral-500">{helperText}</p>
     </div>
   );
 };
@@ -2340,10 +2348,10 @@ export const OrgChart: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
             Organization Chart
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {canEdit
               ? "Drag and drop people to rearrange the hierarchy"
               : "View your organization's structure"}
@@ -2358,7 +2366,7 @@ export const OrgChart: React.FC = () => {
       </div>
 
       {/* Instructions */}
-      <div className="flex items-center gap-2 text-xs text-zinc-500">
+      <div className="flex items-center gap-2 text-xs text-neutral-500">
         {canEdit && <GripVertical className="h-4 w-4" />}
         <span>
           {canEdit
@@ -2369,7 +2377,7 @@ export const OrgChart: React.FC = () => {
 
       {/* Chart Card */}
       <Card className="overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
           <CardTitle className="text-base font-medium">
             {people.length} people{" "}
             {saving && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
@@ -2383,7 +2391,7 @@ export const OrgChart: React.FC = () => {
             >
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-zinc-500 w-14 text-center">
+            <span className="text-sm text-neutral-500 w-14 text-center">
               {Math.round(zoom * 100)}%
             </span>
             <Button
@@ -2404,7 +2412,7 @@ export const OrgChart: React.FC = () => {
             </Button>
             {canEdit && (
               <>
-                <div className="w-px h-6 bg-zinc-200 mx-1" />
+                <div className="w-px h-6 bg-neutral-200 mx-1" />
                 <Button
                   variant="outline"
                   size="sm"
@@ -2419,10 +2427,10 @@ export const OrgChart: React.FC = () => {
         </CardHeader>
 
         {/* Levels & Roles Legend */}
-        <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
           {orgLevels.length > 0 && (
             <>
-              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                 Levels:
               </span>
               {orgLevels.map((level) => {
@@ -2436,10 +2444,10 @@ export const OrgChart: React.FC = () => {
                   </span>
                 );
               })}
-              <span className="text-xs text-zinc-300 mx-1">|</span>
+              <span className="text-xs text-neutral-300 mx-1">|</span>
             </>
           )}
-          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
             Roles:
           </span>
           {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -2465,7 +2473,7 @@ export const OrgChart: React.FC = () => {
               ${
                 isTopLevelDropOver
                   ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
-                  : "border-zinc-300 dark:border-zinc-600 text-zinc-400"
+                  : "border-neutral-300 dark:border-neutral-600 text-neutral-400"
               }
             `}
           >
@@ -2477,7 +2485,7 @@ export const OrgChart: React.FC = () => {
 
         <div
           ref={containerRef}
-          className="p-6 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-800 relative"
+          className="p-6 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 relative"
           style={{
             backgroundImage:
               "radial-gradient(circle, #e5e7eb 1px, transparent 1px)",
@@ -2495,13 +2503,13 @@ export const OrgChart: React.FC = () => {
             </div>
           ) : people.length === 0 ? (
             <div className="text-center py-20">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                <UserPlus className="h-10 w-10 text-zinc-400" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <UserPlus className="h-10 w-10 text-neutral-400" />
               </div>
-              <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
                 No one on the org chart yet
               </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
                 {canEdit
                   ? "Start by adding people to build your organization's structure"
                   : "The organization chart has not been set up yet"}
@@ -2568,7 +2576,7 @@ export const OrgChart: React.FC = () => {
             <div>
               <Label>Search employees</Label>
               <div className="relative mt-1.5">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -2581,9 +2589,9 @@ export const OrgChart: React.FC = () => {
               <Label>
                 Select a person ({availableEmployees.length} available)
               </Label>
-              <div className="mt-1.5 max-h-72 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="mt-1.5 max-h-72 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-100 dark:divide-neutral-800">
                 {availableEmployees.length === 0 ? (
-                  <p className="p-4 text-sm text-zinc-500 text-center">
+                  <p className="p-4 text-sm text-neutral-500 text-center">
                     {search
                       ? "No matching employees found"
                       : "All employees are already on the chart"}
@@ -2607,10 +2615,10 @@ export const OrgChart: React.FC = () => {
                         className={`w-full flex items-center gap-3 p-3 text-left cursor-pointer transition-colors ${
                           isSelected
                             ? "bg-[#f26722]/10 ring-2 ring-inset ring-[#f26722]"
-                            : "hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                            : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                           {emp.avatar_url ? (
                             <img
                               src={emp.avatar_url}
@@ -2619,17 +2627,17 @@ export const OrgChart: React.FC = () => {
                               draggable="false"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-sm font-medium text-zinc-500">
+                            <div className="w-full h-full flex items-center justify-center text-sm font-medium text-neutral-500">
                               {(emp.full_name || "?")[0].toUpperCase()}
                             </div>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-zinc-900 dark:text-white truncate">
+                          <p className="font-medium text-neutral-900 dark:text-white truncate">
                             {emp.full_name}
                           </p>
                           {emp.job_title && (
-                            <p className="text-xs text-zinc-500 truncate">
+                            <p className="text-xs text-neutral-500 truncate">
                               {emp.job_title}
                             </p>
                           )}
@@ -2667,7 +2675,7 @@ export const OrgChart: React.FC = () => {
                 <select
                   value={addLevelId ?? ""}
                   onChange={(e) => setAddLevelId(e.target.value || null)}
-                  className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                  className="mt-1.5 w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   <option value="">No level</option>
                   {orgLevels.map((level) => (
@@ -2683,7 +2691,7 @@ export const OrgChart: React.FC = () => {
               <select
                 value={addRole}
                 onChange={(e) => setAddRole(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                className="mt-1.5 w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
               >
                 <option value="">No Role</option>
                 {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -2719,8 +2727,8 @@ export const OrgChart: React.FC = () => {
           </DialogHeader>
           {editingPerson && (
             <div className="space-y-4 py-4">
-              <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                   {editingPerson.avatar_url ? (
                     <img
                       src={editingPerson.avatar_url}
@@ -2728,13 +2736,13 @@ export const OrgChart: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg font-medium text-zinc-500">
+                    <div className="w-full h-full flex items-center justify-center text-lg font-medium text-neutral-500">
                       {(editingPerson.full_name || "?")[0].toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-zinc-900 dark:text-white">
+                  <p className="font-medium text-neutral-900 dark:text-white">
                     {editingPerson.full_name}
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -2769,7 +2777,7 @@ export const OrgChart: React.FC = () => {
                     id="level"
                     value={editLevelId || ""}
                     onChange={(e) => setEditLevelId(e.target.value || null)}
-                    className="mt-1.5 w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     <option value="">No level</option>
                     {orgLevels.map((level) => (
@@ -2786,7 +2794,7 @@ export const OrgChart: React.FC = () => {
                   id="role"
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="mt-1.5 w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 >
                   <option value="">No Role</option>
                   {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -2834,7 +2842,7 @@ export const OrgChart: React.FC = () => {
               <Label className="text-sm font-medium">Current Levels</Label>
               <div className="mt-2 space-y-2">
                 {orgLevels.length === 0 ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-neutral-500">
                     No levels defined yet. Add one below.
                   </p>
                 ) : (
@@ -2857,7 +2865,7 @@ export const OrgChart: React.FC = () => {
                                 onClick={() =>
                                   handleUpdateLevelColor(level.id, c.name)
                                 }
-                                className={`w-5 h-5 rounded-full ${c.preview} ${level.color === c.name ? "ring-2 ring-offset-1 ring-zinc-800" : ""}`}
+                                className={`w-5 h-5 rounded-full ${c.preview} ${level.color === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
                                 title={c.name}
                               />
                             ))}
@@ -2879,7 +2887,7 @@ export const OrgChart: React.FC = () => {
             </div>
 
             {/* Add New Level */}
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <Label className="text-sm font-medium">Add New Level</Label>
               <div className="mt-2 flex gap-2">
                 <Input
@@ -2893,7 +2901,7 @@ export const OrgChart: React.FC = () => {
                     <button
                       key={c.name}
                       onClick={() => setNewLevelColor(c.name)}
-                      className={`w-6 h-6 rounded-full ${c.preview} ${newLevelColor === c.name ? "ring-2 ring-offset-1 ring-zinc-800" : ""}`}
+                      className={`w-6 h-6 rounded-full ${c.preview} ${newLevelColor === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
                       title={c.name}
                     />
                   ))}
@@ -2912,12 +2920,12 @@ export const OrgChart: React.FC = () => {
             </div>
 
             {/* Role Management */}
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <Label className="text-sm font-medium">Current Roles</Label>
               <div className="mt-2 space-y-2">
                 {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS)
                   .length === 0 ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-neutral-500">
                     No roles defined yet. Add one below.
                   </p>
                 ) : (
@@ -3002,7 +3010,7 @@ export const OrgChart: React.FC = () => {
                   +
                 </Button>
               </div>
-              <p className="text-xs text-zinc-500 mt-2">
+              <p className="text-xs text-neutral-500 mt-2">
                 Click the edit button on any person's card to assign them a
                 role.
               </p>
@@ -3043,7 +3051,7 @@ export const OrgChart: React.FC = () => {
                 : 0;
               return (
                 <div className="space-y-4 py-2">
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
                     What should happen with{" "}
                     <span className="font-medium">
                       {draggedP?.full_name || "this person"}
@@ -3067,12 +3075,12 @@ export const OrgChart: React.FC = () => {
                       setDropDialogOpen(false);
                       setPendingDrop(null);
                     }}
-                    className="w-full text-left p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
+                    className="w-full text-left p-3 rounded-lg border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
                   >
-                    <p className="font-medium text-zinc-900 dark:text-white">
+                    <p className="font-medium text-neutral-900 dark:text-white">
                       Move Under
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       {targetGroupSize > 1
                         ? `${draggedP?.full_name || "This person"} will report to all ${targetGroupSize} managers in ${targetP?.full_name}'s group.`
                         : `${draggedP?.full_name || "This person"} will report to ${targetP?.full_name || "the target"}.`}
@@ -3092,16 +3100,16 @@ export const OrgChart: React.FC = () => {
                       setDropDialogOpen(false);
                       setPendingDrop(null);
                     }}
-                    className={`w-full text-left p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 ${
+                    className={`w-full text-left p-3 rounded-lg border border-neutral-300 dark:border-neutral-600 ${
                       managerGroupsSupported
                         ? "hover:border-[#f26722] hover:bg-[#f26722]/5"
                         : "opacity-50 cursor-not-allowed"
                     }`}
                   >
-                    <p className="font-medium text-zinc-900 dark:text-white">
+                    <p className="font-medium text-neutral-900 dark:text-white">
                       Group Together
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       {managerGroupsSupported
                         ? "Make them peers who share reports. Anyone dropped on either will report to both."
                         : "Run enable_org_chart_manager_groups.sql to enable grouping."}

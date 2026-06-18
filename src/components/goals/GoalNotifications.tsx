@@ -175,7 +175,7 @@ export function GoalNotifications() {
       case "approaching":
         return <TrendingUp className="h-5 w-5 text-blue-500" />;
       default:
-        return <Bell className="h-5 w-5 text-zinc-500" />;
+        return <Bell className="h-5 w-5 text-neutral-500" />;
     }
   };
 
@@ -196,7 +196,7 @@ export function GoalNotifications() {
 
       {showNotifications && (
         <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-dark-150 shadow-lg rounded-md z-50">
-          <div className="p-3 border-b border-zinc-200 dark:border-dark-200 flex justify-between items-center">
+          <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex justify-between items-center">
             <h3 className="font-medium">Notifications</h3>
             {notifications.length > 0 && (
               <Button variant="ghost" size="sm" onClick={markAllAsRead}>
@@ -207,16 +207,16 @@ export function GoalNotifications() {
 
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-4 text-center text-zinc-500">
+              <div className="p-4 text-center text-neutral-500">
                 No notifications
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 border-b border-zinc-100 dark:border-dark-200 flex gap-3 ${
+                  className={`p-3 border-b border-neutral-100 dark:border-dark-200 flex gap-3 ${
                     notification.read
-                      ? "bg-zinc-50 dark:bg-dark-150"
+                      ? "bg-neutral-50 dark:bg-dark-150"
                       : "bg-white dark:bg-dark-150"
                   }`}
                 >
@@ -225,7 +225,7 @@ export function GoalNotifications() {
                   </div>
                   <div className="flex-grow">
                     <p className="text-sm">{notification.message}</p>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-xs text-neutral-500 mt-1">
                       {notification.timestamp.toLocaleString()}
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export function GoalNotifications() {
                       className="h-6 w-6 p-0"
                       onClick={() => removeNotification(notification.id)}
                     >
-                      <X className="h-4 w-4 text-zinc-500" />
+                      <X className="h-4 w-4 text-neutral-500" />
                       <span className="sr-only">Dismiss</span>
                     </Button>
                   </div>

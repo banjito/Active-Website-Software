@@ -197,7 +197,7 @@ export const GuideViewer: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-dark-200">
+      <div className="flex items-center justify-center min-h-screen bg-neutral-50 dark:bg-dark-200">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -205,12 +205,12 @@ export const GuideViewer: React.FC = () => {
 
   if (!guide) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-dark-200">
-        <BookOpen className="w-16 h-16 text-zinc-300 dark:text-zinc-600 mb-4" />
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 dark:bg-dark-200">
+        <BookOpen className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mb-4" />
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
           Guide not found
         </h2>
-        <p className="text-zinc-500 dark:text-zinc-400 mb-4">
+        <p className="text-neutral-500 dark:text-neutral-400 mb-4">
           The guide you're looking for doesn't exist or has been removed.
         </p>
         <Button onClick={() => navigate("/help-center")}>
@@ -224,9 +224,9 @@ export const GuideViewer: React.FC = () => {
   const headings = getHeadings();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-dark-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-200">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700 sticky top-0 z-10">
+      <div className="bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -238,8 +238,8 @@ export const GuideViewer: React.FC = () => {
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Help Center</span>
               </Button>
-              <div className="h-6 w-px bg-zinc-300 dark:bg-zinc-600" />
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-600" />
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">
                 {PORTAL_CATEGORY_LABELS[guide.category]}
               </span>
             </div>
@@ -277,18 +277,18 @@ export const GuideViewer: React.FC = () => {
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 min-w-0">
-            <article className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 lg:p-10">
+            <article className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:p-10">
               {/* Guide Header */}
-              <header className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-700">
-                <h1 className="text-3xl lg:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+              <header className="mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-700">
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
                   {guide.title}
                 </h1>
                 {guide.description && (
-                  <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+                  <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
                     {guide.description}
                   </p>
                 )}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                   {guide.updatedAt && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
@@ -307,7 +307,7 @@ export const GuideViewer: React.FC = () => {
                     {guide.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 dark:bg-dark-100 text-zinc-600 dark:text-zinc-400 rounded-full text-sm"
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-dark-100 text-neutral-600 dark:text-neutral-400 rounded-full text-sm"
                       >
                         <Tag className="w-3 h-3" />
                         {tag}
@@ -318,7 +318,7 @@ export const GuideViewer: React.FC = () => {
               </header>
 
               {/* Guide Content */}
-              <div className="prose prose-zinc dark:prose-invert max-w-none">
+              <div className="prose prose-neutral dark:prose-invert max-w-none">
                 {guide.content.blocks.map((block) => (
                   <ContentBlockRenderer key={block.id} block={block} />
                 ))}
@@ -327,11 +327,11 @@ export const GuideViewer: React.FC = () => {
               {/* Empty State */}
               {guide.content.blocks.length === 0 && (
                 <div className="text-center py-12">
-                  <BookOpen className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-600 mb-4" />
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
+                  <BookOpen className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
+                  <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
                     No content yet
                   </h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 mb-4">
+                  <p className="text-neutral-500 dark:text-neutral-400 mb-4">
                     {isAdmin
                       ? "This guide is empty. Add content to help your team."
                       : "This guide is coming soon. Check back later for helpful content."}
@@ -373,10 +373,10 @@ export const GuideViewer: React.FC = () => {
                             href={`#${heading.id}`}
                             className={`block text-sm hover:text-[#f26722] transition-colors ${
                               heading.level === 1
-                                ? "font-medium text-zinc-900 dark:text-white"
+                                ? "font-medium text-neutral-900 dark:text-white"
                                 : heading.level === 2
-                                  ? "text-zinc-700 dark:text-zinc-300 pl-3"
-                                  : "text-zinc-500 dark:text-zinc-400 pl-6"
+                                  ? "text-neutral-700 dark:text-neutral-300 pl-3"
+                                  : "text-neutral-500 dark:text-neutral-400 pl-6"
                             }`}
                           >
                             {heading.text}
@@ -404,9 +404,9 @@ export const GuideViewer: React.FC = () => {
                           onClick={() =>
                             navigate(`/help-center/guide/${related.id}`)
                           }
-                          className="w-full text-left p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors group"
+                          className="w-full text-left p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors group"
                         >
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2">
+                          <span className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2">
                             {related.title}
                           </span>
                         </button>
@@ -440,7 +440,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
       return (
         <HeadingTag
           id={block.id}
-          className={`${headingClasses[hConfig.level]} text-zinc-900 dark:text-white scroll-mt-24`}
+          className={`${headingClasses[hConfig.level]} text-neutral-900 dark:text-white scroll-mt-24`}
         >
           {hConfig.content}
         </HeadingTag>
@@ -449,7 +449,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
     case ContentBlockType.TEXT:
       return (
         <div
-          className="mb-4 text-zinc-700 dark:text-zinc-300 leading-relaxed"
+          className="mb-4 text-neutral-700 dark:text-neutral-300 leading-relaxed"
           dangerouslySetInnerHTML={{
             __html: (config as TextBlockConfig).content || "",
           }}
@@ -458,7 +458,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.BULLET_LIST:
       return (
-        <ul className="list-disc list-outside ml-6 mb-4 space-y-1 text-zinc-700 dark:text-zinc-300">
+        <ul className="list-disc list-outside ml-6 mb-4 space-y-1 text-neutral-700 dark:text-neutral-300">
           {((config as ListBlockConfig).items || []).map((item, i) => (
             <li key={i} className="leading-relaxed">
               {item.content}
@@ -469,7 +469,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.NUMBERED_LIST:
       return (
-        <ol className="list-decimal list-outside ml-6 mb-4 space-y-1 text-zinc-700 dark:text-zinc-300">
+        <ol className="list-decimal list-outside ml-6 mb-4 space-y-1 text-neutral-700 dark:text-neutral-300">
           {((config as ListBlockConfig).items || []).map((item, i) => (
             <li key={i} className="leading-relaxed">
               {item.content}
@@ -497,7 +497,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
             className="rounded-lg shadow-md w-full"
           />
           {imgConfig.caption && (
-            <figcaption className="text-center text-sm text-zinc-500 dark:text-zinc-400 mt-2 italic">
+            <figcaption className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-2 italic">
               {imgConfig.caption}
             </figcaption>
           )}
@@ -562,11 +562,11 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
             {sConfig.stepNumber}
           </div>
           <div className="flex-1 pt-1">
-            <h4 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
+            <h4 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {sConfig.title}
             </h4>
             <div
-              className="text-zinc-700 dark:text-zinc-300 leading-relaxed"
+              className="text-neutral-700 dark:text-neutral-300 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: sConfig.content || "" }}
             />
           </div>
@@ -583,7 +583,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
                 {(tConfig.headers || []).map((header, i) => (
                   <th
                     key={i}
-                    className="border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-dark-200 px-4 py-3 text-left font-semibold text-zinc-900 dark:text-white"
+                    className="border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 px-4 py-3 text-left font-semibold text-neutral-900 dark:text-white"
                   >
                     {header}
                   </th>
@@ -597,13 +597,13 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
                   className={
                     ri % 2 === 0
                       ? "bg-white dark:bg-dark-150"
-                      : "bg-zinc-50 dark:bg-dark-100"
+                      : "bg-neutral-50 dark:bg-dark-100"
                   }
                 >
                   {row.map((cell, ci) => (
                     <td
                       key={ci}
-                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-3 text-zinc-700 dark:text-zinc-300"
+                      className="border border-neutral-300 dark:border-neutral-600 px-4 py-3 text-neutral-700 dark:text-neutral-300"
                     >
                       {cell}
                     </td>
@@ -642,7 +642,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
       return embedUrl ? (
         <div className="mb-6">
           {vConfig.title && (
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               {vConfig.title}
             </p>
           )}
@@ -659,14 +659,14 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.CODE_BLOCK:
       return (
-        <pre className="mb-6 p-4 bg-zinc-900 text-zinc-100 rounded-lg overflow-x-auto">
+        <pre className="mb-6 p-4 bg-neutral-900 text-neutral-100 rounded-lg overflow-x-auto">
           <code>{(config as any).code || ""}</code>
         </pre>
       );
 
     case ContentBlockType.DIVIDER:
       return (
-        <hr className="my-8 border-t-2 border-zinc-200 dark:border-zinc-700" />
+        <hr className="my-8 border-t-2 border-neutral-200 dark:border-neutral-700" />
       );
 
     default:

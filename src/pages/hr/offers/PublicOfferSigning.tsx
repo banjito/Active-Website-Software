@@ -381,7 +381,7 @@ export const PublicOfferSigning: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
         <div className="text-center">
           <LoadingSpinner size="md" />
         </div>
@@ -391,14 +391,14 @@ export const PublicOfferSigning: React.FC = () => {
 
   if (error || !offer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-red-600">Error</CardTitle>
             <CardDescription>{error || "Offer not found"}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               This signing link may be invalid or expired. Please contact the
               hiring manager for assistance.
             </p>
@@ -410,7 +410,7 @@ export const PublicOfferSigning: React.FC = () => {
 
   if (signed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <Card className="max-w-2xl w-full">
           <CardHeader className="text-center">
             <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-4" />
@@ -449,7 +449,7 @@ export const PublicOfferSigning: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900 py-8 px-4">
+    <div className="min-h-screen bg-white dark:bg-neutral-900 py-8 px-4">
       {/* Hide FloatingIssueReporter on this page */}
       <style>{`
         .fixed.left-4.bottom-4 {
@@ -458,7 +458,7 @@ export const PublicOfferSigning: React.FC = () => {
       `}</style>
       <div className="max-w-4xl mx-auto">
         {/* Offer Letter Header */}
-        <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-zinc-300">
+        <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-neutral-300">
           <div>
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
@@ -468,7 +468,7 @@ export const PublicOfferSigning: React.FC = () => {
           </div>
           <div className="text-right">
             <h1 className="text-2xl font-bold tracking-wide">OFFER LETTER</h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
               {new Date().toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
@@ -480,7 +480,7 @@ export const PublicOfferSigning: React.FC = () => {
 
         {/* Offer Letter Content */}
         <div
-          className="prose max-w-none dark:prose-invert mb-8 text-zinc-900 dark:text-zinc-100"
+          className="prose max-w-none dark:prose-invert mb-8 text-neutral-900 dark:text-neutral-100"
           dangerouslySetInnerHTML={{
             __html:
               offer.offer_letter_content || "<p>No offer content available</p>",
@@ -489,12 +489,12 @@ export const PublicOfferSigning: React.FC = () => {
 
         {/* Attachments (e.g. benefit package) */}
         {attachments.length > 0 && (
-          <div className="mb-8 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+          <div className="mb-8 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
               <Paperclip className="h-5 w-5" />
               Additional documents
             </h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
               Download these documents (e.g. benefit package) to review with
               your offer.
             </p>
@@ -517,50 +517,50 @@ export const PublicOfferSigning: React.FC = () => {
         )}
 
         {/* Signature Section */}
-        <div className="mt-12 pt-8 border-t-2 border-zinc-300">
-          <h2 className="text-xl font-semibold mb-6 text-zinc-900 dark:text-white">
+        <div className="mt-12 pt-8 border-t-2 border-neutral-300">
+          <h2 className="text-xl font-semibold mb-6 text-neutral-900 dark:text-white">
             Electronic Signature
           </h2>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Full Name *
                 </label>
                 <input
                   type="text"
                   value={signerName}
                   onChange={(e) => setSignerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Email Address *
                 </label>
                 <input
                   type="email"
                   value={signerEmail}
                   onChange={(e) => setSignerEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Signature *
               </label>
-              <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-4 bg-white dark:bg-zinc-800">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-800">
                 <canvas
                   ref={canvasRef}
                   width={600}
                   height={200}
                   style={{ touchAction: "none" }}
-                  className="border border-zinc-200 dark:border-zinc-700 rounded cursor-crosshair w-full"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded cursor-crosshair w-full"
                   onMouseDown={startDrawing}
                   onMouseMove={draw}
                   onMouseUp={stopDrawing}
@@ -589,7 +589,7 @@ export const PublicOfferSigning: React.FC = () => {
               </Button>
             </div>
 
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 p-3 rounded">
               By signing, you acknowledge that you have read and agree to the
               terms of this offer letter.
             </div>

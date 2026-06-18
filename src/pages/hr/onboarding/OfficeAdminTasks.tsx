@@ -245,7 +245,7 @@ export const OfficeAdminTasks: React.FC = () => {
       completed:
         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
       cancelled:
-        "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     };
     return (
       <span
@@ -258,7 +258,7 @@ export const OfficeAdminTasks: React.FC = () => {
 
   const getPriorityBadge = (priority: string) => {
     const colors: Record<string, string> = {
-      low: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      low: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
       medium: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
       high: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
       urgent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
@@ -348,11 +348,11 @@ export const OfficeAdminTasks: React.FC = () => {
           name="is_template"
           checked={formData.is_template}
           onChange={handleInputChange}
-          className="h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+          className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
         />
         <label
           htmlFor="office-admin-is-template"
-          className="text-sm text-zinc-700 dark:text-zinc-300"
+          className="text-sm text-neutral-700 dark:text-neutral-300"
         >
           Save as template (reusable for assigning to new hires)
         </label>
@@ -364,11 +364,11 @@ export const OfficeAdminTasks: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Briefcase className="h-8 w-8 text-[#f26722]" />
             Office Admin Tasks
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage office admin task templates (workspace setup,
             supplies, badges, etc.) used when onboarding new hires.
           </p>
@@ -411,8 +411,8 @@ export const OfficeAdminTasks: React.FC = () => {
       ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Briefcase className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <Briefcase className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">
               No tasks found. Create a template to get started.
             </p>
           </CardContent>
@@ -434,7 +434,7 @@ export const OfficeAdminTasks: React.FC = () => {
                       {getStatusBadge(task.status)}
                       {getPriorityBadge(task.priority)}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Type:</span>{" "}
                       {task.task_type.replace("_", " ")}
                     </div>
@@ -473,8 +473,8 @@ export const OfficeAdminTasks: React.FC = () => {
             ))}
           </div>
           {filteredTasks.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page {page} of {totalPages} ({filteredTasks.length} total)
               </span>
               <div className="flex gap-2">
@@ -600,14 +600,14 @@ export const OfficeAdminTasks: React.FC = () => {
                 )}
               </div>
               <div>
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">
                   Type:
                 </span>{" "}
                 {selectedTask.task_type.replace("_", " ")}
               </div>
               {selectedTask.due_date && (
                 <div>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="font-medium text-neutral-700 dark:text-neutral-300">
                     Due:
                   </span>{" "}
                   {selectedTask.due_date}
@@ -615,10 +615,10 @@ export const OfficeAdminTasks: React.FC = () => {
               )}
               {selectedTask.notes && (
                 <div>
-                  <div className="font-medium text-zinc-700 dark:text-zinc-300">
+                  <div className="font-medium text-neutral-700 dark:text-neutral-300">
                     Notes
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 whitespace-pre-wrap text-neutral-600 dark:text-neutral-400">
                     {selectedTask.notes}
                   </p>
                 </div>

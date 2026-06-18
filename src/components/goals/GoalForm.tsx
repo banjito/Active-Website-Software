@@ -161,7 +161,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="title"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Goal Title <span className="text-red-500">*</span>
           </label>
@@ -173,7 +173,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.title
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
           {errors.title && (
@@ -184,7 +184,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="type"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Goal Type <span className="text-red-500">*</span>
           </label>
@@ -192,7 +192,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             id="type"
             value={type}
             onChange={(e) => setType(e.target.value as SalesGoal["type"])}
-            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Revenue">Revenue</option>
             <option value="Deals">Deals</option>
@@ -205,7 +205,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="scope"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Goal Scope <span className="text-red-500">*</span>
           </label>
@@ -213,7 +213,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             id="scope"
             value={scope}
             onChange={(e) => setScope(e.target.value as SalesGoal["scope"])}
-            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Individual">Individual</option>
             <option value="Team">Team</option>
@@ -225,7 +225,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="period"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Time Period <span className="text-red-500">*</span>
           </label>
@@ -235,7 +235,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) =>
               handlePeriodChange(e.target.value as SalesGoal["period"])
             }
-            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Monthly">Monthly</option>
             <option value="Quarterly">Quarterly</option>
@@ -247,7 +247,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="targetValue"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Target Value <span className="text-red-500">*</span>
           </label>
@@ -259,7 +259,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.targetValue
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
           {errors.targetValue && (
@@ -270,7 +270,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="currentValue"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Current Value <span className="text-red-500">*</span>
           </label>
@@ -282,7 +282,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.currentValue
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
           {errors.currentValue && (
@@ -293,7 +293,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="startDate"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Start Date <span className="text-red-500">*</span>
           </label>
@@ -305,7 +305,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.startDate
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
           {errors.startDate && (
@@ -316,7 +316,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="space-y-1">
           <label
             htmlFor="endDate"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             End Date <span className="text-red-500">*</span>
           </label>
@@ -328,7 +328,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             className={`mt-1 block w-full rounded-md shadow-sm ${
               errors.endDate
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-zinc-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
             } dark:bg-dark-150 dark:border-dark-300`}
           />
           {errors.endDate && (
@@ -339,7 +339,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <div className="sm:col-span-2 space-y-1">
           <label
             htmlFor="description"
-            className="block text-sm font-medium text-zinc-700 dark:text-white"
+            className="block text-sm font-medium text-neutral-700 dark:text-white"
           >
             Description
           </label>
@@ -348,7 +348,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           />
         </div>
       </div>
@@ -357,7 +357,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex justify-center rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
+          className="inline-flex justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
         >
           Cancel
         </button>

@@ -589,7 +589,7 @@ export const MyOnboarding: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <p className="text-neutral-600 dark:text-neutral-400">
               You don&apos;t have any onboarding tasks at this time.
             </p>
           </CardContent>
@@ -600,11 +600,11 @@ export const MyOnboarding: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
         <ClipboardList className="h-7 w-7" />
         Your Onboarding
       </h1>
-      <p className="text-zinc-600 dark:text-zinc-400">
+      <p className="text-neutral-600 dark:text-neutral-400">
         Review and sign your new hire packets below. Signatures are stored with
         your packet and in E-Sign Recordkeeping.
       </p>
@@ -615,7 +615,7 @@ export const MyOnboarding: React.FC = () => {
             <CardTitle>
               {record.offer?.position_title || "Onboarding"}
               {record.offer?.department && (
-                <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">
+                <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">
                   {" "}
                   — {record.offer.department}
                 </span>
@@ -629,7 +629,7 @@ export const MyOnboarding: React.FC = () => {
                     ? "text-green-600 dark:text-green-400"
                     : record.status === "in_progress"
                       ? "text-amber-600 dark:text-amber-400"
-                      : "text-zinc-600 dark:text-zinc-400"
+                      : "text-neutral-600 dark:text-neutral-400"
                 }
               >
                 {getStatusLabel(record.status)}
@@ -637,11 +637,11 @@ export const MyOnboarding: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Your packets
             </p>
             {(record.assigned_packets?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No packets assigned yet.
               </p>
             ) : (
@@ -652,13 +652,13 @@ export const MyOnboarding: React.FC = () => {
                   return (
                     <li
                       key={p.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                     >
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2 min-w-0">
-                        <Folder className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2 min-w-0">
+                        <Folder className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                         {p.name}
                         {hasSignable && (
-                          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                          <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400 flex-shrink-0">
                             {counts.signed}/{counts.total} documents signed
                           </span>
                         )}
@@ -676,11 +676,11 @@ export const MyOnboarding: React.FC = () => {
                 })}
               </ul>
             )}
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-4">
               Your E-Sign forms
             </p>
             {(record.assigned_forms?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No E-Sign forms assigned yet.
               </p>
             ) : (
@@ -688,10 +688,10 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_forms!.map((f) => (
                   <li
                     key={f.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2 min-w-0">
-                      <FileSignature className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2 min-w-0">
+                      <FileSignature className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {f.name}
                       {formSignedByMe[f.id] && (
                         <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-medium flex-shrink-0">
@@ -721,11 +721,11 @@ export const MyOnboarding: React.FC = () => {
                 ))}
               </ul>
             )}
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-4">
               Your checklists
             </p>
             {(record.assigned_checklists?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No checklists assigned yet.
               </p>
             ) : (
@@ -733,10 +733,10 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_checklists!.map((c) => (
                   <li
                     key={c.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
-                      <CheckSquare className="h-4 w-4 text-zinc-500" />
+                    <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                      <CheckSquare className="h-4 w-4 text-neutral-500" />
                       {c.name}
                     </span>
                     <Button
@@ -751,11 +751,11 @@ export const MyOnboarding: React.FC = () => {
                 ))}
               </ul>
             )}
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-4">
               Your IT/Equipment tasks
             </p>
             {(record.assigned_it_tasks?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No IT/Equipment tasks assigned yet.
               </p>
             ) : (
@@ -763,10 +763,10 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_it_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
-                      <Laptop className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                      <Laptop className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
@@ -775,7 +775,7 @@ export const MyOnboarding: React.FC = () => {
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                            : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                       }`}
                     >
                       {t.status === "in_progress"
@@ -788,11 +788,11 @@ export const MyOnboarding: React.FC = () => {
                 ))}
               </ul>
             )}
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-4">
               Your Office Admin tasks
             </p>
             {(record.assigned_office_admin_tasks?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No Office Admin tasks assigned yet.
               </p>
             ) : (
@@ -800,10 +800,10 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_office_admin_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
@@ -812,7 +812,7 @@ export const MyOnboarding: React.FC = () => {
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                            : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                       }`}
                     >
                       {t.status === "in_progress"
@@ -825,11 +825,11 @@ export const MyOnboarding: React.FC = () => {
                 ))}
               </ul>
             )}
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-4">
               Your HR tasks
             </p>
             {(record.assigned_hr_tasks?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 No HR tasks assigned yet.
               </p>
             ) : (
@@ -837,10 +837,10 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_hr_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
-                      <Users className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                      <Users className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
@@ -849,7 +849,7 @@ export const MyOnboarding: React.FC = () => {
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                            : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                       }`}
                     >
                       {t.status === "in_progress"
@@ -896,13 +896,13 @@ export const MyOnboarding: React.FC = () => {
           ) : checklistDetail && checklistAssignment ? (
             <div className="space-y-4 flex flex-col min-h-0 flex-1">
               <div className="flex-shrink-0 space-y-1">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {checklistAssignment.completion_percentage}% complete —{" "}
                   {checklistAssignment.items_completed?.length ?? 0} of{" "}
                   {(checklistDetail.items || []).length} items
                 </p>
                 {checklistAssignment.due_date && (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" />
                     Due by{" "}
                     {new Date(checklistAssignment.due_date).toLocaleDateString(
@@ -943,10 +943,10 @@ export const MyOnboarding: React.FC = () => {
                         className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:opacity-90 ${
                           isChecked
                             ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-                            : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                            : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700"
                         } ${checklistSaving ? "opacity-70 pointer-events-none" : ""}`}
                       >
-                        <span className="mt-0.5 flex-shrink-0 rounded border-2 border-zinc-400 w-5 h-5 flex items-center justify-center bg-white dark:bg-zinc-900">
+                        <span className="mt-0.5 flex-shrink-0 rounded border-2 border-neutral-400 w-5 h-5 flex items-center justify-center bg-white dark:bg-neutral-900">
                           {isChecked && (
                             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                           )}
@@ -954,7 +954,7 @@ export const MyOnboarding: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span
-                              className={`text-sm font-medium ${isChecked ? "text-zinc-500 dark:text-zinc-400 line-through" : "text-zinc-900 dark:text-white"}`}
+                              className={`text-sm font-medium ${isChecked ? "text-neutral-500 dark:text-neutral-400 line-through" : "text-neutral-900 dark:text-white"}`}
                             >
                               {item.title}
                             </span>
@@ -964,17 +964,17 @@ export const MyOnboarding: React.FC = () => {
                               </span>
                             )}
                             {item.category && (
-                              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                 {item.category}
                               </span>
                             )}
                           </div>
                           {item.description && (
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1.5 whitespace-pre-wrap">
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1.5 whitespace-pre-wrap">
                               {item.description}
                             </p>
                           )}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                             {itemDueDate && (
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3.5 w-3.5" />
@@ -1045,7 +1045,7 @@ export const MyOnboarding: React.FC = () => {
                 const signableTotal = signableDocs.length;
                 return (
                   <>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
                       {docs.length} document(s). Open each to view and sign if
                       required.
                       {signableTotal > 0 && (
@@ -1058,9 +1058,9 @@ export const MyOnboarding: React.FC = () => {
                       {docs.map((doc: DocItem, index: number) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 p-3 border rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                          className="flex items-center gap-2 p-3 border rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                         >
-                          <FileText className="h-5 w-5 text-zinc-400 flex-shrink-0" />
+                          <FileText className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                           <span className="text-sm flex-1 font-medium">
                             {doc.name || "Unnamed Document"}
                           </span>
@@ -1086,7 +1086,7 @@ export const MyOnboarding: React.FC = () => {
                               View
                             </Button>
                           ) : (
-                            <span className="text-xs text-zinc-500">
+                            <span className="text-xs text-neutral-500">
                               No file
                             </span>
                           )}
@@ -1114,9 +1114,9 @@ export const MyOnboarding: React.FC = () => {
           </DialogHeader>
           {selectedDocument?.file_url && (
             <div className="flex-1 min-h-0 flex flex-col">
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-zinc-50 dark:bg-zinc-800 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 py-2 border-b bg-neutral-50 dark:bg-neutral-800 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-zinc-500" />
+                  <FileText className="h-5 w-5 text-neutral-500" />
                   <span className="text-sm font-medium">
                     {selectedDocument.name}
                   </span>
@@ -1140,9 +1140,9 @@ export const MyOnboarding: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              <div className="flex-1 relative bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+              <div className="flex-1 relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden">
                 {documentLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 z-10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 z-10">
                     <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
                   </div>
                 )}
@@ -1213,7 +1213,7 @@ export const MyOnboarding: React.FC = () => {
                 )}
               </div>
               {selectedDocument.requires_signature && (
-                <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+                <div className="flex-shrink-0 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
                   {selectedDocument.name &&
                   isDocumentSigned(selectedDocument.name) ? (
                     <div className="px-4 py-3 flex items-center gap-2 text-green-700 dark:text-green-300">
@@ -1229,9 +1229,9 @@ export const MyOnboarding: React.FC = () => {
                             !signatureSectionCollapsed,
                           )
                         }
-                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-700/50"
                       >
-                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                           Signature
                         </span>
                         {signatureSectionCollapsed ? (
@@ -1243,7 +1243,7 @@ export const MyOnboarding: React.FC = () => {
                       {!signatureSectionCollapsed && (
                         <div className="px-4 pb-4">
                           <div className="max-w-md">
-                            <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg overflow-hidden">
+                            <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden">
                               <canvas
                                 ref={signatureCanvasRef}
                                 width={400}
@@ -1288,7 +1288,7 @@ export const MyOnboarding: React.FC = () => {
           )}
           {selectedDocument && !selectedDocument.file_url && (
             <div className="flex items-center justify-center p-8">
-              <p className="text-zinc-500">
+              <p className="text-neutral-500">
                 No file available for this document.
               </p>
             </div>

@@ -128,9 +128,9 @@ export function PDFSignatureFieldPlacer({
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b bg-zinc-50 dark:bg-zinc-800 flex-shrink-0">
+      <div className="flex items-center justify-between p-3 border-b bg-neutral-50 dark:bg-neutral-800 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-zinc-500" />
+          <FileText className="h-5 w-5 text-neutral-500" />
           <span className="text-sm font-medium">{fileName}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export function PDFSignatureFieldPlacer({
       <div className="flex flex-1 overflow-hidden">
         {/* PDF Viewer with Overlay */}
         <div
-          className="flex-1 relative bg-zinc-100 overflow-auto"
+          className="flex-1 relative bg-neutral-100 overflow-auto"
           ref={containerRef}
           onClick={handleIframeClick}
           style={{ cursor: isPlacing ? "crosshair" : "default" }}
@@ -267,10 +267,12 @@ export function PDFSignatureFieldPlacer({
         </div>
 
         {/* Signature Fields Panel */}
-        <div className="w-80 border-l bg-white dark:bg-zinc-800 overflow-y-auto flex-shrink-0">
+        <div className="w-80 border-l bg-white dark:bg-neutral-800 overflow-y-auto flex-shrink-0">
           <div className="p-4">
             <h3 className="font-semibold mb-2">Signature Fields</h3>
-            <div className="text-xs text-zinc-500 mb-4">Page {currentPage}</div>
+            <div className="text-xs text-neutral-500 mb-4">
+              Page {currentPage}
+            </div>
             <div className="space-y-2">
               {fieldsOnCurrentPage.map((field) => (
                 <div
@@ -278,14 +280,14 @@ export function PDFSignatureFieldPlacer({
                   className={`p-3 border rounded cursor-pointer transition-colors ${
                     selectedField === field.id
                       ? "border-[#f26722] bg-orange-50"
-                      : "border-zinc-200 hover:border-zinc-300"
+                      : "border-neutral-200 hover:border-neutral-300"
                   }`}
                   onClick={() => setSelectedField(field.id)}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="font-medium text-sm">{field.name}</div>
-                      <div className="text-xs text-zinc-500 mt-1">
+                      <div className="text-xs text-neutral-500 mt-1">
                         {field.signer_type} •{" "}
                         {field.required ? "Required" : "Optional"}
                       </div>
@@ -305,7 +307,7 @@ export function PDFSignatureFieldPlacer({
                 </div>
               ))}
               {fieldsOnCurrentPage.length === 0 && (
-                <p className="text-sm text-zinc-500 text-center py-4">
+                <p className="text-sm text-neutral-500 text-center py-4">
                   No signature fields on this page. Click "Add Signature Field"
                   to add one.
                 </p>
@@ -315,7 +317,7 @@ export function PDFSignatureFieldPlacer({
             {/* All Fields Summary */}
             {signatureFields.length > 0 && (
               <div className="mt-6 pt-4 border-t">
-                <div className="text-xs text-zinc-500 mb-2">All Pages</div>
+                <div className="text-xs text-neutral-500 mb-2">All Pages</div>
                 <div className="space-y-1">
                   {Array.from(new Set(signatureFields.map((f) => f.page))).map(
                     (page) => {
@@ -323,7 +325,7 @@ export function PDFSignatureFieldPlacer({
                         (f) => f.page === page,
                       );
                       return (
-                        <div key={page} className="text-xs text-zinc-600">
+                        <div key={page} className="text-xs text-neutral-600">
                           Page {page}: {fieldsOnPage.length} field
                           {fieldsOnPage.length !== 1 ? "s" : ""}
                         </div>

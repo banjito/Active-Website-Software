@@ -143,13 +143,13 @@ const DailyReport: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
           Daily Report
         </h2>
         <div className="flex items-center gap-2">
           <label
             htmlFor="daily-report-date"
-            className="text-sm text-zinc-600 dark:text-zinc-400"
+            className="text-sm text-neutral-600 dark:text-neutral-400"
           >
             Date
           </label>
@@ -158,14 +158,14 @@ const DailyReport: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
           />
         </div>
       </div>
 
-      <Card className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150">
+      <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-zinc-900 dark:text-white flex items-center gap-2">
+          <CardTitle className="text-base font-medium text-neutral-900 dark:text-white flex items-center gap-2">
             <Calendar className="h-4 w-4 text-[#f26722]" />
             Estimates due{" "}
             {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
@@ -175,7 +175,7 @@ const DailyReport: React.FC = () => {
               year: "numeric",
             })}
           </CardTitle>
-          <CardDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+          <CardDescription className="text-sm text-neutral-500 dark:text-neutral-400">
             {items.length === 0
               ? "No proposals due this day."
               : `${items.length} proposal${items.length === 1 ? "" : "s"} due · ${sentItems.length} sent, ${notSentItems.length} not yet sent`}
@@ -183,7 +183,7 @@ const DailyReport: React.FC = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
               <LoadingSpinner size="md" />
             </div>
           ) : error ? (
@@ -191,14 +191,14 @@ const DailyReport: React.FC = () => {
               {error}
             </div>
           ) : items.length === 0 ? (
-            <div className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
               No estimates due on this day.
             </div>
           ) : (
             <div className="space-y-4">
               {sentItems.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     <Send className="h-4 w-4 text-green-600 dark:text-green-400" />
                     Sent ({sentItems.length})
                   </div>
@@ -212,16 +212,16 @@ const DailyReport: React.FC = () => {
                               `/sales-dashboard/opportunities/${item.id}`,
                             )
                           }
-                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-600 bg-green-50/50 dark:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors group"
+                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-green-50/50 dark:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors group"
                         >
                           <div className="min-w-0 flex-1 flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+                            <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate group-hover:text-[#f26722]">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-[#f26722]">
                                 {item.title}
                               </p>
                               {item.customer_name && (
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                                   {maskCustomerName(item.customer_name)}
                                 </p>
                               )}
@@ -230,7 +230,7 @@ const DailyReport: React.FC = () => {
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {item.quoted_amount != null &&
                               Number(item.quoted_amount) > 0 && (
-                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                                   {formatCurrency(Number(item.quoted_amount))}
                                 </span>
                               )}
@@ -246,7 +246,7 @@ const DailyReport: React.FC = () => {
               )}
               {notSentItems.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     Not yet sent ({notSentItems.length})
                   </div>
@@ -260,16 +260,16 @@ const DailyReport: React.FC = () => {
                               `/sales-dashboard/opportunities/${item.id}`,
                             )
                           }
-                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-600 bg-amber-50/50 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors group"
+                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-amber-50/50 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors group"
                         >
                           <div className="min-w-0 flex-1 flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+                            <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate group-hover:text-[#f26722]">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-[#f26722]">
                                 {item.title}
                               </p>
                               {item.customer_name && (
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                                   {maskCustomerName(item.customer_name)}
                                 </p>
                               )}
@@ -278,7 +278,7 @@ const DailyReport: React.FC = () => {
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {item.quoted_amount != null &&
                               Number(item.quoted_amount) > 0 && (
-                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                                   {formatCurrency(Number(item.quoted_amount))}
                                 </span>
                               )}

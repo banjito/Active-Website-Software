@@ -136,7 +136,7 @@ export const PublicExitSurveyTake: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-[#f26722]" />
           <div className="flex justify-center py-6">
@@ -149,15 +149,15 @@ export const PublicExitSurveyTake: React.FC = () => {
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center gap-4">
               <AlertCircle className="h-12 w-12 text-amber-500" />
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Link invalid or expired
               </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 This survey link may have been used, expired, or is incorrect.
                 If you believe this is an error, please contact HR.
               </p>
@@ -170,15 +170,15 @@ export const PublicExitSurveyTake: React.FC = () => {
 
   if (alreadyCompleted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center gap-4">
               <CheckCircle className="h-12 w-12 text-green-500" />
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Already completed
               </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 You have already submitted this exit survey. Thank you for your
                 feedback.
               </p>
@@ -191,15 +191,15 @@ export const PublicExitSurveyTake: React.FC = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center gap-4">
               <CheckCircle className="h-12 w-12 text-green-500" />
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Thank you
               </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Your responses have been submitted. We appreciate your feedback.
               </p>
             </div>
@@ -212,7 +212,7 @@ export const PublicExitSurveyTake: React.FC = () => {
   if (!assignment) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 py-8 px-4">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -223,7 +223,7 @@ export const PublicExitSurveyTake: React.FC = () => {
               </CardTitle>
             </div>
             {assignment.survey_description && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                 {assignment.survey_description}
               </p>
             )}
@@ -236,12 +236,12 @@ export const PublicExitSurveyTake: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {(assignment.attached_documents?.length ?? 0) > 0 && (
-              <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
-                <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+              <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-4">
+                <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                   <FileText className="h-4 w-4 text-[#f26722]" />
                   Documents to review
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
                   You may open and review these documents before or while
                   completing the survey.
                 </p>
@@ -309,7 +309,7 @@ function QuestionField({
       <div>
         <label
           htmlFor={id}
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
         >
           {question.prompt}
           {required && <span className="text-red-500 ml-0.5">*</span>}
@@ -330,7 +330,7 @@ function QuestionField({
     const n = typeof value === "number" ? value : undefined;
     return (
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           {question.prompt}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -343,7 +343,7 @@ function QuestionField({
               className={`w-10 h-10 rounded-md border text-sm font-medium transition-colors ${
                 n === num
                   ? "bg-[#f26722] text-white border-[#f26722]"
-                  : "border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
               {num}
@@ -358,7 +358,7 @@ function QuestionField({
     const n = typeof value === "number" ? value : undefined;
     return (
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           {question.prompt}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -371,7 +371,7 @@ function QuestionField({
               className={`w-9 h-9 rounded border text-xs font-medium transition-colors ${
                 n === num
                   ? "bg-[#f26722] text-white border-[#f26722]"
-                  : "border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
               {num}
@@ -386,7 +386,7 @@ function QuestionField({
     const v = value as string | undefined;
     return (
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           {question.prompt}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -420,7 +420,7 @@ function QuestionField({
     const v = value as string | undefined;
     return (
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           {question.prompt}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -446,7 +446,7 @@ function QuestionField({
     <div>
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+        className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
       >
         {question.prompt}
         {required && <span className="text-red-500 ml-0.5">*</span>}

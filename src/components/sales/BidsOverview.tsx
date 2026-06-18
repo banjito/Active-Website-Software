@@ -294,7 +294,7 @@ const BidsOverview: React.FC = () => {
       case "decision":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/50 dark:text-white";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-white";
     }
   };
 
@@ -360,9 +360,9 @@ const BidsOverview: React.FC = () => {
       case "time_materials":
         return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400";
       case "other":
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400";
     }
   };
 
@@ -527,7 +527,7 @@ const BidsOverview: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             Bids Overview
           </h2>
         </div>
@@ -535,12 +535,12 @@ const BidsOverview: React.FC = () => {
           {[...Array(4)].map((_, i) => (
             <Card
               key={i}
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150"
+              className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150"
             >
               <CardContent className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-zinc-200 dark:bg-dark-150 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-zinc-200 dark:bg-dark-150 rounded w-1/2"></div>
+                  <div className="h-4 bg-neutral-200 dark:bg-dark-150 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-neutral-200 dark:bg-dark-150 rounded w-1/2"></div>
                 </div>
               </CardContent>
             </Card>
@@ -554,13 +554,13 @@ const BidsOverview: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             Bids Overview
           </h2>
         </div>
-        <Card className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150">
+        <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
           <CardContent className="p-6">
-            <div className="text-center text-zinc-500 dark:text-white">
+            <div className="text-center text-neutral-500 dark:text-white">
               {error}
             </div>
           </CardContent>
@@ -572,12 +572,12 @@ const BidsOverview: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
           Weekly Bids
         </h2>
-        <div className="text-sm text-zinc-600 dark:text-white">
+        <div className="text-sm text-neutral-600 dark:text-white">
           (Total all time:{" "}
-          <span className="font-semibold text-zinc-900 dark:text-white">
+          <span className="font-semibold text-neutral-900 dark:text-white">
             {formatCurrency(allTimeTotal)}
           </span>
           )
@@ -587,14 +587,14 @@ const BidsOverview: React.FC = () => {
       {/* Weekly Bids Summary (Sunday–Saturday) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* This Week Card */}
-        <Card className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150">
+        <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <CardTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
                   This Week
                 </CardTitle>
-                <CardDescription className="text-sm text-zinc-500 dark:text-white">
+                <CardDescription className="text-sm text-neutral-500 dark:text-white">
                   {thisWeekRange}
                 </CardDescription>
               </div>
@@ -608,10 +608,10 @@ const BidsOverview: React.FC = () => {
                     <Calendar className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-white">
+                    <p className="text-sm text-neutral-500 dark:text-white">
                       Total Bids
                     </p>
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {data.thisWeekBids.length}
                     </p>
                   </div>
@@ -623,10 +623,10 @@ const BidsOverview: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-green-500 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-white">
+                    <p className="text-sm text-neutral-500 dark:text-white">
                       Total Value
                     </p>
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {formatCurrency(
                         data.thisWeekBids.reduce(
                           (sum, bid) => sum + bid.expectedValue,
@@ -639,8 +639,8 @@ const BidsOverview: React.FC = () => {
               </div>
               {/* Category Breakdown */}
               {data.thisWeekBids.length > 0 && (
-                <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3">
+                  <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
                     BY CATEGORY
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -649,14 +649,14 @@ const BidsOverview: React.FC = () => {
                         total > 0 && (
                           <div
                             key={type}
-                            className="flex items-center justify-between p-2 rounded bg-zinc-50 dark:bg-dark-200"
+                            className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-dark-200"
                           >
                             <span
                               className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(type)}`}
                             >
                               {formatOpportunityType(type)}
                             </span>
-                            <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                            <span className="text-sm font-medium text-neutral-900 dark:text-white">
                               {formatCurrency(total)}
                             </span>
                           </div>
@@ -666,7 +666,7 @@ const BidsOverview: React.FC = () => {
                 </div>
               )}
               {/* List this week's bids */}
-              <div className="max-h-64 overflow-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+              <div className="max-h-64 overflow-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                 {data.thisWeekBids.map((b) => (
                   <div
                     key={b.id}
@@ -674,7 +674,7 @@ const BidsOverview: React.FC = () => {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                           {b.title}
                         </p>
                         <span
@@ -687,17 +687,17 @@ const BidsOverview: React.FC = () => {
                           }
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-white">
+                      <p className="text-xs text-neutral-500 dark:text-white">
                         {new Date(b.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-white ml-2">
+                    <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
                       {formatCurrency(b.expectedValue)}
                     </div>
                   </div>
                 ))}
                 {data.thisWeekBids.length === 0 && (
-                  <div className="py-4 text-sm text-zinc-500 dark:text-white text-center">
+                  <div className="py-4 text-sm text-neutral-500 dark:text-white text-center">
                     No bids this week
                   </div>
                 )}
@@ -707,14 +707,14 @@ const BidsOverview: React.FC = () => {
         </Card>
 
         {/* Last Week Card */}
-        <Card className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150">
+        <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <CardTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Last Week
                 </CardTitle>
-                <CardDescription className="text-sm text-zinc-500 dark:text-white">
+                <CardDescription className="text-sm text-neutral-500 dark:text-white">
                   {lastWeekRange}
                 </CardDescription>
               </div>
@@ -728,10 +728,10 @@ const BidsOverview: React.FC = () => {
                     <Calendar className="h-4 w-4 text-purple-500 dark:text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-white">
+                    <p className="text-sm text-neutral-500 dark:text-white">
                       Total Bids
                     </p>
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {data.lastWeekBids.length}
                     </p>
                   </div>
@@ -743,10 +743,10 @@ const BidsOverview: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-orange-500 dark:text-orange-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-white">
+                    <p className="text-sm text-neutral-500 dark:text-white">
                       Total Value
                     </p>
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {formatCurrency(
                         data.lastWeekBids.reduce(
                           (sum, bid) => sum + bid.expectedValue,
@@ -759,8 +759,8 @@ const BidsOverview: React.FC = () => {
               </div>
               {/* Category Breakdown */}
               {data.lastWeekBids.length > 0 && (
-                <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3">
+                  <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
                     BY CATEGORY
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -769,14 +769,14 @@ const BidsOverview: React.FC = () => {
                         total > 0 && (
                           <div
                             key={type}
-                            className="flex items-center justify-between p-2 rounded bg-zinc-50 dark:bg-dark-200"
+                            className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-dark-200"
                           >
                             <span
                               className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(type)}`}
                             >
                               {formatOpportunityType(type)}
                             </span>
-                            <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                            <span className="text-sm font-medium text-neutral-900 dark:text-white">
                               {formatCurrency(total)}
                             </span>
                           </div>
@@ -786,7 +786,7 @@ const BidsOverview: React.FC = () => {
                 </div>
               )}
               {/* List last week's bids */}
-              <div className="max-h-64 overflow-auto divide-y divide-zinc-200 dark:divide-zinc-700">
+              <div className="max-h-64 overflow-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                 {data.lastWeekBids.map((b) => (
                   <div
                     key={b.id}
@@ -794,7 +794,7 @@ const BidsOverview: React.FC = () => {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                           {b.title}
                         </p>
                         <span
@@ -807,17 +807,17 @@ const BidsOverview: React.FC = () => {
                           }
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-white">
+                      <p className="text-xs text-neutral-500 dark:text-white">
                         {new Date(b.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-white ml-2">
+                    <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
                       {formatCurrency(b.expectedValue)}
                     </div>
                   </div>
                 ))}
                 {data.lastWeekBids.length === 0 && (
-                  <div className="py-4 text-sm text-zinc-500 dark:text-white text-center">
+                  <div className="py-4 text-sm text-neutral-500 dark:text-white text-center">
                     No bids last week
                   </div>
                 )}
@@ -837,7 +837,7 @@ const BidsOverview: React.FC = () => {
               setShowAllWeeks((v) => !v);
             }
           }}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-100 dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-white hover:bg-zinc-200 dark:hover:bg-dark-200"
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-neutral-100 dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-white hover:bg-neutral-200 dark:hover:bg-dark-200"
         >
           {showAllWeeks ? (
             "Hide History"
@@ -851,14 +851,14 @@ const BidsOverview: React.FC = () => {
 
       {/* All-time weekly groups */}
       {showAllWeeks && (
-        <Card className="border border-zinc-200 dark:border-zinc-700 dark:bg-dark-150">
+        <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <CardTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
                   All Bids History (Weekly)
                 </CardTitle>
-                <CardDescription className="text-sm text-zinc-500 dark:text-white">
+                <CardDescription className="text-sm text-neutral-500 dark:text-white">
                   Every opportunity ever, grouped Sunday–Saturday, with NET
                   30/quoted totals
                 </CardDescription>
@@ -867,7 +867,7 @@ const BidsOverview: React.FC = () => {
                 <button
                   onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
                   disabled={historyPage === 0}
-                  className={`px-2 py-1 text-sm rounded-md border border-zinc-300 dark:border-zinc-600 ${historyPage === 0 ? "opacity-50 cursor-not-allowed" : "bg-zinc-100 dark:bg-dark-150 hover:bg-zinc-200 dark:hover:bg-dark-200"} text-zinc-800 dark:text-white`}
+                  className={`px-2 py-1 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 ${historyPage === 0 ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
                 >
                   Prev 4 weeks
                 </button>
@@ -878,7 +878,7 @@ const BidsOverview: React.FC = () => {
                     )
                   }
                   disabled={(historyPage + 1) * weeksPerPage >= allWeeks.length}
-                  className={`px-2 py-1 text-sm rounded-md border border-zinc-300 dark:border-zinc-600 ${(historyPage + 1) * weeksPerPage >= allWeeks.length ? "opacity-50 cursor-not-allowed" : "bg-zinc-100 dark:bg-dark-150 hover:bg-zinc-200 dark:hover:bg-dark-200"} text-zinc-800 dark:text-white`}
+                  className={`px-2 py-1 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 ${(historyPage + 1) * weeksPerPage >= allWeeks.length ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
                 >
                   Next 4 weeks
                 </button>
@@ -895,13 +895,13 @@ const BidsOverview: React.FC = () => {
                 .map((group) => (
                   <div
                     key={group.range}
-                    className="border-t border-zinc-200 dark:border-zinc-700 pt-4"
+                    className="border-t border-neutral-200 dark:border-neutral-700 pt-4"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm text-zinc-600 dark:text-white">
+                      <div className="text-sm text-neutral-600 dark:text-white">
                         {group.range}
                       </div>
-                      <div className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <div className="text-sm font-semibold text-neutral-900 dark:text-white">
                         {formatCurrency(group.totalValue)}
                       </div>
                     </div>
@@ -924,11 +924,11 @@ const BidsOverview: React.FC = () => {
                       {group.items.map((b) => (
                         <div
                           key={b.id}
-                          className="flex items-center justify-between p-2 rounded border border-zinc-200 dark:border-zinc-700"
+                          className="flex items-center justify-between p-2 rounded border border-neutral-200 dark:border-neutral-700"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                                 {b.title}
                               </p>
                               <span
@@ -941,11 +941,11 @@ const BidsOverview: React.FC = () => {
                                 }
                               </span>
                             </div>
-                            <p className="text-xs text-zinc-500 dark:text-white">
+                            <p className="text-xs text-neutral-500 dark:text-white">
                               {new Date(b.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <div className="text-sm font-semibold text-zinc-900 dark:text-white ml-2">
+                          <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
                             {formatCurrency(b.expectedValue)}
                           </div>
                         </div>
@@ -954,7 +954,7 @@ const BidsOverview: React.FC = () => {
                   </div>
                 ))}
               {!allWeeks.length && (
-                <div className="text-sm text-zinc-500 dark:text-white">
+                <div className="text-sm text-neutral-500 dark:text-white">
                   No history found.
                 </div>
               )}

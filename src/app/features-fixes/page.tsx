@@ -580,13 +580,13 @@ const FeaturesFixesPage: React.FC = () => {
     urgent: "text-red-600 dark:text-red-400",
     high: "text-orange-600 dark:text-orange-400",
     normal: "text-blue-600 dark:text-blue-400",
-    low: "text-zinc-500 dark:text-zinc-400",
+    low: "text-neutral-500 dark:text-neutral-400",
   };
   const PRIORITY_BG: Record<Issue["priority"], string> = {
     urgent: "bg-red-50 dark:bg-red-900/20",
     high: "bg-orange-50 dark:bg-orange-900/20",
     normal: "bg-blue-50 dark:bg-blue-900/20",
-    low: "bg-zinc-50 dark:bg-zinc-800/40",
+    low: "bg-neutral-50 dark:bg-neutral-800/40",
   };
 
   const stats = useMemo(() => {
@@ -832,13 +832,13 @@ const FeaturesFixesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
-      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-zinc-200 dark:border-dark-200">
+      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-neutral-200 dark:border-dark-200">
         <HeaderBar />
       </div>
       <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
           <div className="flex justify-between items-center mb-2">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Features & Fixes
             </h1>
           </div>
@@ -847,15 +847,15 @@ const FeaturesFixesPage: React.FC = () => {
           {!loading && issues.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
               {/* Top Contributors */}
-              <div className="bg-white dark:bg-dark-150 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-700 p-5">
+              <div className="bg-white dark:bg-dark-150 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-[#f26722]" />
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wide">
                       Top Contributors
                     </h3>
                   </div>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
                     {stats.topReporters.length} people
                   </span>
                 </div>
@@ -877,11 +877,11 @@ const FeaturesFixesPage: React.FC = () => {
                     return (
                       <div key={r.id}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
                             {medal ? (
                               <span className="text-base">{medal}</span>
                             ) : (
-                              <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 w-5 text-center">
+                              <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 w-5 text-center">
                                 {r.rank}
                               </span>
                             )}
@@ -891,7 +891,7 @@ const FeaturesFixesPage: React.FC = () => {
                             {r.count}
                           </span>
                         </div>
-                        <div className="w-full bg-zinc-100 dark:bg-dark-200 rounded-full h-1.5">
+                        <div className="w-full bg-neutral-100 dark:bg-dark-200 rounded-full h-1.5">
                           <div
                             className="h-1.5 rounded-full transition-all"
                             style={{
@@ -911,7 +911,7 @@ const FeaturesFixesPage: React.FC = () => {
                     );
                   })}
                   {stats.topReporters.length === 0 && (
-                    <p className="text-sm text-zinc-400 dark:text-zinc-500">
+                    <p className="text-sm text-neutral-400 dark:text-neutral-500">
                       No reports yet
                     </p>
                   )}
@@ -919,11 +919,11 @@ const FeaturesFixesPage: React.FC = () => {
               </div>
 
               {/* Avg Times by Priority */}
-              <div className="lg:col-span-2 bg-white dark:bg-dark-150 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-700 p-5">
+              <div className="lg:col-span-2 bg-white dark:bg-dark-150 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-[#f26722]" />
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wide">
                       Resolution Times by Priority
                     </h3>
                   </div>
@@ -931,16 +931,16 @@ const FeaturesFixesPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                      <tr className="border-b border-neutral-200 dark:border-neutral-700">
                         <th
                           rowSpan={2}
-                          className="text-left py-2 px-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase align-bottom"
+                          className="text-left py-2 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase align-bottom"
                         >
                           Priority
                         </th>
                         <th
                           rowSpan={2}
-                          className="text-center py-2 px-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase align-bottom"
+                          className="text-center py-2 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase align-bottom"
                         >
                           Count
                         </th>
@@ -961,17 +961,17 @@ const FeaturesFixesPage: React.FC = () => {
                           </span>
                         </th>
                       </tr>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="text-center py-1.5 px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                        <th className="text-center py-1.5 px-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Response
                         </th>
-                        <th className="text-center py-1.5 px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        <th className="text-center py-1.5 px-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Fix Time
                         </th>
-                        <th className="text-center py-1.5 px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        <th className="text-center py-1.5 px-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Response
                         </th>
-                        <th className="text-center py-1.5 px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        <th className="text-center py-1.5 px-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Impl Time
                         </th>
                       </tr>
@@ -980,7 +980,7 @@ const FeaturesFixesPage: React.FC = () => {
                       {stats.priorityBreakdown.map((row) => (
                         <tr
                           key={row.priority}
-                          className={`border-b border-zinc-100 dark:border-zinc-800 ${PRIORITY_BG[row.priority]}`}
+                          className={`border-b border-neutral-100 dark:border-neutral-800 ${PRIORITY_BG[row.priority]}`}
                         >
                           <td
                             className={`py-2.5 px-3 font-semibold ${PRIORITY_COLORS[row.priority]}`}
@@ -999,16 +999,16 @@ const FeaturesFixesPage: React.FC = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="py-2.5 px-2 text-center font-medium text-zinc-700 dark:text-zinc-300">
+                          <td className="py-2.5 px-2 text-center font-medium text-neutral-700 dark:text-neutral-300">
                             {row.issueResponse}
                           </td>
-                          <td className="py-2.5 px-2 text-center font-medium text-zinc-700 dark:text-zinc-300">
+                          <td className="py-2.5 px-2 text-center font-medium text-neutral-700 dark:text-neutral-300">
                             {row.avgFixTime}
                           </td>
-                          <td className="py-2.5 px-2 text-center font-medium text-zinc-700 dark:text-zinc-300">
+                          <td className="py-2.5 px-2 text-center font-medium text-neutral-700 dark:text-neutral-300">
                             {row.featureResponse}
                           </td>
-                          <td className="py-2.5 px-2 text-center font-medium text-zinc-700 dark:text-zinc-300">
+                          <td className="py-2.5 px-2 text-center font-medium text-neutral-700 dark:text-neutral-300">
                             {row.avgFeatureTime}
                           </td>
                         </tr>
@@ -1017,13 +1017,13 @@ const FeaturesFixesPage: React.FC = () => {
                   </table>
                 </div>
                 {/* Summary row */}
-                <div className="flex items-center gap-6 mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                <div className="flex items-center gap-6 mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                       <Bug className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         Open Issues
                       </p>
                       <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
@@ -1036,7 +1036,7 @@ const FeaturesFixesPage: React.FC = () => {
                       <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         Open Features
                       </p>
                       <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -1049,7 +1049,7 @@ const FeaturesFixesPage: React.FC = () => {
                       <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         Resolved
                       </p>
                       <p className="text-lg font-bold text-green-600 dark:text-green-400">
@@ -1058,14 +1058,14 @@ const FeaturesFixesPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-dark-200 flex items-center justify-center">
-                      <BarChart3 className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                    <div className="h-8 w-8 rounded-lg bg-neutral-100 dark:bg-dark-200 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         Total All Time
                       </p>
-                      <p className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
+                      <p className="text-lg font-bold text-neutral-700 dark:text-neutral-300">
                         {issues.length}
                       </p>
                     </div>
@@ -1116,41 +1116,41 @@ const FeaturesFixesPage: React.FC = () => {
             </div>
           </div>
 
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 p-4">
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-4">
             {loading ? (
               <div className="flex min-h-[240px] items-center justify-center">
                 <LoadingSpinner size="md" />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-zinc-500 dark:text-zinc-400">
+              <div className="text-neutral-500 dark:text-neutral-400">
                 No issues found.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Type
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Title
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Status
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400 min-w-[7.5rem]">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400 min-w-[7.5rem]">
                         Priority
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Date Added
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Reporter
                       </th>
                       {hasIssueOpsAccess && (
                         <th
-                          className="text-center py-3 px-2 text-sm font-medium text-zinc-500 dark:text-zinc-400"
+                          className="text-center py-3 px-2 text-sm font-medium text-neutral-500 dark:text-neutral-400"
                           title="Exclude from stats"
                         >
                           Stats
@@ -1164,7 +1164,7 @@ const FeaturesFixesPage: React.FC = () => {
                       return (
                         <tr
                           key={issue.id}
-                          className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-dark-100 ${hasIssueOpsAccess && isExcluded ? "opacity-50" : ""}`}
+                          className={`border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-dark-100 ${hasIssueOpsAccess && isExcluded ? "opacity-50" : ""}`}
                         >
                           <td className="py-3 px-4">
                             <span
@@ -1187,14 +1187,14 @@ const FeaturesFixesPage: React.FC = () => {
                               <div className="font-medium text-[#f26722] hover:text-[#e55611] cursor-pointer">
                                 {issue.title}
                               </div>
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[600px]">
+                              <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-[600px]">
                                 {issue.description}
                               </div>
                             </button>
                           </td>
                           <td className="py-3 px-4">
                             <span
-                              className={`text-sm ${issue.status === "paused" ? "text-amber-600 dark:text-amber-400 font-medium" : "text-zinc-700 dark:text-zinc-300"}`}
+                              className={`text-sm ${issue.status === "paused" ? "text-amber-600 dark:text-amber-400 font-medium" : "text-neutral-700 dark:text-neutral-300"}`}
                             >
                               {issue.status === "paused" && "⏸ "}
                               {issue.status}
@@ -1218,18 +1218,18 @@ const FeaturesFixesPage: React.FC = () => {
                                 <option value="urgent">Urgent</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-zinc-700 dark:text-zinc-300 inline-block min-w-[5rem]">
+                              <span className="text-sm text-neutral-700 dark:text-neutral-300 inline-block min-w-[5rem]">
                                 {PRIORITY_LABELS[issue.priority]}
                               </span>
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="text-sm text-neutral-700 dark:text-neutral-300">
                               {new Date(issue.created_at).toLocaleDateString()}
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="text-sm text-neutral-700 dark:text-neutral-300">
                               {getReporterName(issue.reporter_id)}
                             </span>
                           </td>
@@ -1243,7 +1243,7 @@ const FeaturesFixesPage: React.FC = () => {
                                 className={`p-1.5 rounded-md transition-colors ${
                                   isExcluded
                                     ? "text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                    : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                 }`}
                                 title={
                                   isExcluded
@@ -1269,8 +1269,8 @@ const FeaturesFixesPage: React.FC = () => {
 
             {/* Pagination */}
             {!loading && filtered.length > ITEMS_PER_PAGE && (
-              <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-700 mt-4">
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700 mt-4">
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
                   Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
                   {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of{" "}
                   {filtered.length}
@@ -1279,11 +1279,11 @@ const FeaturesFixesPage: React.FC = () => {
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
@@ -1291,7 +1291,7 @@ const FeaturesFixesPage: React.FC = () => {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -1312,7 +1312,7 @@ const FeaturesFixesPage: React.FC = () => {
               {/* Modal Content */}
               <div className="relative bg-white dark:bg-dark-150 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto z-50">
                 {/* Header */}
-                <div className="sticky top-0 bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700 px-6 py-4">
+                <div className="sticky top-0 bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 px-6 py-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 pr-4">
                       {isEditMode ? (
@@ -1320,11 +1320,11 @@ const FeaturesFixesPage: React.FC = () => {
                           type="text"
                           value={editedTitle}
                           onChange={(e) => setEditedTitle(e.target.value)}
-                          className="text-2xl font-bold text-zinc-900 dark:text-white w-full bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded px-2 py-1"
+                          className="text-2xl font-bold text-neutral-900 dark:text-white w-full bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded px-2 py-1"
                           placeholder="Issue title"
                         />
                       ) : (
-                        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
                           {selectedIssue.title}
                         </h2>
                       )}
@@ -1349,7 +1349,7 @@ const FeaturesFixesPage: React.FC = () => {
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1 text-sm bg-zinc-500 hover:bg-zinc-600 text-white rounded-md"
+                            className="px-3 py-1 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-md"
                           >
                             Cancel
                           </button>
@@ -1357,7 +1357,7 @@ const FeaturesFixesPage: React.FC = () => {
                       )}
                       <button
                         onClick={closeModal}
-                        className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-2xl font-bold"
+                        className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold"
                       >
                         ×
                       </button>
@@ -1365,7 +1365,7 @@ const FeaturesFixesPage: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Type:
                       </span>
                       {isEditMode ? (
@@ -1382,7 +1382,7 @@ const FeaturesFixesPage: React.FC = () => {
                           </option>
                         </select>
                       ) : (
-                        <div className="text-zinc-900 dark:text-white mt-1">
+                        <div className="text-neutral-900 dark:text-white mt-1">
                           <span
                             className={`text-xs font-medium px-2 py-1 rounded ${
                               selectedIssue.type === "feature_request"
@@ -1398,15 +1398,15 @@ const FeaturesFixesPage: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Status:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {selectedIssue.status}
                       </div>
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Priority:
                       </span>
                       {isEditMode ? (
@@ -1425,24 +1425,24 @@ const FeaturesFixesPage: React.FC = () => {
                           <option value="urgent">Urgent</option>
                         </select>
                       ) : (
-                        <div className="text-zinc-900 dark:text-white mt-1">
+                        <div className="text-neutral-900 dark:text-white mt-1">
                           {selectedIssue.priority}
                         </div>
                       )}
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Reporter:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {getReporterName(selectedIssue.reporter_id)}
                       </div>
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Duration:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {formatDuration(
                           selectedIssue.created_at,
                           selectedIssue.resolved_at,
@@ -1452,7 +1452,7 @@ const FeaturesFixesPage: React.FC = () => {
                     </div>
                     {selectedIssue.total_paused_ms > 0 && (
                       <div>
-                        <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                        <span className="font-medium text-neutral-500 dark:text-neutral-400">
                           Time Paused:
                         </span>
                         <div className="text-amber-600 dark:text-amber-400 mt-1">
@@ -1463,28 +1463,28 @@ const FeaturesFixesPage: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-3">
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Reported:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {new Date(selectedIssue.created_at).toLocaleString()}
                       </div>
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Started:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {selectedIssue.started_at
                           ? new Date(selectedIssue.started_at).toLocaleString()
                           : "-"}
                       </div>
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="font-medium text-neutral-500 dark:text-neutral-400">
                         Resolved:
                       </span>
-                      <div className="text-zinc-900 dark:text-white mt-1">
+                      <div className="text-neutral-900 dark:text-white mt-1">
                         {selectedIssue.resolved_at
                           ? new Date(selectedIssue.resolved_at).toLocaleString()
                           : "-"}
@@ -1498,7 +1498,7 @@ const FeaturesFixesPage: React.FC = () => {
                   {/* Description */}
                   {(selectedIssue.description || isEditMode) && (
                     <div>
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                         Description
                       </h3>
                       {isEditMode ? (
@@ -1506,11 +1506,11 @@ const FeaturesFixesPage: React.FC = () => {
                           value={editedDescription}
                           onChange={(e) => setEditedDescription(e.target.value)}
                           rows={6}
-                          className="form-textarea w-full text-zinc-900 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded px-3 py-2"
+                          className="form-textarea w-full text-neutral-900 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded px-3 py-2"
                           placeholder="Describe the issue..."
                         />
                       ) : (
-                        <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                        <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
                           {selectedIssue.description}
                         </p>
                       )}
@@ -1519,7 +1519,7 @@ const FeaturesFixesPage: React.FC = () => {
 
                   {/* Interested Parties */}
                   <div>
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                       Interested Parties
                     </h3>
                     {isEditMode ? (
@@ -1533,11 +1533,11 @@ const FeaturesFixesPage: React.FC = () => {
                               setShowIpDropdown(true);
                             }}
                             onFocus={() => setShowIpDropdown(true)}
-                            className="form-input w-full text-zinc-900 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded px-3 py-2"
+                            className="form-input w-full text-neutral-900 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded px-3 py-2"
                             placeholder="Search by name to add..."
                           />
                           {showIpDropdown && ipSearch.trim() && (
-                            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-40 overflow-y-auto">
                               {allUsers
                                 .filter(
                                   (u) =>
@@ -1559,7 +1559,7 @@ const FeaturesFixesPage: React.FC = () => {
                                       setIpSearch("");
                                       setShowIpDropdown(false);
                                     }}
-                                    className="block w-full text-left px-3 py-2 text-sm text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-dark-100"
+                                    className="block w-full text-left px-3 py-2 text-sm text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-dark-100"
                                   >
                                     {u.name}
                                   </button>
@@ -1571,7 +1571,7 @@ const FeaturesFixesPage: React.FC = () => {
                                     .toLowerCase()
                                     .includes(ipSearch.toLowerCase()),
                               ).length === 0 && (
-                                <div className="px-3 py-2 text-xs text-zinc-500">
+                                <div className="px-3 py-2 text-xs text-neutral-500">
                                   No results
                                 </div>
                               )}
@@ -1594,7 +1594,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <span
                                   key={uid}
-                                  className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-dark-100 text-zinc-800 dark:text-zinc-200 text-sm px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-full"
                                 >
                                   {u?.name || "User"}
                                   <button
@@ -1604,7 +1604,7 @@ const FeaturesFixesPage: React.FC = () => {
                                         prev.filter((id) => id !== uid),
                                       )
                                     }
-                                    className="text-zinc-500 hover:text-red-500 ml-0.5"
+                                    className="text-neutral-500 hover:text-red-500 ml-0.5"
                                   >
                                     ✕
                                   </button>
@@ -1635,7 +1635,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <span
                                   key={uid}
-                                  className="inline-flex items-center bg-zinc-100 dark:bg-dark-100 text-zinc-800 dark:text-zinc-200 text-sm px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-full"
                                 >
                                   {u?.name || "User"}
                                 </span>
@@ -1643,7 +1643,7 @@ const FeaturesFixesPage: React.FC = () => {
                             })}
                           </div>
                         ) : (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
                             None
                           </p>
                         )}
@@ -1654,7 +1654,7 @@ const FeaturesFixesPage: React.FC = () => {
                   {/* Page URL */}
                   {selectedIssue.page_url && (
                     <div>
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                         Reported From
                       </h3>
                       <a
@@ -1670,7 +1670,7 @@ const FeaturesFixesPage: React.FC = () => {
                   {attachmentsByIssue[selectedIssue.id] &&
                     attachmentsByIssue[selectedIssue.id].length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
+                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
                           Attachments
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1682,7 +1682,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <div
                                   key={attachment.id}
-                                  className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden"
+                                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden"
                                 >
                                   {attachment.file_url && isImage ? (
                                     <a
@@ -1694,7 +1694,7 @@ const FeaturesFixesPage: React.FC = () => {
                                       <img
                                         src={attachment.file_url}
                                         alt="Issue attachment"
-                                        className="w-full h-48 object-contain bg-zinc-50 dark:bg-dark-100 hover:opacity-90 transition-opacity"
+                                        className="w-full h-48 object-contain bg-neutral-50 dark:bg-dark-100 hover:opacity-90 transition-opacity"
                                         onError={(e) => {
                                           const target =
                                             e.target as HTMLImageElement;
@@ -1702,9 +1702,9 @@ const FeaturesFixesPage: React.FC = () => {
                                           const parent = target.parentElement;
                                           if (parent) {
                                             parent.innerHTML = `
-                                        <div class="w-full h-48 bg-zinc-100 dark:bg-dark-100 flex items-center justify-center">
+                                        <div class="w-full h-48 bg-neutral-100 dark:bg-dark-100 flex items-center justify-center">
                                           <div class="text-center p-4">
-                                            <p class="text-zinc-500 dark:text-zinc-400 text-sm">Image failed to load</p>
+                                            <p class="text-neutral-500 dark:text-neutral-400 text-sm">Image failed to load</p>
                                             <a href="${attachment.file_url}" target="_blank" class="text-[#f26722] hover:text-[#e55611] text-xs underline mt-2 block">Open directly</a>
                                           </div>
                                         </div>
@@ -1718,11 +1718,11 @@ const FeaturesFixesPage: React.FC = () => {
                                       href={attachment.file_url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="w-full h-48 bg-zinc-100 dark:bg-dark-100 flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-dark-200 transition-colors"
+                                      className="w-full h-48 bg-neutral-100 dark:bg-dark-100 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-dark-200 transition-colors"
                                     >
                                       <div className="text-center p-4">
                                         <svg
-                                          className="w-12 h-12 mx-auto text-zinc-400 dark:text-zinc-500 mb-2"
+                                          className="w-12 h-12 mx-auto text-neutral-400 dark:text-neutral-500 mb-2"
                                           fill="none"
                                           stroke="currentColor"
                                           viewBox="0 0 24 24"
@@ -1734,7 +1734,7 @@ const FeaturesFixesPage: React.FC = () => {
                                             d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
                                           />
                                         </svg>
-                                        <p className="text-zinc-700 dark:text-zinc-300 text-sm font-medium">
+                                        <p className="text-neutral-700 dark:text-neutral-300 text-sm font-medium">
                                           File Attachment
                                         </p>
                                         <p className="text-[#f26722] hover:text-[#e55611] text-xs underline mt-1">
@@ -1743,15 +1743,15 @@ const FeaturesFixesPage: React.FC = () => {
                                       </div>
                                     </a>
                                   ) : (
-                                    <div className="w-full h-48 bg-zinc-100 dark:bg-dark-100 flex items-center justify-center">
-                                      <span className="text-zinc-500 dark:text-zinc-400">
+                                    <div className="w-full h-48 bg-neutral-100 dark:bg-dark-100 flex items-center justify-center">
+                                      <span className="text-neutral-500 dark:text-neutral-400">
                                         No preview available
                                       </span>
                                     </div>
                                   )}
-                                  <div className="p-3 bg-zinc-50 dark:bg-dark-200">
+                                  <div className="p-3 bg-neutral-50 dark:bg-dark-200">
                                     <p
-                                      className="text-xs text-zinc-500 dark:text-zinc-400 truncate"
+                                      className="text-xs text-neutral-500 dark:text-neutral-400 truncate"
                                       title={attachment.file_path}
                                     >
                                       {attachment.file_path.split("/").pop()}
@@ -1792,15 +1792,15 @@ const FeaturesFixesPage: React.FC = () => {
 
                   {/* Timeline */}
                   <div>
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
                       Timeline
                     </h3>
                     <div className="space-y-3">
                       <div className="text-sm">
-                        <span className="font-medium text-zinc-900 dark:text-white">
+                        <span className="font-medium text-neutral-900 dark:text-white">
                           Created
                         </span>
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-neutral-500 dark:text-neutral-400">
                           {" "}
                           —{" "}
                           {new Date(selectedIssue.created_at).toLocaleString()}
@@ -1808,17 +1808,17 @@ const FeaturesFixesPage: React.FC = () => {
                       </div>
                       {selectedIssue.started_at && (
                         <div className="text-sm">
-                          <span className="font-medium text-zinc-900 dark:text-white">
+                          <span className="font-medium text-neutral-900 dark:text-white">
                             Started
                           </span>
-                          <span className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-neutral-500 dark:text-neutral-400">
                             {" "}
                             —{" "}
                             {new Date(
                               selectedIssue.started_at,
                             ).toLocaleString()}
                           </span>
-                          <span className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-neutral-500 dark:text-neutral-400">
                             {" "}
                             (time to start:{" "}
                             {formatDuration(
@@ -1836,7 +1836,7 @@ const FeaturesFixesPage: React.FC = () => {
                             <span className="font-medium text-amber-600 dark:text-amber-400">
                               ⏸ Paused
                             </span>
-                            <span className="text-zinc-500 dark:text-zinc-400">
+                            <span className="text-neutral-500 dark:text-neutral-400">
                               {" "}
                               —{" "}
                               {new Date(
@@ -1858,17 +1858,17 @@ const FeaturesFixesPage: React.FC = () => {
                       {updatesByIssue[selectedIssue.id] &&
                         updatesByIssue[selectedIssue.id].map((update) => (
                           <div key={update.id} className="text-sm">
-                            <span className="font-medium text-zinc-900 dark:text-white">
+                            <span className="font-medium text-neutral-900 dark:text-white">
                               {update.new_status
                                 ? `Status → ${update.new_status}`
                                 : "Note"}
                             </span>
-                            <span className="text-zinc-500 dark:text-zinc-400">
+                            <span className="text-neutral-500 dark:text-neutral-400">
                               {" "}
                               — {new Date(update.created_at).toLocaleString()}
                             </span>
                             {update.note && (
-                              <div className="mt-1 text-zinc-700 dark:text-zinc-300 ml-4">
+                              <div className="mt-1 text-neutral-700 dark:text-neutral-300 ml-4">
                                 {update.note}
                               </div>
                             )}
@@ -1876,10 +1876,10 @@ const FeaturesFixesPage: React.FC = () => {
                         ))}
                       {selectedIssue.resolved_at && (
                         <div className="text-sm">
-                          <span className="font-medium text-zinc-900 dark:text-white">
+                          <span className="font-medium text-neutral-900 dark:text-white">
                             Resolved
                           </span>
-                          <span className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-neutral-500 dark:text-neutral-400">
                             {" "}
                             —{" "}
                             {new Date(
@@ -1888,7 +1888,7 @@ const FeaturesFixesPage: React.FC = () => {
                           </span>
                           {selectedIssue.started_at ? (
                             <>
-                              <span className="text-zinc-500 dark:text-zinc-400">
+                              <span className="text-neutral-500 dark:text-neutral-400">
                                 {" "}
                                 (active work time:{" "}
                                 {formatDuration(
@@ -1898,7 +1898,7 @@ const FeaturesFixesPage: React.FC = () => {
                                 )}
                                 )
                               </span>
-                              <div className="mt-1 text-zinc-500 dark:text-zinc-400 ml-4">
+                              <div className="mt-1 text-neutral-500 dark:text-neutral-400 ml-4">
                                 Total calendar time:{" "}
                                 {formatDuration(
                                   selectedIssue.created_at,
@@ -1918,7 +1918,7 @@ const FeaturesFixesPage: React.FC = () => {
                               </div>
                             </>
                           ) : (
-                            <span className="text-zinc-500 dark:text-zinc-400">
+                            <span className="text-neutral-500 dark:text-neutral-400">
                               {" "}
                               (total time:{" "}
                               {formatDuration(
@@ -1936,7 +1936,7 @@ const FeaturesFixesPage: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 bg-zinc-50 dark:bg-dark-100 border-t border-zinc-200 dark:border-zinc-700 px-6 py-4 flex justify-between items-center">
+                <div className="sticky bottom-0 bg-neutral-50 dark:bg-dark-100 border-t border-neutral-200 dark:border-neutral-700 px-6 py-4 flex justify-between items-center">
                   <div className="flex gap-2">
                     {hasIssueOpsAccess && selectedIssue.status === "open" && (
                       <button
@@ -1999,7 +1999,7 @@ const FeaturesFixesPage: React.FC = () => {
                     )}
                     <button
                       onClick={closeModal}
-                      className="px-4 py-2 bg-zinc-200 dark:bg-dark-200 text-zinc-900 dark:text-white rounded-md hover:bg-zinc-300 dark:hover:bg-dark-100"
+                      className="px-4 py-2 bg-neutral-200 dark:bg-dark-200 text-neutral-900 dark:text-white rounded-md hover:bg-neutral-300 dark:hover:bg-dark-100"
                     >
                       Close
                     </button>
@@ -2020,46 +2020,46 @@ const FeaturesFixesPage: React.FC = () => {
                   e.preventDefault();
                   handleConfirmResolve();
                 }}
-                className="relative z-[61] w-full max-w-lg mx-4 bg-white dark:bg-dark-150 rounded-lg shadow-xl border border-zinc-200 dark:border-zinc-700"
+                className="relative z-[61] w-full max-w-lg mx-4 bg-white dark:bg-dark-150 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700"
               >
-                <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-700 flex items-start justify-between gap-4">
+                <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       Mark Resolved
                     </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                       {resolveIssue.title}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={closeResolveModal}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-2xl font-bold leading-none"
+                    className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none"
                     disabled={isResolving}
                   >
                     ×
                   </button>
                 </div>
                 <div className="px-5 py-4">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Resolution email note
                   </label>
                   <textarea
                     value={resolveComment}
                     onChange={(e) => setResolveComment(e.target.value)}
                     rows={5}
-                    className="form-textarea w-full text-zinc-900 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded px-3 py-2"
+                    className="form-textarea w-full text-neutral-900 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded px-3 py-2"
                     placeholder="Optional note for the reporter..."
                     disabled={isResolving}
                     autoFocus
                   />
                 </div>
-                <div className="px-5 py-4 bg-zinc-50 dark:bg-dark-100 border-t border-zinc-200 dark:border-zinc-700 flex justify-end gap-2">
+                <div className="px-5 py-4 bg-neutral-50 dark:bg-dark-100 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={closeResolveModal}
                     disabled={isResolving}
-                    className="px-4 py-2 bg-zinc-200 dark:bg-dark-200 text-zinc-900 dark:text-white rounded-md hover:bg-zinc-300 dark:hover:bg-dark-100 disabled:opacity-60"
+                    className="px-4 py-2 bg-neutral-200 dark:bg-dark-200 text-neutral-900 dark:text-white rounded-md hover:bg-neutral-300 dark:hover:bg-dark-100 disabled:opacity-60"
                   >
                     Cancel
                   </button>

@@ -201,10 +201,10 @@ export default function CustomerCategoryManagement() {
     <div className="bg-white dark:bg-dark-150 shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
         <div>
-          <h3 className="text-lg leading-6 font-medium text-zinc-900 dark:text-white">
+          <h3 className="text-lg leading-6 font-medium text-neutral-900 dark:text-white">
             Customer Categories
           </h3>
-          <p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-white">
+          <p className="mt-1 max-w-2xl text-sm text-neutral-500 dark:text-white">
             Manage categories for organizing your customers
           </p>
         </div>
@@ -223,11 +223,11 @@ export default function CustomerCategoryManagement() {
         </button>
       </div>
 
-      <div className="border-t border-zinc-200 dark:border-zinc-700">
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-700">
+      <div className="border-t border-neutral-200 dark:border-neutral-700">
+        <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
           {categories.length === 0 ? (
             <li className="px-4 py-4 sm:px-6">
-              <p className="text-sm text-zinc-500 dark:text-white">
+              <p className="text-sm text-neutral-500 dark:text-white">
                 No categories found. Create one to get started.
               </p>
             </li>
@@ -243,14 +243,14 @@ export default function CustomerCategoryManagement() {
                     style={{ backgroundColor: category.color }}
                   />
                   <div>
-                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                       {category.name}
                     </h4>
-                    <p className="text-sm text-zinc-500 dark:text-white">
+                    <p className="text-sm text-neutral-500 dark:text-white">
                       {category.description}
                     </p>
                     {category.rules && category.rules.length > 0 && (
-                      <p className="text-xs text-zinc-400 mt-1">
+                      <p className="text-xs text-neutral-400 mt-1">
                         <Filter className="h-3 w-3 inline mr-1" />
                         {category.rules.length} assignment{" "}
                         {category.rules.length === 1 ? "rule" : "rules"}
@@ -262,14 +262,14 @@ export default function CustomerCategoryManagement() {
                   <button
                     type="button"
                     onClick={() => handleEdit(category)}
-                    className="inline-flex items-center text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                    className="inline-flex items-center text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
                   >
                     <Pencil className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
                     onClick={() => confirmDelete(category.id)}
-                    className="inline-flex items-center text-zinc-400 hover:text-red-500 dark:hover:text-red-400"
+                    className="inline-flex items-center text-neutral-400 hover:text-red-500 dark:hover:text-red-400"
                   >
                     <Trash2 className="h-5 w-5" />
                   </button>
@@ -290,13 +290,13 @@ export default function CustomerCategoryManagement() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
                 {isEditing ? "Edit Category" : "Add New Category"}
               </Dialog.Title>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -307,7 +307,7 @@ export default function CustomerCategoryManagement() {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Category Name
                   </label>
@@ -318,14 +318,14 @@ export default function CustomerCategoryManagement() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Description
                   </label>
@@ -335,12 +335,12 @@ export default function CustomerCategoryManagement() {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                     Color
                   </label>
                   <div className="grid grid-cols-9 gap-2">
@@ -350,7 +350,7 @@ export default function CustomerCategoryManagement() {
                         type="button"
                         className={`w-6 h-6 rounded-full flex items-center justify-center ${
                           formData.color === color.value
-                            ? "ring-2 ring-offset-2 ring-zinc-500"
+                            ? "ring-2 ring-offset-2 ring-neutral-500"
                             : ""
                         }`}
                         style={{ backgroundColor: color.value }}
@@ -370,7 +370,7 @@ export default function CustomerCategoryManagement() {
                     <button
                       type="button"
                       onClick={() => setShowRules(!showRules)}
-                      className="inline-flex items-center text-sm text-zinc-600 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                      className="inline-flex items-center text-sm text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                     >
                       <Settings className="h-4 w-4 mr-1" />
                       {showRules
@@ -381,7 +381,7 @@ export default function CustomerCategoryManagement() {
 
                   {showRules && (
                     <div className="mt-3 space-y-3">
-                      <div className="text-sm text-zinc-500 dark:text-white">
+                      <div className="text-sm text-neutral-500 dark:text-white">
                         Define rules to automatically assign customers to this
                         category based on their attributes.
                       </div>
@@ -398,7 +398,7 @@ export default function CustomerCategoryManagement() {
                                 onChange={(e) =>
                                   updateRule(index, "field", e.target.value)
                                 }
-                                className="block w-1/3 rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               >
                                 {availableFields.map((field) => (
                                   <option key={field.id} value={field.id}>
@@ -412,7 +412,7 @@ export default function CustomerCategoryManagement() {
                                 onChange={(e) =>
                                   updateRule(index, "operator", e.target.value)
                                 }
-                                className="block w-1/3 rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               >
                                 {operators.map((op) => (
                                   <option key={op.id} value={op.id}>
@@ -428,13 +428,13 @@ export default function CustomerCategoryManagement() {
                                   updateRule(index, "value", e.target.value)
                                 }
                                 placeholder="Value"
-                                className="block w-1/3 rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               />
 
                               <button
                                 type="button"
                                 onClick={() => removeRule(index)}
-                                className="text-zinc-400 hover:text-red-500"
+                                className="text-neutral-400 hover:text-red-500"
                               >
                                 <X className="h-5 w-5" />
                               </button>
@@ -442,7 +442,7 @@ export default function CustomerCategoryManagement() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           No rules defined.
                         </p>
                       )}
@@ -464,7 +464,7 @@ export default function CustomerCategoryManagement() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center px-4 py-2 border border-zinc-300 shadow-sm text-sm font-medium rounded-md text-zinc-700 bg-white hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-zinc-200 dark:border-zinc-600 dark:hover:bg-zinc-600"
+                  className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-md text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
                 >
                   Cancel
                 </button>
@@ -489,10 +489,10 @@ export default function CustomerCategoryManagement() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-sm rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
-            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
               Confirm Deletion
             </Dialog.Title>
-            <p className="text-sm text-zinc-500 dark:text-white mb-6">
+            <p className="text-sm text-neutral-500 dark:text-white mb-6">
               Are you sure you want to delete this category? This action cannot
               be undone. Customers assigned to this category will no longer have
               a category.
@@ -501,7 +501,7 @@ export default function CustomerCategoryManagement() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex items-center px-4 py-2 border border-zinc-300 shadow-sm text-sm font-medium rounded-md text-zinc-700 bg-white hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-zinc-200 dark:border-zinc-600 dark:hover:bg-zinc-600"
+                className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-md text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
               >
                 Cancel
               </button>

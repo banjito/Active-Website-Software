@@ -243,14 +243,14 @@ export const SystemLogsCard: React.FC = () => {
   ];
 
   return (
-    <Card className="border border-zinc-200 bg-white shadow-sm dark:border-dark-300 dark:bg-dark-150">
+    <Card className="border border-neutral-200 bg-white shadow-sm dark:border-dark-300 dark:bg-dark-150">
       <CardHeader className="flex flex-col gap-4 pb-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <CardTitle className="flex items-center text-lg font-medium text-zinc-900 dark:text-white">
+          <CardTitle className="flex items-center text-lg font-medium text-neutral-900 dark:text-white">
             <FileText className="mr-2 h-5 w-5 text-blue-500" />
             System Logs
           </CardTitle>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-300">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-300">
             Admin activity, role changes, permission changes, and system events.
           </p>
         </div>
@@ -281,27 +281,27 @@ export const SystemLogsCard: React.FC = () => {
         ) : (
           <div className="space-y-5">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <div className="rounded-md border border-zinc-200 p-4 dark:border-dark-300">
-                <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-300">
+              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+                <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Events
                 </p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                   {logs.length}
                 </p>
               </div>
-              <div className="rounded-md border border-zinc-200 p-4 dark:border-dark-300">
-                <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-300">
+              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+                <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Unread
                 </p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                   {unreadCount}
                 </p>
               </div>
-              <div className="rounded-md border border-zinc-200 p-4 dark:border-dark-300">
-                <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-300">
+              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+                <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Sources
                 </p>
-                <p className="mt-1 flex items-center text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="mt-1 flex items-center text-2xl font-bold text-neutral-900 dark:text-white">
                   {4 - sourceErrors.length}/4
                   {sourceErrors.length === 0 ? (
                     <CheckCircle className="ml-2 h-5 w-5 text-green-500" />
@@ -335,7 +335,7 @@ export const SystemLogsCard: React.FC = () => {
                     className={`rounded-md border px-3 py-2 text-sm font-medium ${
                       activeFilter === option.value
                         ? "border-orange-300 bg-orange-50 text-orange-700 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300"
-                        : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-dark-300 dark:bg-dark-200 dark:text-zinc-200 dark:hover:bg-dark-300"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-dark-300 dark:bg-dark-200 dark:text-neutral-200 dark:hover:bg-dark-300"
                     }`}
                   >
                     {option.label}
@@ -343,8 +343,8 @@ export const SystemLogsCard: React.FC = () => {
                 ))}
               </div>
 
-              <label className="flex min-w-0 items-center gap-2 rounded-md border border-zinc-200 px-3 py-2 dark:border-dark-300">
-                <Search className="h-4 w-4 text-zinc-400" />
+              <label className="flex min-w-0 items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 dark:border-dark-300">
+                <Search className="h-4 w-4 text-neutral-400" />
                 <input
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
@@ -355,19 +355,19 @@ export const SystemLogsCard: React.FC = () => {
             </div>
 
             {filteredLogs.length > 0 ? (
-              <div className="overflow-hidden rounded-md border border-zinc-200 dark:border-dark-300">
+              <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-dark-300">
                 {filteredLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="flex flex-col gap-3 border-b border-zinc-100 p-4 last:border-0 dark:border-dark-300 md:flex-row md:items-start md:justify-between"
+                    className="flex flex-col gap-3 border-b border-neutral-100 p-4 last:border-0 dark:border-dark-300 md:flex-row md:items-start md:justify-between"
                   >
                     <div className="flex min-w-0 gap-3">
-                      <div className="mt-1 rounded-md bg-zinc-100 p-2 dark:bg-dark-300">
+                      <div className="mt-1 rounded-md bg-neutral-100 p-2 dark:bg-dark-300">
                         {getIcon(log.kind)}
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-zinc-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             {log.title}
                           </p>
                           <span
@@ -376,15 +376,15 @@ export const SystemLogsCard: React.FC = () => {
                             {log.badge}
                           </span>
                         </div>
-                        <p className="mt-1 break-words text-sm text-zinc-700 dark:text-zinc-200">
+                        <p className="mt-1 break-words text-sm text-neutral-700 dark:text-neutral-200">
                           {log.message}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                           {log.source}
                         </p>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1 text-sm text-zinc-500 dark:text-zinc-300">
+                    <div className="flex shrink-0 items-center gap-1 text-sm text-neutral-500 dark:text-neutral-300">
                       <Clock className="h-4 w-4" />
                       {formatDistanceToNow(new Date(log.timestamp), {
                         addSuffix: true,
@@ -394,12 +394,12 @@ export const SystemLogsCard: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-zinc-300 p-8 text-center dark:border-dark-300">
-                <Filter className="h-8 w-8 text-zinc-400" />
-                <p className="mt-2 font-medium text-zinc-900 dark:text-white">
+              <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-neutral-300 p-8 text-center dark:border-dark-300">
+                <Filter className="h-8 w-8 text-neutral-400" />
+                <p className="mt-2 font-medium text-neutral-900 dark:text-white">
                   No logs found
                 </p>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-300">
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-300">
                   Try another filter, or run the admin log setup SQL if sources
                   are missing.
                 </p>

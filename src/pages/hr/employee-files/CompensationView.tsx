@@ -228,7 +228,7 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {current?.current_compensation_amount != null ? (
-            <p className="text-lg text-zinc-900 dark:text-white">
+            <p className="text-lg text-neutral-900 dark:text-white">
               {formatCompensation(
                 current.current_compensation_amount,
                 current.current_pay_type,
@@ -239,8 +239,8 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
             <p className="text-muted-foreground">No compensation on file.</p>
           )}
           {canEdit && (
-            <div className="pt-4 border-t border-zinc-200 dark:border-dark-200 space-y-4">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <div className="pt-4 border-t border-neutral-200 dark:border-dark-200 space-y-4">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Update compensation
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -318,7 +318,7 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-dark-300">
+                  <tr className="border-b border-neutral-200 dark:border-dark-300">
                     <th className="text-left py-3 px-2 font-medium">Amount</th>
                     <th className="text-left py-3 px-2 font-medium">Type</th>
                     <th className="text-left py-3 px-2 font-medium">
@@ -333,7 +333,7 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
                   {history.map((entry) => (
                     <tr
                       key={entry.id}
-                      className="border-b border-zinc-100 dark:border-dark-200"
+                      className="border-b border-neutral-100 dark:border-dark-200"
                     >
                       <td className="py-2 px-2">
                         {formatCompensation(

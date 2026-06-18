@@ -588,14 +588,14 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
 
   return (
     <>
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 flex items-start justify-between gap-4">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Pictures
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               Upload photos from walkthroughs, site conditions, or progress
               updates. Add a short description so others know what they're
               looking at.
@@ -615,11 +615,11 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
         <div className="p-6">
           {pictures.length === 0 ? (
             <div className="text-center py-12">
-              <ImageIcon className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500" />
-              <h3 className="mt-4 text-sm font-medium text-zinc-900 dark:text-white">
+              <ImageIcon className="mx-auto h-12 w-12 text-neutral-400 dark:text-neutral-500" />
+              <h3 className="mt-4 text-sm font-medium text-neutral-900 dark:text-white">
                 No pictures yet
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Upload the first picture to document this job.
               </p>
               <button
@@ -639,13 +639,13 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 return (
                   <div
                     key={pic.id}
-                    className="group bg-zinc-50 dark:bg-dark-100 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 flex flex-col"
+                    className="group bg-neutral-50 dark:bg-dark-100 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 flex flex-col"
                   >
                     {/* Thumbnail */}
                     <button
                       type="button"
                       onClick={() => openLightbox(index)}
-                      className="relative aspect-square w-full overflow-hidden bg-zinc-200 dark:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="relative aspect-square w-full overflow-hidden bg-neutral-200 dark:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       title="View picture"
                     >
                       <img
@@ -662,7 +662,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                         <button
                           type="button"
                           onClick={() => setProfileViewUserId(pic.user_id)}
-                          className="flex-shrink-0 h-7 w-7 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-medium text-zinc-600 dark:text-zinc-300 hover:ring-2 hover:ring-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                          className="flex-shrink-0 h-7 w-7 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-600 dark:text-neutral-300 hover:ring-2 hover:ring-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                           title="View profile"
                         >
                           {pic.user?.profileImage ? (
@@ -679,13 +679,13 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                           <button
                             type="button"
                             onClick={() => setProfileViewUserId(pic.user_id)}
-                            className="block text-xs font-medium text-zinc-900 dark:text-white truncate hover:underline"
+                            className="block text-xs font-medium text-neutral-900 dark:text-white truncate hover:underline"
                           >
                             {isOwner
                               ? "You"
                               : pic.user?.displayName || "Unknown"}
                           </button>
-                          <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">
+                          <span className="block text-[11px] text-neutral-500 dark:text-neutral-400">
                             {formatDate(pic.created_at)}
                             {pic.edited && " (edited)"}
                           </span>
@@ -699,14 +699,14 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                             onChange={(e) => setEditDescription(e.target.value)}
                             rows={3}
                             placeholder="Describe what this picture shows..."
-                            className="w-full px-2 py-1.5 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                            className="w-full px-2 py-1.5 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                             autoFocus
                           />
                           <div className="flex justify-end gap-2">
                             <button
                               type="button"
                               onClick={cancelEditDescription}
-                              className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 bg-zinc-100 dark:bg-dark-150 rounded"
+                              className="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 bg-neutral-100 dark:bg-dark-150 rounded"
                               title="Cancel"
                             >
                               <X className="w-4 h-4" />
@@ -722,9 +722,9 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words line-clamp-4 flex-1">
+                        <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap break-words line-clamp-4 flex-1">
                           {pic.description || (
-                            <span className="italic text-zinc-400 dark:text-zinc-500">
+                            <span className="italic text-neutral-400 dark:text-neutral-500">
                               No description
                             </span>
                           )}
@@ -737,7 +737,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                           <button
                             type="button"
                             onClick={() => startEditDescription(pic)}
-                            className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                            className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                             title="Edit description"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -745,7 +745,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                           <button
                             type="button"
                             onClick={() => handleDelete(pic)}
-                            className="p-1.5 text-zinc-400 hover:text-red-500"
+                            className="p-1.5 text-neutral-400 hover:text-red-500"
                             title="Delete picture"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -765,14 +765,14 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="relative bg-white dark:bg-dark-150 rounded-lg w-full max-w-lg shadow-xl">
-            <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Upload Picture
               </h3>
               <button
                 type="button"
                 onClick={closeUploadModal}
-                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -786,7 +786,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-full max-h-80 object-contain rounded-md bg-zinc-100 dark:bg-dark-200"
+                    className="w-full max-h-80 object-contain rounded-md bg-neutral-100 dark:bg-dark-200"
                   />
                   <button
                     type="button"
@@ -802,7 +802,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                     <X className="w-4 h-4" />
                   </button>
                   {selectedFile && (
-                    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                    <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 truncate">
                       {selectedFile.name} · {formatFileSize(selectedFile.size)}
                     </p>
                   )}
@@ -811,7 +811,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-md text-zinc-500 dark:text-zinc-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
                 >
                   <Upload className="w-8 h-8" />
                   <span className="text-sm font-medium">Choose image</span>
@@ -830,7 +830,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               <div>
                 <label
                   htmlFor="picture-description"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
                 >
                   Description
                 </label>
@@ -840,17 +840,17 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   rows={3}
                   placeholder="What does this picture show? (e.g., 'Main panel after removing cover during walkthrough')"
-                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-100 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 />
               </div>
             </div>
 
-            <div className="px-5 py-4 border-t border-zinc-200 dark:border-zinc-700 flex justify-end gap-2">
+            <div className="px-5 py-4 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={closeUploadModal}
                 disabled={uploading}
-                className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-200 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -356,11 +356,11 @@ export function OpportunitiesCalendarView() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-dark-900 tracking-tight">
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-dark-900 tracking-tight">
             Proposal due calendar
           </h1>
         </div>
-        <div className="flex items-center gap-3 flex-wrap text-xs text-zinc-500 dark:text-dark-400">
+        <div className="flex items-center gap-3 flex-wrap text-xs text-neutral-500 dark:text-dark-400">
           <span
             className="inline-flex items-center gap-1.5"
             title="No estimate has been started"
@@ -430,18 +430,18 @@ export function OpportunitiesCalendarView() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-100 rounded-xl border border-zinc-200/80 dark:border-dark-300 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-dark-100 rounded-xl border border-neutral-200/80 dark:border-dark-300 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="flex justify-center items-center py-24 text-zinc-500 dark:text-dark-400 text-sm">
+          <div className="flex justify-center items-center py-24 text-neutral-500 dark:text-dark-400 text-sm">
             <LoadingSpinner size="md" />
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-dark-300 bg-zinc-50/50 dark:bg-dark-200/50">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-dark-300 bg-neutral-50/50 dark:bg-dark-200/50">
               <button
                 type="button"
                 onClick={goPrev}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-dark-400 hover:bg-zinc-200 dark:hover:bg-dark-300 hover:text-zinc-900 dark:hover:text-dark-900 transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
                 aria-label={
                   currentView === "dayGridWeek"
                     ? "Previous week"
@@ -450,13 +450,13 @@ export function OpportunitiesCalendarView() {
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="text-sm font-semibold text-zinc-900 dark:text-dark-900 tabular-nums">
+              <span className="text-sm font-semibold text-neutral-900 dark:text-dark-900 tabular-nums">
                 {calendarTitle}
               </span>
               <button
                 type="button"
                 onClick={goNext}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-dark-400 hover:bg-zinc-200 dark:hover:bg-dark-300 hover:text-zinc-900 dark:hover:text-dark-900 transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
                 aria-label={
                   currentView === "dayGridWeek" ? "Next week" : "Next month"
                 }
@@ -466,7 +466,7 @@ export function OpportunitiesCalendarView() {
             </div>
             <div className="px-4 pb-4 pt-1">
               <div className="flex items-center justify-center gap-2 mb-3">
-                <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-dark-200 p-1">
+                <div className="inline-flex rounded-lg bg-neutral-100 dark:bg-dark-200 p-1">
                   {[
                     { label: "Month", view: "dayGridMonth" as CalendarView },
                     { label: "Week", view: "dayGridWeek" as CalendarView },
@@ -477,8 +477,8 @@ export function OpportunitiesCalendarView() {
                       onClick={() => changeView(item.view)}
                       className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
                         currentView === item.view
-                          ? "bg-white dark:bg-dark-100 text-zinc-900 dark:text-dark-900 shadow-sm"
-                          : "text-zinc-600 dark:text-dark-400 hover:text-zinc-900 dark:hover:text-dark-900"
+                          ? "bg-white dark:bg-dark-100 text-neutral-900 dark:text-dark-900 shadow-sm"
+                          : "text-neutral-600 dark:text-dark-400 hover:text-neutral-900 dark:hover:text-dark-900"
                       }`}
                     >
                       {item.label}
@@ -490,15 +490,15 @@ export function OpportunitiesCalendarView() {
                   onClick={goToday}
                   className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
                     isCurrentPeriod
-                      ? "bg-zinc-200 dark:bg-dark-300 text-zinc-700 dark:text-dark-200"
-                      : "text-zinc-600 dark:text-dark-400 hover:bg-zinc-100 dark:hover:bg-dark-200"
+                      ? "bg-neutral-200 dark:bg-dark-300 text-neutral-700 dark:text-dark-200"
+                      : "text-neutral-600 dark:text-dark-400 hover:bg-neutral-100 dark:hover:bg-dark-200"
                   }`}
                 >
                   Today
                 </button>
               </div>
               {/* Days of the week at the top */}
-              <div className="grid grid-cols-7 border-b border-zinc-200 dark:border-dark-300 bg-zinc-50 dark:bg-dark-200/60">
+              <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-200/60">
                 {[
                   "Sunday",
                   "Monday",
@@ -510,7 +510,7 @@ export function OpportunitiesCalendarView() {
                 ].map((day) => (
                   <div
                     key={day}
-                    className="py-2.5 text-center text-sm font-semibold text-zinc-700 dark:text-dark-300"
+                    className="py-2.5 text-center text-sm font-semibold text-neutral-700 dark:text-dark-300"
                   >
                     {day}
                   </div>

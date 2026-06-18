@@ -154,7 +154,7 @@ export default function MaintenanceSchedule({
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="upcoming">
-              <TabsList className="flex border-b border-zinc-200 mb-4">
+              <TabsList className="flex border-b border-neutral-200 mb-4">
                 <TabsTrigger value="upcoming">
                   Upcoming ({upcomingMaintenance.length})
                 </TabsTrigger>
@@ -172,37 +172,37 @@ export default function MaintenanceSchedule({
                   </div>
                 ) : upcomingMaintenance.length === 0 ? (
                   <div className="py-8 text-center">
-                    <FaCalendarCheck className="mx-auto h-12 w-12 text-zinc-400 mb-3" />
-                    <p className="text-zinc-500">
+                    <FaCalendarCheck className="mx-auto h-12 w-12 text-neutral-400 mb-3" />
+                    <p className="text-neutral-500">
                       No upcoming maintenance scheduled
                     </p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-zinc-200">
-                      <thead className="bg-zinc-50">
+                    <table className="min-w-full divide-y divide-neutral-200">
+                      <thead className="bg-neutral-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Equipment
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Last Maintenance
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Next Due
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Days Left
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-zinc-200">
+                      <tbody className="bg-white divide-y divide-neutral-200">
                         {upcomingMaintenance.map((equipment) => {
                           const daysLeft = equipment.next_maintenance_date
                             ? getDaysUntilMaintenance(
@@ -213,20 +213,20 @@ export default function MaintenanceSchedule({
                           return (
                             <tr key={equipment.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-zinc-900">
+                                <div className="text-sm font-medium text-neutral-900">
                                   {equipment.name}
                                 </div>
-                                <div className="text-sm text-zinc-500">
+                                <div className="text-sm text-neutral-500">
                                   {equipment.serial_number}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.type}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.last_maintenance_date
                                     ? new Date(
                                         equipment.last_maintenance_date,
@@ -235,7 +235,7 @@ export default function MaintenanceSchedule({
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.next_maintenance_date
                                     ? new Date(
                                         equipment.next_maintenance_date,
@@ -277,8 +277,8 @@ export default function MaintenanceSchedule({
                   </div>
                 ) : overdueMaintenance.length === 0 ? (
                   <div className="py-8 text-center">
-                    <FaCalendarCheck className="mx-auto h-12 w-12 text-zinc-400 mb-3" />
-                    <p className="text-zinc-500">No overdue maintenance</p>
+                    <FaCalendarCheck className="mx-auto h-12 w-12 text-neutral-400 mb-3" />
+                    <p className="text-neutral-500">No overdue maintenance</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -297,30 +297,30 @@ export default function MaintenanceSchedule({
                       </div>
                     </div>
 
-                    <table className="min-w-full divide-y divide-zinc-200">
-                      <thead className="bg-zinc-50">
+                    <table className="min-w-full divide-y divide-neutral-200">
+                      <thead className="bg-neutral-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Equipment
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Last Maintenance
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Due Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Days Overdue
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-zinc-200">
+                      <tbody className="bg-white divide-y divide-neutral-200">
                         {overdueMaintenance.map((equipment) => {
                           const daysOverdue = equipment.next_maintenance_date
                             ? Math.abs(
@@ -333,20 +333,20 @@ export default function MaintenanceSchedule({
                           return (
                             <tr key={equipment.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-zinc-900">
+                                <div className="text-sm font-medium text-neutral-900">
                                   {equipment.name}
                                 </div>
-                                <div className="text-sm text-zinc-500">
+                                <div className="text-sm text-neutral-500">
                                   {equipment.serial_number}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.type}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.last_maintenance_date
                                     ? new Date(
                                         equipment.last_maintenance_date,
@@ -355,7 +355,7 @@ export default function MaintenanceSchedule({
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-zinc-900">
+                                <div className="text-sm text-neutral-900">
                                   {equipment.next_maintenance_date
                                     ? new Date(
                                         equipment.next_maintenance_date,

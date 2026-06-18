@@ -540,7 +540,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-zinc-600">
+        <div className="text-lg text-neutral-600">
           <LoadingSpinner size="md" />
         </div>
       </div>
@@ -571,7 +571,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-zinc-600">
+        <div className="text-lg text-neutral-600">
           <LoadingSpinner size="md" />
         </div>
       </div>

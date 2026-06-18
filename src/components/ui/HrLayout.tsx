@@ -183,8 +183,8 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       <div>
         <button
           onClick={() => toggleSection(section.key)}
-          className={`w-full flex items-center justify-between px-2 h-8 text-xs font-medium text-muted-foreground dark:text-dark-500 hover:text-zinc-900 dark:hover:text-white transition-colors ${
-            hasActiveItem ? "text-zinc-900 dark:text-white" : ""
+          className={`w-full flex items-center justify-between px-2 h-8 text-xs font-medium text-muted-foreground dark:text-dark-500 hover:text-neutral-900 dark:hover:text-white transition-colors ${
+            hasActiveItem ? "text-neutral-900 dark:text-white" : ""
           }`}
         >
           <div className="flex items-center gap-2">
@@ -534,7 +534,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background text-foreground">
-      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-zinc-200 dark:border-dark-200">
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
         <HeaderBar />
       </div>
 

@@ -266,10 +266,10 @@ export const ESignatures: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             E-Signatures
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Electronic signature acceptance for offer letters
           </p>
         </div>
@@ -279,24 +279,24 @@ export const ESignatures: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Pending Signatures
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {pendingSignatures.length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Signed Offers
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {signedOffers.length}
             </div>
           </CardContent>
@@ -314,8 +314,8 @@ export const ESignatures: React.FC = () => {
         <CardContent>
           {pendingSignatures.length === 0 ? (
             <div className="text-center py-12">
-              <FileCheck className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <FileCheck className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No pending signatures
               </h3>
             </div>
@@ -324,18 +324,18 @@ export const ESignatures: React.FC = () => {
               {pendingSignatures.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-white">
+                    <div className="font-medium text-neutral-900 dark:text-white">
                       {offer.candidate
                         ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                         : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                       Sent:{" "}
                       {offer.sent_date
                         ? new Date(offer.sent_date).toLocaleDateString()
@@ -379,8 +379,8 @@ export const ESignatures: React.FC = () => {
         <CardContent>
           {signedOffers.length === 0 ? (
             <div className="text-center py-12">
-              <CheckCircle className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <CheckCircle className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No signed offers
               </h3>
             </div>
@@ -389,18 +389,18 @@ export const ESignatures: React.FC = () => {
               {signedOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-white">
+                    <div className="font-medium text-neutral-900 dark:text-white">
                       {offer.candidate
                         ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                         : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                       Signed:{" "}
                       {offer.signed_at
                         ? new Date(offer.signed_at).toLocaleDateString()
@@ -437,40 +437,40 @@ export const ESignatures: React.FC = () => {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Signer Name *
                 </label>
                 <input
                   type="text"
                   value={signerName}
                   onChange={(e) => setSignerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Signer Email *
                 </label>
                 <input
                   type="email"
                   value={signerEmail}
                   onChange={(e) => setSignerEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Signature *
               </label>
-              <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-4 bg-white dark:bg-zinc-800">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-800">
                 <canvas
                   ref={canvasRef}
                   width={600}
                   height={200}
-                  className="border border-zinc-200 dark:border-zinc-700 rounded cursor-crosshair w-full"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded cursor-crosshair w-full"
                   onMouseDown={startDrawing}
                   onMouseMove={draw}
                   onMouseUp={stopDrawing}
@@ -489,7 +489,7 @@ export const ESignatures: React.FC = () => {
                 Clear Signature
               </Button>
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">
               By signing, you acknowledge that you have read and agree to the
               terms of this offer letter.
             </div>
@@ -524,7 +524,7 @@ export const ESignatures: React.FC = () => {
             {selectedOffer && (
               <>
                 {/* Offer Letter Header */}
-                <div className="flex justify-between items-start pb-4 border-b-2 border-zinc-300">
+                <div className="flex justify-between items-start pb-4 border-b-2 border-neutral-300">
                   <div>
                     <img
                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
@@ -536,7 +536,7 @@ export const ESignatures: React.FC = () => {
                     <h1 className="text-2xl font-bold tracking-wide">
                       OFFER LETTER
                     </h1>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                       {selectedOffer.offer_date
                         ? new Date(selectedOffer.offer_date).toLocaleDateString(
                             "en-US",
@@ -553,7 +553,7 @@ export const ESignatures: React.FC = () => {
 
                 {/* Offer Letter Content */}
                 <div
-                  className="prose max-w-none dark:prose-invert text-zinc-900 dark:text-zinc-100"
+                  className="prose max-w-none dark:prose-invert text-neutral-900 dark:text-neutral-100"
                   dangerouslySetInnerHTML={{
                     __html:
                       selectedOffer.offer_letter_content ||
@@ -563,38 +563,38 @@ export const ESignatures: React.FC = () => {
 
                 {/* Signature Section */}
                 {signatures.length > 0 && (
-                  <div className="mt-8 pt-6 border-t-2 border-zinc-300">
-                    <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">
+                  <div className="mt-8 pt-6 border-t-2 border-neutral-300">
+                    <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white">
                       Electronic Signature
                     </h2>
                     {signatures.map((signature) => (
                       <div
                         key={signature.id}
-                        className="mb-6 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-800"
+                        className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <div className="font-medium text-zinc-900 dark:text-white">
+                            <div className="font-medium text-neutral-900 dark:text-white">
                               {signature.signer_name}
                             </div>
-                            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                            <div className="text-sm text-neutral-600 dark:text-neutral-400">
                               {signature.signer_email}
                             </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                            <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                               Signed as:{" "}
                               {signature.signer_type.charAt(0).toUpperCase() +
                                 signature.signer_type.slice(1)}
                             </div>
                           </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-500">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-500">
                             {signature.signed_at
                               ? new Date(signature.signed_at).toLocaleString()
                               : "N/A"}
                           </div>
                         </div>
                         {signature.signature_image && (
-                          <div className="mt-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-4 bg-white dark:bg-zinc-900">
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                          <div className="mt-3 border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-900">
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                               Signature:
                             </div>
                             <img
@@ -610,7 +610,7 @@ export const ESignatures: React.FC = () => {
                 )}
 
                 {signatures.length === 0 && (
-                  <div className="text-center py-8 text-zinc-500 dark:text-zinc-400 border-t-2 border-zinc-300 mt-8 pt-6">
+                  <div className="text-center py-8 text-neutral-500 dark:text-neutral-400 border-t-2 border-neutral-300 mt-8 pt-6">
                     No signatures recorded yet.
                   </div>
                 )}

@@ -55,7 +55,7 @@ export default function RoleAuditLogs({
       case "delete":
         return "text-red-600 dark:text-red-400";
       default:
-        return "text-zinc-600 dark:text-white";
+        return "text-neutral-600 dark:text-white";
     }
   };
 
@@ -92,14 +92,14 @@ export default function RoleAuditLogs({
     if (loading) {
       return (
         <div className="flex justify-center items-center p-6">
-          <RefreshCw className="h-6 w-6 animate-spin text-zinc-400" />
+          <RefreshCw className="h-6 w-6 animate-spin text-neutral-400" />
         </div>
       );
     }
 
     if (logs.length === 0) {
       return (
-        <div className="text-center p-6 text-zinc-500 border border-dashed rounded-md">
+        <div className="text-center p-6 text-neutral-500 border border-dashed rounded-md">
           No audit logs found {roleName ? `for role "${roleName}"` : ""}.
         </div>
       );
@@ -121,16 +121,16 @@ export default function RoleAuditLogs({
             {logs.map((log) => (
               <tr
                 key={log.id}
-                className="border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                className="border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
               >
-                <td className="px-4 py-3 text-zinc-500 dark:text-white">
+                <td className="px-4 py-3 text-neutral-500 dark:text-white">
                   {formatTime(log.created_at)}
                 </td>
                 <td className="px-4 py-3 font-medium">{log.role_name}</td>
                 <td className={`px-4 py-3 ${getActionColor(log.action)}`}>
                   {formatAction(log.action)}
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-white">
+                <td className="px-4 py-3 text-neutral-500 dark:text-white">
                   {log.user_id.slice(0, 8)}...
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -162,10 +162,10 @@ export default function RoleAuditLogs({
       return (
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-medium text-zinc-500 mb-1">
+            <h3 className="text-sm font-medium text-neutral-500 mb-1">
               New Configuration:
             </h3>
-            <pre className="text-xs bg-zinc-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
               {JSON.stringify(new_config, null, 2)}
             </pre>
           </div>
@@ -178,10 +178,10 @@ export default function RoleAuditLogs({
       return (
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-medium text-zinc-500 mb-1">
+            <h3 className="text-sm font-medium text-neutral-500 mb-1">
               Deleted Configuration:
             </h3>
-            <pre className="text-xs bg-zinc-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
               {JSON.stringify(previous_config, null, 2)}
             </pre>
           </div>
@@ -194,18 +194,18 @@ export default function RoleAuditLogs({
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="text-sm font-medium text-zinc-500 mb-1">
+            <h3 className="text-sm font-medium text-neutral-500 mb-1">
               Previous Configuration:
             </h3>
-            <pre className="text-xs bg-zinc-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
               {JSON.stringify(previous_config, null, 2)}
             </pre>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-zinc-500 mb-1">
+            <h3 className="text-sm font-medium text-neutral-500 mb-1">
               New Configuration:
             </h3>
-            <pre className="text-xs bg-zinc-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
               {JSON.stringify(new_config, null, 2)}
             </pre>
           </div>
@@ -220,7 +220,7 @@ export default function RoleAuditLogs({
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="w-full max-w-4xl mx-4 bg-white dark:bg-zinc-900 rounded-lg shadow-xl">
+        <div className="w-full max-w-4xl mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-xl">
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-medium">
               {formatAction(activeLog.action)} Role: {activeLog.role_name}
@@ -232,25 +232,27 @@ export default function RoleAuditLogs({
           <div className="p-4 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-sm font-medium text-zinc-500">Time:</span>
+                <span className="text-sm font-medium text-neutral-500">
+                  Time:
+                </span>
                 <span className="ml-2">
                   {new Date(activeLog.created_at).toLocaleString()}
                 </span>
               </div>
               <div>
-                <span className="text-sm font-medium text-zinc-500">
+                <span className="text-sm font-medium text-neutral-500">
                   User ID:
                 </span>
                 <span className="ml-2">{activeLog.user_id}</span>
               </div>
               <div>
-                <span className="text-sm font-medium text-zinc-500">
+                <span className="text-sm font-medium text-neutral-500">
                   IP Address:
                 </span>
                 <span className="ml-2">{activeLog.ip_address}</span>
               </div>
               <div>
-                <span className="text-sm font-medium text-zinc-500">
+                <span className="text-sm font-medium text-neutral-500">
                   User Agent:
                 </span>
                 <span className="ml-2 truncate">{activeLog.user_agent}</span>

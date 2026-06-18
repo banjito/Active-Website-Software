@@ -204,7 +204,9 @@ export const SignOnboardingForm: React.FC = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Your Onboarding
         </Button>
-        <p className="text-zinc-600 dark:text-zinc-400">Form not found.</p>
+        <p className="text-neutral-600 dark:text-neutral-400">
+          Form not found.
+        </p>
       </div>
     );
   }
@@ -239,8 +241,8 @@ export const SignOnboardingForm: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {attachmentUrl && (
-            <div className="border rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="border rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 px-3 py-2 border-b border-neutral-200 dark:border-neutral-700">
                 Attached document
               </p>
               <iframe
@@ -252,22 +254,22 @@ export const SignOnboardingForm: React.FC = () => {
             </div>
           )}
           {hasFormContent && (
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-4 max-h-[400px] overflow-y-auto">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4 max-h-[400px] overflow-y-auto">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Form content
               </p>
               <div
-                className="text-sm text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none prose-p:my-1"
+                className="text-sm text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none prose-p:my-1"
                 dangerouslySetInnerHTML={{ __html: form.form_content }}
               />
             </div>
           )}
           {hasFormFields && (
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-4">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Form fields
               </p>
-              <ul className="space-y-2 text-sm text-zinc-900 dark:text-white">
+              <ul className="space-y-2 text-sm text-neutral-900 dark:text-white">
                 {form.form_fields.map((field, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span className="font-medium">{field.label}</span>
@@ -276,7 +278,7 @@ export const SignOnboardingForm: React.FC = () => {
                         (required)
                       </span>
                     )}
-                    <span className="text-zinc-500 dark:text-zinc-400">
+                    <span className="text-neutral-500 dark:text-neutral-400">
                       — {field.type}
                     </span>
                   </li>
@@ -285,7 +287,7 @@ export const SignOnboardingForm: React.FC = () => {
             </div>
           )}
           {!hasFormContent && !hasFormFields && !attachmentUrl && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               No form content or document attached. You can still sign below to
               acknowledge.
             </p>
@@ -293,7 +295,7 @@ export const SignOnboardingForm: React.FC = () => {
           {!alreadySigned && (
             <>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Your signature
                 </label>
                 <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
@@ -301,7 +303,7 @@ export const SignOnboardingForm: React.FC = () => {
                     ref={canvasRef}
                     width={500}
                     height={120}
-                    className="border border-zinc-300 dark:border-zinc-600 rounded w-full cursor-crosshair touch-none"
+                    className="border border-neutral-300 dark:border-neutral-600 rounded w-full cursor-crosshair touch-none"
                     style={{ maxWidth: "100%", height: "120px" }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}

@@ -228,7 +228,7 @@ export default function GeneratedDocumentViewer() {
   return (
     <div className="max-w-none">
       {!isPrintMode && (
-        <div className="bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700 p-4">
+        <div className="bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 p-4">
           <div className="max-w-7xl mx-auto">
             {isEditingName ? (
               <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export default function GeneratedDocumentViewer() {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="Document Name (optional)"
-                  className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                   autoFocus
                 />
                 <button
@@ -248,14 +248,14 @@ export default function GeneratedDocumentViewer() {
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-dark-100 dark:hover:bg-dark-200 text-zinc-900 dark:text-white rounded-md font-medium"
+                  className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-dark-100 dark:hover:bg-dark-200 text-neutral-900 dark:text-white rounded-md font-medium"
                 >
                   Cancel
                 </button>
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {title}
                 </h1>
                 <button

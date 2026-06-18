@@ -329,7 +329,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
 
               <div className="max-h-80 overflow-auto">
                 {activeNotifications.length === 0 ? (
-                  <div className="py-8 text-center text-zinc-500">
+                  <div className="py-8 text-center text-neutral-500">
                     <CalendarDays className="mx-auto h-8 w-8 mb-2 opacity-50" />
                     <p>No upcoming event notifications</p>
                   </div>
@@ -337,16 +337,16 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
                   activeNotifications.map((notification) => (
                     <div
                       key={`${notification.id}-${notification.reminderId || "default"}`}
-                      className="p-3 border-b hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      className="p-3 border-b hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <h5 className="font-medium">{notification.title}</h5>
-                          <p className="text-sm text-zinc-500">
+                          <p className="text-sm text-neutral-500">
                             {getNotificationTime(notification)}
                           </p>
                           {notification.location && (
-                            <p className="text-xs text-zinc-500 mt-1">
+                            <p className="text-xs text-neutral-500 mt-1">
                               {notification.location}
                             </p>
                           )}
@@ -395,8 +395,8 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
                 )}
               </div>
 
-              <div className="p-3 bg-zinc-50 dark:bg-dark-150">
-                <p className="text-xs text-zinc-500">
+              <div className="p-3 bg-neutral-50 dark:bg-dark-150">
+                <p className="text-xs text-neutral-500">
                   Enable or disable notifications in settings
                 </p>
               </div>
@@ -419,7 +419,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">Enable Notifications</h4>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Show alerts for upcoming events
                 </p>
               </div>
@@ -437,7 +437,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">Email Notifications</h4>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Send email reminders for events
                 </p>
               </div>
@@ -527,7 +527,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
 
           <div className="space-y-4 py-2">
             {selectedEvent && (
-              <div className="p-3 bg-zinc-50 dark:bg-dark-150 rounded">
+              <div className="p-3 bg-neutral-50 dark:bg-dark-150 rounded">
                 <div>
                   <span className="font-medium">Event: </span>
                   {selectedEvent.title}
@@ -655,7 +655,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
           <div className="flex justify-between items-center">
             <div>
               <h3 className="font-medium">Upcoming Events</h3>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-neutral-500">
                 You have {activeNotifications.length} upcoming events that need
                 attention
               </p>

@@ -968,7 +968,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         .max-w-7xl { max-width: 100% !important; width: 100% !important; }
 
         /* Orange header bar for sections */
-        .border-b.dark\\:border-zinc-700 {
+        .border-b.dark\\:border-neutral-700 {
           border: none !important;
           margin: 0 !important;
           padding: 0 !important;
@@ -2831,7 +2831,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
     >
       <ReportWrapper isPrintMode={isPrintMode} disablePreview>
         {/* Print Header - Only visible when printing */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+        <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
             alt="AMP Logo"
@@ -2900,7 +2900,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
           {/* Job Information Section */}
           <div className="mb-6">
-            <h2 className="section-job-info text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="section-job-info text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden job-info-onscreen">
@@ -2919,7 +2919,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={maskCustomerName(formData.customer)}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150"
+                    className="form-input bg-neutral-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4">
@@ -2935,7 +2935,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={maskCustomerAddress(formData.address)}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150"
+                    className="form-input bg-neutral-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4">
@@ -2952,7 +2952,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.user}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
@@ -2970,7 +2970,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.date}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
                   />
                   <span
                     className="hidden print:inline"
@@ -2998,7 +2998,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.identifier}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -3017,7 +3017,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.jobNumber}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150"
+                    className="form-input bg-neutral-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4">
@@ -3034,7 +3034,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.technicians}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -3051,17 +3051,19 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.temperature}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input w-20 temp-input-f ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-20 temp-input-f ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="mx-2 text-zinc-600 dark:text-white">°F</span>
-                  <span className="mx-2 text-zinc-600 dark:text-white">
+                  <span className="mx-2 text-neutral-600 dark:text-white">
+                    °F
+                  </span>
+                  <span className="mx-2 text-neutral-600 dark:text-white">
                     {celsiusTemperature.toFixed(0)}
                   </span>
-                  <span className="text-zinc-600 dark:text-white">°C</span>
-                  <span className="mx-5 text-zinc-600 dark:text-white tcf-label">
+                  <span className="text-neutral-600 dark:text-white">°C</span>
+                  <span className="mx-5 text-neutral-600 dark:text-white tcf-label">
                     TCF
                   </span>
-                  <span className="font-medium text-zinc-900 dark:text-white tcf-value">
+                  <span className="font-medium text-neutral-900 dark:text-white tcf-value">
                     {tcf}
                   </span>
                 </div>
@@ -3079,9 +3081,11 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.humidity}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input w-20 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-20 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="ml-2 text-zinc-600 dark:text-white">%</span>
+                  <span className="ml-2 text-neutral-600 dark:text-white">
+                    %
+                  </span>
                 </div>
                 <div className="mb-4">
                   <label
@@ -3097,7 +3101,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.substation}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="mb-4">
@@ -3114,7 +3118,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     value={formData.eqptLocation}
                     onChange={handleChange}
                     readOnly={!isEditMode}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -3144,7 +3148,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
           {/* Cable Data Section */}
           <div className="mb-6">
-            <h2 className="section-cable-data text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="section-cable-data text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Cable Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden cable-data-onscreen">
@@ -3163,7 +3167,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.testedFrom}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3180,7 +3184,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.manufacturer}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3197,7 +3201,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.conductorMaterial}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3214,7 +3218,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.insulationType}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3234,7 +3238,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.systemVoltage}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3251,7 +3255,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.ratedVoltage}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3268,7 +3272,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     type="text"
                     value={formData.length}
                     onChange={handleChange}
-                    className={`form-input ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     readOnly={!isEditMode}
                   />
                 </div>
@@ -3276,7 +3280,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             </div>
             {/* Print-only Cable Data table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: "33.33%" }} />
                   <col style={{ width: "33.33%" }} />
@@ -3284,15 +3288,15 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Tested From:</div>
                       <div className="mt-0">{formData.testedFrom || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Manufacturer:</div>
                       <div className="mt-0">{formData.manufacturer || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Conductor Material:</div>
                       <div className="mt-0">
                         {formData.conductorMaterial || ""}
@@ -3300,24 +3304,24 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Insulation Type:</div>
                       <div className="mt-0">
                         {formData.insulationType || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">System Voltage:</div>
                       <div className="mt-0">{formData.systemVoltage || ""}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Rated Voltage:</div>
                       <div className="mt-0">{formData.ratedVoltage || ""}</div>
                     </td>
                   </tr>
                   <tr>
                     <td
-                      className="p-2 align-top border border-zinc-300 print:border-black print:border"
+                      className="p-2 align-top border border-neutral-300 print:border-black print:border"
                       colSpan={3}
                     >
                       <div className="font-semibold">Length:</div>
@@ -3331,11 +3335,11 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
           {/* Visual and Mechanical Inspection Section */}
           <div className="mb-6">
-            <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 visual-mechanical-table table-fixed">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   <col style={{ width: "70%" }} />
@@ -3343,18 +3347,18 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       ID
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {Object.entries({
                     "7.3.1.A.1":
                       "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
@@ -3368,12 +3372,12 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                   }).map(([section, description]) => (
                     <tr
                       key={section}
-                      className="hover:bg-zinc-50 dark:hover:bg-dark-200"
+                      className="hover:bg-neutral-50 dark:hover:bg-dark-200"
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                         {section}
                       </td>
-                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
                         {description}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
@@ -3385,7 +3389,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                               handleInspectionChange(section, e.target.value)
                             }
                             disabled={!isEditMode}
-                            className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSPECTION_RESULTS_OPTIONS.map((option) => (
                               <option key={option} value={option}>
@@ -3409,7 +3413,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           <section aria-labelledby="electrical-tests-heading" className="mb-6">
             <h2
               id="electrical-tests-heading"
-              className="section-electrical-tests text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold"
+              className="section-electrical-tests text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold"
             >
               Electrical Tests
             </h2>
@@ -3418,7 +3422,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
               <div className="w-48">
                 <label
                   htmlFor="numberOfCables"
-                  className="text-sm font-medium text-zinc-700 dark:text-white"
+                  className="text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Number of Cable Sets:
                 </label>
@@ -3439,7 +3443,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
               <div className="w-48">
                 <label
                   htmlFor="testVoltage"
-                  className="text-sm font-medium text-zinc-700 dark:text-white"
+                  className="text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Test Voltage:
                 </label>
@@ -3545,57 +3549,57 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                   <col style={{ width: "5.5%" }} /> {/* Cont. */}
                   <col style={{ width: "7%" }} /> {/* Results */}
                 </colgroup>
-                <caption className="caption-bottom text-xs text-zinc-500 dark:text-white py-2">
+                <caption className="caption-bottom text-xs text-neutral-500 dark:text-white py-2">
                   Test Voltage: {formData.testVoltage} | 1 Min. Insulation
                   Resistance in MΩ
                 </caption>
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-dark-150">
+                  <tr className="bg-neutral-50 dark:bg-dark-150">
                     <th
                       colSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       Circuit Designation
                     </th>
                     <th
                       colSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       Size
                     </th>
                     <th
                       rowSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     ></th>
                     <th
                       colSpan={10}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       1 Min. Insulation Resistance in MΩ
                     </th>
                     <th
                       rowSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       Cont.
                     </th>
                     <th
                       rowSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       Results
                     </th>
                   </tr>
-                  <tr className="bg-zinc-50 dark:bg-dark-150">
-                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                  <tr className="bg-neutral-50 dark:bg-dark-150">
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600">
                       From
                     </th>
-                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600">
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600">
                       To
                     </th>
                     <th
                       colSpan={2}
-                      className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                      className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
                       Config.
                     </th>
@@ -3613,7 +3617,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     ].map((h) => (
                       <th
                         key={h}
-                        className="px-1.5 py-1.5 text-center text-xs font-medium text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600"
+                        className="px-1.5 py-1.5 text-center text-xs font-medium text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-600"
                       >
                         {h}
                       </th>
@@ -3624,10 +3628,10 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                   {formData.testSets.map((set, index) => (
                     <React.Fragment key={set.id}>
                       {/* First row for each circuit - RDG readings */}
-                      <tr className="hover:bg-zinc-50 dark:hover:bg-dark-200">
+                      <tr className="hover:bg-neutral-50 dark:hover:bg-dark-200">
                         {/* From (under Circuit Designation) - rowSpan=2 */}
                         <td
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                           rowSpan={2}
                           style={{ verticalAlign: "middle" }}
                         >
@@ -3661,7 +3665,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                     col: 0,
                                   })
                                 }
-                                className="w-full text-xs text-center text-zinc-900 dark:text-white border-none bg-transparent resize-none"
+                                className="w-full text-xs text-center text-neutral-900 dark:text-white border-none bg-transparent resize-none"
                                 rows={2}
                                 style={{
                                   minHeight: "28px",
@@ -3682,7 +3686,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                               />
                             ) : (
                               <div
-                                className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                                className="text-xs text-center w-full text-neutral-900 dark:text-white"
                                 style={{
                                   minHeight: "28px",
                                   lineHeight: "1.1",
@@ -3701,7 +3705,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         </td>
                         {/* To (under Circuit Designation) - rowSpan=2 */}
                         <td
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                           rowSpan={2}
                           style={{ verticalAlign: "middle" }}
                         >
@@ -3723,7 +3727,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   col: 1,
                                 })
                               }
-                              className="w-full text-xs text-center text-zinc-900 dark:text-white border-none bg-transparent resize-none"
+                              className="w-full text-xs text-center text-neutral-900 dark:text-white border-none bg-transparent resize-none"
                               rows={2}
                               style={{
                                 minHeight: "28px",
@@ -3744,7 +3748,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             />
                           ) : (
                             <div
-                              className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                              className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
                                 minHeight: "28px",
                                 lineHeight: "1.1",
@@ -3763,7 +3767,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         {/* Size dropdown (stacked column) */}
                         <td
                           colSpan={2}
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                         >
                           {isEditMode ? (
                             <select
@@ -3783,7 +3787,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   col: 2,
                                 })
                               }
-                              className="form-select text-xs py-1 px-1 text-center w-full text-zinc-900 dark:text-white border-none bg-transparent"
+                              className="form-select text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
                               style={{ fontSize: "8px", textAlign: "center" }}
                             >
                               <option value="">-</option>
@@ -3795,7 +3799,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             </select>
                           ) : (
                             <div
-                              className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                              className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
                                 fontSize: "8px",
                                 padding: "2px 1px",
@@ -3808,7 +3812,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         </td>
 
                         {/* RDG indicator column */}
-                        <td className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600">
+                        <td className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600">
                           RDG
                         </td>
 
@@ -3826,7 +3830,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                           "cToN",
                         ].map((key, idx) => (
                           <td
-                            className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600"
+                            className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                             key={`${set.id}-reading-${key}`}
                           >
                             <input
@@ -3849,7 +3853,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   col: idx + 3,
                                 })
                               }
-                              className="form-input text-xs py-1 px-1 text-center w-full text-zinc-900 dark:text-white border-none bg-transparent"
+                              className="form-input text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
                               readOnly={!isEditMode}
                             />
                           </td>
@@ -3858,7 +3862,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         {/* Continuity - spans both rows */}
                         <td
                           rowSpan={2}
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600 align-middle"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600 align-middle"
                         >
                           {isEditMode ? (
                             <select
@@ -3878,7 +3882,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   col: 13,
                                 })
                               }
-                              className="form-select text-xs py-1 px-1 text-center w-full text-zinc-900 dark:text-white border-none bg-transparent"
+                              className="form-select text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
                               style={{ fontSize: "8px", textAlign: "center" }}
                             >
                               <option value="">-</option>
@@ -3887,7 +3891,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             </select>
                           ) : (
                             <div
-                              className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                              className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
                                 fontSize: "8px",
                                 padding: "2px 1px",
@@ -3906,13 +3910,13 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         {/* Results - spans both rows */}
                         <td
                           rowSpan={2}
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600 align-middle"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600 align-middle"
                         >
                           {isEditMode ? (
                             <select
                               data-position={`${(set.id - 1) * 2}-14`}
                               aria-label={`Set ${set.id} Result`}
-                              className="form-select text-xs py-1 px-1 text-center w-full text-zinc-900 dark:text-white border-none bg-transparent"
+                              className="form-select text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
                               value={set.result || ""}
                               onChange={(e) =>
                                 handleTestSetChange(
@@ -3938,7 +3942,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             </select>
                           ) : (
                             <div
-                              className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                              className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
                                 fontSize: "8px",
                                 padding: "2px 1px",
@@ -3952,14 +3956,14 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                       </tr>
 
                       {/* Second row for 20°C corrected values */}
-                      <tr className="bg-zinc-50 dark:bg-dark-150 hover:bg-zinc-100 dark:hover:bg-dark-300">
+                      <tr className="bg-neutral-50 dark:bg-dark-150 hover:bg-neutral-100 dark:hover:bg-dark-300">
                         {/* Empty - under From and To, since rowSpan=2 above */}
                         {/* (No <td> here for From/To) */}
 
                         {/* Config dropdown (stacked column) */}
                         <td
                           colSpan={2}
-                          className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600"
+                          className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                         >
                           {isEditMode ? (
                             <select
@@ -3979,7 +3983,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   col: 2,
                                 })
                               }
-                              className="form-select text-xs py-1 px-1 text-center w-full text-zinc-900 dark:text-white border-none bg-transparent"
+                              className="form-select text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
                               style={{ fontSize: "8px", textAlign: "center" }}
                             >
                               {CONFIGURATION_OPTIONS.map((option) => (
@@ -3990,7 +3994,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             </select>
                           ) : (
                             <div
-                              className="text-xs text-center w-full text-zinc-900 dark:text-white"
+                              className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
                                 fontSize: "8px",
                                 padding: "2px 1px",
@@ -4003,7 +4007,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         </td>
 
                         {/* 20°C indicator column */}
-                        <td className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600">
+                        <td className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600">
                           20°C
                         </td>
 
@@ -4021,7 +4025,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                           "cToN",
                         ].map((key) => (
                           <td
-                            className="px-1 py-0.5 text-center border border-zinc-300 dark:border-zinc-600 text-xs font-medium text-zinc-900 dark:text-white"
+                            className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600 text-xs font-medium text-neutral-900 dark:text-white"
                             key={`${set.id}-corrected-${key}`}
                           >
                             {
@@ -4043,7 +4047,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
           {/* Test Equipment Used */}
           <div className="mb-6 page-break-before">
-            <h2 className="section-test-equipment text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="section-test-equipment text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-4 gap-4 print:hidden test-eqpt-onscreen">
@@ -4171,7 +4175,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             </div>
             {/* Print-only compact Test Equipment table (4 boxes wide, 1 row) */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -4180,25 +4184,25 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Megohmmeter:</div>
                       <div className="mt-0">
                         {formData.testEquipment.megohmmeter || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Serial Number:</div>
                       <div className="mt-0">
                         {formData.testEquipment.serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">AMP ID:</div>
                       <div className="mt-0">
                         {formData.testEquipment.ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Calibration Date:</div>
                       <div className="mt-0">
                         {formData.testEquipment.calDate || ""}
@@ -4214,7 +4218,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.testEquipment.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <h2 className="section-comments text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="section-comments text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <textarea
@@ -4237,10 +4241,10 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             />
             {formData.testEquipment.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border text-[0.85rem]">
+                <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem]">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black print:border">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                         <div className="whitespace-pre-wrap">
                           {formData.testEquipment.comments}
                         </div>

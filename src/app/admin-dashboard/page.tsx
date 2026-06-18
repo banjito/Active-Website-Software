@@ -246,8 +246,8 @@ export const AdminDashboard: React.FC = () => {
   const renderDashboard = () => {
     return (
       <div className="space-y-5">
-        <div className="flex flex-col gap-2 border-b border-zinc-200 pb-5 dark:border-dark-300">
-          <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+        <div className="flex flex-col gap-2 border-b border-neutral-200 pb-5 dark:border-dark-300">
+          <h1 className="text-2xl font-semibold text-neutral-950 dark:text-white">
             Admin Dashboard
           </h1>
         </div>
@@ -285,7 +285,7 @@ export const AdminDashboard: React.FC = () => {
                 <CardHeader className="flex flex-row items-center p-6">
                   <div className="flex min-w-0 items-center gap-3">
                     <Icon className={`h-6 w-6 shrink-0 ${iconClassName}`} />
-                    <CardTitle className="text-2xl font-medium leading-7 text-zinc-900 dark:text-white">
+                    <CardTitle className="text-2xl font-medium leading-7 text-neutral-900 dark:text-white">
                       {title}
                     </CardTitle>
                   </div>
@@ -300,7 +300,7 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
-      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-zinc-200 dark:border-dark-200">
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
         <HeaderBar />
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -314,7 +314,7 @@ export const AdminDashboard: React.FC = () => {
               >
                 Back to Dashboard
               </Button>
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
                 {viewTitles[currentView]}
               </h2>
             </div>

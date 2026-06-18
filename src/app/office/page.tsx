@@ -102,7 +102,7 @@ const OfficeAdministrationPortal: React.FC = () => {
                 <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   284
                 </p>
-                <p className="text-sm text-zinc-500 dark:text-white">
+                <p className="text-sm text-neutral-500 dark:text-white">
                   Documents
                 </p>
               </div>
@@ -110,7 +110,7 @@ const OfficeAdministrationPortal: React.FC = () => {
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                   32
                 </p>
-                <p className="text-sm text-zinc-500 dark:text-white">
+                <p className="text-sm text-neutral-500 dark:text-white">
                   Pending Expenses
                 </p>
               </div>
@@ -118,7 +118,7 @@ const OfficeAdministrationPortal: React.FC = () => {
                 <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                   18
                 </p>
-                <p className="text-sm text-zinc-500 dark:text-white">
+                <p className="text-sm text-neutral-500 dark:text-white">
                   Maintenance Requests + Active
                 </p>
               </div>
@@ -126,7 +126,7 @@ const OfficeAdministrationPortal: React.FC = () => {
                 <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
                   8
                 </p>
-                <p className="text-sm text-zinc-500 dark:text-white">
+                <p className="text-sm text-neutral-500 dark:text-white">
                   Upcoming Events + Active
                 </p>
               </div>
@@ -134,7 +134,7 @@ const OfficeAdministrationPortal: React.FC = () => {
                 <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                   5
                 </p>
-                <p className="text-sm text-zinc-500 dark:text-white">
+                <p className="text-sm text-neutral-500 dark:text-white">
                   Expiring Contracts
                 </p>
               </div>

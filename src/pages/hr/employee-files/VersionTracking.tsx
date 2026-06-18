@@ -423,7 +423,7 @@ export const VersionTracking: React.FC<VersionTrackingProps> = ({
     }
 
     return (
-      <span className="text-xs bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 px-2 py-1 rounded capitalize">
+      <span className="text-xs bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 px-2 py-1 rounded capitalize">
         {cert.status.replace("_", " ")}
       </span>
     );

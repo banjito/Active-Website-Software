@@ -232,7 +232,7 @@ export function JobNotifications({
       case "new_job":
         return <Plus className="h-5 w-5 text-teal-500" />;
       default:
-        return <Bell className="h-5 w-5 text-zinc-500" />;
+        return <Bell className="h-5 w-5 text-neutral-500" />;
     }
   };
 
@@ -246,7 +246,7 @@ export function JobNotifications({
   // Notification content to be displayed in either tray or dialog
   const renderNotificationContent = () => (
     <>
-      <div className="p-3 border-b border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
+      <div className="p-3 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
         <h3 className="font-medium">Notifications</h3>
         <div className="flex gap-2">
           {notifications.length > 0 && (
@@ -285,8 +285,8 @@ export function JobNotifications({
 
       <div className="max-h-96 overflow-y-auto">
         {loading ? (
-          <div className="p-4 text-center text-zinc-500">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-900 mx-auto mb-2"></div>
+          <div className="p-4 text-center text-neutral-500">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-neutral-900 mx-auto mb-2"></div>
             <LoadingSpinner size="md" />
           </div>
         ) : error ? (
@@ -295,14 +295,16 @@ export function JobNotifications({
             {error}
           </div>
         ) : getFilteredNotifications().length === 0 ? (
-          <div className="p-4 text-center text-zinc-500">No notifications</div>
+          <div className="p-4 text-center text-neutral-500">
+            No notifications
+          </div>
         ) : (
           getFilteredNotifications().map((notification) => (
             <div
               key={notification.id}
-              className={`p-3 border-b border-zinc-100 dark:border-zinc-700 flex gap-3 ${
+              className={`p-3 border-b border-neutral-100 dark:border-neutral-700 flex gap-3 ${
                 notification.is_read
-                  ? "bg-zinc-50 dark:bg-dark-150/50"
+                  ? "bg-neutral-50 dark:bg-dark-150/50"
                   : "bg-white dark:bg-dark-150"
               }`}
             >
@@ -312,7 +314,7 @@ export function JobNotifications({
               <div className="flex-grow">
                 <p className="text-sm font-medium">{notification.title}</p>
                 <p className="text-sm">{notification.message}</p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {new Date(notification.created_at).toLocaleString()}
                 </p>
               </div>
@@ -334,7 +336,7 @@ export function JobNotifications({
                   className="h-6 w-6 p-0"
                   onClick={() => handleDismiss(notification.id)}
                 >
-                  <X className="h-4 w-4 text-zinc-500" />
+                  <X className="h-4 w-4 text-neutral-500" />
                   <span className="sr-only">Dismiss</span>
                 </Button>
               </div>

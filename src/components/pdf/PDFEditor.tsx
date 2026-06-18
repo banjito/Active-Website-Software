@@ -72,10 +72,10 @@ export function PDFEditor({
   return (
     <div className="flex flex-col h-full">
       {/* PDF Editor Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150">
+      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-zinc-500" />
-          <span className="text-sm font-medium text-zinc-700 dark:text-white">
+          <FileText className="h-5 w-5 text-neutral-500" />
+          <span className="text-sm font-medium text-neutral-700 dark:text-white">
             {fileName}
           </span>
         </div>
@@ -85,7 +85,7 @@ export function PDFEditor({
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            className="text-zinc-600 hover:text-zinc-800"
+            className="text-neutral-600 hover:text-neutral-800"
           >
             <Download className="h-4 w-4 mr-1" />
             Print
@@ -94,7 +94,7 @@ export function PDFEditor({
       </div>
 
       {/* PDF Viewer */}
-      <div className="flex-1 relative bg-zinc-100">
+      <div className="flex-1 relative bg-neutral-100">
         <iframe
           ref={iframeRef}
           src={`${currentUrl}#toolbar=1&navpanes=0&scrollbar=1`}
@@ -108,7 +108,7 @@ export function PDFEditor({
       </div>
 
       {/* Status Bar */}
-      <div className="flex items-center justify-between p-2 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-150 text-xs text-zinc-500">
+      <div className="flex items-center justify-between p-2 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 text-xs text-neutral-500">
         <span>
           Use your browser's PDF tools to annotate. Click Save when done.
         </span>

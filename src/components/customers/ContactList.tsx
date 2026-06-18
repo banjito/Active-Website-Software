@@ -667,7 +667,9 @@ export default function ContactList() {
             />
           </svg>
         </div>
-        <div className="text-zinc-900 dark:text-zinc-100 mb-4">{loadError}</div>
+        <div className="text-neutral-900 dark:text-neutral-100 mb-4">
+          {loadError}
+        </div>
         <button
           onClick={() => {
             setLoadError(null);
@@ -694,7 +696,7 @@ export default function ContactList() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white mb-1">
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-1">
             Contacts
           </h1>
         </div>
@@ -704,7 +706,7 @@ export default function ContactList() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search contacts by name, email, phone"
-            className="w-72 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            className="w-72 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
           <div className="relative">
             <input
@@ -715,7 +717,7 @@ export default function ContactList() {
                 setPage(1);
               }}
               placeholder="Starts with..."
-              className="w-32 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="w-32 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             />
             {startsWithFilter && (
               <button
@@ -724,7 +726,7 @@ export default function ContactList() {
                   setStartsWithFilter("");
                   setPage(1);
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -741,7 +743,7 @@ export default function ContactList() {
             className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm ${
               sortOrder
                 ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20"
-                : "border-zinc-300 bg-white dark:bg-dark-150 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-dark-200"
+                : "border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
             }`}
             title={
               sortOrder === "asc"
@@ -786,7 +788,7 @@ export default function ContactList() {
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
               ? "bg-[#f26722] text-white"
-              : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100"
+              : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
           }`}
         >
           All
@@ -799,14 +801,14 @@ export default function ContactList() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
                 ? "bg-[#f26722] text-white"
-                : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100"
+                : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
             }`}
           >
             {div.label}
           </button>
         ))}
         {activeDivisionTabs.length > 0 && (
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-2">
             Sorted A-Z by default
           </span>
         )}
@@ -814,36 +816,36 @@ export default function ContactList() {
 
       <div className="mt-4">
         <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
-          <table className="min-w-full divide-y divide-zinc-300">
-            <thead className="bg-zinc-50 dark:bg-dark-150">
+          <table className="min-w-full divide-y divide-neutral-300">
+            <thead className="bg-neutral-50 dark:bg-dark-150">
               <tr>
                 <th
                   scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-zinc-900 dark:text-white sm:pl-6"
+                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6"
                 >
                   Name
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-zinc-900 dark:text-white"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
                   Position
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-zinc-900 dark:text-white"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
                   Email
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-zinc-900 dark:text-white"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
                   Phone
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-zinc-900 dark:text-white"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
                   Primary
                 </th>
@@ -852,20 +854,20 @@ export default function ContactList() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-600 bg-white dark:bg-dark-150">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-600 bg-white dark:bg-dark-150">
               {contacts.map((contact) => (
                 <tr
                   key={contact.id}
-                  className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                  className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700"
                   onClick={() => handleRowClick(contact.id)}
                 >
-                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-zinc-900 dark:text-zinc-200 sm:pl-6">
+                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 sm:pl-6">
                     {contact.first_name} {contact.last_name}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-500 dark:text-white">
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                     {contact.position}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-500 dark:text-white">
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                     {contact.email ? (
                       <a
                         href={`mailto:${contact.email}`}
@@ -878,7 +880,7 @@ export default function ContactList() {
                       "-"
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-500 dark:text-white">
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                     {contact.phone ? (
                       <a
                         href={`tel:${contact.phone}`}
@@ -891,13 +893,13 @@ export default function ContactList() {
                       "-"
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-500 dark:text-white">
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                     {contact.is_primary ? (
                       <span className="inline-flex rounded-full bg-green-100 dark:bg-green-900 px-2 text-xs font-semibold leading-5 text-green-800 dark:text-green-200">
                         Yes
                       </span>
                     ) : (
-                      <span className="inline-flex rounded-full bg-zinc-100 dark:bg-dark-150 px-2 text-xs font-semibold leading-5 text-zinc-800 dark:text-zinc-200">
+                      <span className="inline-flex rounded-full bg-neutral-100 dark:bg-dark-150 px-2 text-xs font-semibold leading-5 text-neutral-800 dark:text-neutral-200">
                         No
                       </span>
                     )}
@@ -939,7 +941,7 @@ export default function ContactList() {
       {/* Pagination Controls */}
       {totalPages > 0 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-zinc-600 dark:text-white">
+          <div className="text-sm text-neutral-600 dark:text-white">
             Showing {(page - 1) * pageSize + 1} -{" "}
             {Math.min(page * pageSize, totalCount)} of {totalCount} contacts
           </div>
@@ -966,12 +968,12 @@ export default function ContactList() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-lg rounded bg-white dark:bg-dark-150 p-6">
             <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
                 {isEditMode ? "Edit Contact" : "Add New Contact"}
               </Dialog.Title>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-white"
+                className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -980,7 +982,7 @@ export default function ContactList() {
               <div className="relative">
                 <label
                   htmlFor="customer_search"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Customer *
                 </label>
@@ -996,16 +998,16 @@ export default function ContactList() {
                     }
                   }}
                   placeholder="Search for a customer..."
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
                 {showCustomerResults && filteredCustomers.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-300 dark:border-zinc-600">
+                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-300 dark:border-neutral-600">
                     <ul className="max-h-60 overflow-auto py-1">
                       {filteredCustomers.map((customer) => (
                         <li
                           key={customer.id}
-                          className="px-4 py-2 hover:bg-zinc-100 dark:hover:bg-dark-200 cursor-pointer dark:text-white"
+                          className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer dark:text-white"
                           onClick={() => handleCustomerSelect(customer)}
                         >
                           {customer.company_name}
@@ -1024,7 +1026,7 @@ export default function ContactList() {
               <div>
                 <label
                   htmlFor="first_name"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   First Name *
                 </label>
@@ -1035,13 +1037,13 @@ export default function ContactList() {
                   required
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="last_name"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Last Name *
                 </label>
@@ -1052,13 +1054,13 @@ export default function ContactList() {
                   required
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Email
                 </label>
@@ -1068,13 +1070,13 @@ export default function ContactList() {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="phone"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Phone
                 </label>
@@ -1084,13 +1086,13 @@ export default function ContactList() {
                   id="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
                 <label
                   htmlFor="position"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Position
                 </label>
@@ -1100,7 +1102,7 @@ export default function ContactList() {
                   id="position"
                   value={formData.position}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -1115,17 +1117,17 @@ export default function ContactList() {
                       is_primary: e.target.checked,
                     }))
                   }
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 dark:border-zinc-600 rounded"
+                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 dark:border-neutral-600 rounded"
                 />
                 <label
                   htmlFor="is_primary"
-                  className="ml-2 block text-sm text-zinc-700 dark:text-white"
+                  className="ml-2 block text-sm text-neutral-700 dark:text-white"
                 >
                   Primary Contact
                 </label>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                   Divisions
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1146,7 +1148,7 @@ export default function ContactList() {
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                           isActive
                             ? "bg-[#f26722] text-white"
-                            : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
+                            : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
                         {div.label}
@@ -1154,7 +1156,7 @@ export default function ContactList() {
                     );
                   })}
                 </div>
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                   Tag this contact with the divisions they serve. Leave empty to
                   inherit from the customer.
                 </p>
@@ -1174,7 +1176,7 @@ export default function ContactList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-zinc-700 dark:text-white shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -1192,11 +1194,11 @@ export default function ContactList() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-sm rounded bg-white dark:bg-dark-150 p-6">
-            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-dark-900">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-dark-900">
               Delete Contact
             </Dialog.Title>
             <div className="mt-2">
-              <p className="text-sm text-zinc-500 dark:text-dark-400">
+              <p className="text-sm text-neutral-500 dark:text-dark-400">
                 Are you sure you want to delete this contact? This action cannot
                 be undone.
               </p>
@@ -1212,7 +1214,7 @@ export default function ContactList() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex justify-center rounded-md border border-zinc-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-amp-orange-500 dark:focus:ring-amp-gold-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-neutral-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-dark-300 hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-amp-orange-500 dark:focus:ring-amp-gold-500 focus:ring-offset-2"
               >
                 Cancel
               </button>

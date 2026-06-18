@@ -62,9 +62,9 @@ export const PostCard: React.FC<Props> = ({
   };
 
   return (
-    <article className="w-full bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-2.5">
+    <article className="w-full bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-2.5">
       <div className="flex gap-2">
-        <div className="h-8 w-8 rounded-full overflow-hidden bg-zinc-200 dark:bg-dark-200 flex-shrink-0 flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-dark-200 flex-shrink-0 flex items-center justify-center">
           {author.avatarUrl ? (
             <img
               src={author.avatarUrl}
@@ -72,16 +72,16 @@ export const PostCard: React.FC<Props> = ({
               className="h-full w-full object-cover"
             />
           ) : (
-            <UserIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-1.5">
             <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 min-w-0">
-              <span className="text-sm font-semibold text-zinc-900 dark:text-white leading-tight">
+              <span className="text-sm font-semibold text-neutral-900 dark:text-white leading-tight">
                 {author.displayName}
               </span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 {formatRelativeSafe(post.created_at)}
               </span>
             </div>
@@ -99,8 +99,8 @@ export const PostCard: React.FC<Props> = ({
             ) : null}
           </div>
           {displayBody ? (
-            <div className="mt-1.5 inline-block max-w-full rounded-2xl bg-zinc-100 dark:bg-dark-200/90 px-2.5 py-1.5">
-              <p className="text-sm leading-snug text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
+            <div className="mt-1.5 inline-block max-w-full rounded-2xl bg-neutral-100 dark:bg-dark-200/90 px-2.5 py-1.5">
+              <p className="text-sm leading-snug text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap break-words">
                 {displayBody}
               </p>
             </div>

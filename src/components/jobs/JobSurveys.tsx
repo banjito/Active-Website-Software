@@ -215,7 +215,7 @@ export default function JobSurveys({
       case "sent":
         return <Badge className="bg-blue-100 text-blue-800">Sent</Badge>;
       case "draft":
-        return <Badge className="bg-zinc-100 text-zinc-800">Draft</Badge>;
+        return <Badge className="bg-neutral-100 text-neutral-800">Draft</Badge>;
       default:
         return null;
     }
@@ -249,10 +249,10 @@ export default function JobSurveys({
       )}
 
       {surveys.length === 0 ? (
-        <div className="bg-zinc-50 dark:bg-dark-150 p-8 text-center rounded-md">
-          <FileText className="h-12 w-12 mx-auto text-zinc-400" />
+        <div className="bg-neutral-50 dark:bg-dark-150 p-8 text-center rounded-md">
+          <FileText className="h-12 w-12 mx-auto text-neutral-400" />
           <h3 className="mt-2 text-lg font-medium">No surveys yet</h3>
-          <p className="mt-1 text-zinc-500 dark:text-white">
+          <p className="mt-1 text-neutral-500 dark:text-white">
             Create a new survey to gather feedback from the customer.
           </p>
           <Button onClick={handleOpenCreateModal} className="mt-4">
@@ -363,7 +363,7 @@ export default function JobSurveys({
                 <select
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  className="w-full border border-zinc-300 rounded-md p-2"
+                  className="w-full border border-neutral-300 rounded-md p-2"
                   disabled={isSubmitting}
                 >
                   <option value="">Select a template</option>
@@ -382,7 +382,7 @@ export default function JobSurveys({
                 <select
                   value={selectedContactId}
                   onChange={(e) => setSelectedContactId(e.target.value)}
-                  className="w-full border border-zinc-300 rounded-md p-2"
+                  className="w-full border border-neutral-300 rounded-md p-2"
                   disabled={isSubmitting}
                 >
                   <option value="">No contact</option>

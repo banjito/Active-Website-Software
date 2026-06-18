@@ -729,10 +729,10 @@ export function HrCustomReports() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           HR Analytics Dashboard
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="text-neutral-600 dark:text-neutral-400 mt-2">
           View and export HR analytics. Data refreshes when you change filters
           or click Refresh.
         </p>

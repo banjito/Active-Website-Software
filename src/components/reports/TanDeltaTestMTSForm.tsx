@@ -409,7 +409,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -462,12 +462,12 @@ const TanDeltaTestMTSForm: React.FC = () => {
           {/* System Voltage */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Parameters
             </h2>
             {/* On-screen form - hidden in print */}
             <div className="flex items-center gap-4 print:hidden test-params-onscreen">
-              <label className="text-sm font-medium text-zinc-700 dark:text-white whitespace-nowrap">
+              <label className="text-sm font-medium text-neutral-700 dark:text-white whitespace-nowrap">
                 System Voltage Line to Ground (kV RMS):
               </label>
               <input
@@ -476,19 +476,19 @@ const TanDeltaTestMTSForm: React.FC = () => {
                 value={systemVoltage}
                 onChange={(e) => setSystemVoltage(e.target.value)}
                 disabled={!isEditing}
-                className="mt-1 block w-32 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                className="mt-1 block w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
               />
             </div>
 
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-zinc-300 print:border-black">
+              <table className="w-full border border-neutral-300 print:border-black">
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black font-semibold w-1/3">
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold w-1/3">
                       System Voltage Line to Ground (kV RMS):
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {systemVoltage}
                     </td>
                   </tr>
@@ -500,7 +500,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
           {/* Tan Delta Test Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Test
             </h2>
             <div className="flex justify-end mb-2 print:hidden">
@@ -512,58 +512,58 @@ const TanDeltaTestMTSForm: React.FC = () => {
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Voltage Steps
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       kV
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                     >
                       A Phase
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                     >
                       B Phase
                     </th>
                     <th
                       colSpan={2}
-                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                     >
                       C Phase
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       TD [E-3]
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Std. Dev
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {data.map((row, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
@@ -579,10 +579,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.voltageLabel}
                           </span>
                         )}
@@ -597,10 +597,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "kV", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.kV.toFixed(3)}
                           </span>
                         )}
@@ -615,10 +615,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseA", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseA.toFixed(1)}
                           </span>
                         )}
@@ -639,10 +639,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseAStdDev === null
                               ? ""
                               : row.phaseAStdDev.toFixed(1)}
@@ -659,10 +659,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseB", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseB.toFixed(1)}
                           </span>
                         )}
@@ -683,10 +683,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseBStdDev === null
                               ? ""
                               : row.phaseBStdDev.toFixed(1)}
@@ -703,10 +703,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseC", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseC.toFixed(1)}
                           </span>
                         )}
@@ -727,10 +727,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {row.phaseCStdDev === null
                               ? ""
                               : row.phaseCStdDev.toFixed(1)}
@@ -747,11 +747,11 @@ const TanDeltaTestMTSForm: React.FC = () => {
           {/* Chart Section */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Chart
             </h2>
             <div
-              className="border border-zinc-200 dark:border-zinc-700 p-6"
+              className="border border-neutral-200 dark:border-neutral-700 p-6"
               style={{ height: "400px" }}
             >
               <ResponsiveContainer>
@@ -823,7 +823,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
           {/* Test Equipment Used Section */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             {/* On-screen form - hidden in print */}
@@ -981,58 +981,58 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-zinc-300 print:border-black">
+              <table className="w-full border border-neutral-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
                       Equipment
                     </th>
-                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
                       Make/Model
                     </th>
-                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
                       Serial Number
                     </th>
-                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
                       AMP ID
                     </th>
-                    <th className="p-2 border border-zinc-300 print:border-black bg-zinc-50 print:bg-zinc-100 text-left">
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black font-semibold">
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
                       Megohmmeter
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.megohmmeterMakeModel || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.megohmeterSerial || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.megohmmeterAmpId || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.megohmmeterCalDate || ""}
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black font-semibold">
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
                       VLF Hipot
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.vlfHipotMakeModel || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.vlfHipotSerial || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.vlfHipotAmpId || ""}
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       {equipment.vlfHipotCalDate || ""}
                     </td>
                   </tr>
@@ -1046,7 +1046,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             {/* On-screen form - hidden in print */}
@@ -1063,10 +1063,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
             {comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full border border-zinc-300 print:border-black">
+                <table className="w-full border border-neutral-300 print:border-black">
                   <tbody>
                     <tr>
-                      <td className="p-2 border border-zinc-300 print:border-black min-h-[100px] align-top">
+                      <td className="p-2 border border-neutral-300 print:border-black min-h-[100px] align-top">
                         {comments}
                       </td>
                     </tr>
@@ -1115,7 +1115,7 @@ if (typeof document !== "undefined") {
       .mb-6 > h2 { border-bottom: 1px solid black !important; padding-bottom: 2px !important; margin-bottom: 6px !important; font-size: 12px !important; }
 
       /* Remove card/shadow visuals */
-      .shadow, .shadow-md, .shadow-lg, .rounded, .rounded-lg, .border, .border-zinc-200, .dark\\:border-zinc-700, .bg-white, .dark\\:bg-dark-150 { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+      .shadow, .shadow-md, .shadow-lg, .rounded, .rounded-lg, .border, .border-neutral-200, .dark\\:border-neutral-700, .bg-white, .dark\\:bg-dark-150 { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
 
       /* Print header spacing */
       .print\\:flex { margin-bottom: 8px !important; }
@@ -1128,7 +1128,7 @@ if (typeof document !== "undefined") {
       .comments-section textarea { width: 100% !important; max-width: 100% !important; min-width: 100% !important; height: 90px !important; }
 
       /* Form label styling */
-      .form-label { display: block !important; text-sm !important; font-medium !important; text-zinc-700 !important; margin-bottom: 0.25rem !important; }
+      .form-label { display: block !important; text-sm !important; font-medium !important; text-neutral-700 !important; margin-bottom: 0.25rem !important; }
       .form-input { display: block !important; width: 100% !important; padding: 0.5rem !important; border: 1px solid #d1d5db !important; border-radius: 0.375rem !important; background-color: white !important; color: black !important; font-size: 12px !important; }
     }
   `;

@@ -120,10 +120,10 @@ export const CareerPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Career Page
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Manage public job listings
           </p>
         </div>
@@ -141,19 +141,19 @@ export const CareerPage: React.FC = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search jobs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All Departments</option>
               {departments.map((dept) => (
@@ -179,11 +179,11 @@ export const CareerPage: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Briefcase className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Briefcase className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No jobs available
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Approved and posted requisitions will appear here
               </p>
             </div>
@@ -229,14 +229,14 @@ export const CareerPage: React.FC = () => {
               <CardContent>
                 {(req.description || req.requirements) && (
                   <div
-                    className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-2 prose prose-sm max-w-none [&_p]:m-0 [&_p]:inline"
+                    className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 prose prose-sm max-w-none [&_p]:m-0 [&_p]:inline"
                     dangerouslySetInnerHTML={{
                       __html: getJobRequisitionDisplayHtml(req),
                     }}
                   />
                 )}
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <div className="text-sm text-neutral-500 dark:text-neutral-400">
                     {req.status === "posted" && req.posted_at
                       ? `Posted: ${new Date(req.posted_at).toLocaleDateString()}`
                       : req.status === "approved" && req.approved_at
@@ -273,34 +273,34 @@ export const CareerPage: React.FC = () => {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Department
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.department}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Location
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.location}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Employment Type
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.employment_type}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Salary Range
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {formatSalaryRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
@@ -312,11 +312,11 @@ export const CareerPage: React.FC = () => {
                 selectedRequisition.requirements ||
                 selectedRequisition.notes) && (
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2 block">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2 block">
                     Job Description & Requirements
                   </label>
                   <div
-                    className="text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
+                    className="text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
                     dangerouslySetInnerHTML={{
                       __html: getJobRequisitionDisplayHtml(selectedRequisition),
                     }}

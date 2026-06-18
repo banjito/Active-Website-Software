@@ -241,9 +241,9 @@ export function JobCreationForm({
             `Create ${division.charAt(0).toUpperCase() + division.slice(1)} Job`}
         </Button>
       ) : (
-        <Card className="p-4 mb-6 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-sm">
+        <Card className="p-4 mb-6 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-sm">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               NETA Technician Jobs
             </h2>
             <Button onClick={() => setShowForm(true)}>
@@ -251,7 +251,7 @@ export function JobCreationForm({
               Create New Job
             </Button>
           </div>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-white">
+          <p className="mt-2 text-sm text-neutral-600 dark:text-white">
             Create NETA Technician jobs directly for{" "}
             {division.charAt(0).toUpperCase() + division.slice(1)} division
           </p>

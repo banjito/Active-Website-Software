@@ -189,7 +189,7 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
   return (
     <div className="hidden print:block job-info-print">
       <table
-        className="job-info-print-table w-full table-fixed border-collapse border border-zinc-300 print:border-black print:border"
+        className="job-info-print-table w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border"
         style={{ marginLeft: 0, tableLayout: "fixed" }}
       >
         <colgroup>
@@ -199,11 +199,11 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
         </colgroup>
         <tbody>
           <tr>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Customer:</div>
               <div className={cellWrap}>{data.customer || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Temp:</div>
               <div className={cellWrap}>
                 {temp?.fahrenheit !== undefined || temp?.celsius !== undefined
@@ -211,49 +211,49 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
                   : ""}
               </div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Job #:</div>
               <div className={cellWrap}>{data.jobNumber || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Technicians:</div>
               <div className={cellWrap}>{data.technicians || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Date:</div>
               <div className={cellWrap}>{dateText}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Identifier:</div>
               <div className={cellWrap}>{data.identifier || ""}</div>
             </td>
           </tr>
           <tr>
-            <td className="job-info-print-address-cell p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="job-info-print-address-cell p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Address:</div>
               <div className={`job-info-print-address-value ${cellWrap}`}>
                 {addressText}
               </div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">TCF:</div>
               <div className={cellWrap}>{temp?.tcf ?? ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Humidity:</div>
               <div className={cellWrap}>
                 {temp?.humidity !== undefined ? `${temp.humidity}%` : ""}
               </div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Substation:</div>
               <div className={cellWrap}>{data.substation || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Eqpt. Location:</div>
               <div className={cellWrap}>{data.eqptLocation || ""}</div>
             </td>
-            <td className="p-3 align-top text-center border border-zinc-300 print:border-black print:border min-w-0">
+            <td className="p-3 align-top text-center border border-neutral-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">User:</div>
               <div className={cellWrap}>{data.user || ""}</div>
             </td>

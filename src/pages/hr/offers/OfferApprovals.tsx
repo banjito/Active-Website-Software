@@ -430,7 +430,7 @@ export const OfferApprovals: React.FC = () => {
       case "pending":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -824,7 +824,7 @@ export const OfferApprovals: React.FC = () => {
     }
     return {
       label: `Expires in ${daysLeft} days`,
-      color: "text-zinc-600 dark:text-zinc-400",
+      color: "text-neutral-600 dark:text-neutral-400",
       expired: false,
       daysLeft,
     };
@@ -888,7 +888,7 @@ export const OfferApprovals: React.FC = () => {
           <React.Fragment key={approver.id}>
             {idx > 0 && (
               <ArrowRight
-                className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-zinc-300 dark:text-zinc-600 shrink-0`}
+                className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-neutral-300 dark:text-neutral-600 shrink-0`}
               />
             )}
             <div
@@ -899,7 +899,7 @@ export const OfferApprovals: React.FC = () => {
                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                     : isCurrentStep
                       ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-2 ring-yellow-300 dark:ring-yellow-700"
-                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                      : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
               }`}
             >
               {approver.status === "approved" && (
@@ -955,10 +955,10 @@ export const OfferApprovals: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Offer Approvals
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Route offers for manager and HR sign-off
           </p>
         </div>
@@ -979,36 +979,36 @@ export const OfferApprovals: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Pending Approval
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {pendingOffers.length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Approved
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {approvedOffers.length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Draft
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {draftOffers.length}
             </div>
           </CardContent>
@@ -1016,13 +1016,13 @@ export const OfferApprovals: React.FC = () => {
       </div>
 
       {/* Tabs: Mine vs All */}
-      <div className="flex gap-1 bg-zinc-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-neutral-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
         <button
           onClick={() => setViewTab("mine")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             viewTab === "mine"
-              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
           My Approvals ({myPendingOfferIds.size})
@@ -1031,8 +1031,8 @@ export const OfferApprovals: React.FC = () => {
           onClick={() => setViewTab("all")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             viewTab === "all"
-              ? "bg-white dark:bg-dark-150 text-zinc-900 dark:text-white shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
           All Pending ({pendingOffers.length})
@@ -1063,13 +1063,13 @@ export const OfferApprovals: React.FC = () => {
             if (list.length === 0) {
               return (
                 <div className="text-center py-12">
-                  <FileCheck className="mx-auto h-12 w-12 text-zinc-400" />
-                  <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+                  <FileCheck className="mx-auto h-12 w-12 text-neutral-400" />
+                  <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                     {viewTab === "mine"
                       ? "No approvals assigned to you"
                       : "No pending approvals"}
                   </h3>
-                  <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                     {viewTab === "mine"
                       ? "You have no offers waiting on your approval"
                       : "All offers have been reviewed"}
@@ -1088,16 +1088,16 @@ export const OfferApprovals: React.FC = () => {
                   return (
                     <div
                       key={offer.id}
-                      className={`p-4 border rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100 ${
+                      className={`p-4 border rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100 ${
                         canApprove
-                          ? "border-l-4 border-l-[#f26722] border-zinc-200 dark:border-zinc-700"
-                          : "border-zinc-200 dark:border-zinc-700"
+                          ? "border-l-4 border-l-[#f26722] border-neutral-200 dark:border-neutral-700"
+                          : "border-neutral-200 dark:border-neutral-700"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <div className="font-medium text-zinc-900 dark:text-white">
+                            <div className="font-medium text-neutral-900 dark:text-white">
                               {offer.candidate
                                 ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                                 : "Unknown Candidate"}
@@ -1111,10 +1111,10 @@ export const OfferApprovals: React.FC = () => {
                               Step {currentStep} of {chain.length || "?"}
                             </span>
                           </div>
-                          <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                          <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                             {offer.position_title} - {offer.department}
                           </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                             Base Salary:{" "}
                             {offer.base_salary
                               ? `$${offer.base_salary.toLocaleString()}`
@@ -1127,7 +1127,7 @@ export const OfferApprovals: React.FC = () => {
                               <Clock className="h-3 w-3" />
                               {exp.label}
                               {offer.expiration_date && (
-                                <span className="text-zinc-500 dark:text-zinc-500">
+                                <span className="text-neutral-500 dark:text-neutral-500">
                                   (
                                   {new Date(
                                     offer.expiration_date,
@@ -1138,10 +1138,10 @@ export const OfferApprovals: React.FC = () => {
                             </div>
                           )}
                           {chain.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-dark-200">
+                            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-dark-200">
                               <div className="flex items-center gap-2 mb-2">
-                                <Users className="h-3 w-3 text-zinc-400" />
-                                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                                <Users className="h-3 w-3 text-neutral-400" />
+                                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                                   Approval Chain
                                 </span>
                               </div>
@@ -1233,8 +1233,8 @@ export const OfferApprovals: React.FC = () => {
         <CardContent>
           {approvedOffers.length === 0 ? (
             <div className="text-center py-12">
-              <CheckCircle className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <CheckCircle className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No approved offers
               </h3>
             </div>
@@ -1245,15 +1245,15 @@ export const OfferApprovals: React.FC = () => {
                 return (
                   <div
                     key={offer.id}
-                    className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <div className="flex-1">
-                      <div className="font-medium text-zinc-900 dark:text-white">
+                      <div className="font-medium text-neutral-900 dark:text-white">
                         {offer.candidate
                           ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                           : "Unknown Candidate"}
                       </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {offer.position_title} - {offer.department}
                       </div>
                       {exp && (
@@ -1263,7 +1263,7 @@ export const OfferApprovals: React.FC = () => {
                           <Clock className="h-3 w-3" />
                           {exp.label}
                           {offer.expiration_date && (
-                            <span className="text-zinc-500 dark:text-zinc-500">
+                            <span className="text-neutral-500 dark:text-neutral-500">
                               (
                               {new Date(
                                 offer.expiration_date,
@@ -1329,8 +1329,8 @@ export const OfferApprovals: React.FC = () => {
         </CardHeader>
         <CardContent>
           {acceptedOffers.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-              <CheckCircle className="mx-auto h-12 w-12 text-zinc-400 mb-4" />
+            <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
+              <CheckCircle className="mx-auto h-12 w-12 text-neutral-400 mb-4" />
               <p>No accepted offers.</p>
             </div>
           ) : (
@@ -1338,15 +1338,15 @@ export const OfferApprovals: React.FC = () => {
               {acceptedOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-white">
+                    <div className="font-medium text-neutral-900 dark:text-white">
                       {offer.candidate
                         ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                         : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       {offer.position_title} - {offer.department}
                     </div>
                   </div>
@@ -1413,9 +1413,9 @@ export const OfferApprovals: React.FC = () => {
                 {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
-            <ul className="border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-200 dark:divide-zinc-700">
+            <ul className="border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-200 dark:divide-neutral-700">
               {offerAttachments.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                <li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">
                   No attachments yet.
                 </li>
               ) : (
@@ -1424,7 +1424,7 @@ export const OfferApprovals: React.FC = () => {
                     key={a.id}
                     className="flex items-center justify-between px-4 py-2"
                   >
-                    <span className="text-sm text-zinc-900 dark:text-white truncate flex-1">
+                    <span className="text-sm text-neutral-900 dark:text-white truncate flex-1">
                       {a.name}
                     </span>
                     <Button
@@ -1468,10 +1468,10 @@ export const OfferApprovals: React.FC = () => {
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                       <div className="flex items-center justify-between gap-4 flex-wrap">
                         <div>
-                          <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">
+                          <h3 className="font-semibold text-neutral-900 dark:text-white mb-1">
                             Your Approval Required
                           </h3>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
                             Review the offer below and approve or reject it.
                             Previous approvers have signed off; the next
                             approver will be notified after you approve.
@@ -1517,10 +1517,10 @@ export const OfferApprovals: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0" />
                           <div>
-                            <h3 className="font-semibold text-zinc-900 dark:text-white">
+                            <h3 className="font-semibold text-neutral-900 dark:text-white">
                               Awaiting Approval
                             </h3>
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
                               Currently waiting on{" "}
                               <strong>
                                 {getApproverName(current.approver_id)}
@@ -1535,10 +1535,10 @@ export const OfferApprovals: React.FC = () => {
 
                 {/* Approval Chain Progress */}
                 {(approvalsMap[selectedOffer.id] || approvals).length > 0 && (
-                  <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
+                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
-                      <Users className="h-4 w-4 text-zinc-500" />
-                      <label className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <Users className="h-4 w-4 text-neutral-500" />
+                      <label className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Approval Chain Progress
                       </label>
                     </div>
@@ -1560,7 +1560,7 @@ export const OfferApprovals: React.FC = () => {
                                     ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
                                     : isCurrentStep
                                       ? "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20"
-                                      : "border-zinc-200 bg-white dark:border-dark-200 dark:bg-dark-150"
+                                      : "border-neutral-200 bg-white dark:border-dark-200 dark:bg-dark-150"
                               }`}
                             >
                               <div
@@ -1571,7 +1571,7 @@ export const OfferApprovals: React.FC = () => {
                                       ? "bg-red-500 text-white"
                                       : isCurrentStep
                                         ? "bg-yellow-500 text-white"
-                                        : "bg-zinc-300 text-zinc-600 dark:bg-zinc-600 dark:text-zinc-300"
+                                        : "bg-neutral-300 text-neutral-600 dark:bg-neutral-600 dark:text-neutral-300"
                                 }`}
                               >
                                 {approver.status === "approved" ? (
@@ -1583,7 +1583,7 @@ export const OfferApprovals: React.FC = () => {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                                <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                   {getApproverName(approver.approver_id)}
                                   {approver.approver_id === user?.id && (
                                     <span className="ml-2 text-xs text-[#f26722]">
@@ -1591,7 +1591,7 @@ export const OfferApprovals: React.FC = () => {
                                     </span>
                                   )}
                                 </p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {approver.status === "approved"
                                     ? `Approved ${approver.approved_at ? new Date(approver.approved_at).toLocaleString() : ""}`
                                     : approver.status === "rejected"
@@ -1627,7 +1627,7 @@ export const OfferApprovals: React.FC = () => {
                             ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
                             : exp.daysLeft <= 3
                               ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800"
-                              : "bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-dark-200"
+                              : "bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-dark-200"
                         }`}
                       >
                         <div
@@ -1654,39 +1654,39 @@ export const OfferApprovals: React.FC = () => {
                   })()}
 
                 {/* Offer Details */}
-                <div className="mb-4 p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                <div className="mb-4 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Candidate:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white font-medium">
+                      <span className="ml-2 text-neutral-900 dark:text-white font-medium">
                         {selectedOffer.candidate
                           ? `${selectedOffer.candidate.first_name} ${selectedOffer.candidate.last_name}`
                           : "Unknown"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Position:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.position_title}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Department:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white">
+                      <span className="ml-2 text-neutral-900 dark:text-white">
                         {selectedOffer.department}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-600 dark:text-zinc-400">
+                      <span className="text-neutral-600 dark:text-neutral-400">
                         Base Salary:
                       </span>
-                      <span className="ml-2 text-zinc-900 dark:text-white font-semibold">
+                      <span className="ml-2 text-neutral-900 dark:text-white font-semibold">
                         {selectedOffer.base_salary
                           ? `$${selectedOffer.base_salary.toLocaleString()}`
                           : "N/A"}
@@ -1699,7 +1699,7 @@ export const OfferApprovals: React.FC = () => {
 
                 {/* Offer Letter Content */}
                 <div
-                  className="prose max-w-none dark:prose-invert border border-zinc-200 dark:border-zinc-700 rounded-lg p-6 bg-white dark:bg-zinc-900"
+                  className="prose max-w-none dark:prose-invert border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 bg-white dark:bg-neutral-900"
                   dangerouslySetInnerHTML={{
                     __html:
                       selectedOffer.offer_letter_content ||
@@ -1752,7 +1752,7 @@ export const OfferApprovals: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-zinc-900 dark:text-white">
+              <h3 className="font-semibold text-neutral-900 dark:text-white">
                 Current Approvers
               </h3>
               <Button
@@ -1769,7 +1769,7 @@ export const OfferApprovals: React.FC = () => {
               </Button>
             </div>
             {globalApprovers.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+              <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                 <User className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No approvers configured yet.</p>
                 <p className="text-sm mt-2">
@@ -1781,17 +1781,17 @@ export const OfferApprovals: React.FC = () => {
                 {globalApprovers.map((approver) => (
                   <div
                     key={approver.id}
-                    className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
                         {approver.approval_order}
                       </div>
                       <div>
-                        <div className="font-medium text-zinc-900 dark:text-white">
+                        <div className="font-medium text-neutral-900 dark:text-white">
                           {getApproverName(approver.approver_id)}
                         </div>
-                        <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <div className="text-sm text-neutral-500 dark:text-neutral-400">
                           Approval Order: {approver.approval_order}{" "}
                           {!approver.is_active && "(Inactive)"}
                         </div>
@@ -1842,23 +1842,23 @@ export const OfferApprovals: React.FC = () => {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search users by name or email..."
                 value={approverSearchTerm}
                 onChange={(e) => setApproverSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
-            <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg max-h-96 overflow-y-auto">
+            <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg max-h-96 overflow-y-auto">
               {users.length === 0 ? (
-                <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">
+                <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
                   <User className="mx-auto h-12 w-12 mb-4 opacity-50" />
                   <p>No users available</p>
                 </div>
               ) : (
-                <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {users
                     .filter((u) => {
                       const searchLower = approverSearchTerm.toLowerCase();
@@ -1877,7 +1877,7 @@ export const OfferApprovals: React.FC = () => {
                           key={u.id}
                           type="button"
                           onClick={() => setNewApproverId(u.id)}
-                          className={`w-full px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ${
+                          className={`w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors ${
                             isSelected
                               ? "bg-[#f26722]/10 border-l-4 border-[#f26722]"
                               : ""
@@ -1885,16 +1885,16 @@ export const OfferApprovals: React.FC = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold">
                                 {(u.user_metadata?.name || u.email || "U")
                                   .charAt(0)
                                   .toUpperCase()}
                               </div>
                               <div>
-                                <div className="font-medium text-zinc-900 dark:text-white">
+                                <div className="font-medium text-neutral-900 dark:text-white">
                                   {u.user_metadata?.name || "No name"}
                                 </div>
-                                <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                                <div className="text-sm text-neutral-500 dark:text-neutral-400">
                                   {u.email}
                                 </div>
                               </div>
@@ -1918,7 +1918,7 @@ export const OfferApprovals: React.FC = () => {
                   name.includes(searchLower) || email.includes(searchLower)
                 );
               }).length === 0 && (
-                <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+                <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                   No users found matching "{approverSearchTerm}"
                 </div>
               )}
@@ -1968,7 +1968,7 @@ export const OfferApprovals: React.FC = () => {
           <div className="py-4">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Signing Link
                 </label>
                 <div className="flex gap-2">
@@ -1976,14 +1976,14 @@ export const OfferApprovals: React.FC = () => {
                     type="text"
                     value={signingLink || ""}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   />
                   <Button variant="outline" onClick={copySigningLink}>
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">
                 <p>This link allows the candidate to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>View the offer letter</li>
@@ -2036,8 +2036,8 @@ export const OfferApprovals: React.FC = () => {
           </DialogHeader>
           {rejectOffer && (
             <div className="space-y-4 py-4">
-              <div className="p-4 bg-zinc-50 dark:bg-dark-100 rounded-lg">
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+              <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+                <p className="text-sm font-medium text-neutral-900 dark:text-white">
                   Rejecting:{" "}
                   <span className="font-semibold">
                     {rejectOffer.candidate
@@ -2045,12 +2045,12 @@ export const OfferApprovals: React.FC = () => {
                       : "Unknown Candidate"}
                   </span>
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                   {rejectOffer.position_title} &bull; {rejectOffer.department}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-zinc-900 dark:text-white mb-2 block">
+                <label className="text-sm font-medium text-neutral-900 dark:text-white mb-2 block">
                   Rejection Reason <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -2060,7 +2060,7 @@ export const OfferApprovals: React.FC = () => {
                   rows={5}
                   className="w-full"
                 />
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                   This reason will be saved with the approval record and visible
                   to the offer creator.
                 </p>
@@ -2111,7 +2111,7 @@ export const OfferApprovals: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 New expiration date
               </label>
               <input
@@ -2119,10 +2119,10 @@ export const OfferApprovals: React.FC = () => {
                 value={extendNewDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
-            <label className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
               <input
                 type="checkbox"
                 checked={extendRegenerateToken}

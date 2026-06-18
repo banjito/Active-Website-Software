@@ -249,9 +249,9 @@ export function PDFSignatureFieldEditor({
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b bg-zinc-50 dark:bg-zinc-800">
+      <div className="flex items-center justify-between p-3 border-b bg-neutral-50 dark:bg-neutral-800">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-zinc-500" />
+          <FileText className="h-5 w-5 text-neutral-500" />
           <span className="text-sm font-medium">{fileName}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export function PDFSignatureFieldEditor({
       <div className="flex flex-1 overflow-hidden">
         {/* PDF Viewer */}
         <div
-          className="flex-1 relative bg-zinc-100 overflow-auto"
+          className="flex-1 relative bg-neutral-100 overflow-auto"
           ref={containerRef}
         >
           <div className="flex flex-col items-center p-4">
@@ -347,7 +347,7 @@ export function PDFSignatureFieldEditor({
                 <div className="bg-white shadow-lg p-4">
                   <canvas
                     ref={canvasRef}
-                    className="border border-zinc-300 cursor-crosshair"
+                    className="border border-neutral-300 cursor-crosshair"
                     onClick={handleCanvasClick}
                     style={{ maxWidth: "100%", height: "auto" }}
                   />
@@ -358,7 +358,7 @@ export function PDFSignatureFieldEditor({
         </div>
 
         {/* Signature Fields Panel */}
-        <div className="w-80 border-l bg-white dark:bg-zinc-800 overflow-y-auto">
+        <div className="w-80 border-l bg-white dark:bg-neutral-800 overflow-y-auto">
           <div className="p-4">
             <h3 className="font-semibold mb-4">Signature Fields</h3>
             <div className="space-y-2">
@@ -370,14 +370,14 @@ export function PDFSignatureFieldEditor({
                     className={`p-3 border rounded cursor-pointer ${
                       selectedField === field.id
                         ? "border-[#f26722] bg-orange-50"
-                        : "border-zinc-200"
+                        : "border-neutral-200"
                     }`}
                     onClick={() => setSelectedField(field.id)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="font-medium text-sm">{field.name}</div>
-                        <div className="text-xs text-zinc-500 mt-1">
+                        <div className="text-xs text-neutral-500 mt-1">
                           {field.signer_type} •{" "}
                           {field.required ? "Required" : "Optional"}
                         </div>
@@ -398,7 +398,7 @@ export function PDFSignatureFieldEditor({
                 ))}
               {signatureFields.filter((f) => f.page === currentPage).length ===
                 0 && (
-                <p className="text-sm text-zinc-500 text-center py-4">
+                <p className="text-sm text-neutral-500 text-center py-4">
                   No signature fields on this page. Click "Add Signature Field"
                   to add one.
                 </p>

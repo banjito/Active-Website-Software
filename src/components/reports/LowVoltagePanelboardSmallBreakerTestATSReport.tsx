@@ -1104,7 +1104,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
     return (
       <div className={`mb-2 ${colSpan}`}>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
           {label}:
         </label>
         <input
@@ -1120,7 +1120,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           }
           readOnly={!isEditing || isReadOnly}
           placeholder={placeholder}
-          className={`mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
       </div>
     );
@@ -1134,7 +1134,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
   if (loading)
     return (
-      <div className="p-6 text-center text-zinc-500 dark:text-white">
+      <div className="p-6 text-center text-neutral-500 dark:text-white">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -1142,7 +1142,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="hidden print:flex items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative">
+      <div className="hidden print:flex items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1346,7 +1346,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             Visual and Mechanical Inspection
           </h2>
           <table className="w-full border-collapse border border-black text-xs">
-            <thead className="bg-zinc-100">
+            <thead className="bg-neutral-100">
               <tr>
                 <th className="p-2 text-left border border-black">
                   NETA Section
@@ -1453,7 +1453,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             className="w-full border-collapse border border-black text-xs"
             style={{ pageBreakBefore: "avoid" }}
           >
-            <thead className="bg-zinc-100">
+            <thead className="bg-neutral-100">
               <tr>
                 <th className="border border-black p-1">Result</th>
                 <th className="border border-black p-1">Circuit</th>
@@ -1529,7 +1529,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
         className={
           isPrintMode
             ? "hidden"
-            : "p-6 flex justify-center bg-zinc-50 dark:bg-dark-150 print:hidden"
+            : "p-6 flex justify-center bg-neutral-50 dark:bg-dark-150 print:hidden"
         }
       >
         <div className="max-w-7xl w-full space-y-6">
@@ -1563,7 +1563,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           {/* --- Job Information Section (Screen only) --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 job-info-onscreen">
@@ -1742,7 +1742,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                     type="number"
                     value={formData.temperature.celsius}
                     readOnly
-                    className="form-input w-20 bg-zinc-100 dark:bg-dark-150"
+                    className="form-input w-20 bg-neutral-100 dark:bg-dark-150"
                   />
                   <span>°C</span>
                   <label className="form-label inline-block w-auto ml-4">
@@ -1752,7 +1752,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                     type="number"
                     value={formData.temperature?.tcf?.toFixed(3) ?? ""}
                     readOnly
-                    className="form-input w-24 bg-zinc-100 dark:bg-dark-150"
+                    className="form-input w-24 bg-neutral-100 dark:bg-dark-150"
                   />
                 </div>
                 <div className="mb-4 flex items-center">
@@ -1784,13 +1784,13 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           {/* --- Nameplate Data Section (Screen only) --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 font-semibold pb-2">
+            <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Nameplate Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 nameplate-onscreen">
               {/* Panelboard Column */}
               <div>
-                <h3 className="text-lg font-medium mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+                <h3 className="text-lg font-medium mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Panelboard
                 </h3>
                 <div className="space-y-4">
@@ -1888,7 +1888,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               </div>
               {/* Main Breaker Column */}
               <div>
-                <h3 className="text-lg font-medium mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+                <h3 className="text-lg font-medium mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Main Breaker
                 </h3>
                 <div className="space-y-4">
@@ -1990,36 +1990,36 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           {/* --- Visual and Mechanical Inspection Section (Screen only) --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 font-semibold pb-2">
+            <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full divide-y divide-zinc-200 dark:divide-zinc-700 visual-mechanical-table table-fixed">
+              <table className="w-full divide-y divide-neutral-200 dark:divide-neutral-700 visual-mechanical-table table-fixed">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   <col style={{ width: "65%" }} />
                   <col style={{ width: "20%" }} />
                 </colgroup>
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Result
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                         {item.netaSection}
                       </td>
-                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
                         {item.description}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-center">
@@ -2034,7 +2034,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionResultOptions.map((opt) => (
                             <option key={opt} value={opt}>
@@ -2053,13 +2053,13 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           {/* --- Test Equipment Used Section (Screen only) --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 font-semibold pb-2">
+            <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-4 test-eqpt-onscreen">
               {/* Megohmmeter */}
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Megohmmeter
                 </h3>
                 <div className="flex items-center space-x-2">
@@ -2160,7 +2160,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               </div>
               {/* Low-Resistance Ohmmeter */}
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Low-Resistance Ohmmeter
                 </h3>
                 <div className="flex items-center space-x-2">
@@ -2275,7 +2275,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               </div>
               {/* Primary Injection Test Set */}
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Primary Injection Test Set
                 </h3>
                 <div className="flex items-center space-x-2">
@@ -2397,7 +2397,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           {/* --- Electrical Tests Section (Screen only) --- */}
           <div className="mb-6 electrical-tests-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 font-semibold pb-2">
+            <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Electrical Tests
             </h2>
 
@@ -2414,7 +2414,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                     handleChange("numberOfCircuitSpaces", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex items-center">
@@ -2425,7 +2425,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                     handleChange("electricalTestOrdering", e.target.value)
                   }
                   disabled={!isEditing}
-                  className={`form-select ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-select ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {electricalTestOrderingOptions.map((opt) => (
                     <option key={opt} value={opt}>
@@ -2443,70 +2443,70 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                     handleChange("tripCurveNumbers", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input flex-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
 
             {/* Breakers Table */}
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-16">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-16">
                       Result
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-12">
                       Circuit
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-14">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-14">
                       Poles
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-20">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-20">
                       Manuf.
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-20">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-20">
                       Type
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-16">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-16">
                       Frame
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-16">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-16">
                       Trip
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-20">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-20">
                       Rated
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white w-20">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white w-20">
                       Test
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       Min
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       Max
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       Time
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       L-L
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       L-P
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-xs font-medium text-zinc-900 dark:text-white text-center w-12">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-xs font-medium text-neutral-900 dark:text-white text-center w-12">
                       P-P
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.breakers.map((breaker, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-zinc-50 dark:hover:bg-dark-200"
+                      className="hover:bg-neutral-50 dark:hover:bg-dark-200"
                     >
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <select
                           value={breaker.result || ""}
                           onChange={(e) =>
@@ -2518,8 +2518,8 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`w-full text-xs rounded border-zinc-300 dark:border-zinc-600
-                            ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}
+                          className={`w-full text-xs rounded border-neutral-300 dark:border-neutral-600
+                            ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}
                             ${breaker.result === "FAIL" ? "text-red-600" : "text-green-600"}`}
                         >
                           <option value="">-</option>
@@ -2531,19 +2531,19 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                           </option>
                         </select>
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs">
                         {breaker.circuitNumber}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <select
                           value={breaker.poles || ""}
                           onChange={(e) =>
                             handleBreakerChange(index, "poles", e.target.value)
                           }
                           disabled={!isEditing}
-                          className={`w-full text-xs rounded border-zinc-300 dark:border-zinc-600
-                            ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}
-                            ${breaker.poles ? "" : "text-zinc-400"}`}
+                          className={`w-full text-xs rounded border-neutral-300 dark:border-neutral-600
+                            ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}
+                            ${breaker.poles ? "" : "text-neutral-400"}`}
                         >
                           <option value="">-</option>
                           <option value="1">1</option>
@@ -2560,7 +2560,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                       ].map((field) => (
                         <td
                           key={field}
-                          className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
+                          className="border border-neutral-300 dark:border-neutral-600 px-1 py-1"
                         >
                           <input
                             type="text"
@@ -2578,12 +2578,12 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                           />
                         </td>
                       ))}
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={breaker.testCurrentA}
                           readOnly={true}
-                          className="w-full text-xs border-0 focus:ring-0 bg-zinc-50 cursor-not-allowed"
+                          className="w-full text-xs border-0 focus:ring-0 bg-neutral-50 cursor-not-allowed"
                         />
                       </td>
                       {[
@@ -2596,7 +2596,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                       ].map((field) => (
                         <td
                           key={field}
-                          className="border border-zinc-300 dark:border-zinc-600 px-1 py-1"
+                          className="border border-neutral-300 dark:border-neutral-600 px-1 py-1"
                         >
                           <input
                             type="text"

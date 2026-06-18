@@ -225,7 +225,7 @@ export const ProposalScopeNotesModal: React.FC<
       <div className="relative z-[60] bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold text-zinc-900">
+          <h2 className="text-lg font-bold text-neutral-900">
             {view === "select"
               ? "Scope Notes"
               : view === "create"
@@ -234,7 +234,7 @@ export const ProposalScopeNotesModal: React.FC<
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             <X size={20} />
           </button>
@@ -264,12 +264,12 @@ export const ProposalScopeNotesModal: React.FC<
                   placeholder="Search scope notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
+                  className="px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -289,11 +289,11 @@ export const ProposalScopeNotesModal: React.FC<
             {/* Notes List */}
             <div className="flex-1 overflow-auto p-4">
               {loading ? (
-                <div className="text-center text-zinc-500 py-8">
+                <div className="text-center text-neutral-500 py-8">
                   <LoadingSpinner size="md" />
                 </div>
               ) : filteredNotes.length === 0 ? (
-                <div className="text-center text-zinc-500 py-8">
+                <div className="text-center text-neutral-500 py-8">
                   {notes.length === 0
                     ? 'No scope notes yet. Click "New Note" to create one.'
                     : "No notes match your search."}
@@ -303,7 +303,7 @@ export const ProposalScopeNotesModal: React.FC<
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([category, categoryNotes]) => (
                     <div key={category} className="mb-4">
-                      <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 px-1">
+                      <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 px-1">
                         {category}
                       </div>
                       <div className="space-y-2">
@@ -313,7 +313,7 @@ export const ProposalScopeNotesModal: React.FC<
                             className={`border rounded-lg p-3 cursor-pointer transition-all ${
                               selectedNoteIds.has(note.id)
                                 ? "border-[#f26722] bg-orange-50 ring-1 ring-[#f26722]"
-                                : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                                : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                             }`}
                             onClick={() => toggleNoteSelection(note.id)}
                           >
@@ -322,14 +322,14 @@ export const ProposalScopeNotesModal: React.FC<
                                 type="checkbox"
                                 checked={selectedNoteIds.has(note.id)}
                                 onChange={() => toggleNoteSelection(note.id)}
-                                className="mt-1 h-4 w-4 rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                                className="mt-1 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-sm text-zinc-900">
+                                <div className="font-medium text-sm text-neutral-900">
                                   {note.title}
                                 </div>
-                                <div className="text-sm text-zinc-600 mt-1 leading-relaxed">
+                                <div className="text-sm text-neutral-600 mt-1 leading-relaxed">
                                   {note.content}
                                 </div>
                               </div>
@@ -339,7 +339,7 @@ export const ProposalScopeNotesModal: React.FC<
                                     e.stopPropagation();
                                     handleStartEdit(note);
                                   }}
-                                  className="text-zinc-400 hover:text-[#f26722] p-1 rounded transition-colors"
+                                  className="text-neutral-400 hover:text-[#f26722] p-1 rounded transition-colors"
                                   title="Edit note"
                                 >
                                   <svg
@@ -362,7 +362,7 @@ export const ProposalScopeNotesModal: React.FC<
                                     e.stopPropagation();
                                     handleDeleteNote(note);
                                   }}
-                                  className="text-zinc-400 hover:text-red-600 p-1 rounded transition-colors"
+                                  className="text-neutral-400 hover:text-red-600 p-1 rounded transition-colors"
                                   title="Delete note"
                                 >
                                   <svg
@@ -420,7 +420,7 @@ export const ProposalScopeNotesModal: React.FC<
           <>
             <div className="flex-1 overflow-auto p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Title
                 </label>
                 <input
@@ -428,12 +428,12 @@ export const ProposalScopeNotesModal: React.FC<
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g., Breaker Testing Size Threshold"
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Note Content
                 </label>
                 <textarea
@@ -441,15 +441,15 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormContent(e.target.value)}
                   placeholder="e.g., Circuit breaker testing is required only for breakers rated 100A and above per project specifications."
                   rows={4}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm resize-vertical"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm resize-vertical"
                 />
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 text-xs text-neutral-500">
                   This text will be inserted into the letter proposal. You can
                   edit it directly in the letter after inserting.
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Category
                 </label>
                 <input
@@ -458,7 +458,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormCategory(e.target.value)}
                   placeholder="e.g., Circuit Breakers, Transformers, General"
                   list="scope-note-categories"
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                 />
                 <datalist id="scope-note-categories">
                   {categories

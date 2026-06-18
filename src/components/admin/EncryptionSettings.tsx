@@ -141,7 +141,7 @@ export const EncryptionSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex justify-center my-8">
-            <div className="text-zinc-500">
+            <div className="text-neutral-500">
               <LoadingSpinner size="md" />
             </div>
           </div>
@@ -160,7 +160,7 @@ export const EncryptionSettings: React.FC = () => {
               Manage field-level encryption for sensitive data
             </CardDescription>
           </div>
-          <LockKeyhole className="h-8 w-8 text-zinc-500" />
+          <LockKeyhole className="h-8 w-8 text-neutral-500" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -197,10 +197,12 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-zinc-900">
+                    <div className="mb-2 text-2xl font-bold text-neutral-900">
                       {status?.isInitialized ? "Active" : "Inactive"}
                     </div>
-                    <p className="text-sm text-zinc-500">Encryption Status</p>
+                    <p className="text-sm text-neutral-500">
+                      Encryption Status
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -208,10 +210,10 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-zinc-900">
+                    <div className="mb-2 text-2xl font-bold text-neutral-900">
                       {sensitiveTablesCount}
                     </div>
-                    <p className="text-sm text-zinc-500">Protected Tables</p>
+                    <p className="text-sm text-neutral-500">Protected Tables</p>
                   </div>
                 </CardContent>
               </Card>
@@ -219,10 +221,10 @@ export const EncryptionSettings: React.FC = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="mb-2 text-2xl font-bold text-zinc-900">
+                    <div className="mb-2 text-2xl font-bold text-neutral-900">
                       {encryptedFieldsCount}
                     </div>
-                    <p className="text-sm text-zinc-500">Encrypted Fields</p>
+                    <p className="text-sm text-neutral-500">Encrypted Fields</p>
                   </div>
                 </CardContent>
               </Card>
@@ -235,7 +237,7 @@ export const EncryptionSettings: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-zinc-500">
+                    <Label className="text-sm font-medium text-neutral-500">
                       Current Key Created
                     </Label>
                     <div className="mt-1 text-sm font-medium">
@@ -246,7 +248,7 @@ export const EncryptionSettings: React.FC = () => {
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-zinc-500">
+                    <Label className="text-sm font-medium text-neutral-500">
                       Rotation Interval
                     </Label>
                     <div className="mt-1 text-sm font-medium">
@@ -255,7 +257,7 @@ export const EncryptionSettings: React.FC = () => {
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-zinc-500">
+                    <Label className="text-sm font-medium text-neutral-500">
                       Previous Keys
                     </Label>
                     <div className="mt-1 text-sm font-medium">
@@ -264,7 +266,7 @@ export const EncryptionSettings: React.FC = () => {
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-zinc-500">
+                    <Label className="text-sm font-medium text-neutral-500">
                       Next Scheduled Rotation
                     </Label>
                     <div className="mt-1 text-sm font-medium">
@@ -299,7 +301,7 @@ export const EncryptionSettings: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  <p className="mt-2 text-xs text-zinc-500">
+                  <p className="mt-2 text-xs text-neutral-500">
                     Rotating the key creates a new encryption key while
                     preserving the ability to decrypt existing data.
                   </p>
@@ -333,7 +335,7 @@ export const EncryptionSettings: React.FC = () => {
                       <SelectItem value="365">365 days</SelectItem>
                     </SelectContent>
                   </SelectRoot>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-neutral-500">
                     How often the system should automatically rotate encryption
                     keys
                   </p>
@@ -344,7 +346,7 @@ export const EncryptionSettings: React.FC = () => {
                     <Label htmlFor="encrypt-pii">
                       Encrypt Personal Information
                     </Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Automatically encrypt PII (names, addresses, etc.)
                     </p>
                   </div>
@@ -360,7 +362,7 @@ export const EncryptionSettings: React.FC = () => {
                     <Label htmlFor="encrypt-financial">
                       Encrypt Financial Data
                     </Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Automatically encrypt payment information
                     </p>
                   </div>
@@ -374,7 +376,7 @@ export const EncryptionSettings: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="encrypt-health">Encrypt Health Data</Label>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Automatically encrypt health-related information
                     </p>
                   </div>
@@ -400,7 +402,7 @@ export const EncryptionSettings: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="border rounded-md">
-                    <div className="bg-zinc-50 px-4 py-2 border-b">
+                    <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Customer Data</h3>
                     </div>
                     <div className="p-4 space-y-2">
@@ -436,7 +438,7 @@ export const EncryptionSettings: React.FC = () => {
                   </div>
 
                   <div className="border rounded-md">
-                    <div className="bg-zinc-50 px-4 py-2 border-b">
+                    <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Employee Data</h3>
                     </div>
                     <div className="p-4 space-y-2">
@@ -474,7 +476,7 @@ export const EncryptionSettings: React.FC = () => {
                   </div>
 
                   <div className="border rounded-md">
-                    <div className="bg-zinc-50 px-4 py-2 border-b">
+                    <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Payment Data</h3>
                     </div>
                     <div className="p-4 space-y-2">

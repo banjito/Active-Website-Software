@@ -1076,7 +1076,7 @@ const PotentialTransformerATSReport: React.FC = () => {
         }
 
         /* Specifically target common form styling classes */
-        .border, .border-zinc-300, .shadow-sm, .rounded-md,
+        .border, .border-neutral-300, .shadow-sm, .rounded-md,
         .focus\\:ring-2, .focus\\:border-blue-500, .focus\\:outline-none {
           border: none !important;
           box-shadow: none !important;
@@ -1952,7 +1952,7 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Job Information */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Job Information
           </h2>
 
@@ -1964,7 +1964,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Customer:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.customer}
                   onChange={(e) => handleChange("customer", e.target.value)}
                   readOnly={!isEditMode}
@@ -1973,7 +1973,7 @@ const PotentialTransformerATSReport: React.FC = () => {
               <div className="flex items-center">
                 <label className="form-label inline-block w-32">Address:</label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditMode}
@@ -1982,7 +1982,7 @@ const PotentialTransformerATSReport: React.FC = () => {
               <div className="flex items-center">
                 <label className="form-label inline-block w-32">User:</label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.user}
                   onChange={(e) => handleChange("user", e.target.value)}
                   readOnly={!isEditMode}
@@ -1991,7 +1991,7 @@ const PotentialTransformerATSReport: React.FC = () => {
               <div className="flex items-center">
                 <label className="form-label inline-block w-32">Date:</label>
                 <input
-                  className={`form-input w-40 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-40 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditMode}
@@ -2002,7 +2002,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Identifier:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.identifier}
                   onChange={(e) => handleChange("identifier", e.target.value)}
                   readOnly={!isEditMode}
@@ -2013,7 +2013,7 @@ const PotentialTransformerATSReport: React.FC = () => {
               <div className="flex items-center">
                 <label className="form-label inline-block w-32">Job #:</label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.jobNumber}
                   onChange={(e) => handleChange("jobNumber", e.target.value)}
                   readOnly={!isEditMode}
@@ -2024,7 +2024,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Technicians:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditMode}
@@ -2035,7 +2035,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Substation:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.substation}
                   onChange={(e) => handleChange("substation", e.target.value)}
                   readOnly={!isEditMode}
@@ -2046,7 +2046,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Eqpt. Location:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditMode}
@@ -2056,7 +2056,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                 <label className="form-label inline-block w-32">Temp:</label>
                 <input
                   type="number"
-                  className={`form-input w-20 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-20 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={temperatureValue}
                   onChange={(e) =>
                     handleChange("temperature", Number(e.target.value))
@@ -2133,7 +2133,7 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Device Data */}
         <div className="mb-6">
-          <h2 className="section-device-data text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-device-data text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Device Data
           </h2>
 
@@ -2145,7 +2145,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Manufacturer:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.manufacturer}
                   onChange={(e) =>
                     handleDeviceDataChange("manufacturer", e.target.value)
@@ -2158,7 +2158,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Catalog No:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.catalogNo}
                   onChange={(e) =>
                     handleDeviceDataChange("catalogNo", e.target.value)
@@ -2171,7 +2171,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Serial Number:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.serialNumber}
                   onChange={(e) =>
                     handleDeviceDataChange("serialNumber", e.target.value)
@@ -2184,7 +2184,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Accuracy Class:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.accuracyClass}
                   onChange={(e) =>
                     handleDeviceDataChange("accuracyClass", e.target.value)
@@ -2199,7 +2199,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Manufactured Year:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.manufacturedYear}
                   onChange={(e) =>
                     handleDeviceDataChange("manufacturedYear", e.target.value)
@@ -2212,7 +2212,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Voltage Rating:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.voltageRating}
                   onChange={(e) =>
                     handleDeviceDataChange("voltageRating", e.target.value)
@@ -2225,7 +2225,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Insulation Class:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.insulationClass}
                   onChange={(e) =>
                     handleDeviceDataChange("insulationClass", e.target.value)
@@ -2238,7 +2238,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Frequency:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.deviceData.frequency}
                   onChange={(e) =>
                     handleDeviceDataChange("frequency", e.target.value)
@@ -2316,11 +2316,11 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
-          <h2 className="section-visual-inspection text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-visual-inspection text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Visual and Mechanical Inspection
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black visual-mechanical-table table-fixed">
+            <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black visual-mechanical-table table-fixed">
               <colgroup>
                 <col style={{ width: "12%" }} />
                 <col style={{ width: "58%" }} />
@@ -2329,33 +2329,33 @@ const PotentialTransformerATSReport: React.FC = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                     NETA Section
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                     Description
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                     Results
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                     Comments
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                 {INSPECTION_ITEMS.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-dark-200"
+                    className="hover:bg-neutral-50 dark:hover:bg-dark-200"
                   >
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                       {item.id}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
                       {item.description}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 whitespace-nowrap">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 whitespace-nowrap">
                       <div className="print:hidden">
                         <select
                           value={formData.visualInspection[item.id]}
@@ -2366,7 +2366,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`block w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`block w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         >
                           {RESULT_OPTIONS.map((opt) => (
                             <option key={opt} value={opt}>
@@ -2379,7 +2379,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                         {formData.visualInspection[item.id] || ""}
                       </div>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                       <div className="print:hidden">
                         <input
                           type="text"
@@ -2394,7 +2394,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`block w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`block w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         />
                       </div>
                       <div className="hidden print:block">
@@ -2412,7 +2412,7 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Fuse Data */}
         <div className="mb-6">
-          <h2 className="section-fuse-data text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-fuse-data text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Fuse Data
           </h2>
 
@@ -2424,7 +2424,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Manufacturer:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.manufacturer}
                   onChange={(e) =>
                     handleFuseDataChange("manufacturer", e.target.value)
@@ -2437,7 +2437,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Catalog No:
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.catalogNo}
                   onChange={(e) =>
                     handleFuseDataChange("catalogNo", e.target.value)
@@ -2448,7 +2448,7 @@ const PotentialTransformerATSReport: React.FC = () => {
               <div className="flex items-center">
                 <label className="form-label inline-block w-32">Class:</label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.class}
                   onChange={(e) =>
                     handleFuseDataChange("class", e.target.value)
@@ -2463,7 +2463,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Voltage Rating (kV):
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.voltageRating}
                   onChange={(e) =>
                     handleFuseDataChange("voltageRating", e.target.value)
@@ -2476,7 +2476,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   Ampacity (A):
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.ampacity}
                   onChange={(e) =>
                     handleFuseDataChange("ampacity", e.target.value)
@@ -2489,7 +2489,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                   I.C. Rating (kA):
                 </label>
                 <input
-                  className={`form-input flex-1 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input flex-1 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   value={formData.fuseData.icRating}
                   onChange={(e) =>
                     handleFuseDataChange("icRating", e.target.value)
@@ -2548,39 +2548,39 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Electrical Tests */}
         <div className="mb-6">
-          <h2 className="section-electrical-tests text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-electrical-tests text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Electrical Tests
           </h2>
 
           {/* Fuse Resistance */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3 text-zinc-900 dark:text-white"></h3>
+            <h3 className="text-lg font-medium mb-3 text-neutral-900 dark:text-white"></h3>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       As Found
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       As Left
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
-                      <span className="text-zinc-900 dark:text-white font-medium">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
+                      <span className="text-neutral-900 dark:text-white font-medium">
                         Fuse Resistance
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                       <input
-                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         value={formData.fuseResistance.asFound}
                         onChange={(e) =>
                           handleFuseResistanceChange("asFound", e.target.value)
@@ -2588,9 +2588,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                         readOnly={!isEditMode}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                       <input
-                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         value={formData.fuseResistance.asLeft}
                         onChange={(e) =>
                           handleFuseResistanceChange("asLeft", e.target.value)
@@ -2598,14 +2598,14 @@ const PotentialTransformerATSReport: React.FC = () => {
                         readOnly={!isEditMode}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                       <select
                         value={formData.fuseResistance.units}
                         onChange={(e) =>
                           handleFuseResistanceChange("units", e.target.value)
                         }
                         disabled={!isEditMode}
-                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                        className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       >
                         {CONTACT_RESISTANCE_UNITS.map((unit) => (
                           <option key={unit} value={unit}>
@@ -2622,23 +2622,23 @@ const PotentialTransformerATSReport: React.FC = () => {
 
           {/* Insulation Resistance & Ratio */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3 text-zinc-900 dark:text-white">
+            <h3 className="text-lg font-medium mb-3 text-neutral-900 dark:text-white">
               Insulation Resistance & Ratio
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Winding Tested
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Test Voltage
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
@@ -2649,9 +2649,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                     : []
                   ).map((row, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.windingTested}
                           onChange={(e) =>
                             handleInsulationChange(
@@ -2663,7 +2663,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <select
                           value={row.testVoltage}
                           onChange={(e) =>
@@ -2674,7 +2674,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         >
                           {INSULATION_RESISTANCE_TEST_VOLTAGES.map(
                             (voltage) => (
@@ -2685,9 +2685,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                           )}
                         </select>
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.results}
                           onChange={(e) =>
                             handleInsulationChange(
@@ -2699,7 +2699,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <select
                           value={row.units}
                           onChange={(e) =>
@@ -2710,7 +2710,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         >
                           {INSULATION_RESISTANCE_UNITS.map((unit) => (
                             <option key={unit} value={unit}>
@@ -2728,23 +2728,23 @@ const PotentialTransformerATSReport: React.FC = () => {
 
           {/* Temperature Corrected Insulation Resistance */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3 text-zinc-900 dark:text-white">
+            <h3 className="text-lg font-medium mb-3 text-neutral-900 dark:text-white">
               Temperature Corrected Insulation Resistance
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Winding Tested
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Test Voltage
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
                   </tr>
@@ -2755,9 +2755,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                     : []
                   ).map((row, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.windingTested}
                           onChange={(e) =>
                             handleInsulationCorrectedChange(
@@ -2769,7 +2769,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <select
                           value={row.testVoltage}
                           onChange={(e) =>
@@ -2780,7 +2780,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         >
                           {INSULATION_RESISTANCE_TEST_VOLTAGES.map(
                             (voltage) => (
@@ -2791,15 +2791,15 @@ const PotentialTransformerATSReport: React.FC = () => {
                           )}
                         </select>
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-dark-150 cursor-not-allowed`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed`}
                           value={row.results}
                           readOnly
                           title="Auto-calculated from measured values and TCF"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <select
                           value={row.units}
                           onChange={(e) =>
@@ -2810,7 +2810,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditMode}
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                         >
                           {INSULATION_RESISTANCE_UNITS.map((unit) => (
                             <option key={unit} value={unit}>
@@ -2828,29 +2828,29 @@ const PotentialTransformerATSReport: React.FC = () => {
 
           {/* Turns Ratio Test */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3 text-zinc-900 dark:text-white">
+            <h3 className="text-lg font-medium mb-3 text-neutral-900 dark:text-white">
               Turns Ratio Test
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Tap
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Primary Voltage
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Calculate d Ratio
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Measured H1-H2
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       % Dev.
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Pass/ Fail
                     </th>
                   </tr>
@@ -2861,9 +2861,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                     : []
                   ).map((row, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.tap}
                           onChange={(e) =>
                             handleTurnsRatioChange(index, "tap", e.target.value)
@@ -2871,9 +2871,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.primaryVoltage}
                           onChange={(e) =>
                             handleTurnsRatioChange(
@@ -2885,9 +2885,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.calculatedRatio}
                           onChange={(e) =>
                             handleTurnsRatioChange(
@@ -2899,9 +2899,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                           value={row.measuredH1H2}
                           onChange={(e) =>
                             handleTurnsRatioChange(
@@ -2913,17 +2913,17 @@ const PotentialTransformerATSReport: React.FC = () => {
                           readOnly={!isEditMode}
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-dark-150 cursor-not-allowed`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed`}
                           value={row.percentDev}
                           readOnly
                           title="Auto-calculated: ((Calculated Ratio - Measured H1-H2) / Calculated Ratio) * 100"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-3 py-2">
+                      <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2">
                         <input
-                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-dark-150 cursor-not-allowed ${row.passFail === "Pass" ? "text-green-600 dark:text-green-400" : row.passFail === "Fail" ? "text-red-600 dark:text-red-400" : ""}`}
+                          className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed ${row.passFail === "Pass" ? "text-green-600 dark:text-green-400" : row.passFail === "Fail" ? "text-red-600 dark:text-red-400" : ""}`}
                           value={row.passFail}
                           readOnly
                           title="Auto-calculated: Pass if deviation is between -1.2% and +1.2%, otherwise Fail"
@@ -2935,11 +2935,11 @@ const PotentialTransformerATSReport: React.FC = () => {
               </table>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-sm text-zinc-700 dark:text-white mr-4">
+              <span className="text-sm text-neutral-700 dark:text-white mr-4">
                 Secondary Voltage at as-found tap:
               </span>
               <input
-                className={`form-input w-24 ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-24 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 value={formData.turnsRatio.secondaryVoltage}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -2952,7 +2952,7 @@ const PotentialTransformerATSReport: React.FC = () => {
                 }
                 readOnly={!isEditMode}
               />
-              <span className="ml-2 text-sm text-zinc-700 dark:text-white">
+              <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                 V
               </span>
             </div>
@@ -2963,38 +2963,38 @@ const PotentialTransformerATSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div className="mb-6">
-          <h2 className="section-test-equipment text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-test-equipment text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Test Equipment Used
           </h2>
 
           {/* Test Equipment table - visible on screen and print */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-700 print:border-black">
+            <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black">
               <thead>
                 <tr>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 font-bold text-center text-neutral-900 dark:text-white">
                     Equipment
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 font-bold text-center text-neutral-900 dark:text-white">
                     Model
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 font-bold text-center text-neutral-900 dark:text-white">
                     Serial Number
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 font-bold text-center text-neutral-900 dark:text-white">
                     AMP ID
                   </th>
-                  <th className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 bg-zinc-50 dark:bg-dark-150 print:bg-zinc-50 font-bold text-center text-zinc-900 dark:text-white">
+                  <th className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 bg-neutral-50 dark:bg-dark-150 print:bg-neutral-50 font-bold text-center text-neutral-900 dark:text-white">
                     Cal Date
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 font-semibold text-neutral-900 dark:text-white">
                     Megohmmeter
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <EquipmentAutocomplete
                       value={formData.equipment?.megohmmeter?.model || ""}
                       onChange={(value) =>
@@ -3041,9 +3041,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       className="w-full border-0 bg-transparent"
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.megohmmeter?.serial || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3055,9 +3055,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.megohmmeter?.ampId || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3069,9 +3069,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.megohmmeter?.calDate || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3085,10 +3085,10 @@ const PotentialTransformerATSReport: React.FC = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 font-semibold text-neutral-900 dark:text-white">
                     Low-Resistance Ohmmeter
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <EquipmentAutocomplete
                       value={formData.equipment?.lowResOhmmeter?.model || ""}
                       onChange={(value) =>
@@ -3135,9 +3135,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       className="w-full border-0 bg-transparent"
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.lowResOhmmeter?.serial || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3149,9 +3149,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.lowResOhmmeter?.ampId || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3163,9 +3163,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.lowResOhmmeter?.calDate || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3179,10 +3179,10 @@ const PotentialTransformerATSReport: React.FC = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1 font-semibold text-zinc-900 dark:text-white">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1 font-semibold text-neutral-900 dark:text-white">
                     TTR Test Set
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <EquipmentAutocomplete
                       value={formData.equipment?.ttrTestSet?.model || ""}
                       onChange={(value) =>
@@ -3229,9 +3229,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       className="w-full border-0 bg-transparent"
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.ttrTestSet?.serial || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3243,9 +3243,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.ttrTestSet?.ampId || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3257,9 +3257,9 @@ const PotentialTransformerATSReport: React.FC = () => {
                       }
                     />
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-700 print:border-black px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-2 py-1">
                     <input
-                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-zinc-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
+                      className={`w-full border-0 bg-transparent focus:outline-none focus:ring-0 text-neutral-900 dark:text-white ${!isEditMode ? "cursor-not-allowed" : ""}`}
                       value={formData.equipment?.ttrTestSet?.calDate || ""}
                       readOnly={!isEditMode}
                       onChange={(e) =>
@@ -3283,12 +3283,12 @@ const PotentialTransformerATSReport: React.FC = () => {
         <div
           className={`mb-6 print:mb-2 print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <h2 className="section-comments text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+          <h2 className="section-comments text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Comments
           </h2>
           <textarea
             rows={10}
-            className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+            className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
             value={formData.comments}
             onChange={(e) => handleChange("comments", e.target.value)}
             readOnly={!isEditMode}

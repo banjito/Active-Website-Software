@@ -618,10 +618,12 @@ export const NewHirePackets: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      draft:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
       active:
         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      archived: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      archived:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     };
     return (
       <span
@@ -648,10 +650,10 @@ export const NewHirePackets: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             New Hire Packets
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage onboarding packets for new employees
           </p>
         </div>
@@ -719,8 +721,10 @@ export const NewHirePackets: React.FC = () => {
       ) : filteredPackets.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Folder className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
-            <p className="text-zinc-600 dark:text-zinc-400">No packets found</p>
+            <Folder className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">
+              No packets found
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -744,11 +748,11 @@ export const NewHirePackets: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4">
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Type:</span>{" "}
                       {packet.packet_type}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Documents:</span>{" "}
                       {packet.documents?.length || 0}
                     </div>
@@ -797,8 +801,8 @@ export const NewHirePackets: React.FC = () => {
             ))}
           </div>
           {filteredPackets.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page {page} of {totalPages} ({filteredPackets.length} total)
               </span>
               <div className="flex gap-2">
@@ -1035,7 +1039,7 @@ export const NewHirePackets: React.FC = () => {
                   </div>
                 ))}
                 {formData.documents.length === 0 && (
-                  <p className="text-sm text-zinc-500 text-center py-4">
+                  <p className="text-sm text-neutral-500 text-center py-4">
                     No documents added. Click "Add Document" to add one.
                   </p>
                 )}
@@ -1297,7 +1301,7 @@ export const NewHirePackets: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium">Type:</span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {selectedPacket.packet_type}
                   </p>
                 </div>
@@ -1311,8 +1315,8 @@ export const NewHirePackets: React.FC = () => {
               {selectedPacket.instructions && (
                 <div>
                   <span className="text-sm font-medium">Instructions:</span>
-                  <div className="mt-2 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                  <div className="mt-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
                       {selectedPacket.instructions}
                     </p>
                   </div>
@@ -1328,9 +1332,9 @@ export const NewHirePackets: React.FC = () => {
                     selectedPacket.documents.map((doc, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 p-3 border rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                        className="flex items-center gap-2 p-3 border rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                       >
-                        <FileText className="h-5 w-5 text-zinc-400 flex-shrink-0" />
+                        <FileText className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                         <span className="text-sm flex-1 font-medium">
                           {doc.name || "Unnamed Document"}
                         </span>
@@ -1375,14 +1379,14 @@ export const NewHirePackets: React.FC = () => {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             No file uploaded
                           </span>
                         )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
                       No documents in this packet
                     </p>
                   )}
@@ -1412,9 +1416,9 @@ export const NewHirePackets: React.FC = () => {
           {selectedDocument && selectedDocument.file_url && (
             <div className="flex-1 min-h-0 flex flex-col">
               {/* Toolbar */}
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-zinc-50 dark:bg-zinc-800 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 py-2 border-b bg-neutral-50 dark:bg-neutral-800 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-zinc-500" />
+                  <FileText className="h-5 w-5 text-neutral-500" />
                   <span className="text-sm font-medium">
                     {selectedDocument.name}
                   </span>
@@ -1442,9 +1446,9 @@ export const NewHirePackets: React.FC = () => {
               </div>
 
               {/* Document Content */}
-              <div className="flex-1 relative bg-zinc-100 dark:bg-zinc-900 overflow-hidden m-0">
+              <div className="flex-1 relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden m-0">
                 {documentLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 z-10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 z-10">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
                       <div className="flex justify-center py-6">
@@ -1513,8 +1517,8 @@ export const NewHirePackets: React.FC = () => {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center p-8">
-                          <FileText className="h-16 w-16 mx-auto mb-4 text-zinc-400" />
-                          <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                          <FileText className="h-16 w-16 mx-auto mb-4 text-neutral-400" />
+                          <p className="text-neutral-600 dark:text-neutral-400 mb-4">
                             Preview not available for this file type
                           </p>
                           <div className="flex items-center justify-center gap-3">
@@ -1548,27 +1552,27 @@ export const NewHirePackets: React.FC = () => {
 
               {/* Collapsible draw-in signature box when document requires signature */}
               {selectedDocument.requires_signature && (
-                <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+                <div className="flex-shrink-0 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
                   <button
                     type="button"
                     onClick={() =>
                       setSignatureSectionCollapsed(!signatureSectionCollapsed)
                     }
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                   >
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       Signature
                     </span>
                     {signatureSectionCollapsed ? (
-                      <ChevronDown className="h-4 w-4 text-zinc-500" />
+                      <ChevronDown className="h-4 w-4 text-neutral-500" />
                     ) : (
-                      <ChevronUp className="h-4 w-4 text-zinc-500" />
+                      <ChevronUp className="h-4 w-4 text-neutral-500" />
                     )}
                   </button>
                   {!signatureSectionCollapsed && (
                     <div className="px-4 pb-4">
                       <div className="max-w-md">
-                        <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden">
+                        <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 overflow-hidden">
                           <canvas
                             ref={signatureCanvasRef}
                             width={400}
@@ -1612,8 +1616,8 @@ export const NewHirePackets: React.FC = () => {
           {selectedDocument && !selectedDocument.file_url && (
             <div className="flex items-center justify-center p-8">
               <div className="text-center">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-zinc-400" />
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-neutral-400" />
+                <p className="text-neutral-600 dark:text-neutral-400">
                   No file available for this document
                 </p>
               </div>

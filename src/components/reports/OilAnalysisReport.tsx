@@ -7,7 +7,7 @@ function OilAnalysisReport() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -26,10 +26,10 @@ function OilAnalysisReport() {
           NETA - ATS 7.2.1.1
         </div>
       </div>
-      <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+      <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
         Oil Analysis Report
       </h1>
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
         <p>Oil Analysis Report implementation coming soon...</p>
       </div>
     </div>

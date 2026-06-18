@@ -153,7 +153,7 @@ export const IssueShortcuts: React.FC = () => {
 
   if (groups.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-white py-2">
+      <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-white py-2">
         <AlertCircle className="h-4 w-4" />
         No reports currently marked as issue.
       </div>
@@ -164,7 +164,7 @@ export const IssueShortcuts: React.FC = () => {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <AlertCircle className="h-5 w-5 text-red-600" />
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-white">
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
           Jobs with Reports Marked Issue
         </h3>
         <Badge variant="secondary" className="ml-1">
@@ -176,12 +176,12 @@ export const IssueShortcuts: React.FC = () => {
           <div
             key={g.jobId}
             onClick={() => navigate(`/jobs/${g.jobId}?tab=assets&filter=issue`)}
-            className="bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 hover:bg-zinc-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
+            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-zinc-900 dark:text-white truncate">
+                  <h4 className="font-medium text-neutral-900 dark:text-white truncate">
                     {g.jobNumber
                       ? `${g.jobNumber} - ${g.jobTitle}`
                       : g.jobTitle}
@@ -194,20 +194,20 @@ export const IssueShortcuts: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 text-zinc-400 mr-1" />
-                    <span className="text-zinc-600 dark:text-white">
+                    <FileText className="h-4 w-4 text-neutral-400 mr-1" />
+                    <span className="text-neutral-600 dark:text-white">
                       {g.count} report{g.count !== 1 ? "s" : ""}
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="h-4 w-4 text-zinc-400 mr-1" />
+                    <Clock className="h-4 w-4 text-neutral-400 mr-1" />
                     <span className={`font-medium ${urgencyColor(g.oldest)}`}>
                       Oldest: {formatTimeAgo(g.oldest)}
                     </span>
                   </div>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-5 w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
           </div>
         ))}

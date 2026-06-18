@@ -437,7 +437,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
         <div className="flex-1">
           <div className="relative">
             <Search
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-400"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
               size={18}
             />
             <Input
@@ -495,11 +495,11 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
             <>
               {filteredCertificates.length === 0 ? (
                 <div className="text-center py-10 border rounded-md">
-                  <FileText className="mx-auto h-10 w-10 text-zinc-400" />
-                  <h3 className="mt-2 text-sm font-medium text-zinc-900">
+                  <FileText className="mx-auto h-10 w-10 text-neutral-400" />
+                  <h3 className="mt-2 text-sm font-medium text-neutral-900">
                     No certificates found
                   </h3>
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm text-neutral-500">
                     Create your first certificate to get started.
                   </p>
                   <div className="mt-6">
@@ -530,7 +530,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                             {certificate.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-zinc-500">
+                        <p className="text-sm text-neutral-500">
                           {certificateTypes.find(
                             (t) => t.value === certificate.certificate_type,
                           )?.label || certificate.certificate_type}
@@ -809,7 +809,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                   accept="image/*"
                   onChange={handleLogoChange}
                 />
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-neutral-500">
                   This logo will appear on the certificate PDF.
                 </p>
               </div>
@@ -847,7 +847,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                 <div className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h3 className="text-xl font-bold">Company Logo</h3>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Placeholder for company logo
                     </p>
                   </div>

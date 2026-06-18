@@ -239,21 +239,21 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
         <div className="h-1.5 bg-gradient-to-r from-[#4a4e8a] via-[#52b788] to-[#c9a84c]" />
 
         {/* Sticky header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-dark-200 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-dark-200 px-6 py-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-[#4a4e8a] dark:text-[#8b8fd4]">
               Monthly Check-In
             </p>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white mt-0.5">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-0.5">
               Manager & Employee One-on-One
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
               A structured conversation to reflect, align, and grow.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-dark-200 text-zinc-500 dark:text-zinc-400"
+            className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-200 text-neutral-500 dark:text-neutral-400"
           >
             <X className="h-5 w-5" />
           </button>
@@ -263,17 +263,17 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
           {/* Info row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Employee Name
               </Label>
               <Input
                 value={employeeName}
                 disabled
-                className="mt-1 bg-zinc-50 dark:bg-dark-200"
+                className="mt-1 bg-neutral-50 dark:bg-dark-200"
               />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Manager Name
               </Label>
               <Input
@@ -283,7 +283,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Meeting Date
               </Label>
               <Input
@@ -294,7 +294,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Period Covered
               </Label>
               <Input
@@ -321,7 +321,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                   className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                     pulse === opt.value
                       ? opt.colors
-                      : "border-zinc-200 dark:border-dark-300 hover:border-zinc-300 dark:hover:border-dark-200"
+                      : "border-neutral-200 dark:border-dark-300 hover:border-neutral-300 dark:hover:border-dark-200"
                   }`}
                 >
                   {opt.icon}
@@ -341,10 +341,10 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               {events.map((evt, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-zinc-200 dark:border-dark-300 p-4"
+                  className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#4a4e8a]" />
                       Event {idx + 1}
                     </span>
@@ -354,7 +354,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                         onClick={() =>
                           setEvents((prev) => prev.filter((_, i) => i !== idx))
                         }
-                        className="text-zinc-400 hover:text-red-500"
+                        className="text-neutral-400 hover:text-red-500"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -366,7 +366,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                       updateEvent(idx, "description", e.target.value)
                     }
                     placeholder="Describe what happened, when, and the impact..."
-                    className="w-full bg-transparent text-sm text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 resize-none min-h-[60px] outline-none border-none"
+                    className="w-full bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600 resize-none min-h-[60px] outline-none border-none"
                     rows={2}
                   />
                 </div>
@@ -389,21 +389,21 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
             title="Counseling & Feedback"
             desc="Specific behaviors, outcomes, and coaching notes from this period"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-lg border border-zinc-200 dark:border-dark-300 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-lg border border-neutral-200 dark:border-dark-300 overflow-hidden">
               {/* Strengths */}
-              <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-5 md:border-r border-b md:border-b-0 border-zinc-200 dark:border-dark-300">
-                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-zinc-200 dark:border-dark-300">
+              <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-5 md:border-r border-b md:border-b-0 border-neutral-200 dark:border-dark-300">
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-200 dark:border-dark-300">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                     Strengths & Wins
                   </span>
-                  <span className="text-xs text-zinc-400 ml-auto">
+                  <span className="text-xs text-neutral-400 ml-auto">
                     {strengths.length} items
                   </span>
                 </div>
                 <div className="space-y-3">
                   {strengths.map((s, idx) => (
                     <div key={idx} className="flex gap-2">
-                      <span className="text-xs font-semibold text-zinc-400 pt-1.5 min-w-[16px]">
+                      <span className="text-xs font-semibold text-neutral-400 pt-1.5 min-w-[16px]">
                         {idx + 1}.
                       </span>
                       <div className="flex-1 space-y-1">
@@ -413,9 +413,9 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             updateStrength(idx, "text", e.target.value)
                           }
                           placeholder="Positive behavior or achievement..."
-                          className="w-full bg-transparent text-sm border-b border-zinc-200 dark:border-dark-300 focus:border-emerald-400 outline-none pb-1 text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                          className="w-full bg-transparent text-sm border-b border-neutral-200 dark:border-dark-300 focus:border-emerald-400 outline-none pb-1 text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                         />
-                        <div className="flex items-center gap-1 text-xs text-zinc-400 italic">
+                        <div className="flex items-center gap-1 text-xs text-neutral-400 italic">
                           <span>Follow-up:</span>
                           <input
                             value={s.followUp}
@@ -423,7 +423,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                               updateStrength(idx, "followUp", e.target.value)
                             }
                             placeholder="Reinforce by..."
-                            className="flex-1 bg-transparent border-b border-dashed border-zinc-200 dark:border-dark-300 outline-none text-zinc-600 dark:text-zinc-300 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                            className="flex-1 bg-transparent border-b border-dashed border-neutral-200 dark:border-dark-300 outline-none text-neutral-600 dark:text-neutral-300 placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                           />
                         </div>
                         {strengths.length > 1 && (
@@ -434,7 +434,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                                 prev.filter((_, i) => i !== idx),
                               )
                             }
-                            className="text-zinc-300 hover:text-red-400 text-xs"
+                            className="text-neutral-300 hover:text-red-400 text-xs"
                           >
                             Remove
                           </button>
@@ -456,18 +456,18 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
 
               {/* Development Areas */}
               <div className="bg-orange-50/50 dark:bg-orange-900/10 p-5">
-                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-zinc-200 dark:border-dark-300">
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-200 dark:border-dark-300">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
                     Areas to Develop
                   </span>
-                  <span className="text-xs text-zinc-400 ml-auto">
+                  <span className="text-xs text-neutral-400 ml-auto">
                     {devAreas.length} items
                   </span>
                 </div>
                 <div className="space-y-3">
                   {devAreas.map((d, idx) => (
                     <div key={idx} className="flex gap-2">
-                      <span className="text-xs font-semibold text-zinc-400 pt-1.5 min-w-[16px]">
+                      <span className="text-xs font-semibold text-neutral-400 pt-1.5 min-w-[16px]">
                         {idx + 1}.
                       </span>
                       <div className="flex-1 space-y-1">
@@ -477,9 +477,9 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             updateDevArea(idx, "text", e.target.value)
                           }
                           placeholder="Behavior or gap to address..."
-                          className="w-full bg-transparent text-sm border-b border-zinc-200 dark:border-dark-300 focus:border-orange-400 outline-none pb-1 text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                          className="w-full bg-transparent text-sm border-b border-neutral-200 dark:border-dark-300 focus:border-orange-400 outline-none pb-1 text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                         />
-                        <div className="flex items-center gap-1 text-xs text-zinc-400 italic">
+                        <div className="flex items-center gap-1 text-xs text-neutral-400 italic">
                           <span>Action plan:</span>
                           <input
                             value={d.followUp}
@@ -487,7 +487,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                               updateDevArea(idx, "followUp", e.target.value)
                             }
                             placeholder="Address by..."
-                            className="flex-1 bg-transparent border-b border-dashed border-zinc-200 dark:border-dark-300 outline-none text-zinc-600 dark:text-zinc-300 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                            className="flex-1 bg-transparent border-b border-dashed border-neutral-200 dark:border-dark-300 outline-none text-neutral-600 dark:text-neutral-300 placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                           />
                         </div>
                         {devAreas.length > 1 && (
@@ -498,7 +498,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                                 prev.filter((_, i) => i !== idx),
                               )
                             }
-                            className="text-zinc-300 hover:text-red-400 text-xs"
+                            className="text-neutral-300 hover:text-red-400 text-xs"
                           >
                             Remove
                           </button>
@@ -529,27 +529,27 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-dark-200">
+                  <tr className="bg-neutral-50 dark:bg-dark-200">
                     <th
-                      className="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-3 py-2"
+                      className="text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 px-3 py-2"
                       style={{ width: "40%" }}
                     >
                       Goal / Commitment
                     </th>
                     <th
-                      className="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-3 py-2"
+                      className="text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 px-3 py-2"
                       style={{ width: "18%" }}
                     >
                       Due Date
                     </th>
                     <th
-                      className="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-3 py-2"
+                      className="text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 px-3 py-2"
                       style={{ width: "18%" }}
                     >
                       Status
                     </th>
                     <th
-                      className="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-3 py-2"
+                      className="text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 px-3 py-2"
                       style={{ width: "20%" }}
                     >
                       Notes
@@ -561,7 +561,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                   {goals.map((g, idx) => (
                     <tr
                       key={idx}
-                      className="border-b border-zinc-100 dark:border-dark-300"
+                      className="border-b border-neutral-100 dark:border-dark-300"
                     >
                       <td className="px-3 py-2">
                         <input
@@ -570,7 +570,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             updateGoal(idx, "goal", e.target.value)
                           }
                           placeholder="Describe the goal..."
-                          className="w-full bg-transparent outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                          className="w-full bg-transparent outline-none text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -580,7 +580,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                           onChange={(e) =>
                             updateGoal(idx, "dueDate", e.target.value)
                           }
-                          className="w-full bg-transparent outline-none text-zinc-900 dark:text-white"
+                          className="w-full bg-transparent outline-none text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -589,7 +589,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                           onChange={(e) =>
                             updateGoal(idx, "status", e.target.value)
                           }
-                          className="w-full bg-transparent outline-none text-zinc-900 dark:text-white cursor-pointer"
+                          className="w-full bg-transparent outline-none text-neutral-900 dark:text-white cursor-pointer"
                         >
                           {statusOptions.map((s) => (
                             <option key={s} value={s}>
@@ -605,7 +605,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             updateGoal(idx, "notes", e.target.value)
                           }
                           placeholder="Comments..."
-                          className="w-full bg-transparent outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                          className="w-full bg-transparent outline-none text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                         />
                       </td>
                       <td className="px-2 py-2">
@@ -617,7 +617,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                                 prev.filter((_, i) => i !== idx),
                               )
                             }
-                            className="text-zinc-300 hover:text-red-500"
+                            className="text-neutral-300 hover:text-red-500"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -644,13 +644,13 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
             desc="What both parties commit to before the next check-in"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-zinc-200 dark:border-dark-300 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-1.5">
+              <div className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3 flex items-center gap-1.5">
                   <span className="text-sm">Employee Commits To</span>
                 </p>
                 {employeeCommitments.map((c, idx) => (
                   <div key={idx} className="flex items-center gap-2 mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 flex-shrink-0" />
                     <input
                       value={c}
                       onChange={(e) => {
@@ -659,7 +659,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                         setEmployeeCommitments(updated);
                       }}
                       placeholder="Action item..."
-                      className="flex-1 bg-transparent text-sm border-b border-zinc-200 dark:border-dark-300 outline-none pb-1 text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                      className="flex-1 bg-transparent text-sm border-b border-neutral-200 dark:border-dark-300 outline-none pb-1 text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                     />
                     {employeeCommitments.length > 1 && (
                       <button
@@ -669,7 +669,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             prev.filter((_, i) => i !== idx),
                           )
                         }
-                        className="text-zinc-300 hover:text-red-400"
+                        className="text-neutral-300 hover:text-red-400"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -686,13 +686,13 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                   <Plus className="h-3 w-3" /> Add
                 </button>
               </div>
-              <div className="rounded-lg border border-zinc-200 dark:border-dark-300 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-1.5">
+              <div className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3 flex items-center gap-1.5">
                   <span className="text-sm">Manager Commits To</span>
                 </p>
                 {managerCommitments.map((c, idx) => (
                   <div key={idx} className="flex items-center gap-2 mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 flex-shrink-0" />
                     <input
                       value={c}
                       onChange={(e) => {
@@ -701,7 +701,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                         setManagerCommitments(updated);
                       }}
                       placeholder="Support / resource / action..."
-                      className="flex-1 bg-transparent text-sm border-b border-zinc-200 dark:border-dark-300 outline-none pb-1 text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                      className="flex-1 bg-transparent text-sm border-b border-neutral-200 dark:border-dark-300 outline-none pb-1 text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                     />
                     {managerCommitments.length > 1 && (
                       <button
@@ -711,7 +711,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                             prev.filter((_, i) => i !== idx),
                           )
                         }
-                        className="text-zinc-300 hover:text-red-400"
+                        className="text-neutral-300 hover:text-red-400"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -739,32 +739,32 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               value={additionalNotes}
               onChange={(e) => setAdditionalNotes(e.target.value)}
               placeholder="Free-form notes from the conversation..."
-              className="w-full rounded-lg border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-200 p-4 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 resize-y min-h-[80px] outline-none focus:border-[#4a4e8a] transition-colors"
+              className="w-full rounded-lg border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 p-4 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600 resize-y min-h-[80px] outline-none focus:border-[#4a4e8a] transition-colors"
               rows={4}
             />
           </Section>
 
           {/* Signatures */}
-          <div className="border-t-2 border-zinc-200 dark:border-dark-300 bg-zinc-50 dark:bg-dark-200 -mx-6 px-6 py-6">
+          <div className="border-t-2 border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-200 -mx-6 px-6 py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Employee Signature
                 </Label>
-                <p className="mt-2 text-sm text-zinc-400 dark:text-zinc-500 italic">
+                <p className="mt-2 text-sm text-neutral-400 dark:text-neutral-500 italic">
                   The employee will sign when they view this check-in from their
                   profile.
                 </p>
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <Label className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Manager Signature
                 </Label>
                 <input
                   value={managerSignature}
                   onChange={(e) => setManagerSignature(e.target.value)}
                   placeholder="Sign or type name"
-                  className="w-full mt-1 bg-transparent border-b-2 border-zinc-400 dark:border-zinc-500 outline-none text-base font-serif text-zinc-900 dark:text-white pb-1 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                  className="w-full mt-1 bg-transparent border-b-2 border-neutral-400 dark:border-neutral-500 outline-none text-base font-serif text-neutral-900 dark:text-white pb-1 placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
                 />
               </div>
             </div>
@@ -772,7 +772,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
         </div>
 
         {/* Footer with actions */}
-        <div className="sticky bottom-0 bg-white dark:bg-dark-150 border-t border-zinc-200 dark:border-dark-200 px-6 py-4 flex items-center justify-end gap-3">
+        <div className="sticky bottom-0 bg-white dark:bg-dark-150 border-t border-neutral-200 dark:border-dark-200 px-6 py-4 flex items-center justify-end gap-3">
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
@@ -812,16 +812,18 @@ function Section({
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-md bg-zinc-100 dark:bg-dark-200 flex items-center justify-center text-[#f26722]">
+        <div className="w-8 h-8 rounded-md bg-neutral-100 dark:bg-dark-200 flex items-center justify-center text-[#f26722]">
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {title}
           </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">{desc}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {desc}
+          </p>
         </div>
-        <div className="hidden sm:block flex-1 h-px bg-zinc-200 dark:bg-dark-300 ml-2" />
+        <div className="hidden sm:block flex-1 h-px bg-neutral-200 dark:bg-dark-300 ml-2" />
       </div>
       {children}
     </div>

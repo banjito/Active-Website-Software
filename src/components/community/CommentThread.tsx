@@ -131,11 +131,11 @@ export const CommentThread: React.FC<Props> = ({
   const hidden = Math.max(0, comments.length - PREVIEW);
 
   return (
-    <div className="mt-2 border-t border-zinc-100 dark:border-dark-200 pt-2">
+    <div className="mt-2 border-t border-neutral-100 dark:border-dark-200 pt-2">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
       >
         <MessageCircle className="h-4 w-4" />
         {commentCount === 0
@@ -155,7 +155,7 @@ export const CommentThread: React.FC<Props> = ({
               <LoadingSpinner size="md" />
             </div>
           ) : comments.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               No comments yet.
             </p>
           ) : (
@@ -164,17 +164,17 @@ export const CommentThread: React.FC<Props> = ({
                 {visible.map((c) => (
                   <li
                     key={c.id}
-                    className="rounded-md bg-zinc-50 dark:bg-dark-200/80 px-3 py-2"
+                    className="rounded-md bg-neutral-50 dark:bg-dark-200/80 px-3 py-2"
                   >
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
                         {c.author.displayName}
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
                         {formatRelativeSafe(c.created_at)}
                       </span>
                     </div>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1 whitespace-pre-wrap break-words">
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-1 whitespace-pre-wrap break-words">
                       {c.body}
                     </p>
                   </li>
@@ -211,7 +211,7 @@ export const CommentThread: React.FC<Props> = ({
               </button>
             </div>
           ) : (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Sign in to comment.
             </p>
           )}

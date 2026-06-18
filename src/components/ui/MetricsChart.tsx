@@ -45,7 +45,7 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
   // Basic validation to avoid rendering errors
   if (!data || data.length === 0) {
     return (
-      <div className="flex justify-center items-center h-[200px] text-zinc-400">
+      <div className="flex justify-center items-center h-[200px] text-neutral-400">
         No data available
       </div>
     );

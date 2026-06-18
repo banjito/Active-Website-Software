@@ -391,11 +391,11 @@ export function VehicleTracking({
       case "maintenance":
         return "bg-yellow-100 text-yellow-800";
       case "retired":
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
       case "out-of-service":
         return "bg-red-100 text-red-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -436,7 +436,7 @@ export function VehicleTracking({
                 {(vehicle.status || "available").charAt(0).toUpperCase() +
                   (vehicle.status || "available").slice(1)}
               </Badge>
-              <Badge className="bg-zinc-100 text-zinc-800">
+              <Badge className="bg-neutral-100 text-neutral-800">
                 {(vehicle.type || "vehicle").charAt(0).toUpperCase() +
                   (vehicle.type || "vehicle").slice(1)}
               </Badge>
@@ -444,41 +444,41 @@ export function VehicleTracking({
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Make</span>
+                <span className="text-sm text-neutral-500">Make</span>
                 <span className="font-medium">{vehicle.make || "N/A"}</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Model</span>
+                <span className="text-sm text-neutral-500">Model</span>
                 <span className="font-medium">{vehicle.model || "N/A"}</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Year</span>
+                <span className="text-sm text-neutral-500">Year</span>
                 <span className="font-medium">{vehicle.year || "N/A"}</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">License Plate</span>
+                <span className="text-sm text-neutral-500">License Plate</span>
                 <span className="font-medium">
                   {vehicle.license_plate || "N/A"}
                 </span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">VIN</span>
+                <span className="text-sm text-neutral-500">VIN</span>
                 <span className="font-medium">{vehicle.vin || "N/A"}</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Division</span>
+                <span className="text-sm text-neutral-500">Division</span>
                 <span className="font-medium">
                   {vehicle.current_location || "N/A"}
                 </span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Purchase Date</span>
+                <span className="text-sm text-neutral-500">Purchase Date</span>
                 <span className="font-medium">
                   {vehicle.purchase_date
                     ? new Date(vehicle.purchase_date).toLocaleDateString()
@@ -487,7 +487,9 @@ export function VehicleTracking({
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Last Maintenance</span>
+                <span className="text-sm text-neutral-500">
+                  Last Maintenance
+                </span>
                 <span className="font-medium">
                   {vehicle.last_maintenance_date
                     ? new Date(
@@ -498,7 +500,9 @@ export function VehicleTracking({
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-zinc-500">Next Maintenance</span>
+                <span className="text-sm text-neutral-500">
+                  Next Maintenance
+                </span>
                 <span className="font-medium">
                   {vehicle.next_maintenance_date
                     ? new Date(
@@ -511,8 +515,8 @@ export function VehicleTracking({
 
             {vehicle.notes && (
               <div>
-                <h4 className="text-sm text-zinc-500 mb-1">Notes</h4>
-                <p className="text-sm border border-zinc-200 rounded-md p-2 bg-zinc-50">
+                <h4 className="text-sm text-neutral-500 mb-1">Notes</h4>
+                <p className="text-sm border border-neutral-200 rounded-md p-2 bg-neutral-50">
                   {vehicle.notes}
                 </p>
               </div>
@@ -588,7 +592,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="name"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Vehicle Name
                         </label>
@@ -606,7 +610,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="type"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Vehicle Type
                         </label>
@@ -623,7 +627,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="license_plate"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           License Plate
                         </label>
@@ -640,7 +644,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="vin"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           VIN
                         </label>
@@ -659,7 +663,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="year"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Year
                         </label>
@@ -677,7 +681,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="make"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Make
                         </label>
@@ -694,7 +698,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="model"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Model
                         </label>
@@ -711,7 +715,7 @@ export function VehicleTracking({
                       <div>
                         <label
                           htmlFor="status"
-                          className="block text-sm font-medium text-zinc-700 mb-1"
+                          className="block text-sm font-medium text-neutral-700 mb-1"
                         >
                           Status
                         </label>
@@ -734,7 +738,7 @@ export function VehicleTracking({
                     <div>
                       <label
                         htmlFor="current_location"
-                        className="block text-sm font-medium text-zinc-700 mb-1"
+                        className="block text-sm font-medium text-neutral-700 mb-1"
                       >
                         Division
                       </label>
@@ -751,7 +755,7 @@ export function VehicleTracking({
                     <div>
                       <label
                         htmlFor="notes"
-                        className="block text-sm font-medium text-zinc-700 mb-1"
+                        className="block text-sm font-medium text-neutral-700 mb-1"
                       >
                         Notes
                       </label>
@@ -794,10 +798,10 @@ export function VehicleTracking({
                 <LoadingSpinner size="md" />
               </div>
             ) : vehicles.length === 0 ? (
-              <div className="text-center p-8 bg-zinc-50 rounded-md">
-                <Truck className="h-12 w-12 mx-auto text-zinc-400 mb-2" />
+              <div className="text-center p-8 bg-neutral-50 rounded-md">
+                <Truck className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                 <h3 className="text-lg font-medium mb-1">No Vehicles Added</h3>
-                <p className="text-zinc-600 mb-4">
+                <p className="text-neutral-600 mb-4">
                   Start tracking your division's vehicles by adding them to the
                   system.
                 </p>
@@ -826,7 +830,7 @@ export function VehicleTracking({
                             <h3 className="font-medium text-lg">
                               {vehicle.name}
                             </h3>
-                            <p className="text-sm text-zinc-600">
+                            <p className="text-sm text-neutral-600">
                               {vehicle.year} {vehicle.make} {vehicle.model}
                             </p>
                             <div className="mt-2 flex flex-wrap gap-2">
@@ -840,7 +844,7 @@ export function VehicleTracking({
                                   .toUpperCase() +
                                   (vehicle.status || "available").slice(1)}
                               </Badge>
-                              <Badge className="bg-zinc-100 text-zinc-800">
+                              <Badge className="bg-neutral-100 text-neutral-800">
                                 {(vehicle.type || "vehicle")
                                   .charAt(0)
                                   .toUpperCase() +
@@ -854,14 +858,14 @@ export function VehicleTracking({
                             </div>
 
                             {vehicle.current_location && (
-                              <div className="mt-2 flex items-center text-sm text-zinc-600">
+                              <div className="mt-2 flex items-center text-sm text-neutral-600">
                                 <MapPin className="h-4 w-4 mr-1" />
                                 <span>{vehicle.current_location}</span>
                               </div>
                             )}
 
                             {vehicle.next_maintenance_date && (
-                              <div className="mt-1 flex items-center text-sm text-zinc-600">
+                              <div className="mt-1 flex items-center text-sm text-neutral-600">
                                 <Wrench className="h-4 w-4 mr-1" />
                                 <span>
                                   Next maintenance:{" "}

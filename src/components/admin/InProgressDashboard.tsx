@@ -535,11 +535,11 @@ const InProgressDashboard: React.FC = () => {
       case "planning":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
       case "completed":
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/20 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-400";
       case "on-hold":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/20 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-400";
     }
   };
 
@@ -552,7 +552,7 @@ const InProgressDashboard: React.FC = () => {
       case "low":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/20 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-400";
     }
   };
 
@@ -708,7 +708,7 @@ const InProgressDashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-zinc-600 dark:text-zinc-400">
+        <span className="ml-2 text-neutral-600 dark:text-neutral-400">
           <LoadingSpinner size="md" />
         </span>
       </div>
@@ -716,17 +716,17 @@ const InProgressDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-zinc-50 to-blue-50/30 dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/30 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-neutral-50 to-blue-50/30 dark:from-neutral-900 dark:via-neutral-900 dark:to-blue-950/30 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header with Controls */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">
                 Jobs Dashboard
               </h1>
               <div className="flex items-center gap-3 mt-2">
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <p className="text-neutral-600 dark:text-neutral-400">
                   {timeframe === "quarterly" &&
                     (() => {
                       if (selectedQuarter === 1) return "Q1: Jan 1 – Mar 31";
@@ -805,7 +805,7 @@ const InProgressDashboard: React.FC = () => {
                 <div className="flex flex-wrap gap-4 items-center">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-[#f26722]" />
-                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Timeframe:
                     </label>
                   </div>
@@ -889,26 +889,26 @@ const InProgressDashboard: React.FC = () => {
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm"
+                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       />
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-neutral-500 dark:text-neutral-400">
                         to
                       </span>
                       <input
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm"
+                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       />
                     </div>
                   )}
                 </div>
 
                 {/* Status, Division, and Search Filters */}
-                <div className="flex flex-wrap gap-4 items-center border-t dark:border-zinc-700 pt-4">
+                <div className="flex flex-wrap gap-4 items-center border-t dark:border-neutral-700 pt-4">
                   <div className="flex items-center gap-2">
                     <Filter className="h-5 w-5 text-[#f26722]" />
-                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Status:
                     </label>
                   </div>
@@ -917,7 +917,7 @@ const InProgressDashboard: React.FC = () => {
                     onChange={(e) =>
                       setStatusFilter(e.target.value as StatusFilterType)
                     }
-                    className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm font-medium"
+                    className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
                   >
                     <option value="all">All Statuses</option>
                     <option value="active">
@@ -934,13 +934,13 @@ const InProgressDashboard: React.FC = () => {
 
                   <div className="flex items-center gap-2 ml-4">
                     <MapPin className="h-5 w-5 text-[#f26722]" />
-                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Division:
                     </label>
                     <select
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
-                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm font-medium"
+                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
                     >
                       <option value="all">All Divisions</option>
                       {regionData.map((region) => (
@@ -952,13 +952,13 @@ const InProgressDashboard: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 ml-auto">
-                    <Search className="h-5 w-5 text-zinc-400" />
+                    <Search className="h-5 w-5 text-neutral-400" />
                     <input
                       type="text"
                       placeholder="Search jobs..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm w-64"
+                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
                     />
                   </div>
                 </div>
@@ -973,13 +973,13 @@ const InProgressDashboard: React.FC = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm font-medium">
                     Total Quoted Value
                   </p>
-                  <h3 className="text-3xl font-bold text-zinc-900 dark:text-white mt-2">
+                  <h3 className="text-3xl font-bold text-neutral-900 dark:text-white mt-2">
                     {formatCurrency(totalStats.totalQuotedValue)}
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                     From opportunities
                   </p>
                 </div>
@@ -994,13 +994,13 @@ const InProgressDashboard: React.FC = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm font-medium">
                     Total T&M Expected Value
                   </p>
-                  <h3 className="text-3xl font-bold text-zinc-900 dark:text-white mt-2">
+                  <h3 className="text-3xl font-bold text-neutral-900 dark:text-white mt-2">
                     In Development
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                     T&M tracking
                   </p>
                 </div>
@@ -1015,13 +1015,13 @@ const InProgressDashboard: React.FC = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm font-medium">
                     Total Jobs
                   </p>
-                  <h3 className="text-3xl font-bold text-zinc-900 dark:text-white mt-2">
+                  <h3 className="text-3xl font-bold text-neutral-900 dark:text-white mt-2">
                     {totalStats.activeJobs}
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                     {statusFilter === "all"
                       ? "All statuses"
                       : statusFilter === "active"
@@ -1047,7 +1047,7 @@ const InProgressDashboard: React.FC = () => {
           <Card className="lg:col-span-2 border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Revenue Trend</CardTitle>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 Quoted value over time
               </p>
             </CardHeader>
@@ -1159,7 +1159,7 @@ const InProgressDashboard: React.FC = () => {
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    className="stroke-zinc-200 dark:stroke-zinc-700"
+                    className="stroke-neutral-200 dark:stroke-neutral-700"
                   />
                   <XAxis
                     dataKey="month"
@@ -1195,7 +1195,7 @@ const InProgressDashboard: React.FC = () => {
           <Card className="border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Project Status</CardTitle>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 Distribution breakdown
               </p>
             </CardHeader>
@@ -1259,7 +1259,7 @@ const InProgressDashboard: React.FC = () => {
         <Card className="border-0 shadow-sm mb-8">
           <CardHeader>
             <CardTitle>Top Revenue Projects</CardTitle>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Your highest-value jobs
             </p>
           </CardHeader>
@@ -1279,14 +1279,14 @@ const InProgressDashboard: React.FC = () => {
                   return (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:border-[#f26722]/50 transition-all cursor-pointer bg-zinc-50/30 dark:bg-zinc-800/30 hover:bg-zinc-50/60 dark:hover:bg-zinc-800/60"
+                      className="group p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-zinc-900 dark:text-white">
+                          <h4 className="font-semibold text-neutral-900 dark:text-white">
                             {job.title}
                           </h4>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                             Revenue: {formatCurrency(quotedAmount)}
                           </p>
                         </div>
@@ -1310,14 +1310,14 @@ const InProgressDashboard: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-zinc-400" />
-                <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                <MapPin className="h-4 w-4 text-neutral-400" />
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Division:
                 </label>
                 <select
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm"
+                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                 >
                   <option value="all">All Divisions</option>
                   {regionData.map((region) => (
@@ -1329,13 +1329,13 @@ const InProgressDashboard: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 ml-auto">
-                <Search className="h-4 w-4 text-zinc-400" />
+                <Search className="h-4 w-4 text-neutral-400" />
                 <input
                   type="text"
                   placeholder="Search jobs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm w-64"
+                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
                 />
               </div>
             </div>
@@ -1352,25 +1352,25 @@ const InProgressDashboard: React.FC = () => {
                     <div className="bg-blue-500/10 p-2 rounded-lg">
                       <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <CardTitle className="text-xl text-zinc-900 dark:text-white">
+                    <CardTitle className="text-xl text-neutral-900 dark:text-white">
                       {region.region}
                     </CardTitle>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
                     <span>
                       Quoted:{" "}
-                      <strong className="text-zinc-900 dark:text-white">
+                      <strong className="text-neutral-900 dark:text-white">
                         {formatCurrency(region.totalQuotedValue)}
                       </strong>
                     </span>
                     <span>
                       T&M Expected:{" "}
-                      <strong className="text-zinc-900 dark:text-white">
+                      <strong className="text-neutral-900 dark:text-white">
                         In Development
                       </strong>
                     </span>
                     <span>
-                      <strong className="text-zinc-900 dark:text-white">
+                      <strong className="text-neutral-900 dark:text-white">
                         {region.jobs.length}
                       </strong>{" "}
                       Jobs
@@ -1383,14 +1383,14 @@ const InProgressDashboard: React.FC = () => {
                   {region.jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:border-[#f26722]/50 dark:hover:border-[#f26722]/50 transition-all cursor-pointer bg-zinc-50/30 dark:bg-zinc-800/30 hover:bg-zinc-50/60 dark:hover:bg-zinc-800/60 hover:shadow-md"
+                      className="group p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 dark:hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 hover:shadow-md"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-zinc-900 dark:text-white text-lg mb-1">
+                          <h4 className="font-semibold text-neutral-900 dark:text-white text-lg mb-1">
                             {job.title}
                           </h4>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
                             {job.customers?.company_name ||
                               job.customers?.name ||
                               (job.customer_id
@@ -1409,7 +1409,7 @@ const InProgressDashboard: React.FC = () => {
                               {formatStatusLabel(job.priority)}
                             </div>
                             {job.job_number && (
-                              <div className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300">
+                              <div className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300">
                                 #{job.job_number}
                               </div>
                             )}
@@ -1427,7 +1427,7 @@ const InProgressDashboard: React.FC = () => {
                                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                                   {formatCurrency(quotedAmount)}
                                 </p>
-                                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                                   {usedSource === "quoted_amount"
                                     ? "Quoted Value"
                                     : "No Quote"}
@@ -1438,7 +1438,7 @@ const InProgressDashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                         <div className="flex items-center gap-4">
                           {job.start_date && (
                             <span className="flex items-center gap-1">
@@ -1535,11 +1535,11 @@ const InProgressDashboard: React.FC = () => {
         {/* Opportunity Modal - embed full OpportunityDetail route */}
         {showOppModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-5xl p-0 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-5xl p-0 overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="sr-only">Opportunity</h3>
                 <button
-                  className="m-2 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   onClick={() => setShowOppModal({ open: false, id: null })}
                 >
                   Close
@@ -1559,11 +1559,11 @@ const InProgressDashboard: React.FC = () => {
         {/* Job Modal - embed full JobDetail route */}
         {showJobModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-6xl p-0 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-6xl p-0 overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="sr-only">Job</h3>
                 <button
-                  className="m-2 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   onClick={() => setShowJobModal({ open: false, id: null })}
                 >
                   Close

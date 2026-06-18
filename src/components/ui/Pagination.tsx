@@ -90,7 +90,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           return (
             <span
               key={`dots-${index}`}
-              className="flex h-8 w-8 items-center justify-center text-zinc-500 dark:text-dark-400"
+              className="flex h-8 w-8 items-center justify-center text-neutral-500 dark:text-dark-400"
             >
               <MoreHorizontal className="h-4 w-4" />
             </span>
@@ -106,7 +106,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             className={`h-8 w-8 p-0 ${
               currentPage === page
                 ? "bg-amp-orange-600 hover:bg-amp-orange-700 text-white"
-                : "text-zinc-700 dark:text-dark-300 hover:bg-zinc-100 dark:hover:bg-dark-200"
+                : "text-neutral-700 dark:text-dark-300 hover:bg-neutral-100 dark:hover:bg-dark-200"
             }`}
           >
             {page}

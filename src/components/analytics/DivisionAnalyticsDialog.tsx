@@ -207,61 +207,61 @@ export function DivisionAnalyticsDialog({
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl w-full">
         <div className="relative">
-          <DialogTitle className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+          <DialogTitle className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             {formatDivisionName(division)} Analytics
           </DialogTitle>
 
           {loading ? (
-            <div className="text-center py-4 text-zinc-600 dark:text-white">
+            <div className="text-center py-4 text-neutral-600 dark:text-white">
               <LoadingSpinner size="md" />
             </div>
           ) : (
             <div className="space-y-6">
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-zinc-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-emerald-500" />
-                    <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Active Opportunities
                     </h3>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">
+                  <p className="mt-2 text-2xl font-bold text-neutral-900 dark:text-white">
                     {stats.activeOpportunities}
                   </p>
-                  <p className="text-sm text-zinc-500 dark:text-white">
+                  <p className="text-sm text-neutral-500 dark:text-white">
                     {stats.activeChange > 0 ? "+" : ""}
                     {stats.activeChange.toFixed(1)}% from last month
                   </p>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-5 w-5 text-blue-500" />
-                    <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Total Value
                     </h3>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">
+                  <p className="mt-2 text-2xl font-bold text-neutral-900 dark:text-white">
                     {formatValue(stats.totalValue)}
                   </p>
-                  <p className="text-sm text-zinc-500 dark:text-white">
+                  <p className="text-sm text-neutral-500 dark:text-white">
                     {stats.valueChange > 0 ? "+" : ""}
                     {stats.valueChange.toFixed(1)}% from last month
                   </p>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-orange-500" />
-                    <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Win Rate
                     </h3>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">
+                  <p className="mt-2 text-2xl font-bold text-neutral-900 dark:text-white">
                     {stats.winRate.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-zinc-500 dark:text-white">
+                  <p className="text-sm text-neutral-500 dark:text-white">
                     {stats.winRateChange > 0 ? "+" : ""}
                     {stats.winRateChange.toFixed(1)}% from last month
                   </p>
@@ -270,11 +270,11 @@ export function DivisionAnalyticsDialog({
 
               {/* Monthly Chart */}
               <div className="mt-6">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                   Monthly Awarded Opportunity Values
                 </h3>
                 {monthlyData.length === 0 ? (
-                  <div className="text-center py-4 text-zinc-500 dark:text-white">
+                  <div className="text-center py-4 text-neutral-500 dark:text-white">
                     No awarded opportunities found
                   </div>
                 ) : (
@@ -293,7 +293,7 @@ export function DivisionAnalyticsDialog({
                     >
                       <CartesianGrid
                         strokeDasharray="3 3"
-                        className="stroke-zinc-200 dark:stroke-zinc-700"
+                        className="stroke-neutral-200 dark:stroke-neutral-700"
                       />
                       <XAxis
                         dataKey="month"

@@ -178,7 +178,7 @@ export const OfferLetters: React.FC = () => {
     }
     return {
       label: `Expires in ${daysLeft} days`,
-      color: "text-zinc-600 dark:text-zinc-400",
+      color: "text-neutral-600 dark:text-neutral-400",
       expired: false,
       daysLeft,
     };
@@ -1009,10 +1009,10 @@ export const OfferLetters: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Offer Letters
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Manage offer letter templates and create customized offers
           </p>
         </div>
@@ -1076,11 +1076,11 @@ export const OfferLetters: React.FC = () => {
         <CardContent>
           {templates.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <FileText className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No templates
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Get started by creating your first offer letter template
               </p>
             </div>
@@ -1145,11 +1145,11 @@ export const OfferLetters: React.FC = () => {
         <CardContent>
           {offers.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <FileText className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No offers
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Create your first offer letter
               </p>
             </div>
@@ -1158,18 +1158,18 @@ export const OfferLetters: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-white">
+                    <div className="font-medium text-neutral-900 dark:text-white">
                       {offer.candidate
                         ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
                         : "Unknown Candidate"}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       {offer.position_title} - {offer.department}
                     </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                       Status:{" "}
                       <span
                         className={`font-medium ${
@@ -1181,7 +1181,7 @@ export const OfferLetters: React.FC = () => {
                                 ? "text-blue-600"
                                 : offer.status === "expired"
                                   ? "text-red-600"
-                                  : "text-zinc-600"
+                                  : "text-neutral-600"
                         }`}
                       >
                         {offer.status.charAt(0).toUpperCase() +
@@ -1344,15 +1344,15 @@ export const OfferLetters: React.FC = () => {
                   name="is_default"
                   checked={templateFormData.is_default}
                   onChange={handleTemplateInputChange}
-                  className="h-4 w-4 rounded border-zinc-300"
+                  className="h-4 w-4 rounded border-neutral-300"
                 />
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Set as default template
                 </span>
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Template Content *
               </label>
               <RichTextEditor
@@ -1367,7 +1367,7 @@ export const OfferLetters: React.FC = () => {
                 placeholder="Dear {{candidate_name}},&#10;&#10;We are pleased to offer you the position of {{position_title}}..."
               />
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">
               <p className="font-medium mb-1">Available variables:</p>
               <p>
                 {"{{candidate_name}}"}, {"{{first_name}}"}, {"{{last_name}}"},{" "}
@@ -1431,15 +1431,15 @@ export const OfferLetters: React.FC = () => {
                   name="is_default"
                   checked={templateFormData.is_default}
                   onChange={handleTemplateInputChange}
-                  className="h-4 w-4 rounded border-zinc-300"
+                  className="h-4 w-4 rounded border-neutral-300"
                 />
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Set as default template
                 </span>
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Template Content *
               </label>
               <RichTextEditor
@@ -1663,7 +1663,7 @@ export const OfferLetters: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Customized Offer Letter Content *
               </label>
               <RichTextEditor
@@ -1711,11 +1711,11 @@ export const OfferLetters: React.FC = () => {
           </DialogHeader>
           <div className="py-4">
             <div
-              className="prose max-w-none dark:prose-invert border border-zinc-200 dark:border-zinc-700 rounded-lg p-6"
+              className="prose max-w-none dark:prose-invert border border-neutral-200 dark:border-neutral-700 rounded-lg p-6"
               dangerouslySetInnerHTML={{
                 __html:
                   previewContent ||
-                  '<p class="text-zinc-500 dark:text-zinc-400">No content to preview</p>',
+                  '<p class="text-neutral-500 dark:text-neutral-400">No content to preview</p>',
               }}
             />
           </div>
@@ -1764,9 +1764,9 @@ export const OfferLetters: React.FC = () => {
                 {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
-            <ul className="border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-200 dark:divide-zinc-700">
+            <ul className="border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-200 dark:divide-neutral-700">
               {offerAttachments.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                <li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">
                   No attachments yet.
                 </li>
               ) : (
@@ -1775,7 +1775,7 @@ export const OfferLetters: React.FC = () => {
                     key={a.id}
                     className="flex items-center justify-between px-4 py-2"
                   >
-                    <span className="text-sm text-zinc-900 dark:text-white truncate flex-1">
+                    <span className="text-sm text-neutral-900 dark:text-white truncate flex-1">
                       {a.name}
                     </span>
                     <Button
@@ -1823,7 +1823,7 @@ export const OfferLetters: React.FC = () => {
           <div className="py-4">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Signing Link
                 </label>
                 <div className="flex gap-2">
@@ -1831,14 +1831,14 @@ export const OfferLetters: React.FC = () => {
                     type="text"
                     value={signingLink || ""}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   />
                   <Button variant="outline" onClick={copySigningLink}>
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">
                 <p>This link allows the candidate to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>View the offer letter</li>
@@ -1892,7 +1892,7 @@ export const OfferLetters: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 New expiration date
               </label>
               <input
@@ -1900,10 +1900,10 @@ export const OfferLetters: React.FC = () => {
                 value={extendNewDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
-            <label className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
               <input
                 type="checkbox"
                 checked={extendRegenerateToken}

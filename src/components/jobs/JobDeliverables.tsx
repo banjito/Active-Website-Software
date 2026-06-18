@@ -292,7 +292,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
   const getStatusBadgeColor = (status: Deliverable["status"]) => {
     switch (status) {
       case "draft":
-        return "bg-zinc-500";
+        return "bg-neutral-500";
       case "in_review":
         return "bg-blue-500";
       case "approved":
@@ -302,7 +302,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
       case "delivered":
         return "bg-purple-500";
       default:
-        return "bg-zinc-500";
+        return "bg-neutral-500";
     }
   };
 
@@ -345,10 +345,10 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Deliverables
           </h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
             Create deliverables from saved cover letters and their associated
             reports
           </p>
@@ -363,11 +363,11 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
 
       {/* Deliverables List */}
       {deliverables.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
-          <p className="text-zinc-600 dark:text-zinc-400">
+        <div className="text-center py-12 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <p className="text-neutral-600 dark:text-neutral-400">
             No deliverables yet
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-2">
+          <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-2">
             First, create a cover letter and select reports. Then create a
             deliverable here.
           </p>
@@ -390,12 +390,12 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
             return (
               <div
                 key={deliverable.id}
-                className="bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         {deliverable.name}
                       </h3>
                       <span
@@ -405,11 +405,11 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                       </span>
                     </div>
                     {deliverable.description && (
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
                         {deliverable.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-4 mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center gap-4 mt-3 text-sm text-neutral-500 dark:text-neutral-400">
                       <span>
                         {getCoverLetterName(deliverable.cover_letter_id)}
                       </span>
@@ -456,7 +456,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
           </DialogHeader>
           <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Name *
               </label>
               <input
@@ -464,11 +464,11 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Phase 1 Deliverable, Progress Report"
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Description
               </label>
               <textarea
@@ -476,15 +476,15 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description of this deliverable"
                 rows={3}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                 Select Cover Letter *
               </label>
               {coverLetters.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 p-3 border border-zinc-300 dark:border-zinc-600 rounded-md">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 p-3 border border-neutral-300 dark:border-neutral-600 rounded-md">
                   No cover letters available. Please generate a cover letter
                   first.
                 </p>
@@ -500,7 +500,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                         className={`flex items-start gap-3 p-3 border rounded-md cursor-pointer transition-colors ${
                           selectedCoverLetterId === coverLetter.id
                             ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
-                            : "border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-dark-100"
+                            : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-100"
                         }`}
                       >
                         <input
@@ -513,10 +513,10 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                           className="mt-1 flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
+                          <div className="flex items-center gap-2 font-medium text-neutral-900 dark:text-white">
                             {coverLetter.name || "Cover Letter"}
                           </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                             Created{" "}
                             {new Date(
                               coverLetter.created_at,
@@ -560,7 +560,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white">
                   Status:
                 </span>
                 <span
@@ -572,26 +572,26 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
 
               {selectedDeliverable.description && (
                 <div>
-                  <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-white">
                     Description:
                   </span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                     {selectedDeliverable.description}
                   </p>
                 </div>
               )}
 
               <div>
-                <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white">
                   Cover Letter:
                 </span>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                   {getCoverLetterName(selectedDeliverable.cover_letter_id)}
                 </p>
               </div>
 
               <div>
-                <span className="text-sm font-medium text-zinc-700 dark:text-white">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white">
                   Reports (
                   {getCoverLetterReportCount(
                     selectedDeliverable.cover_letter_id,
@@ -607,7 +607,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                     return getReportNames(reportIds).map((name, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-zinc-600 dark:text-zinc-400"
+                        className="text-sm text-neutral-600 dark:text-neutral-400"
                       >
                         • {name}
                       </li>

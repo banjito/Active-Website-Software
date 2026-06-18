@@ -222,18 +222,18 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
             ? "border-[#f26722] ring-2 ring-[#f26722]/20"
             : isBlockResizing
               ? "border-[#f26722] ring-2 ring-[#f26722]/20"
-              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+              : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
         }`}
         onClick={onSelect}
       >
         {/* Drag Handle & Actions */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col items-center justify-center gap-1 border-r border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-200 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col items-center justify-center gap-1 border-r border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-200 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             {...listeners}
             {...attributes}
-            className="p-1 cursor-grab hover:bg-zinc-200 dark:hover:bg-dark-100 rounded"
+            className="p-1 cursor-grab hover:bg-neutral-200 dark:hover:bg-dark-100 rounded"
           >
-            <GripVertical className="w-4 h-4 text-zinc-400" />
+            <GripVertical className="w-4 h-4 text-neutral-400" />
           </button>
         </div>
 
@@ -249,10 +249,10 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
               e.stopPropagation();
               onDuplicate();
             }}
-            className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+            className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
             title="Duplicate"
           >
-            <Copy className="w-4 h-4 text-zinc-500" />
+            <Copy className="w-4 h-4 text-neutral-500" />
           </button>
           <button
             onClick={(e) => {
@@ -277,7 +277,7 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
               className={`w-1 h-12 rounded-full transition-colors ${
                 isBlockResizing
                   ? "bg-[#f26722]"
-                  : "bg-transparent group-hover:bg-zinc-300 dark:group-hover:bg-zinc-500 group-hover/resize:bg-[#f26722]"
+                  : "bg-transparent group-hover:bg-neutral-300 dark:group-hover:bg-neutral-500 group-hover/resize:bg-[#f26722]"
               }`}
             />
           </div>
@@ -471,7 +471,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="text-xs text-neutral-500 dark:text-neutral-400">
         Image Block
       </div>
 
@@ -482,7 +482,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
             <img
               src={imageConfig.url}
               alt={imageConfig.alt || "Guide image"}
-              className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700"
+              className="w-full rounded-lg border border-neutral-200 dark:border-neutral-700"
               draggable={false}
             />
             <div className="absolute top-2 right-2 flex gap-1">
@@ -510,9 +510,9 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
           </div>
 
           {/* Size & Alignment Controls */}
-          <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-3 space-y-3">
+          <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-3 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+              <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mr-1">
                 Size:
               </span>
               {WIDTH_PRESETS.map(({ label, value }) => (
@@ -522,7 +522,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                     currentWidth === value
                       ? "bg-[#f26722] text-white"
-                      : "bg-white dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 hover:border-[#f26722] hover:text-[#f26722]"
+                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:text-[#f26722]"
                   }`}
                 >
                   {label}
@@ -540,24 +540,24 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                     }
                   }}
                   placeholder="Custom %"
-                  className="w-20 px-2 py-1 border border-zinc-300 dark:border-zinc-600 rounded-l-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-xs focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                  className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-l-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
                 />
                 <button
                   onClick={handleCustomWidthSubmit}
                   disabled={!customWidthInput.trim()}
-                  className="px-2 py-1 bg-zinc-200 dark:bg-dark-100 hover:bg-zinc-300 dark:hover:bg-dark-50 disabled:opacity-50 text-zinc-700 dark:text-zinc-300 rounded-r-md border border-l-0 border-zinc-300 dark:border-zinc-600 text-xs"
+                  className="px-2 py-1 bg-neutral-200 dark:bg-dark-100 hover:bg-neutral-300 dark:hover:bg-dark-50 disabled:opacity-50 text-neutral-700 dark:text-neutral-300 rounded-r-md border border-l-0 border-neutral-300 dark:border-neutral-600 text-xs"
                   title="Apply custom width"
                 >
                   <Check className="w-3 h-3" />
                 </button>
               </div>
-              <span className="text-xs text-zinc-400 ml-1">
+              <span className="text-xs text-neutral-400 ml-1">
                 Current: {currentWidth}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+              <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mr-1">
                 Align:
               </span>
               {ALIGNMENT_OPTIONS.map(({ value, icon, label }) => (
@@ -567,7 +567,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                   className={`p-1.5 rounded-md transition-colors ${
                     (imageConfig.alignment || "center") === value
                       ? "bg-[#f26722] text-white"
-                      : "bg-white dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 hover:border-[#f26722] hover:text-[#f26722]"
+                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:text-[#f26722]"
                   }`}
                   title={label}
                 >
@@ -580,7 +580,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
           {/* Alt text & caption fields */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">
+              <label className="text-xs text-neutral-500 dark:text-neutral-400">
                 Alt Text
               </label>
               <input
@@ -589,12 +589,12 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                 onChange={(e) =>
                   onUpdate({ ...imageConfig, alt: e.target.value })
                 }
-                className="w-full px-2 py-1 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm"
+                className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm"
                 placeholder="Describe the image"
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">
+              <label className="text-xs text-neutral-500 dark:text-neutral-400">
                 Caption
               </label>
               <input
@@ -603,7 +603,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                 onChange={(e) =>
                   onUpdate({ ...imageConfig, caption: e.target.value })
                 }
-                className="w-full px-2 py-1 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm"
+                className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm"
                 placeholder="Optional caption"
               />
             </div>
@@ -612,21 +612,21 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
       ) : (
         /* --- Upload / URL entry area --- */
         <div
-          className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-6 text-center"
+          className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-6 text-center"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-2 py-4">
               <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Uploading image...
               </p>
             </div>
           ) : (
             <>
-              <Upload className="w-8 h-8 mx-auto text-zinc-400 mb-2" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+              <Upload className="w-8 h-8 mx-auto text-neutral-400 mb-2" />
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
                 Drag & drop an image, browse your computer, or enter a URL
               </p>
 
@@ -646,15 +646,15 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
 
               {/* Divider */}
               <div className="flex items-center gap-3 max-w-md mx-auto mb-3">
-                <div className="flex-1 border-t border-zinc-300 dark:border-zinc-600" />
-                <span className="text-xs text-zinc-400">or enter URL</span>
-                <div className="flex-1 border-t border-zinc-300 dark:border-zinc-600" />
+                <div className="flex-1 border-t border-neutral-300 dark:border-neutral-600" />
+                <span className="text-xs text-neutral-400">or enter URL</span>
+                <div className="flex-1 border-t border-neutral-300 dark:border-neutral-600" />
               </div>
 
               {/* URL input with submit button */}
               <div className="flex items-center gap-2 max-w-md mx-auto">
                 <div className="relative flex-1">
-                  <Link className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <Link className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="url"
                     value={urlInput}
@@ -666,13 +666,13 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                       }
                     }}
                     placeholder="https://example.com/image.jpg"
-                    className="w-full pl-8 pr-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-l-lg bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                    className="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-l-lg bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
                   />
                 </div>
                 <button
                   onClick={handleUrlSubmit}
                   disabled={!urlInput.trim()}
-                  className="px-3 py-2 bg-[#f26722] hover:bg-[#e55611] disabled:bg-zinc-300 disabled:dark:bg-zinc-600 text-white rounded-r-lg transition-colors text-sm font-medium flex items-center gap-1"
+                  className="px-3 py-2 bg-[#f26722] hover:bg-[#e55611] disabled:bg-neutral-300 disabled:dark:bg-neutral-600 text-white rounded-r-lg transition-colors text-sm font-medium flex items-center gap-1"
                   title="Set image URL"
                 >
                   <Check className="w-4 h-4" />
@@ -683,7 +683,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
               {isEditingUrl && (
                 <button
                   onClick={() => setIsEditingUrl(false)}
-                  className="mt-3 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 underline"
+                  className="mt-3 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 underline"
                 >
                   Cancel
                 </button>
@@ -711,7 +711,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               Heading Level:
             </span>
             {[1, 2, 3, 4].map((level) => (
@@ -723,7 +723,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                 className={`px-2 py-0.5 text-xs rounded ${
                   headingConfig.level === level
                     ? "bg-[#f26722] text-white"
-                    : "bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300"
+                    : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300"
                 }`}
               >
                 H{level}
@@ -736,7 +736,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
             onChange={(e) =>
               onUpdate({ ...headingConfig, content: e.target.value })
             }
-            className={`w-full bg-transparent border-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white font-bold ${
+            className={`w-full bg-transparent border-none focus:outline-none focus:ring-0 text-neutral-900 dark:text-white font-bold ${
               headingConfig.level === 1
                 ? "text-3xl"
                 : headingConfig.level === 2
@@ -766,14 +766,14 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
       const listConfig = config as ListBlockConfig;
       return (
         <div className="space-y-2">
-          <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
             {block.type === ContentBlockType.BULLET_LIST
               ? "Bullet List"
               : "Numbered List"}
           </div>
           {(listConfig.items || []).map((item, index) => (
             <div key={index} className="flex items-start gap-2">
-              <span className="mt-2.5 text-zinc-400">
+              <span className="mt-2.5 text-neutral-400">
                 {block.type === ContentBlockType.BULLET_LIST
                   ? "•"
                   : `${index + 1}.`}
@@ -786,7 +786,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                   newItems[index] = { ...item, content: e.target.value };
                   onUpdate({ ...listConfig, items: newItems });
                 }}
-                className="flex-1 px-2 py-1 bg-zinc-50 dark:bg-dark-100 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-white"
+                className="flex-1 px-2 py-1 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-700 rounded text-neutral-900 dark:text-white"
                 placeholder={`Item ${index + 1}`}
               />
               <button
@@ -854,7 +854,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
       return (
         <div className={`border-l-4 ${currentType.color} p-4 rounded-r-lg`}>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               Type:
             </span>
             {calloutTypes.map((type) => (
@@ -869,7 +869,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                 className={`px-2 py-0.5 text-xs rounded ${
                   calloutConfig.type === type.value
                     ? "bg-[#f26722] text-white"
-                    : "bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300"
+                    : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300"
                 }`}
               >
                 {type.label}
@@ -882,7 +882,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
             onChange={(e) =>
               onUpdate({ ...calloutConfig, title: e.target.value })
             }
-            className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white font-semibold mb-1"
+            className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-neutral-900 dark:text-white font-semibold mb-1"
             placeholder="Title (optional)"
           />
           <textarea
@@ -890,7 +890,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
             onChange={(e) =>
               onUpdate({ ...calloutConfig, content: e.target.value })
             }
-            className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 resize-none"
+            className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-neutral-700 dark:text-neutral-300 resize-none"
             rows={2}
             placeholder="Callout content..."
           />
@@ -906,7 +906,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
           </div>
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 Step #:
               </span>
               <input
@@ -919,7 +919,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                     stepNumber: parseInt(e.target.value) || 1,
                   })
                 }
-                className="w-16 px-2 py-0.5 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm"
+                className="w-16 px-2 py-0.5 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm"
               />
             </div>
             <input
@@ -928,7 +928,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
               onChange={(e) =>
                 onUpdate({ ...stepConfig, title: e.target.value })
               }
-              className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white font-semibold text-lg"
+              className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-neutral-900 dark:text-white font-semibold text-lg"
               placeholder="Step title..."
             />
             <RichTextEditor
@@ -948,7 +948,9 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
 
       return (
         <div className="space-y-2">
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">Table</div>
+          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+            Table
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -956,7 +958,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                   {headers.map((header, colIndex) => (
                     <th
                       key={colIndex}
-                      className="border border-zinc-300 dark:border-zinc-600 p-0"
+                      className="border border-neutral-300 dark:border-neutral-600 p-0"
                     >
                       <input
                         type="text"
@@ -966,12 +968,12 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                           newHeaders[colIndex] = e.target.value;
                           onUpdate({ ...tableConfig, headers: newHeaders });
                         }}
-                        className="w-full px-2 py-1 bg-zinc-100 dark:bg-dark-200 text-zinc-900 dark:text-white font-semibold text-sm border-none focus:outline-none"
+                        className="w-full px-2 py-1 bg-neutral-100 dark:bg-dark-200 text-neutral-900 dark:text-white font-semibold text-sm border-none focus:outline-none"
                         placeholder={`Header ${colIndex + 1}`}
                       />
                     </th>
                   ))}
-                  <th className="w-8 border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-dark-200">
+                  <th className="w-8 border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200">
                     <button
                       onClick={() => {
                         const newHeaders = [
@@ -985,10 +987,10 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                           rows: newRows,
                         });
                       }}
-                      className="p-1 hover:bg-zinc-200 dark:hover:bg-dark-100 rounded"
+                      className="p-1 hover:bg-neutral-200 dark:hover:bg-dark-100 rounded"
                       title="Add column"
                     >
-                      <Plus className="w-4 h-4 text-zinc-500" />
+                      <Plus className="w-4 h-4 text-neutral-500" />
                     </button>
                   </th>
                 </tr>
@@ -999,7 +1001,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                     {row.map((cell, colIndex) => (
                       <td
                         key={colIndex}
-                        className="border border-zinc-300 dark:border-zinc-600 p-0"
+                        className="border border-neutral-300 dark:border-neutral-600 p-0"
                       >
                         <input
                           type="text"
@@ -1014,12 +1016,12 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                             );
                             onUpdate({ ...tableConfig, rows: newRows });
                           }}
-                          className="w-full px-2 py-1 bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm border-none focus:outline-none"
+                          className="w-full px-2 py-1 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm border-none focus:outline-none"
                           placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`}
                         />
                       </td>
                     ))}
-                    <td className="w-8 border border-zinc-300 dark:border-zinc-600">
+                    <td className="w-8 border border-neutral-300 dark:border-neutral-600">
                       <button
                         onClick={() => {
                           const newRows = rows.filter((_, i) => i !== rowIndex);
@@ -1058,20 +1060,20 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
       const videoConfig = config as VideoBlockConfig;
       return (
         <div className="space-y-3">
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400">
             Video Embed
           </div>
           <input
             type="url"
             value={videoConfig.url || ""}
             onChange={(e) => onUpdate({ ...videoConfig, url: e.target.value })}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
             placeholder="YouTube or Vimeo URL"
           />
           {videoConfig.url && (
-            <div className="aspect-video bg-zinc-100 dark:bg-dark-200 rounded-lg flex items-center justify-center">
-              <Video className="w-12 h-12 text-zinc-400" />
-              <span className="ml-2 text-zinc-500 dark:text-zinc-400">
+            <div className="aspect-video bg-neutral-100 dark:bg-dark-200 rounded-lg flex items-center justify-center">
+              <Video className="w-12 h-12 text-neutral-400" />
+              <span className="ml-2 text-neutral-500 dark:text-neutral-400">
                 Video Preview
               </span>
             </div>
@@ -1082,12 +1084,12 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
     case ContentBlockType.DIVIDER:
       return (
         <div className="py-2">
-          <hr className="border-t-2 border-zinc-200 dark:border-zinc-700" />
+          <hr className="border-t-2 border-neutral-200 dark:border-neutral-700" />
         </div>
       );
 
     default:
-      return <div className="text-zinc-500">Unknown block type</div>;
+      return <div className="text-neutral-500">Unknown block type</div>;
   }
 };
 
@@ -1374,9 +1376,9 @@ export const GuideBuilder: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-dark-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-200">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-dark-150 border-b border-zinc-200 dark:border-zinc-700 px-4 lg:px-6 py-3">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 px-4 lg:px-6 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
             <Button
@@ -1387,12 +1389,12 @@ export const GuideBuilder: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back to Help Center</span>
             </Button>
-            <div className="h-6 w-px bg-zinc-300 dark:bg-zinc-600" />
-            <h1 className="text-lg font-semibold text-zinc-900 dark:text-white truncate">
+            <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-600" />
+            <h1 className="text-lg font-semibold text-neutral-900 dark:text-white truncate">
               {guide.title || "Untitled Guide"}
             </h1>
             {isDirty && (
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 • Unsaved changes
               </span>
             )}
@@ -1437,7 +1439,7 @@ export const GuideBuilder: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Title
                 </label>
                 <Input
@@ -1450,7 +1452,7 @@ export const GuideBuilder: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Category
                 </label>
                 <select
@@ -1462,7 +1464,7 @@ export const GuideBuilder: React.FC = () => {
                     }));
                     setIsDirty(true);
                   }}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 >
                   {Object.entries(PORTAL_CATEGORY_LABELS).map(
                     ([value, label]) => (
@@ -1475,7 +1477,7 @@ export const GuideBuilder: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 Description
               </label>
               <textarea
@@ -1488,19 +1490,19 @@ export const GuideBuilder: React.FC = () => {
                   setIsDirty(true);
                 }}
                 rows={2}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white resize-none"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-none"
                 placeholder="Brief description of this guide..."
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 Tags
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {(guide.tags || []).map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 rounded-full text-sm"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 rounded-full text-sm"
                   >
                     {tag}
                     <button
@@ -1539,9 +1541,9 @@ export const GuideBuilder: React.FC = () => {
                     }));
                     setIsDirty(true);
                   }}
-                  className="rounded border-zinc-300 dark:border-zinc-600 text-[#f26722] focus:ring-[#f26722]"
+                  className="rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
                 />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                <span className="text-sm text-neutral-700 dark:text-neutral-300">
                   Published
                 </span>
               </label>
@@ -1554,11 +1556,11 @@ export const GuideBuilder: React.FC = () => {
           /* Preview Mode */
           <Card>
             <CardContent className="p-6">
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">
+              <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">
                 {guide.title}
               </h1>
               {guide.description && (
-                <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                <p className="text-neutral-600 dark:text-neutral-400 mb-6">
                   {guide.description}
                 </p>
               )}
@@ -1601,7 +1603,7 @@ export const GuideBuilder: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowBlockLibrary(!showBlockLibrary)}
-                  className="w-full py-4 border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg flex items-center justify-center gap-2 text-zinc-500 dark:text-zinc-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
+                  className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg flex items-center justify-center gap-2 text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Add Content Block
@@ -1611,18 +1613,18 @@ export const GuideBuilder: React.FC = () => {
                 </button>
 
                 {showBlockLibrary && (
-                  <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 p-4">
+                  <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg z-10 p-4">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {CONTENT_BLOCK_LIBRARY.map((blockDef) => (
                         <button
                           key={blockDef.id}
                           onClick={() => addBlock(blockDef.id)}
-                          className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-dark-100 transition-colors text-center"
+                          className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-dark-100 transition-colors text-center"
                         >
-                          <div className="w-10 h-10 bg-zinc-100 dark:bg-dark-200 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-neutral-100 dark:bg-dark-200 rounded-lg flex items-center justify-center">
                             {BLOCK_ICONS[blockDef.id]}
                           </div>
-                          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                             {blockDef.name}
                           </span>
                         </button>
@@ -1636,11 +1638,11 @@ export const GuideBuilder: React.FC = () => {
             {/* Empty State */}
             {guide.content.blocks.length === 0 && (
               <div className="text-center py-12">
-                <Plus className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-600 mb-4" />
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
+                <Plus className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
                   Start Building Your Guide
                 </h3>
-                <p className="text-zinc-500 dark:text-zinc-400 mb-4">
+                <p className="text-neutral-500 dark:text-neutral-400 mb-4">
                   Click "Add Content Block" above to add headings, text, images,
                   and more.
                 </p>
@@ -1669,7 +1671,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
       };
       return (
         <HeadingTag
-          className={`${headingSizes[hConfig.level]} font-bold text-zinc-900 dark:text-white`}
+          className={`${headingSizes[hConfig.level]} font-bold text-neutral-900 dark:text-white`}
         >
           {hConfig.content}
         </HeadingTag>
@@ -1678,7 +1680,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
     case ContentBlockType.TEXT:
       return (
         <div
-          className="prose prose-zinc dark:prose-invert max-w-none"
+          className="prose prose-neutral dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{
             __html: (config as TextBlockConfig).content || "",
           }}
@@ -1687,7 +1689,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.BULLET_LIST:
       return (
-        <ul className="list-disc list-inside space-y-1 text-zinc-700 dark:text-zinc-300">
+        <ul className="list-disc list-inside space-y-1 text-neutral-700 dark:text-neutral-300">
           {((config as ListBlockConfig).items || []).map((item, i) => (
             <li key={i}>{item.content}</li>
           ))}
@@ -1696,7 +1698,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.NUMBERED_LIST:
       return (
-        <ol className="list-decimal list-inside space-y-1 text-zinc-700 dark:text-zinc-300">
+        <ol className="list-decimal list-inside space-y-1 text-neutral-700 dark:text-neutral-300">
           {((config as ListBlockConfig).items || []).map((item, i) => (
             <li key={i}>{item.content}</li>
           ))}
@@ -1716,7 +1718,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
             className="rounded-lg w-full"
           />
           {imgConfig.caption && (
-            <figcaption className="text-center text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+            <figcaption className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-2">
               {imgConfig.caption}
             </figcaption>
           )}
@@ -1754,11 +1756,11 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
             {sConfig.stepNumber}
           </div>
           <div>
-            <h4 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h4 className="text-lg font-semibold text-neutral-900 dark:text-white">
               {sConfig.title}
             </h4>
             <div
-              className="text-zinc-700 dark:text-zinc-300 mt-1"
+              className="text-neutral-700 dark:text-neutral-300 mt-1"
               dangerouslySetInnerHTML={{ __html: sConfig.content || "" }}
             />
           </div>
@@ -1775,7 +1777,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
                 {(tConfig.headers || []).map((header, i) => (
                   <th
                     key={i}
-                    className="border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-dark-200 px-4 py-2 text-left font-semibold text-zinc-900 dark:text-white"
+                    className="border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 px-4 py-2 text-left font-semibold text-neutral-900 dark:text-white"
                   >
                     {header}
                   </th>
@@ -1788,7 +1790,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
                   {row.map((cell, ci) => (
                     <td
                       key={ci}
-                      className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-zinc-700 dark:text-zinc-300"
+                      className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-neutral-700 dark:text-neutral-300"
                     >
                       {cell}
                     </td>
@@ -1802,7 +1804,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.DIVIDER:
       return (
-        <hr className="border-t-2 border-zinc-200 dark:border-zinc-700 my-6" />
+        <hr className="border-t-2 border-neutral-200 dark:border-neutral-700 my-6" />
       );
 
     default:

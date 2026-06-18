@@ -297,10 +297,10 @@ export default function EngineeringPage() {
                 <label className="block text-sm font-medium mb-1">
                   Attachment
                 </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md border-zinc-300 dark:border-zinc-600">
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md border-neutral-300 dark:border-neutral-600">
                   <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-zinc-400" />
-                    <div className="flex text-sm text-zinc-600 dark:text-white">
+                    <Upload className="mx-auto h-12 w-12 text-neutral-400" />
+                    <div className="flex text-sm text-neutral-600 dark:text-white">
                       <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 focus-within:outline-none">
                         <span>Upload a file</span>
                         <input
@@ -313,7 +313,7 @@ export default function EngineeringPage() {
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       PDF, CAD, or image files up to 10MB
                     </p>
                   </div>

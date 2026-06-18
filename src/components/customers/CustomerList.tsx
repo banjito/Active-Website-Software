@@ -288,7 +288,7 @@ export default function CustomerList() {
               className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
-                  : "text-zinc-700 hover:bg-zinc-50 dark:text-white dark:hover:bg-dark-100"
+                  : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
             >
@@ -601,7 +601,9 @@ export default function CustomerList() {
             />
           </svg>
         </div>
-        <div className="text-zinc-900 dark:text-zinc-100 mb-4">{loadError}</div>
+        <div className="text-neutral-900 dark:text-neutral-100 mb-4">
+          {loadError}
+        </div>
         <button
           onClick={() => {
             setLoadError(null);
@@ -636,7 +638,7 @@ export default function CustomerList() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             Customers
           </h2>
         </div>
@@ -646,7 +648,7 @@ export default function CustomerList() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search customers by name, company, email"
-            className="w-72 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            className="w-72 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
           <div className="relative">
             <input
@@ -657,7 +659,7 @@ export default function CustomerList() {
                 setPage(1);
               }}
               placeholder="Starts with..."
-              className="w-32 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="w-32 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             />
             {startsWithFilter && (
               <button
@@ -666,7 +668,7 @@ export default function CustomerList() {
                   setStartsWithFilter("");
                   setPage(1);
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -684,7 +686,7 @@ export default function CustomerList() {
               className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 sortOrder
                   ? "text-[#f26722]"
-                  : "text-zinc-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
               }`}
               aria-expanded={isSortMenuOpen}
               aria-label="Sort customers"
@@ -693,9 +695,9 @@ export default function CustomerList() {
               <ArrowDownWideNarrow className="h-5 w-5" />
             </button>
             {isSortMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+              <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                 <div>
-                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Sort by
                   </div>
                   <div className="rounded-md bg-orange-50 px-2.5 py-1.5 text-sm text-[#f26722] dark:bg-orange-900/20">
@@ -703,7 +705,7 @@ export default function CustomerList() {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Order
                   </div>
                   {renderSingleChoiceOptions(
@@ -720,7 +722,7 @@ export default function CustomerList() {
           </div>
           <button
             onClick={navigateToCategoriesPage}
-            className="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white dark:bg-dark-150 dark:border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200"
+            className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
           >
             <Tag className="h-4 w-4 mr-2" />
             Categories
@@ -732,7 +734,7 @@ export default function CustomerList() {
               className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 activeFilterCount > 0
                   ? "text-[#f26722]"
-                  : "text-zinc-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
               }`}
               aria-expanded={isFilterMenuOpen}
               aria-label="Filter customers"
@@ -741,10 +743,10 @@ export default function CustomerList() {
               <Filter className="h-5 w-5" />
             </button>
             {isFilterMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+              <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                 {categories.length > 0 && (
                   <div>
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Category
                     </div>
                     {renderSingleChoiceOptions(
@@ -759,7 +761,7 @@ export default function CustomerList() {
                   </div>
                 )}
                 <div className={categories.length > 0 ? "mt-2" : ""}>
-                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-dark-400">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Status
                   </div>
                   {renderSingleChoiceOptions(
@@ -772,7 +774,7 @@ export default function CustomerList() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="mt-3 w-full rounded-md border border-zinc-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-3 w-full rounded-md border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     Clear filters
                   </button>
@@ -804,7 +806,7 @@ export default function CustomerList() {
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
               ? "bg-[#f26722] text-white"
-              : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100"
+              : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
           }`}
         >
           All
@@ -817,14 +819,14 @@ export default function CustomerList() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
                 ? "bg-[#f26722] text-white"
-                : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100"
+                : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
             }`}
           >
             {div.label}
           </button>
         ))}
         {activeDivisionTabs.length > 0 && (
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-2">
             Sorted A-Z by default
           </span>
         )}
@@ -832,9 +834,9 @@ export default function CustomerList() {
 
       {/* Active Filters */}
       {Object.keys(activeFilters).length > 0 && (
-        <div className="mb-4 bg-zinc-50 dark:bg-dark-150 p-3 rounded-md">
+        <div className="mb-4 bg-neutral-50 dark:bg-dark-150 p-3 rounded-md">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-zinc-500 dark:text-white">
+            <span className="text-sm text-neutral-500 dark:text-white">
               Active filters:
             </span>
 
@@ -852,7 +854,7 @@ export default function CustomerList() {
                 </span>
                 <button
                   onClick={() => handleFilterChange("category_id", null)}
-                  className="text-zinc-400 hover:text-zinc-500"
+                  className="text-neutral-400 hover:text-neutral-500"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -864,7 +866,7 @@ export default function CustomerList() {
                 <span className="mr-1">Status: {activeFilters.status}</span>
                 <button
                   onClick={() => handleFilterChange("status", null)}
-                  className="text-zinc-400 hover:text-zinc-500"
+                  className="text-neutral-400 hover:text-neutral-500"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -882,11 +884,11 @@ export default function CustomerList() {
       )}
 
       <div className="bg-white dark:bg-dark-150 shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-700">
+        <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
           {customers.length === 0 ? (
             <li className="px-6 py-4">
               <div className="text-center py-8">
-                <div className="mx-auto h-12 w-12 text-zinc-400 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-dark-150 mb-4">
+                <div className="mx-auto h-12 w-12 text-neutral-400 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-dark-150 mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
@@ -902,10 +904,10 @@ export default function CustomerList() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-sm font-medium text-zinc-900 dark:text-white">
+                <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                   No customers found
                 </h3>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-white">
+                <p className="mt-1 text-sm text-neutral-500 dark:text-white">
                   You don't have any customers yet. Get started by adding your
                   first customer.
                 </p>
@@ -930,20 +932,20 @@ export default function CustomerList() {
               <li
                 key={customer.id}
                 onClick={() => handleRowClick(customer.id)}
-                className="px-6 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                className="px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 cursor-pointer"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center">
-                        <span className="text-zinc-500 dark:text-white text-lg font-medium">
+                      <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                        <span className="text-neutral-500 dark:text-white text-lg font-medium">
                           {maskCustomerName(customer.company_name)?.charAt(0) ||
                             "C"}
                         </span>
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <div className="text-sm font-medium text-neutral-900 dark:text-white">
                         {maskCustomerName(customer.company_name)}
                         {customer.category_id && categories.length > 0 && (
                           <span
@@ -986,7 +988,7 @@ export default function CustomerList() {
                           })}
                         </div>
                       )}
-                      <div className="text-sm text-zinc-500 dark:text-white">
+                      <div className="text-sm text-neutral-500 dark:text-white">
                         {customer.email}
                       </div>
                     </div>
@@ -997,7 +999,7 @@ export default function CustomerList() {
                         customer.status === "active"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : customer.status === "inactive"
-                            ? "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-200"
+                            ? "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-200"
                             : customer.status === "lead"
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                               : customer.status === "prospect"
@@ -1011,7 +1013,7 @@ export default function CustomerList() {
                       <button
                         type="button"
                         onClick={(e) => openContactsPopup(customer, e)}
-                        className="text-zinc-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
+                        className="text-neutral-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
                         title="View contacts"
                       >
                         <Users className="h-5 w-5" />
@@ -1019,7 +1021,7 @@ export default function CustomerList() {
                       <button
                         type="button"
                         onClick={(e) => handleEdit(customer, e)}
-                        className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                        className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
                       >
                         <Pencil className="h-5 w-5" />
                       </button>
@@ -1029,7 +1031,7 @@ export default function CustomerList() {
                           e.stopPropagation();
                           confirmDelete(customer.id);
                         }}
-                        className="text-zinc-400 hover:text-red-500 dark:hover:text-red-400"
+                        className="text-neutral-400 hover:text-red-500 dark:hover:text-red-400"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -1045,7 +1047,7 @@ export default function CustomerList() {
       {/* Pagination Controls */}
       {totalPages > 0 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-zinc-600 dark:text-white">
+          <div className="text-sm text-neutral-600 dark:text-white">
             Showing {(page - 1) * pageSize + 1} -{" "}
             {Math.min(page * pageSize, totalCount)} of {totalCount} customers
           </div>
@@ -1069,13 +1071,13 @@ export default function CustomerList() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
                 Filter Customers
               </Dialog.Title>
               <button
                 type="button"
                 onClick={() => setFilterOpen(false)}
-                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1086,7 +1088,7 @@ export default function CustomerList() {
                 <div>
                   <label
                     htmlFor="category_filter"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Category
                   </label>
@@ -1096,7 +1098,7 @@ export default function CustomerList() {
                     onChange={(e) =>
                       handleFilterChange("category_id", e.target.value || null)
                     }
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   >
                     <option value="">All Categories</option>
                     {categories.map((category) => (
@@ -1111,7 +1113,7 @@ export default function CustomerList() {
               <div>
                 <label
                   htmlFor="status_filter"
-                  className="block text-sm font-medium text-zinc-700 dark:text-white"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
                 >
                   Status
                 </label>
@@ -1121,7 +1123,7 @@ export default function CustomerList() {
                   onChange={(e) =>
                     handleFilterChange("status", e.target.value || null)
                   }
-                  className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                  className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                 >
                   <option value="">All Statuses</option>
                   {statusOptions.map((status) => (
@@ -1137,7 +1139,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex justify-center rounded-md border border-zinc-300 bg-white dark:bg-dark-150 dark:border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Clear All
               </button>
@@ -1163,13 +1165,13 @@ export default function CustomerList() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
                 {isEditing ? "Edit Customer" : "Add New Customer"}
               </Dialog.Title>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1180,7 +1182,7 @@ export default function CustomerList() {
                 <div>
                   <label
                     htmlFor="company_name"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Company Name
                   </label>
@@ -1191,14 +1193,14 @@ export default function CustomerList() {
                     value={formData.company_name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Email Address
                   </label>
@@ -1208,14 +1210,14 @@ export default function CustomerList() {
                     id="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="phone"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Phone Number
                   </label>
@@ -1225,14 +1227,14 @@ export default function CustomerList() {
                     id="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="address"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Address
                   </label>
@@ -1242,7 +1244,7 @@ export default function CustomerList() {
                     id="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -1250,7 +1252,7 @@ export default function CustomerList() {
                   <div>
                     <label
                       htmlFor="category_id"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Category
                     </label>
@@ -1259,7 +1261,7 @@ export default function CustomerList() {
                       name="category_id"
                       value={formData.category_id || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-zinc-600 dark:text-white"
+                      className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                     >
                       <option value="">No Category</option>
                       {categories.map((category) => (
@@ -1272,7 +1274,7 @@ export default function CustomerList() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                     Divisions
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -1291,7 +1293,7 @@ export default function CustomerList() {
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                           formData.divisions.includes(div.value)
                             ? "bg-[#f26722] text-white"
-                            : "bg-zinc-100 dark:bg-dark-200 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
+                            : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
                         {div.label}
@@ -1305,7 +1307,7 @@ export default function CustomerList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex justify-center rounded-md border border-zinc-300 bg-white dark:bg-dark-150 dark:border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                 >
                   Cancel
                 </button>
@@ -1359,10 +1361,10 @@ export default function CustomerList() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-sm rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
-            <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
               Confirm Delete
             </Dialog.Title>
-            <p className="text-sm text-zinc-500 dark:text-white">
+            <p className="text-sm text-neutral-500 dark:text-white">
               Are you sure you want to delete this customer? This action cannot
               be undone.
             </p>
@@ -1370,7 +1372,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex justify-center rounded-md border border-zinc-300 bg-white dark:bg-dark-150 dark:border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
@@ -1398,7 +1400,7 @@ export default function CustomerList() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white flex items-center">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white flex items-center">
                 <Users className="h-5 w-5 text-[#f26722] mr-2" />
                 Contacts{" "}
                 {contactsPopupCustomer
@@ -1408,7 +1410,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={() => setContactsPopupOpen(false)}
-                className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
+                className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1417,14 +1419,14 @@ export default function CustomerList() {
             {contactsPopupLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size="sm" />
-                <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-300">
+                <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-300">
                   <LoadingSpinner size="md" />
                 </span>
               </div>
             ) : contactsPopupData.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <Users className="h-10 w-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   No contacts found for this customer.
                 </p>
               </div>
@@ -1433,22 +1435,22 @@ export default function CustomerList() {
                 {contactsPopupData.map((contact) => (
                   <div
                     key={contact.id}
-                    className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <div className="h-9 w-9 rounded-full bg-zinc-200 dark:bg-zinc-600 flex items-center justify-center mr-3">
-                          <span className="text-zinc-500 dark:text-white text-sm font-medium">
+                        <div className="h-9 w-9 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center mr-3">
+                          <span className="text-neutral-500 dark:text-white text-sm font-medium">
                             {contact.first_name?.charAt(0)}
                             {contact.last_name?.charAt(0)}
                           </span>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-white">
                             {contact.first_name} {contact.last_name}
                           </p>
                           {contact.position && (
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
                               {contact.position}
                             </p>
                           )}

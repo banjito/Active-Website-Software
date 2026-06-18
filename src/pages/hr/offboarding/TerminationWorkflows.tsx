@@ -107,7 +107,7 @@ const STATUS_OPTIONS = [
     value: "archived",
     label: "Archived",
     icon: Archive,
-    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+    color: "text-neutral-500 bg-neutral-100 dark:bg-neutral-800",
   },
 ];
 
@@ -336,11 +336,11 @@ export const TerminationWorkflows: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <DoorOpen className="h-6 w-6 text-[#f26722]" />
             Termination Workflows
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             Define tasks and documents for employee offboarding
           </p>
         </div>
@@ -355,7 +355,7 @@ export const TerminationWorkflows: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <Input
                 placeholder="Search workflows..."
                 value={search}
@@ -394,11 +394,11 @@ export const TerminationWorkflows: React.FC = () => {
             </div>
           ) : filteredWorkflows.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <DoorOpen className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
-              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+              <DoorOpen className="h-12 w-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">
                 No workflows found
               </p>
-              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
                 {search || filterStatus !== "all"
                   ? "Try adjusting your filters"
                   : "Create your first termination workflow"}
@@ -414,37 +414,37 @@ export const TerminationWorkflows: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Workflow
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Tasks
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Documents
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {filteredWorkflows.map((w) => (
                     <tr
                       key={w.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-zinc-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             {w.name}
                           </p>
                           {w.description && (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
                               {w.description}
                             </p>
                           )}
@@ -456,14 +456,14 @@ export const TerminationWorkflows: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
-                          <CheckSquare className="h-4 w-4 text-zinc-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300">
+                          <CheckSquare className="h-4 w-4 text-neutral-400" />
                           {w.tasks.length}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
-                          <FileText className="h-4 w-4 text-zinc-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300">
+                          <FileText className="h-4 w-4 text-neutral-400" />
                           {w.documents.length}
                         </span>
                       </td>
@@ -531,7 +531,7 @@ export const TerminationWorkflows: React.FC = () => {
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Workflow Name *
                 </label>
                 <Input
@@ -543,7 +543,7 @@ export const TerminationWorkflows: React.FC = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Description
                 </label>
                 <Textarea
@@ -556,7 +556,7 @@ export const TerminationWorkflows: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Status
                 </label>
                 <select
@@ -567,7 +567,7 @@ export const TerminationWorkflows: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                  className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -587,9 +587,9 @@ export const TerminationWorkflows: React.FC = () => {
                         is_template: e.target.checked,
                       }))
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Save as template
                   </span>
                 </label>
@@ -599,7 +599,7 @@ export const TerminationWorkflows: React.FC = () => {
             {/* Tasks Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Tasks ({formData.tasks.length})
                 </label>
                 <Button
@@ -613,9 +613,9 @@ export const TerminationWorkflows: React.FC = () => {
                 </Button>
               </div>
               {formData.tasks.length === 0 ? (
-                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
-                  <CheckSquare className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-                  <p className="text-sm text-zinc-500">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                  <CheckSquare className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+                  <p className="text-sm text-neutral-500">
                     No tasks yet. Add tasks that need to be completed during
                     offboarding.
                   </p>
@@ -625,7 +625,7 @@ export const TerminationWorkflows: React.FC = () => {
                   {formData.tasks.map((task, i) => (
                     <div
                       key={task.id}
-                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
@@ -641,7 +641,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateTask(i, "assignee_type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {ASSIGNEE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -654,7 +654,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateTask(i, "category", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {CATEGORY_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -669,9 +669,9 @@ export const TerminationWorkflows: React.FC = () => {
                             onChange={(e) =>
                               updateTask(i, "required", e.target.checked)
                             }
-                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
                           </span>
                         </label>
@@ -682,7 +682,7 @@ export const TerminationWorkflows: React.FC = () => {
                         size="sm"
                         onClick={() => removeTask(i)}
                       >
-                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+                        <Trash2 className="h-4 w-4 text-neutral-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -693,7 +693,7 @@ export const TerminationWorkflows: React.FC = () => {
             {/* Documents Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Documents ({formData.documents.length})
                 </label>
                 <Button
@@ -707,9 +707,9 @@ export const TerminationWorkflows: React.FC = () => {
                 </Button>
               </div>
               {formData.documents.length === 0 ? (
-                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
-                  <FileText className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-                  <p className="text-sm text-zinc-500">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                  <FileText className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+                  <p className="text-sm text-neutral-500">
                     No documents yet. Add documents required for offboarding.
                   </p>
                 </div>
@@ -718,7 +718,7 @@ export const TerminationWorkflows: React.FC = () => {
                   {formData.documents.map((doc, i) => (
                     <div
                       key={doc.id}
-                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
@@ -734,7 +734,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateDocument(i, "doc_type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {DOC_TYPE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -749,9 +749,9 @@ export const TerminationWorkflows: React.FC = () => {
                             onChange={(e) =>
                               updateDocument(i, "required", e.target.checked)
                             }
-                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
                           </span>
                         </label>
@@ -762,7 +762,7 @@ export const TerminationWorkflows: React.FC = () => {
                         size="sm"
                         onClick={() => removeDocument(i)}
                       >
-                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+                        <Trash2 className="h-4 w-4 text-neutral-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -809,22 +809,22 @@ export const TerminationWorkflows: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-zinc-400" />
+                <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4 text-neutral-400" />
                   Tasks ({selectedWorkflow.tasks.length})
                 </h4>
                 {selectedWorkflow.tasks.length === 0 ? (
-                  <p className="text-sm text-zinc-500">No tasks defined</p>
+                  <p className="text-sm text-neutral-500">No tasks defined</p>
                 ) : (
                   <ul className="space-y-2">
                     {selectedWorkflow.tasks.map((t) => (
                       <li key={t.id} className="flex items-start gap-2 text-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {t.title}
                           </span>
-                          <span className="text-zinc-500 ml-2">
+                          <span className="text-neutral-500 ml-2">
                             (
                             {
                               ASSIGNEE_OPTIONS.find(
@@ -846,22 +846,24 @@ export const TerminationWorkflows: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-zinc-400" />
+                <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-neutral-400" />
                   Documents ({selectedWorkflow.documents.length})
                 </h4>
                 {selectedWorkflow.documents.length === 0 ? (
-                  <p className="text-sm text-zinc-500">No documents defined</p>
+                  <p className="text-sm text-neutral-500">
+                    No documents defined
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {selectedWorkflow.documents.map((d) => (
                       <li key={d.id} className="flex items-start gap-2 text-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
-                          <span className="text-zinc-900 dark:text-white">
+                          <span className="text-neutral-900 dark:text-white">
                             {d.name || "Unnamed"}
                           </span>
-                          <span className="text-zinc-500 ml-2">
+                          <span className="text-neutral-500 ml-2">
                             (
                             {
                               DOC_TYPE_OPTIONS.find(

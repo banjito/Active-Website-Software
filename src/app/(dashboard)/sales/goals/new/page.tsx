@@ -9,7 +9,7 @@ export default function NewGoalPage() {
       <div className="mb-6">
         <Link
           to="/sales/goals"
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300 flex items-center"
+          className="text-sm text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300 flex items-center"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Goals
@@ -18,10 +18,10 @@ export default function NewGoalPage() {
 
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Create New Goal
           </h1>
-          <p className="text-zinc-500 dark:text-white mt-1">
+          <p className="text-neutral-500 dark:text-white mt-1">
             Set up a new sales goal, target, or objective
           </p>
         </div>

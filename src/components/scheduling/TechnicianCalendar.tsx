@@ -956,7 +956,7 @@ export function TechnicianCalendar({
             Technician Schedule{division && ` - ${division}`}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 pr-3 mr-2 border-r dark:border-zinc-700">
+            <div className="flex items-center gap-2 pr-3 mr-2 border-r dark:border-neutral-700">
               <Button
                 variant="outline"
                 size="sm"
@@ -985,7 +985,7 @@ export function TechnicianCalendar({
               >
                 Next
               </Button>
-              <span className="ml-1 text-sm font-medium text-zinc-800 dark:text-white">
+              <span className="ml-1 text-sm font-medium text-neutral-800 dark:text-white">
                 {currentMonthLabel}
               </span>
               <input
@@ -997,14 +997,14 @@ export function TechnicianCalendar({
                   setCurrentDate(dt);
                   calendarRef.current?.getApi().gotoDate(dt);
                 }}
-                className="ml-2 border border-zinc-300 dark:border-zinc-600 rounded px-2 py-1 text-sm bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                className="ml-2 border border-neutral-300 dark:border-neutral-600 rounded px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
               />
             </div>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsTechFocused(!isTechFocused)}
-                className="w-[280px] px-3 py-2 text-left text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                className="w-[280px] px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
               >
                 <span>
                   {selectedTechIds.length === 0
@@ -1031,8 +1031,8 @@ export function TechnicianCalendar({
                     className="fixed inset-0 z-40"
                     onClick={() => setIsTechFocused(false)}
                   />
-                  <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 shadow-lg">
-                    <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-zinc-200 dark:border-zinc-700">
+                  <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 shadow-lg">
+                    <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-neutral-200 dark:border-neutral-700">
                       <Input
                         placeholder="Search technician..."
                         value={techSearch}
@@ -1060,7 +1060,7 @@ export function TechnicianCalendar({
                             e.stopPropagation();
                             setSelectedTechIds([]);
                           }}
-                          className="flex-1 px-2 py-1 text-xs bg-zinc-500 text-white rounded hover:bg-zinc-600"
+                          className="flex-1 px-2 py-1 text-xs bg-neutral-500 text-white rounded hover:bg-neutral-600"
                         >
                           Clear All
                         </button>
@@ -1086,7 +1086,7 @@ export function TechnicianCalendar({
                       return (
                         <div
                           key={techId}
-                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-dark-200 cursor-pointer"
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleToggle();
@@ -1104,14 +1104,14 @@ export function TechnicianCalendar({
                               handleToggle();
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="rounded border-zinc-300 dark:border-zinc-600"
+                            className="rounded border-neutral-300 dark:border-neutral-600"
                           />
                           <span>{String(opt.label)}</span>
                         </div>
                       );
                     })}
                     {technicianOptions.length === 0 && (
-                      <div className="px-3 py-2 text-sm text-zinc-500">
+                      <div className="px-3 py-2 text-sm text-neutral-500">
                         No technicians
                       </div>
                     )}
@@ -1129,7 +1129,7 @@ export function TechnicianCalendar({
                 className="w-[260px]"
               />
               {isJobFocused && (
-                <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 shadow">
+                <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 shadow">
                   {jobOptionsFiltered.map((opt) => (
                     <button
                       key={String(opt.value)}
@@ -1139,13 +1139,13 @@ export function TechnicianCalendar({
                         setJobSearchMain(String(opt.label));
                         setIsJobFocused(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-dark-200"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
                     >
                       {String(opt.label)}
                     </button>
                   ))}
                   {jobOptionsFiltered.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-zinc-500">
+                    <div className="px-3 py-2 text-sm text-neutral-500">
                       No jobs
                     </div>
                   )}
@@ -1159,7 +1159,7 @@ export function TechnicianCalendar({
               Save
             </Button>
             {(selectedTechIds.length > 0 || mainFilterJobId) && (
-              <div className="ml-2 flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
+              <div className="ml-2 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
                 <span>Active filters:</span>
                 {selectedTechIds.length > 0 && (
                   <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
@@ -1168,7 +1168,7 @@ export function TechnicianCalendar({
                   </span>
                 )}
                 {mainFilterJobId && (
-                  <span className="px-2 py-1 rounded-full bg-zinc-100 dark:bg-dark-200">
+                  <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-dark-200">
                     Job: {jobSearchMain || mainFilterJobId}
                   </span>
                 )}
@@ -1319,19 +1319,19 @@ export function TechnicianCalendar({
             <DialogTitle>Schedule Summary</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="text-sm text-zinc-700 dark:text-white">
+            <div className="text-sm text-neutral-700 dark:text-white">
               {dayScheduleStart === dayScheduleEnd
                 ? `Selected: ${dayScheduleStart}`
                 : `Selected: ${dayScheduleStart} to ${dayScheduleEnd}`}
             </div>
-            <div className="max-h-60 overflow-auto border rounded-md dark:border-zinc-700">
+            <div className="max-h-60 overflow-auto border rounded-md dark:border-neutral-700">
               {events.filter((ev) => {
                 const d = dayjs(ev.start).format("YYYY-MM-DD");
                 return d >= dayScheduleStart && d <= dayScheduleEnd;
               }).length === 0 ? (
-                <div className="p-3 text-sm text-zinc-500">No events.</div>
+                <div className="p-3 text-sm text-neutral-500">No events.</div>
               ) : (
-                <ul className="divide-y dark:divide-zinc-700">
+                <ul className="divide-y dark:divide-neutral-700">
                   {events
                     .filter((ev) => {
                       const d = dayjs(ev.start).format("YYYY-MM-DD");
@@ -1343,10 +1343,10 @@ export function TechnicianCalendar({
                         className="p-2 flex items-center justify-between"
                       >
                         <div className="text-sm">
-                          <div className="font-medium text-zinc-900 dark:text-white">
+                          <div className="font-medium text-neutral-900 dark:text-white">
                             {ev.title}
                           </div>
-                          <div className="text-zinc-600 dark:text-zinc-300">
+                          <div className="text-neutral-600 dark:text-neutral-300">
                             {dayjs(ev.start).format("HH:mm")} -{" "}
                             {ev.end ? dayjs(ev.end).format("HH:mm") : "—"}
                             {(ev as any)?.technicians?.length
@@ -1443,7 +1443,7 @@ export function TechnicianCalendar({
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Technicians
               </label>
               <input
@@ -1451,9 +1451,9 @@ export function TechnicianCalendar({
                 placeholder="Search technicians..."
                 value={qaTechSearch}
                 onChange={(e) => setQaTechSearch(e.target.value)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
-              <div className="max-h-48 overflow-auto border rounded-md dark:border-zinc-700">
+              <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
                 {mergedTechOpts
                   .filter(
                     (o) =>
@@ -1465,7 +1465,7 @@ export function TechnicianCalendar({
                   .map((opt) => (
                     <label
                       key={String(opt.value)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-200"
+                      className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
                     >
                       <input
                         type="checkbox"
@@ -1491,14 +1491,14 @@ export function TechnicianCalendar({
                       .toLowerCase()
                       .includes(qaTechSearch.toLowerCase()),
                 ).length === 0 && (
-                  <div className="px-3 py-2 text-sm text-zinc-500">
+                  <div className="px-3 py-2 text-sm text-neutral-500">
                     No matching technicians
                   </div>
                 )}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Job
               </label>
               <input
@@ -1508,10 +1508,10 @@ export function TechnicianCalendar({
                 onChange={(e) => setQaJobSearch(e.target.value)}
                 onFocus={() => setQaJobOpen(true)}
                 onBlur={() => setTimeout(() => setQaJobOpen(false), 100)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
               {qaJobOpen && (
-                <div className="max-h-48 overflow-auto border rounded-md dark:border-zinc-700">
+                <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
                   {[...jobs]
                     .filter(
                       (j) =>
@@ -1524,7 +1524,7 @@ export function TechnicianCalendar({
                       <button
                         key={j.id}
                         type="button"
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-dark-200 ${qaForm.jobId === j.id ? "bg-zinc-100 dark:bg-dark-200" : ""}`}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 ${qaForm.jobId === j.id ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
                         onMouseDown={() => {
                           setQaForm((prev) => ({ ...prev, jobId: j.id }));
                           setQaJobSearch(j.label);
@@ -1541,7 +1541,7 @@ export function TechnicianCalendar({
                         .toLowerCase()
                         .includes(qaJobSearch.toLowerCase()),
                   ).length === 0 && (
-                    <div className="px-3 py-2 text-sm text-zinc-500">
+                    <div className="px-3 py-2 text-sm text-neutral-500">
                       No matching jobs
                     </div>
                   )}
@@ -1549,7 +1549,7 @@ export function TechnicianCalendar({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Start Date
               </label>
               <input
@@ -1558,11 +1558,11 @@ export function TechnicianCalendar({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 End Date
               </label>
               <input
@@ -1571,11 +1571,11 @@ export function TechnicianCalendar({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, endDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Job Color
               </label>
               <div className="space-y-2">
@@ -1594,7 +1594,7 @@ export function TechnicianCalendar({
                       key={color}
                       type="button"
                       onClick={() => setQaForm((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600"}`}
+                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-neutral-900 dark:border-white" : "border-neutral-300 dark:border-neutral-600"}`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -1605,11 +1605,11 @@ export function TechnicianCalendar({
                     onChange={(e) =>
                       setQaForm((prev) => ({ ...prev, color: e.target.value }))
                     }
-                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-zinc-700"
+                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-neutral-700"
                     title="Custom color"
                   />
                 </div>
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                <span className="text-xs text-neutral-600 dark:text-neutral-400">
                   {qaForm.jobId && jobColors[qaForm.jobId]
                     ? "Using saved color for this job"
                     : "New color will be saved for this job"}
@@ -1617,7 +1617,7 @@ export function TechnicianCalendar({
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Start Time
               </label>
               <input
@@ -1626,12 +1626,12 @@ export function TechnicianCalendar({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startTime: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                 disabled={qaForm.isAllDay}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 End Time
               </label>
               <input
@@ -1641,9 +1641,9 @@ export function TechnicianCalendar({
                   setQaForm((prev) => ({ ...prev, endTime: e.target.value }))
                 }
                 disabled={qaForm.unknownHours || qaForm.isAllDay}
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700 disabled:opacity-60"
+                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
               />
-              <label className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-white">
+              <label className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                 <input
                   type="checkbox"
                   checked={qaForm.unknownHours}
@@ -1657,7 +1657,7 @@ export function TechnicianCalendar({
                 />
                 Unknown hours
               </label>
-              <label className="mt-2 ml-4 inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-white">
+              <label className="mt-2 ml-4 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                 <input
                   type="checkbox"
                   checked={qaForm.isAllDay}
@@ -1675,7 +1675,7 @@ export function TechnicianCalendar({
               </label>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Notes
               </label>
               <Textarea
@@ -1711,7 +1711,7 @@ export function TechnicianCalendar({
             <DialogTitle>Remove Job From Calendar</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-zinc-700 dark:text-white">
+            <p className="text-sm text-neutral-700 dark:text-white">
               Choose how much to remove for:{" "}
               <span className="font-medium">{removeScopeEvent?.title}</span>
             </p>
@@ -1756,16 +1756,16 @@ export function TechnicianCalendar({
             <DialogTitle>Manage Assignments</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="text-sm text-zinc-700 dark:text-white">
+            <div className="text-sm text-neutral-700 dark:text-white">
               {groupEvent?.title}
             </div>
-            <ul className="divide-y dark:divide-zinc-700 max-h-60 overflow-auto">
+            <ul className="divide-y dark:divide-neutral-700 max-h-60 overflow-auto">
               {(groupEvent?.technicians || []).map((t) => (
                 <li
                   key={t.assignment_id || t.id}
                   className="p-2 flex items-center justify-between"
                 >
-                  <div className="text-sm text-zinc-800 dark:text-white">
+                  <div className="text-sm text-neutral-800 dark:text-white">
                     {t.name || t.id}
                   </div>
                   <Button
@@ -1778,19 +1778,19 @@ export function TechnicianCalendar({
                 </li>
               ))}
               {(groupEvent?.technicians || []).length === 0 && (
-                <div className="p-3 text-sm text-zinc-500">
+                <div className="p-3 text-sm text-neutral-500">
                   No assignments remaining.
                 </div>
               )}
             </ul>
             {/* Add technicians to this job/day */}
-            <div className="pt-2 border-t dark:border-zinc-700">
-              <div className="mb-2 text-sm font-medium text-zinc-800 dark:text-white">
+            <div className="pt-2 border-t dark:border-neutral-700">
+              <div className="mb-2 text-sm font-medium text-neutral-800 dark:text-white">
                 Add Technicians
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Technicians
                   </label>
                   <input
@@ -1798,9 +1798,9 @@ export function TechnicianCalendar({
                     placeholder="Search technicians..."
                     value={gmTechSearch}
                     onChange={(e) => setGmTechSearch(e.target.value)}
-                    className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                    className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                   />
-                  <div className="max-h-40 overflow-auto border rounded-md dark:border-zinc-700">
+                  <div className="max-h-40 overflow-auto border rounded-md dark:border-neutral-700">
                     {mergedTechOpts
                       .filter(
                         (o) =>
@@ -1818,7 +1818,7 @@ export function TechnicianCalendar({
                       .map((opt) => (
                         <label
                           key={String(opt.value)}
-                          className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-200"
+                          className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
                         >
                           <input
                             type="checkbox"
@@ -1851,14 +1851,14 @@ export function TechnicianCalendar({
                             (t) => String(t.id) === String(o.value),
                           ),
                       ).length === 0 && (
-                      <div className="px-3 py-2 text-sm text-zinc-500">
+                      <div className="px-3 py-2 text-sm text-neutral-500">
                         No matching technicians
                       </div>
                     )}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Times
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1866,17 +1866,17 @@ export function TechnicianCalendar({
                       type="time"
                       value={gmStartTime}
                       onChange={(e) => setGmStartTime(e.target.value)}
-                      className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                      className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                     />
                     <input
                       type="time"
                       value={gmEndTime}
                       onChange={(e) => setGmEndTime(e.target.value)}
                       disabled={gmUnknownHours}
-                      className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700 disabled:opacity-60"
+                      className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
                     />
                   </div>
-                  <label className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-white">
+                  <label className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                     <input
                       type="checkbox"
                       checked={gmUnknownHours}

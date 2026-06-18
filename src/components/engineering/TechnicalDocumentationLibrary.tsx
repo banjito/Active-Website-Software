@@ -259,10 +259,10 @@ export function TechnicalDocumentationLibrary() {
       procedure: "bg-purple-500",
       standard: "bg-yellow-500",
       guide: "bg-orange-500",
-      reference: "bg-zinc-500",
+      reference: "bg-neutral-500",
     };
 
-    return colorMap[category] || "bg-zinc-500";
+    return colorMap[category] || "bg-neutral-500";
   };
 
   // Pagination logic
@@ -280,17 +280,17 @@ export function TechnicalDocumentationLibrary() {
       {/* Header section with stats and actions */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-800 dark:text-white">
+          <h2 className="text-2xl font-semibold text-neutral-800 dark:text-white">
             Technical Documentation Library
           </h2>
-          <p className="text-zinc-600 dark:text-white mt-1">
+          <p className="text-neutral-600 dark:text-white mt-1">
             Manage and access engineering documentation
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
             <Input
               placeholder="Search documents..."
               className="pl-10 w-64"
@@ -323,7 +323,7 @@ export function TechnicalDocumentationLibrary() {
         <Card className="mb-6 p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Category
               </label>
               <Select
@@ -342,7 +342,7 @@ export function TechnicalDocumentationLibrary() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Date From
               </label>
               <Input
@@ -353,7 +353,7 @@ export function TechnicalDocumentationLibrary() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Date To
               </label>
               <Input
@@ -365,7 +365,7 @@ export function TechnicalDocumentationLibrary() {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
               Tags
             </label>
             <div className="flex flex-wrap gap-2">
@@ -375,7 +375,7 @@ export function TechnicalDocumentationLibrary() {
                   className={`cursor-pointer ${
                     selectedTags.includes(tag)
                       ? "bg-primary text-white"
-                      : "bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-white"
+                      : "bg-neutral-100 dark:bg-dark-150 text-neutral-700 dark:text-white"
                   }`}
                   onClick={() => handleTagChange(tag)}
                 >
@@ -419,8 +419,8 @@ export function TechnicalDocumentationLibrary() {
             ) : currentItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
-                  <File className="w-10 h-10 mx-auto text-zinc-400 mb-2" />
-                  <p className="text-zinc-500 dark:text-white">
+                  <File className="w-10 h-10 mx-auto text-neutral-400 mb-2" />
+                  <p className="text-neutral-500 dark:text-white">
                     No documents found
                   </p>
                   {Object.keys(filters).length > 0 && (
@@ -440,7 +440,7 @@ export function TechnicalDocumentationLibrary() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{doc.title}</div>
-                      <div className="text-xs text-zinc-500 dark:text-white mt-1 line-clamp-1">
+                      <div className="text-xs text-neutral-500 dark:text-white mt-1 line-clamp-1">
                         {doc.description}
                       </div>
                     </div>
@@ -464,7 +464,7 @@ export function TechnicalDocumentationLibrary() {
                   </TableCell>
                   <TableCell>
                     <div>{formatDate(doc.created_at)}</div>
-                    <div className="text-xs text-zinc-500 dark:text-white">
+                    <div className="text-xs text-neutral-500 dark:text-white">
                       by {doc.created_by.display_name}
                     </div>
                   </TableCell>
@@ -483,7 +483,7 @@ export function TechnicalDocumentationLibrary() {
 
         {/* Pagination */}
         {!loading && filteredDocuments.length > 0 && (
-          <div className="p-4 border-t border-zinc-200 dark:border-zinc-700">
+          <div className="p-4 border-t border-neutral-200 dark:border-neutral-700">
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(filteredDocuments.length / itemsPerPage)}
@@ -502,7 +502,7 @@ export function TechnicalDocumentationLibrary() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Title *
                   </label>
                   <Input
@@ -515,7 +515,7 @@ export function TechnicalDocumentationLibrary() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Description
                   </label>
                   <textarea
@@ -527,13 +527,13 @@ export function TechnicalDocumentationLibrary() {
                       })
                     }
                     placeholder="Enter document description"
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
                     rows={3}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Category *
                   </label>
                   <Select
@@ -556,7 +556,7 @@ export function TechnicalDocumentationLibrary() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                     Tags
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -566,7 +566,7 @@ export function TechnicalDocumentationLibrary() {
                         className={`cursor-pointer ${
                           newDocument.tags.includes(tag)
                             ? "bg-primary text-white"
-                            : "bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-white"
+                            : "bg-neutral-100 dark:bg-dark-150 text-neutral-700 dark:text-white"
                         }`}
                         onClick={() => {
                           const updatedTags = newDocument.tags.includes(tag)
@@ -582,13 +582,13 @@ export function TechnicalDocumentationLibrary() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     File *
                   </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-300 dark:border-zinc-600 border-dashed rounded-md">
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-md">
                     <div className="space-y-1 text-center">
                       <svg
-                        className="mx-auto h-12 w-12 text-zinc-400"
+                        className="mx-auto h-12 w-12 text-neutral-400"
                         stroke="currentColor"
                         fill="none"
                         viewBox="0 0 48 48"
@@ -601,7 +601,7 @@ export function TechnicalDocumentationLibrary() {
                           strokeLinejoin="round"
                         />
                       </svg>
-                      <div className="flex text-sm text-zinc-600 dark:text-white">
+                      <div className="flex text-sm text-neutral-600 dark:text-white">
                         <label
                           htmlFor="file-upload"
                           className="relative cursor-pointer bg-white dark:bg-dark-150 rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none"
@@ -624,13 +624,13 @@ export function TechnicalDocumentationLibrary() {
                         </label>
                         <p className="pl-1">or drag and drop</p>
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-white">
+                      <p className="text-xs text-neutral-500 dark:text-white">
                         PDF, DOC, CAD, DWG, XLS up to 10MB
                       </p>
                     </div>
                   </div>
                   {newDocument.file && (
-                    <p className="mt-2 text-sm text-zinc-600 dark:text-white">
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-white">
                       Selected file: {newDocument.file.name}
                     </p>
                   )}

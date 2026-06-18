@@ -151,8 +151,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           execCommand(command, value || false);
         }
       }}
-      className={`p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-dark-100 transition-colors ${
-        active ? "bg-zinc-200 dark:bg-dark-200" : ""
+      className={`p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-dark-100 transition-colors ${
+        active ? "bg-neutral-200 dark:bg-dark-200" : ""
       }`}
       title={title}
       disabled={readOnly}
@@ -186,11 +186,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div
-      className={`border border-zinc-300 dark:border-zinc-600 rounded-lg overflow-hidden ${className}`}
+      className={`border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden ${className}`}
     >
       {/* Toolbar */}
       {!readOnly && (
-        <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-200">
+        <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-200">
           {/* Undo/Redo */}
           <FormatButton
             icon={<Undo className="w-4 h-4" />}
@@ -203,7 +203,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Redo"
           />
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Font Size Dropdown */}
           {/* Font Family Dropdown */}
@@ -216,14 +216,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 setShowTextColorMenu(false);
                 setShowHighlightMenu(false);
               }}
-              className="flex items-center gap-1 px-2 py-1 text-sm rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+              className="flex items-center gap-1 px-2 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
               title="Font"
             >
               <Type className="w-4 h-4" />
               <span className="text-xs">Font</span>
             </button>
             {showFontFamilyMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg z-10 min-w-[160px]">
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10 min-w-[160px]">
                 {FONT_FAMILIES.map((font) => (
                   <button
                     key={font.value}
@@ -232,7 +232,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       execCommand("fontName", font.value);
                       setShowFontFamilyMenu(false);
                     }}
-                    className="block w-full px-4 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-dark-100"
+                    className="block w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-dark-100"
                     style={{ fontFamily: font.value }}
                   >
                     {font.label}
@@ -251,14 +251,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 setShowTextColorMenu(false);
                 setShowHighlightMenu(false);
               }}
-              className="flex items-center gap-1 px-2 py-1 text-sm rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+              className="flex items-center gap-1 px-2 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
               title="Font Size"
             >
               <Type className="w-4 h-4" />
               <span className="text-xs">Size</span>
             </button>
             {showFontSizeMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
                 {FONT_SIZES.map((size) => (
                   <button
                     key={size.value}
@@ -275,7 +275,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       }
                       setShowFontSizeMenu(false);
                     }}
-                    className="block w-full px-4 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-dark-100"
+                    className="block w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-dark-100"
                     style={{ fontSize: size.value }}
                   >
                     {size.label}
@@ -285,7 +285,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             )}
           </div>
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Basic Formatting */}
           <FormatButton
@@ -309,7 +309,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Strikethrough"
           />
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Text Color */}
           <div className="relative">
@@ -321,13 +321,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 setShowFontFamilyMenu(false);
                 setShowHighlightMenu(false);
               }}
-              className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
               title="Text Color"
             >
               <Palette className="w-4 h-4" />
             </button>
             {showTextColorMenu && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
                 <div className="grid grid-cols-6 gap-1">
                   {TEXT_COLORS.map((color) => (
                     <button
@@ -337,7 +337,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                         execCommand("foreColor", color);
                         setShowTextColorMenu(false);
                       }}
-                      className="w-6 h-6 rounded border border-zinc-300 dark:border-zinc-600 hover:scale-110 transition-transform"
+                      className="w-6 h-6 rounded border border-neutral-300 dark:border-neutral-600 hover:scale-110 transition-transform"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -357,13 +357,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 setShowFontFamilyMenu(false);
                 setShowTextColorMenu(false);
               }}
-              className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-dark-100"
+              className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-dark-100"
               title="Highlight"
             >
               <Highlighter className="w-4 h-4" />
             </button>
             {showHighlightMenu && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
                 <div className="grid grid-cols-6 gap-1">
                   {HIGHLIGHT_COLORS.map((color) => (
                     <button
@@ -373,7 +373,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                         execCommand("hiliteColor", color);
                         setShowHighlightMenu(false);
                       }}
-                      className="w-6 h-6 rounded border border-zinc-300 dark:border-zinc-600 hover:scale-110 transition-transform"
+                      className="w-6 h-6 rounded border border-neutral-300 dark:border-neutral-600 hover:scale-110 transition-transform"
                       style={{
                         backgroundColor:
                           color === "transparent" ? "#fff" : color,
@@ -392,7 +392,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             )}
           </div>
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Lists */}
           <FormatButton
@@ -406,7 +406,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Numbered List"
           />
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Indentation */}
           <FormatButton
@@ -420,7 +420,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Increase Indent"
           />
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Alignment */}
           <FormatButton
@@ -439,7 +439,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             title="Align Right"
           />
 
-          <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          <div className="w-px h-5 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           {/* Link */}
           <div className="relative">
@@ -449,13 +449,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               title="Insert Link"
             />
             {showLinkInput && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg z-10 flex gap-2">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10 flex gap-2">
                 <input
                   type="url"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                  className="px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -483,7 +483,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         suppressContentEditableWarning
         onInput={handleInput}
         onPaste={handlePaste}
-        className={`p-4 focus:outline-none bg-white dark:bg-dark-100 text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none ${
+        className={`p-4 focus:outline-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none ${
           readOnly ? "cursor-default" : ""
         }`}
         style={{ minHeight }}

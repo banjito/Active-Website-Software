@@ -652,9 +652,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex h-12 items-center justify-end border-b border-black/10 dark:border-dark-200 px-4 lg:hidden">
           <button
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-dark-100"
+            className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
           >
-            <X className="h-5 w-5 text-zinc-600 dark:text-white" />
+            <X className="h-5 w-5 text-neutral-600 dark:text-white" />
           </button>
         </div>
       ) : (
@@ -668,9 +668,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
           <button
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="ml-auto lg:hidden p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-dark-100"
+            className="ml-auto lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
           >
-            <X className="h-5 w-5 text-zinc-600 dark:text-white" />
+            <X className="h-5 w-5 text-neutral-600 dark:text-white" />
           </button>
         </div>
       )}
@@ -716,7 +716,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 
   const legacyHeader = !useHeaderBarLayout ? (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 shadow-sm print:hidden">
+    <header className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 shadow-sm print:hidden">
       <div className="w-full px-3 sm:px-4 lg:px-8">
         <div className="flex h-16 lg:h-20 items-center justify-between">
           <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1 print:hidden">
@@ -726,9 +726,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {!isMeetingsPage && (
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-dark-100 flex-shrink-0"
+                className="lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100 flex-shrink-0"
               >
-                <Menu className="h-5 w-5 text-zinc-600 dark:text-white" />
+                <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
               </button>
             )}
             {/* Back to Job button - only show on report pages */}
@@ -757,7 +757,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full w-8 h-8 lg:w-10 lg:h-10 hover:bg-zinc-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
+                className="rounded-full w-8 h-8 lg:w-10 lg:h-10 hover:bg-neutral-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
                 onClick={() => {
                   const next = !isProfileMenuOpen;
                   setIsProfileMenuOpen(next);
@@ -771,7 +771,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     className="h-8 w-8 lg:h-10 lg:w-10 rounded-full object-cover"
                   />
                 ) : (
-                  <UserIcon className="h-4 w-4 lg:h-5 lg:w-5 text-zinc-600 dark:text-dark-400" />
+                  <UserIcon className="h-4 w-4 lg:h-5 lg:w-5 text-neutral-600 dark:text-dark-400" />
                 )}
               </Button>
 
@@ -793,57 +793,57 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     )}
                     <div className="rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
-                        <div className="px-4 py-2 border-b border-zinc-200 dark:border-dark-200">
-                          <p className="text-sm font-medium text-zinc-900 dark:text-dark-900">
+                        <div className="px-4 py-2 border-b border-neutral-200 dark:border-dark-200">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-dark-900">
                             {user?.user_metadata?.name || "User"}
                           </p>
-                          <p className="text-sm text-zinc-500 dark:text-dark-400 truncate">
+                          <p className="text-sm text-neutral-500 dark:text-dark-400 truncate">
                             {user?.user_metadata?.role || "No role assigned"}
                           </p>
-                          <p className="text-xs text-zinc-400 dark:text-dark-500 truncate mt-1">
+                          <p className="text-xs text-neutral-400 dark:text-dark-500 truncate mt-1">
                             {user?.email || <LoadingSpinner size="xs" />}
                           </p>
                         </div>
                         <button
                           onClick={() => navigate("/portal")}
-                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <MapPin className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
+                          <MapPin className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
                           Back to Portal
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
                           View Profile
                         </button>
                         <button
                           type="button"
                           onClick={handleSettingsToggle}
-                          className={`flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50 ${
+                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50 ${
                             isSettingsSubmenuOpen
-                              ? "bg-zinc-100 dark:bg-dark-50"
+                              ? "bg-neutral-100 dark:bg-dark-50"
                               : ""
                           }`}
                         >
-                          <Settings className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
                           Settings
-                          <ChevronLeft className="ml-auto h-4 w-4 text-zinc-400 shrink-0" />
+                          <ChevronLeft className="ml-auto h-4 w-4 text-neutral-400 shrink-0" />
                         </button>
                         <button
                           onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <FileText className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
+                          <FileText className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
                           About
                         </button>
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-zinc-700 dark:text-[#f26722] hover:bg-zinc-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-zinc-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
                           {isSigningOut ? "Signing out..." : "Sign Out"}
                         </button>
                       </div>
@@ -870,7 +870,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {useHeaderBarLayout && (
-        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-zinc-200 dark:border-dark-200">
+        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
           <HeaderBar />
         </div>
       )}
@@ -879,14 +879,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex min-h-0 flex-1 min-w-0">
           {sidebar}
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center px-3 py-2 border-b border-zinc-200 dark:border-dark-200 lg:hidden print:hidden">
+            <div className="flex items-center px-3 py-2 border-b border-neutral-200 dark:border-dark-200 lg:hidden print:hidden">
               <button
                 type="button"
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-dark-100"
+                className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
                 aria-label="Open menu"
               >
-                <Menu className="h-5 w-5 text-zinc-600 dark:text-white" />
+                <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
               </button>
             </div>
             {mainContent}

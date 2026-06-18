@@ -2476,7 +2476,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       `}</style>
       {/* Print Header - Only visible when printing */}
       <div
-        className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6 relative"
+        className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6 relative"
         style={{
           overflow: "visible",
           paddingLeft: "0.5rem",
@@ -2588,7 +2588,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           <div className="print:hidden mb-6 flex justify-end">
             <div className="flex flex-col items-center">
               <span
-                className={`text-[10px] font-medium mb-0.5 ${formData.irDlroOnly ? "text-purple-600 dark:text-purple-400" : "text-zinc-500 dark:text-zinc-400"}`}
+                className={`text-[10px] font-medium mb-0.5 ${formData.irDlroOnly ? "text-purple-600 dark:text-purple-400" : "text-neutral-500 dark:text-neutral-400"}`}
               >
                 {formData.irDlroOnly ? "Enabled" : "Disabled"}
               </span>
@@ -2598,7 +2598,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   formData.irDlroOnly
                     ? "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500"
-                    : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+                    : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 focus:ring-neutral-400 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                 }`}
               >
                 IR & DLRO Only
@@ -2611,7 +2611,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Job Information Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             {/* On-screen only: row1 = Customer, Address, Job#, Technicians, Date; row2 = Breaker, Sub, Eqpt Ident, Circuit, User; row3 = Temp, Celsius, Humidity, TCF; print uses table below */}
@@ -2622,7 +2622,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   type="text"
                   value={maskCustomerName(formData.customer)}
                   readOnly
-                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full min-w-0"
+                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full min-w-0"
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2632,7 +2632,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2641,7 +2641,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   type="text"
                   value={formData.jobNumber}
                   readOnly
-                  className="form-input bg-zinc-100 dark:bg-dark-150 w-full"
+                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2651,7 +2651,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2661,7 +2661,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/*
@@ -2691,7 +2691,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   }}
                   list="breaker-identifier-options"
                   readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/*
@@ -2720,7 +2720,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   }}
                   list="substation-options"
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   style={{
                     appearance: "none",
                     WebkitAppearance: "none",
@@ -2737,7 +2737,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     handleChange("eqptIdentifier", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2749,7 +2749,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     handleChange("circuitCellNo", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex flex-col min-w-0">
@@ -2759,7 +2759,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   value={formData.user}
                   onChange={(e) => handleChange("user", e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/* Bottom row: Temp, Celsius, Humidity, TCF — 4 wide inside full row */}
@@ -2776,7 +2776,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       }
                       onChange={handleFahrenheitChange}
                       readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-xs">°F</span>
                   </div>
@@ -2793,7 +2793,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       }
                       onChange={handleCelsiusChange}
                       readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-xs">°C</span>
                   </div>
@@ -2811,7 +2811,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-xs">%</span>
                   </div>
@@ -2822,7 +2822,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     type="number"
                     value={formData.temperature.tcf}
                     readOnly
-                    className="form-input bg-zinc-100 dark:bg-dark-150 w-10 text-sm py-1"
+                    className="form-input bg-neutral-100 dark:bg-dark-150 w-10 text-sm py-1"
                   />
                 </div>
               </div>
@@ -2830,7 +2830,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
             {/* Print-only compact job info table - Customer & Address wide; Temp, TCF, Job#, Humidity, Tech, Substation narrow */}
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-zinc-300 print:border-black table-fixed">
+              <table className="w-full border-collapse border border-neutral-300 print:border-black table-fixed">
                 <colgroup>
                   <col style={{ width: "35%" }} />
                   <col style={{ width: "10%" }} />
@@ -2841,27 +2841,27 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Customer:</div>
                       <div className="mt-0.5 text-xs break-words">
                         {maskCustomerName(formData.customer)}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Temp:</div>
                       <div className="mt-0.5 text-xs">{`${formData.temperature.fahrenheit}°F (${formData.temperature.celsius}°C)`}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Job #:</div>
                       <div className="mt-0.5 text-xs">{formData.jobNumber}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Technicians:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.technicians}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Date:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.date
@@ -2871,7 +2871,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           : ""}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Breaker ID:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.breakerIdentifier}
@@ -2879,7 +2879,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Address:</div>
                       <div className="mt-0.5 text-xs break-words">
                         {maskCustomerAddress(
@@ -2887,23 +2887,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">TCF:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.temperature.tcf}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Humidity:</div>
                       <div className="mt-0.5 text-xs">{`${formData.temperature.humidity}%`}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Substation:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.substation}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Eqpt. Identifier:
                       </div>
@@ -2911,7 +2911,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         {formData.eqptIdentifier}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Circuit/Cell:</div>
                       <div className="mt-0.5 text-xs">
                         {formData.circuitCellNo}
@@ -2927,7 +2927,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           <div className="mb-6">
             <div className="print:hidden">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -2940,7 +2940,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("manufacturer", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2952,7 +2952,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("catalogNumber", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2964,7 +2964,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("serialNumber", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2975,7 +2975,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("breakerType", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {breakerTypeOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -2993,7 +2993,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("tripUnitType", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3003,7 +3003,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.frameSize}
                     onChange={(e) => handleChange("frameSize", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3013,7 +3013,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.ratingPlug}
                     onChange={(e) => handleChange("ratingPlug", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3024,7 +3024,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("ratedVoltage", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {ratedVoltageOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -3042,7 +3042,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("operatingVoltage", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3052,7 +3052,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.icRating}
                     onChange={(e) => handleChange("icRating", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3062,7 +3062,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.curveNo}
                     onChange={(e) => handleChange("curveNo", e.target.value)}
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3071,7 +3071,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.operation}
                     onChange={(e) => handleChange("operation", e.target.value)}
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {operationOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -3086,7 +3086,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     value={formData.mounting}
                     onChange={(e) => handleChange("mounting", e.target.value)}
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {mountingOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -3103,7 +3103,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("zoneInterlock", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {zoneInterlockOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -3120,7 +3120,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("thermalMemory", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {thermalMemoryOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -3137,70 +3137,70 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               <h2 className="text-xl font-semibold mb-2 text-black border-b border-black pb-2 font-bold">
                 Nameplate Data
               </h2>
-              <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black text-[0.85rem]">
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Manufacturer:</div>
                       <div>{formData.manufacturer}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Catalog No.:</div>
                       <div>{formData.catalogNumber}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Serial Number:</div>
                       <div>{formData.serialNumber}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Breaker Type:</div>
                       <div>{formData.breakerType}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Trip Unit Type:</div>
                       <div>{formData.tripUnitType}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Frame Size (A):</div>
                       <div>{formData.frameSize}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Rating Plug (A):</div>
                       <div>{formData.ratingPlug}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Rated Voltage:</div>
                       <div>{formData.ratedVoltage}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Operating Voltage:</div>
                       <div>{formData.operatingVoltage}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">I.C. Rating (kA):</div>
                       <div>{formData.icRating}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Curve No.:</div>
                       <div>{formData.curveNo}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Operation:</div>
                       <div>{formData.operation}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Mounting:</div>
                       <div>{formData.mounting}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Zone Interlock:</div>
                       <div>{formData.zoneInterlock}</div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Thermal Memory:</div>
                       <div>{formData.thermalMemory}</div>
                     </td>
@@ -3213,39 +3213,39 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Visual and Mechanical Inspection Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600">
+              <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   <col style={{ width: "65%" }} />
                   <col style={{ width: "20%" }} />
                 </colgroup>
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       NETA Section
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       Description
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Results
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
                         {item.id}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
                         {item.description}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center">
                         <div className="print:hidden">
                           <select
                             value={item.result}
@@ -3256,7 +3256,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             <option value=""></option>
                             {visualInspectionResultsOptions.map((option) => (
@@ -3280,7 +3280,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Device Settings Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Settings
             </h2>
 
@@ -3291,7 +3291,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 value={formData.tripType}
                 onChange={(e) => handleChange("tripType", e.target.value)}
                 disabled={!isEditing}
-                className={`form-input w-32 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-32 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 {tripTypeOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -3672,24 +3672,24 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     Settings As {settingType === "asFound" ? "Found" : "Left"}
                   </h3>
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
-                      <thead className="bg-zinc-50 dark:bg-dark-150">
+                    <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
+                      <thead className="bg-neutral-50 dark:bg-dark-150">
                         <tr>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                             Function
                           </th>
                           {tripConfig.showSettingColumn && (
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                               Setting
                             </th>
                           )}
                           {tripConfig.showDelayColumn && (
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                               Delay
                             </th>
                           )}
                           {tripConfig.showI2tColumn && (
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                               I²t
                             </th>
                           )}
@@ -3807,11 +3807,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
                           return (
                             <tr key={`${settingType}-${func}`}>
-                              <td className="border border-zinc-300 dark:border-zinc-600 px-4 py-2 text-sm text-zinc-900 dark:text-white">
+                              <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-sm text-neutral-900 dark:text-white">
                                 {functionLabels[func]}
                               </td>
                               {tripConfig.showSettingColumn && (
-                                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                                   {showSetting ? (
                                     <input
                                       type="text"
@@ -3827,19 +3827,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                         )
                                       }
                                       readOnly={!isEditing}
-                                      className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${
-                                        !isEditing ? "bg-zinc-100" : ""
+                                      className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${
+                                        !isEditing ? "bg-neutral-100" : ""
                                       }`}
                                     />
                                   ) : (
-                                    <div className="w-full p-1 text-center text-zinc-400">
+                                    <div className="w-full p-1 text-center text-neutral-400">
                                       -
                                     </div>
                                   )}
                                 </td>
                               )}
                               {tripConfig.showDelayColumn && (
-                                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                                   {showDelay ? (
                                     <input
                                       type="text"
@@ -3855,19 +3855,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                         )
                                       }
                                       readOnly={!isEditing}
-                                      className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${
-                                        !isEditing ? "bg-zinc-100" : ""
+                                      className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${
+                                        !isEditing ? "bg-neutral-100" : ""
                                       }`}
                                     />
                                   ) : (
-                                    <div className="w-full p-1 text-center text-zinc-400">
+                                    <div className="w-full p-1 text-center text-neutral-400">
                                       -
                                     </div>
                                   )}
                                 </td>
                               )}
                               {tripConfig.showI2tColumn && (
-                                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                                   {showI2t ? (
                                     useTextI2t ? (
                                       <input
@@ -3884,8 +3884,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                           )
                                         }
                                         readOnly={!isEditing}
-                                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${
-                                          !isEditing ? "bg-zinc-100" : ""
+                                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${
+                                          !isEditing ? "bg-neutral-100" : ""
                                         }`}
                                       />
                                     ) : (
@@ -3902,9 +3902,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                           )
                                         }
                                         disabled={!isEditing}
-                                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${
+                                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${
                                           !isEditing
-                                            ? "bg-zinc-100"
+                                            ? "bg-neutral-100"
                                             : "bg-white"
                                         }`}
                                       >
@@ -3916,7 +3916,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                       </select>
                                     )
                                   ) : (
-                                    <div className="w-full p-1 text-center text-zinc-400">
+                                    <div className="w-full p-1 text-center text-neutral-400">
                                       -
                                     </div>
                                   )}
@@ -3941,7 +3941,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
             {/* Coordination Study - Screen Version */}
             <div className="mt-4 print:hidden">
-              <h3 className="text-md font-medium text-zinc-800 dark:text-zinc-200 mb-2">
+              <h3 className="text-md font-medium text-neutral-800 dark:text-neutral-200 mb-2">
                 Coordination Study
               </h3>
               <div className="grid grid-cols-3 gap-4">
@@ -3957,7 +3957,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3972,7 +3972,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -3987,7 +3987,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -3997,22 +3997,22 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               <h3 className="text-md font-semibold text-black mb-2">
                 Coordination Study
               </h3>
-              <table className="border-collapse border border-zinc-300 print:border-black">
+              <table className="border-collapse border border-neutral-300 print:border-black">
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">No./ID.:</div>
                       <div>
                         {formData.deviceSettings.coordinationStudy.noId || "-"}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Rev.:</div>
                       <div>
                         {formData.deviceSettings.coordinationStudy.rev || "-"}
                       </div>
                     </td>
-                    <td className="p-2 align-top border border-zinc-300 print:border-black">
+                    <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Date:</div>
                       <div>
                         {formData.deviceSettings.coordinationStudy.date || "-"}
@@ -4027,56 +4027,56 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white"
                       colSpan={4}
                     >
                       Resistance Measurements
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white"
                       colSpan={2}
                     >
                       Value Deviation
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Result
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Pole 1
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Pole 2
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Pole 3
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Units
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Measured
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Criteria
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       -
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                       <input
                         type="text"
                         value={formData.contactResistance.pole1}
@@ -4087,10 +4087,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                       <input
                         type="text"
                         value={formData.contactResistance.pole2}
@@ -4101,10 +4101,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                       <input
                         type="text"
                         value={formData.contactResistance.pole3}
@@ -4115,10 +4115,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                       <select
                         value={formData.contactResistance.units}
                         onChange={(e) =>
@@ -4128,7 +4128,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                       >
                         {contactResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -4137,15 +4137,15 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         ))}
                       </select>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
                       {contactResResults.deviation}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
                       &lt;50%
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center">
                       <span
-                        className={`font-medium ${contactResResults.result === "PASS" ? "text-green-600 result-pass" : contactResResults.result === "FAIL" ? "text-red-600 result-fail" : "text-zinc-900 dark:text-white"}`}
+                        className={`font-medium ${contactResResults.result === "PASS" ? "text-green-600 result-pass" : contactResResults.result === "FAIL" ? "text-red-600 result-fail" : "text-neutral-900 dark:text-white"}`}
                       >
                         {contactResResults.result}
                       </span>
@@ -4159,7 +4159,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
 
@@ -4178,7 +4178,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   }
                   onChange={handleInsulationTemperatureChange}
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -4189,7 +4189,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   type="text"
                   value={formData.insulationResistance.tcf}
                   readOnly
-                  className="form-input w-full bg-zinc-100 dark:bg-dark-150"
+                  className="form-input w-full bg-neutral-100 dark:bg-dark-150"
                 />
               </div>
               <div>
@@ -4203,7 +4203,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {insulationTestVoltageOptions.map((opt) => (
                     <option key={opt} value={opt}>
@@ -4224,14 +4224,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
 
             {/* Main Insulation Resistance Table */}
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs table-fixed">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs table-fixed">
                 <colgroup>
                   <col style={{ width: "10%" }} />
                   <col style={{ width: "8%" }} />
@@ -4243,16 +4243,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   <col style={{ width: "13%" }} />
                   <col style={{ width: "4%" }} />
                 </colgroup>
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       rowSpan={2}
                     >
                       Test Points
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       rowSpan={2}
                     >
                       Breaker
@@ -4260,54 +4260,54 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       Position
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       colSpan={3}
                     >
                       Measured Values
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       colSpan={3}
                     >
                       Temperature Corrected
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       rowSpan={2}
                     >
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P1 (P1-P2)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P2 (P2-P3)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P3 (P3-P1)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P1 (P1-P2)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P2 (P2-P3)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       P3 (P3-P1)
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Pole to Pole
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {formData.insulationResistance.poleToPole.breakerPosition}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4320,10 +4320,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4336,10 +4336,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4352,28 +4352,28 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToPole.corrected
                           .p1 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToPole.corrected
                           .p2 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToPole.corrected
                           .p3 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-0 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-0 py-1">
                       <select
                         value={formData.insulationResistance.poleToPole.units}
                         onChange={(e) =>
@@ -4383,7 +4383,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -4394,16 +4394,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Pole to Frame
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {
                         formData.insulationResistance.poleToFrame
                           .breakerPosition
                       }
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4416,10 +4416,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4432,10 +4432,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4448,28 +4448,28 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToFrame.corrected
                           .p1 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToFrame.corrected
                           .p2 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.poleToFrame.corrected
                           .p3 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-0 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-0 py-1">
                       <select
                         value={formData.insulationResistance.poleToFrame.units}
                         onChange={(e) =>
@@ -4479,7 +4479,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -4490,13 +4490,13 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Line to Load
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {formData.insulationResistance.lineToLoad.breakerPosition}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4509,10 +4509,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4525,10 +4525,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
                         type="text"
                         value={
@@ -4541,28 +4541,28 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.lineToLoad.corrected
                           .p1 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.lineToLoad.corrected
                           .p2 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-100 dark:bg-neutral-700">
                       <span className="block w-full p-1 text-center text-xs dark:text-white">
                         {formData.insulationResistance.lineToLoad.corrected
                           .p3 || "-"}
                       </span>
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-0 py-1">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-0 py-1">
                       <select
                         value={formData.insulationResistance.lineToLoad.units}
                         onChange={(e) =>
@@ -4572,7 +4572,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`}
+                        className={`w-full p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`}
                       >
                         {insulationResistanceUnitsOptions.map((opt) => (
                           <option key={opt} value={opt}>
@@ -4588,48 +4588,48 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
             {/* Criteria & Results Table */}
             <div className="mt-2">
-              <table className="border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+              <table className="border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       Test Points
                     </th>
                     <th
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                       colSpan={2}
                     >
                       Table 100.1 Criteria
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       Results
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       Value
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white">
                       Units
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Pole to Pole
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-700">
                       {calculateInsulationCriteriaValue(
                         formData.insulationResistance.poleToPole.units,
                       ) || "-"}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {formData.insulationResistance.poleToPole.units}
                     </td>
                     <td
-                      className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium bg-zinc-100 dark:bg-zinc-700 ${calculateInsulationResult(formData.insulationResistance.poleToPole.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToPole.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.poleToPole.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToPole.units)) === "FAIL" ? "text-red-600 result-fail" : "text-zinc-900 dark:text-white"}`}
+                      className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium bg-neutral-100 dark:bg-neutral-700 ${calculateInsulationResult(formData.insulationResistance.poleToPole.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToPole.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.poleToPole.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToPole.units)) === "FAIL" ? "text-red-600 result-fail" : "text-neutral-900 dark:text-white"}`}
                     >
                       {calculateInsulationResult(
                         formData.insulationResistance.poleToPole.corrected,
@@ -4640,19 +4640,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Pole to Frame
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-700">
                       {calculateInsulationCriteriaValue(
                         formData.insulationResistance.poleToFrame.units,
                       ) || "-"}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {formData.insulationResistance.poleToFrame.units}
                     </td>
                     <td
-                      className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium bg-zinc-100 dark:bg-zinc-700 ${calculateInsulationResult(formData.insulationResistance.poleToFrame.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToFrame.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.poleToFrame.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToFrame.units)) === "FAIL" ? "text-red-600 result-fail" : "text-zinc-900 dark:text-white"}`}
+                      className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium bg-neutral-100 dark:bg-neutral-700 ${calculateInsulationResult(formData.insulationResistance.poleToFrame.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToFrame.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.poleToFrame.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.poleToFrame.units)) === "FAIL" ? "text-red-600 result-fail" : "text-neutral-900 dark:text-white"}`}
                     >
                       {calculateInsulationResult(
                         formData.insulationResistance.poleToFrame.corrected,
@@ -4663,19 +4663,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs text-neutral-900 dark:text-white">
                       Line to Load
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-700">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-700">
                       {calculateInsulationCriteriaValue(
                         formData.insulationResistance.lineToLoad.units,
                       ) || "-"}
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white">
                       {formData.insulationResistance.lineToLoad.units}
                     </td>
                     <td
-                      className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium bg-zinc-100 dark:bg-zinc-700 ${calculateInsulationResult(formData.insulationResistance.lineToLoad.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.lineToLoad.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.lineToLoad.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.lineToLoad.units)) === "FAIL" ? "text-red-600 result-fail" : "text-zinc-900 dark:text-white"}`}
+                      className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium bg-neutral-100 dark:bg-neutral-700 ${calculateInsulationResult(formData.insulationResistance.lineToLoad.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.lineToLoad.units)) === "PASS" ? "text-green-600 result-pass" : calculateInsulationResult(formData.insulationResistance.lineToLoad.corrected, calculateInsulationCriteriaValue(formData.insulationResistance.lineToLoad.units)) === "FAIL" ? "text-red-600 result-fail" : "text-neutral-900 dark:text-white"}`}
                     >
                       {calculateInsulationResult(
                         formData.insulationResistance.lineToLoad.corrected,
@@ -4694,7 +4694,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {!formData.irDlroOnly && (
             <div className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-              <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                 Electrical Tests - Current Sensing
               </h2>
 
@@ -4709,7 +4709,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       handleChange("currentSensing.testType", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     <option value="">Select...</option>
                     <option value="Primary Injection">Primary Injection</option>
@@ -4736,13 +4736,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     );
                     const tripType = formData.tripType;
 
-                    const disabledCellClass = "bg-zinc-100 dark:bg-zinc-700";
+                    const disabledCellClass =
+                      "bg-neutral-100 dark:bg-neutral-700";
                     const disabledSpan = (
-                      <span className="block w-16 p-1 text-center text-xs text-zinc-400">
+                      <span className="block w-16 p-1 text-center text-xs text-neutral-400">
                         -
                       </span>
                     );
-                    const inputClass = `w-16 p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-50" : "bg-white"}`;
+                    const inputClass = `w-16 p-1 border-0 text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-50" : "bg-white"}`;
 
                     // Get configuration matching Device Settings As Found
                     const getRowConfig = () => {
@@ -5247,12 +5248,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       return (
                         <tr key={dataKey} className={rowClass}>
                           <td
-                            className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-xs ${rowClass}`}
+                            className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-xs ${rowClass}`}
                           >
                             {row.label}
                           </td>
                           <td
-                            className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${!row.showSetting ? disabledCellClass : ""}`}
+                            className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${!row.showSetting ? disabledCellClass : ""}`}
                           >
                             {row.showSetting ? (
                               <input
@@ -5276,7 +5277,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                             )}
                           </td>
                           <td
-                            className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${!row.showDelay ? disabledCellClass : ""}`}
+                            className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${!row.showDelay ? disabledCellClass : ""}`}
                           >
                             {row.showDelay ? (
                               <input
@@ -5300,7 +5301,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                             )}
                           </td>
                           <td
-                            className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${!row.showI2t ? disabledCellClass : ""}`}
+                            className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${!row.showI2t ? disabledCellClass : ""}`}
                           >
                             {row.showI2t ? (
                               row.useTextI2t ? (
@@ -5355,25 +5356,25 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     };
 
                     return (
-                      <table className="border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
-                        <thead className="bg-zinc-50 dark:bg-dark-150">
+                      <table className="border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
+                        <thead className="bg-neutral-50 dark:bg-dark-150">
                           <tr>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                               colSpan={4}
                             >
                               Tested Settings
                             </th>
                           </tr>
                           <tr>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"></th>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"></th>
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                               Setting
                             </th>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                               Delay
                             </th>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                               I2t
                             </th>
                           </tr>
@@ -5403,7 +5404,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     <option value="">Select...</option>
                     <option value="Yes">Yes</option>
@@ -5417,20 +5418,20 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               <div className="flex flex-wrap gap-4 items-end">
                 {/* Left Table: Settings */}
                 <div className="overflow-x-auto">
-                  <table className="border-collapse border border-zinc-300 dark:border-zinc-600 text-xs align-top">
-                    <thead className="bg-zinc-50 dark:bg-dark-150">
+                  <table className="border-collapse border border-neutral-300 dark:border-neutral-600 text-xs align-top">
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
                       {formData.currentSensing.testType ===
                       "Secondary Injection" ? (
                         <tr>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-24">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-24">
                             Function
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                             Setting
                             <br />
                             Amperes
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                             Test
                             <br />
                             Amperes
@@ -5440,13 +5441,13 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         <>
                           <tr>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16"
                               rowSpan={2}
                             >
                               Function
                             </th>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16"
                               rowSpan={2}
                             >
                               Setting
@@ -5454,14 +5455,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               Amperes
                             </th>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20"
                               rowSpan={2}
                             >
                               %<br />
                               Tolerance
                             </th>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16"
                               rowSpan={2}
                             >
                               Test
@@ -5469,17 +5470,17 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               Amperes
                             </th>
                             <th
-                              className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white"
+                              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white"
                               colSpan={2}
                             >
                               Tolerance
                             </th>
                           </tr>
                           <tr>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                               Min
                             </th>
-                            <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                            <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                               Max
                             </th>
                           </tr>
@@ -5624,15 +5625,15 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
                           const isRowDisabled = !isRowEnabled;
                           const rowBgClass = isRowDisabled
-                            ? "bg-zinc-200 dark:bg-zinc-700"
+                            ? "bg-neutral-200 dark:bg-neutral-700"
                             : "";
                           const cellBgClass = isRowDisabled
-                            ? "bg-zinc-200 dark:bg-zinc-700"
+                            ? "bg-neutral-200 dark:bg-neutral-700"
                             : !isEditing
-                              ? "bg-zinc-50"
+                              ? "bg-neutral-50"
                               : "bg-white";
                           const inputClass = `w-full h-6 p-1 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`;
-                          const spanClass = `block w-full h-6 leading-6 text-center text-xs font-normal text-zinc-900 dark:text-white`;
+                          const spanClass = `block w-full h-6 leading-6 text-center text-xs font-normal text-neutral-900 dark:text-white`;
 
                           // Display name for thermal-magnetic types
                           let displayName = test.function;
@@ -5653,28 +5654,28 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 ? "Thermal"
                                 : test.function;
                             const secRowBgClass = isRowDisabled
-                              ? "bg-zinc-200 dark:bg-zinc-700"
+                              ? "bg-neutral-200 dark:bg-neutral-700"
                               : "";
                             const secCellBgClass = isRowDisabled
-                              ? "bg-zinc-200 dark:bg-zinc-700"
+                              ? "bg-neutral-200 dark:bg-neutral-700"
                               : !isEditing
-                                ? "bg-zinc-50"
+                                ? "bg-neutral-50"
                                 : "bg-white";
                             const secInputClass = `w-full h-6 p-1 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${secCellBgClass}`;
 
                             return (
                               <tr key={originalIndex} className={secRowBgClass}>
                                 <td
-                                  className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white font-medium ${secRowBgClass}`}
+                                  className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white font-medium ${secRowBgClass}`}
                                 >
                                   {secDisplayName}
                                 </td>
                                 <td
-                                  className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${secRowBgClass}`}
+                                  className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${secRowBgClass}`}
                                 >
                                   {isRowDisabled ? (
                                     <span
-                                      className={`${spanClass} text-zinc-400`}
+                                      className={`${spanClass} text-neutral-400`}
                                     >
                                       -
                                     </span>
@@ -5694,11 +5695,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                   )}
                                 </td>
                                 <td
-                                  className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${secRowBgClass}`}
+                                  className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${secRowBgClass}`}
                                 >
                                   {isRowDisabled ? (
                                     <span
-                                      className={`${spanClass} text-zinc-400`}
+                                      className={`${spanClass} text-neutral-400`}
                                     >
                                       -
                                     </span>
@@ -5724,16 +5725,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           return (
                             <tr key={originalIndex} className={rowBgClass}>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs text-zinc-900 dark:text-white font-medium ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs text-neutral-900 dark:text-white font-medium ${rowBgClass}`}
                               >
                                 {displayName}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -5753,11 +5754,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -5775,7 +5776,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                       readOnly={!isEditing}
                                       className={`w-8 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`}
                                     />
-                                    <span className="text-xs font-normal text-zinc-500 mx-0.5">
+                                    <span className="text-xs font-normal text-neutral-500 mx-0.5">
                                       |
                                     </span>
                                     <input
@@ -5807,11 +5808,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass} ${!isRowDisabled ? "bg-zinc-100 dark:bg-zinc-700" : ""}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass} ${!isRowDisabled ? "bg-neutral-100 dark:bg-neutral-700" : ""}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -5822,11 +5823,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass} ${["LTPU", "STPU", "INST-PU", "GFPU"].includes(test.function) && !isRowDisabled ? "bg-zinc-100 dark:bg-zinc-700" : ""}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass} ${["LTPU", "STPU", "INST-PU", "GFPU"].includes(test.function) && !isRowDisabled ? "bg-neutral-100 dark:bg-neutral-700" : ""}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -5855,11 +5856,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass} ${["LTPU", "STPU", "INST-PU", "GFPU"].includes(test.function) && !isRowDisabled ? "bg-zinc-100 dark:bg-zinc-700" : ""}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass} ${["LTPU", "STPU", "INST-PU", "GFPU"].includes(test.function) && !isRowDisabled ? "bg-neutral-100 dark:bg-neutral-700" : ""}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -5896,36 +5897,36 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
                 {/* Right Table: Poles & Results */}
                 <div className="overflow-x-auto">
-                  <table className="border-collapse border border-zinc-300 dark:border-zinc-600 text-xs align-top">
-                    <thead className="bg-zinc-50 dark:bg-dark-150">
+                  <table className="border-collapse border border-neutral-300 dark:border-neutral-600 text-xs align-top">
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
                       {formData.currentSensing.testType ===
                       "Secondary Injection" ? (
                         <tr>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 1
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 2
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 3
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                             Results
                           </th>
                         </tr>
                       ) : (
                         <tr>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 1
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 2
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-20">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 3
                           </th>
-                          <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-xs font-medium text-zinc-900 dark:text-white w-16">
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                             Results
                           </th>
                         </tr>
@@ -6056,25 +6057,25 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
                           const isRowDisabled = !isRowEnabled;
                           const rowBgClass = isRowDisabled
-                            ? "bg-zinc-200 dark:bg-zinc-700"
+                            ? "bg-neutral-200 dark:bg-neutral-700"
                             : "";
                           const cellBgClass = isRowDisabled
-                            ? "bg-zinc-200 dark:bg-zinc-700"
+                            ? "bg-neutral-200 dark:bg-neutral-700"
                             : !isEditing
-                              ? "bg-zinc-50"
+                              ? "bg-neutral-50"
                               : "bg-white";
                           const poleUnit = test.function.includes("PU")
                             ? "A."
                             : "sec.";
-                          const spanClass = `block w-full h-6 leading-6 text-center text-xs font-normal text-zinc-900 dark:text-white`;
+                          const spanClass = `block w-full h-6 leading-6 text-center text-xs font-normal text-neutral-900 dark:text-white`;
                           return (
                             <tr key={originalIndex} className={rowBgClass}>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -6092,7 +6093,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                       readOnly={!isEditing}
                                       className={`w-10 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white print:hidden ${cellBgClass}`}
                                     />
-                                    <span className="text-xs text-zinc-500 print:hidden ml-0.5">
+                                    <span className="text-xs text-neutral-500 print:hidden ml-0.5">
                                       {poleUnit}
                                     </span>
                                     <span className="hidden print:block text-xs text-center">
@@ -6104,11 +6105,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -6126,7 +6127,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                       readOnly={!isEditing}
                                       className={`w-10 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white print:hidden ${cellBgClass}`}
                                     />
-                                    <span className="text-xs text-zinc-500 print:hidden ml-0.5">
+                                    <span className="text-xs text-neutral-500 print:hidden ml-0.5">
                                       {poleUnit}
                                     </span>
                                     <span className="hidden print:block text-xs text-center">
@@ -6138,11 +6139,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -6160,7 +6161,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                       readOnly={!isEditing}
                                       className={`w-10 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white print:hidden ${cellBgClass}`}
                                     />
-                                    <span className="text-xs text-zinc-500 print:hidden ml-0.5">
+                                    <span className="text-xs text-neutral-500 print:hidden ml-0.5">
                                       {poleUnit}
                                     </span>
                                     <span className="hidden print:block text-xs text-center">
@@ -6172,11 +6173,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                 )}
                               </td>
                               <td
-                                className={`border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center ${rowBgClass}`}
+                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
                               >
                                 {isRowDisabled ? (
                                   <span
-                                    className={`${spanClass} text-zinc-400`}
+                                    className={`${spanClass} text-neutral-400`}
                                   >
                                     -
                                   </span>
@@ -6216,12 +6217,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
                     {(
                       [
@@ -6243,7 +6244,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       return (
                         <th
                           key={key}
-                          className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white cursor-pointer select-none hover:bg-zinc-100 dark:hover:bg-dark-200 print:cursor-default print:hover:bg-transparent"
+                          className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white cursor-pointer select-none hover:bg-neutral-100 dark:hover:bg-dark-200 print:cursor-default print:hover:bg-transparent"
                           onClick={() => {
                             setTestEquipmentSort((prev) =>
                               prev?.column === key
@@ -6364,10 +6365,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     const sorted = [...equipmentRows].sort(compare);
                     return sorted.map((row) => (
                       <tr key={row.formKey}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
                           {row.equipmentLabel}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                           <EquipmentAutocomplete
                             value={row.data.name}
                             onChange={(value) =>
@@ -6396,7 +6397,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                             className="w-full"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                           <input
                             type="text"
                             value={row.data.serialNumber}
@@ -6407,10 +6408,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                            className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                           <input
                             type="text"
                             value={row.data.ampId}
@@ -6421,10 +6422,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                            className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                           <input
                             type="text"
                             value={row.data.calibrationDate}
@@ -6435,7 +6436,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-1 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-zinc-100" : ""}`}
+                            className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
                             placeholder="MM/DD/YYYY"
                           />
                         </td>
@@ -6452,7 +6453,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <textarea
@@ -6460,11 +6461,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               onChange={(e) => handleChange("comments", e.target.value)}
               readOnly={!isEditing}
               rows={4}
-              className={`form-input w-full print:hidden ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+              className={`form-input w-full print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               placeholder="Enter any comments or notes..."
             />
             {formData.comments?.trim() && (
-              <div className="hidden print:block border border-zinc-300 print:border-black p-3 min-h-[4rem] text-sm text-zinc-900 print:text-black whitespace-pre-wrap">
+              <div className="hidden print:block border border-neutral-300 print:border-black p-3 min-h-[4rem] text-sm text-neutral-900 print:text-black whitespace-pre-wrap">
                 {formData.comments}
               </div>
             )}
@@ -6473,11 +6474,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* Function Legend and Trip Type Legend */}
           {!formData.irDlroOnly && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:break-inside-avoid">
-              <div className="bg-zinc-50 dark:bg-dark-200 p-4 border border-zinc-200 dark:border-zinc-700">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+              <div className="bg-neutral-50 dark:bg-dark-200 p-4 border border-neutral-200 dark:border-neutral-700">
+                <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                   Function Legend
                 </h3>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 grid grid-cols-3 gap-x-4 gap-y-1">
+                <div className="text-xs text-neutral-600 dark:text-neutral-400 grid grid-cols-3 gap-x-4 gap-y-1">
                   <div className="space-y-1">
                     <p>
                       <strong>LTD</strong> = Long Time Delay
@@ -6516,10 +6517,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2 mt-3">
+                <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 mt-3">
                   I²t Options
                 </h3>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
+                <div className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1">
                   <p>
                     <strong>On/Off</strong> = I²t Enabled/Disabled
                   </p>
@@ -6528,11 +6529,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="bg-zinc-50 dark:bg-dark-200 p-4 border border-zinc-200 dark:border-zinc-700">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+              <div className="bg-neutral-50 dark:bg-dark-200 p-4 border border-neutral-200 dark:border-neutral-700">
+                <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                   Trip Type Legend
                 </h3>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 grid grid-cols-2 gap-x-4 gap-y-1">
+                <div className="text-xs text-neutral-600 dark:text-neutral-400 grid grid-cols-2 gap-x-4 gap-y-1">
                   <div className="space-y-1">
                     <p>
                       <strong>LI</strong> = Long Time, Instantaneous

@@ -2132,7 +2132,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           <div className="print:hidden flex justify-end mb-2">
             <button
               onClick={toggleGlobalPreview}
-              className="px-3 py-1 text-xs text-zinc-700 dark:text-white bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none"
+              className="px-3 py-1 text-xs text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
             >
               {showPreviewEnabled ? "Hide Preview" : "Show Preview"}
             </button>
@@ -2142,7 +2142,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
       </div>
       {actuallyShowPreview && (
         <div className="w-full lg:w-[48%] max-w-[820px] lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] print:hidden">
-          <div className="mb-2 text-xs text-zinc-600 dark:text-zinc-300">
+          <div className="mb-2 text-xs text-neutral-600 dark:text-neutral-300">
             <div className="flex items-center gap-2">
               <span className="font-medium">Preview URL:</span>
               <code className="break-all">{previewUrl}</code>
@@ -2165,7 +2165,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
               </button>
             </div>
           </div>
-          <div className="h-[60vh] lg:h-full border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden bg-white dark:bg-dark-150 shadow-sm">
+          <div className="h-[60vh] lg:h-full border border-neutral-200 dark:border-neutral-700 rounded-md overflow-hidden bg-white dark:bg-dark-150 shadow-sm">
             <iframe
               key={String(reloadNonce) + previewUrl}
               src={previewUrl}

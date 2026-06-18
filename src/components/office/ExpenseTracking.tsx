@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Textarea';
-import { format } from 'date-fns';
+import React, { useState } from "react";
+import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -13,7 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
-import { Eye, Download, Search, FileDown, Check, X, FileText } from 'lucide-react';
+import {
+  Eye,
+  Download,
+  Search,
+  FileDown,
+  Check,
+  X,
+  FileText,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +35,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 interface ExpenseFormData {
   amount: string;
@@ -41,11 +49,11 @@ interface ExpenseFormData {
   department: string;
 }
 
-interface Expense extends Omit<ExpenseFormData, 'amount'> {
+interface Expense extends Omit<ExpenseFormData, "amount"> {
   id: string;
   amount: number;
   createdAt: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   receiptUrl?: string;
   approvedBy?: string;
   approvedAt?: string;
@@ -53,40 +61,42 @@ interface Expense extends Omit<ExpenseFormData, 'amount'> {
 }
 
 const expenseCategories = [
-  { value: 'office_supplies', label: 'Office Supplies' },
-  { value: 'travel', label: 'Travel' },
-  { value: 'meals', label: 'Meals & Entertainment' },
-  { value: 'utilities', label: 'Utilities' },
-  { value: 'rent', label: 'Rent & Facilities' },
-  { value: 'software', label: 'Software & Subscriptions' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'maintenance', label: 'Maintenance & Repairs' },
-  { value: 'professional', label: 'Professional Services' },
-  { value: 'other', label: 'Other' }
+  { value: "office_supplies", label: "Office Supplies" },
+  { value: "travel", label: "Travel" },
+  { value: "meals", label: "Meals & Entertainment" },
+  { value: "utilities", label: "Utilities" },
+  { value: "rent", label: "Rent & Facilities" },
+  { value: "software", label: "Software & Subscriptions" },
+  { value: "equipment", label: "Equipment" },
+  { value: "maintenance", label: "Maintenance & Repairs" },
+  { value: "professional", label: "Professional Services" },
+  { value: "other", label: "Other" },
 ];
 
 const paymentMethods = [
-  { value: 'credit_card', label: 'Credit Card' },
-  { value: 'debit_card', label: 'Debit Card' },
-  { value: 'cash', label: 'Cash' },
-  { value: 'check', label: 'Check' },
-  { value: 'wire', label: 'Wire Transfer' },
-  { value: 'other', label: 'Other' }
+  { value: "credit_card", label: "Credit Card" },
+  { value: "debit_card", label: "Debit Card" },
+  { value: "cash", label: "Cash" },
+  { value: "check", label: "Check" },
+  { value: "wire", label: "Wire Transfer" },
+  { value: "other", label: "Other" },
 ];
 
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500',
-  approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500'
+  pending:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500",
+  approved:
+    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500",
+  rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500",
 };
 
 const departments = [
-  { value: 'sales', label: 'Sales' },
-  { value: 'engineering', label: 'Engineering' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'finance', label: 'Finance' },
-  { value: 'hr', label: 'Human Resources' },
+  { value: "sales", label: "Sales" },
+  { value: "engineering", label: "Engineering" },
+  { value: "marketing", label: "Marketing" },
+  { value: "operations", label: "Operations" },
+  { value: "finance", label: "Finance" },
+  { value: "hr", label: "Human Resources" },
 ];
 
 export default function ExpenseTracking() {
@@ -95,28 +105,28 @@ export default function ExpenseTracking() {
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]); // Will be replaced with API data
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterDepartment, setFilterDepartment] = useState('');
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Expense;
-    direction: 'asc' | 'desc';
-  }>({ key: 'date', direction: 'desc' });
+    direction: "asc" | "desc";
+  }>({ key: "date", direction: "desc" });
 
   const defaultFormState: ExpenseFormData = {
-    amount: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    category: 'office_supplies',
-    paymentMethod: 'credit_card',
-    vendor: '',
-    notes: '',
+    amount: "",
+    date: format(new Date(), "yyyy-MM-dd"),
+    category: "office_supplies",
+    paymentMethod: "credit_card",
+    vendor: "",
+    notes: "",
     receipt: null,
-    department: 'operations'
+    department: "operations",
   };
 
   const [form, setForm] = useState<ExpenseFormData>(defaultFormState);
@@ -136,16 +146,18 @@ export default function ExpenseTracking() {
         vendor: form.vendor,
         notes: form.notes,
         createdAt: new Date().toISOString(),
-        status: 'pending',
-        receiptUrl: form.receipt ? URL.createObjectURL(form.receipt) : undefined,
-        department: form.department
+        status: "pending",
+        receiptUrl: form.receipt
+          ? URL.createObjectURL(form.receipt)
+          : undefined,
+        department: form.department,
       };
-      
-      setExpenses(prev => [newExpense, ...prev]);
+
+      setExpenses((prev) => [newExpense, ...prev]);
       setForm(defaultFormState);
       setShowForm(false);
     } catch (error) {
-      console.error('Error submitting expense:', error);
+      console.error("Error submitting expense:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -154,14 +166,14 @@ export default function ExpenseTracking() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target?.files?.[0];
     if (file) {
-      setForm(prev => ({ ...prev, receipt: file }));
+      setForm((prev) => ({ ...prev, receipt: file }));
     }
   };
 
   const handleSort = (key: keyof Expense) => {
-    setSortConfig(prev => ({
+    setSortConfig((prev) => ({
       key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
@@ -169,18 +181,18 @@ export default function ExpenseTracking() {
     try {
       const updatedExpense: Expense = {
         ...expense,
-        status: 'approved' as const,
-        approvedBy: 'Current User', // Replace with actual user
-        approvedAt: new Date().toISOString()
+        status: "approved" as const,
+        approvedBy: "Current User", // Replace with actual user
+        approvedAt: new Date().toISOString(),
       };
-      
-      setExpenses(prev => 
-        prev.map(e => e.id === expense.id ? updatedExpense : e)
+
+      setExpenses((prev) =>
+        prev.map((e) => (e.id === expense.id ? updatedExpense : e)),
       );
       setShowApprovalDialog(false);
       setSelectedExpense(null);
     } catch (error) {
-      console.error('Error approving expense:', error);
+      console.error("Error approving expense:", error);
     }
   };
 
@@ -188,67 +200,77 @@ export default function ExpenseTracking() {
     try {
       const updatedExpense: Expense = {
         ...expense,
-        status: 'rejected' as const,
-        rejectionReason
+        status: "rejected" as const,
+        rejectionReason,
       };
-      
-      setExpenses(prev => 
-        prev.map(e => e.id === expense.id ? updatedExpense : e)
+
+      setExpenses((prev) =>
+        prev.map((e) => (e.id === expense.id ? updatedExpense : e)),
       );
       setShowApprovalDialog(false);
       setSelectedExpense(null);
-      setRejectionReason('');
+      setRejectionReason("");
     } catch (error) {
-      console.error('Error rejecting expense:', error);
+      console.error("Error rejecting expense:", error);
     }
   };
 
   const exportToCSV = () => {
-    const headers = ['Date', 'Vendor', 'Category', 'Department', 'Amount', 'Status', 'Notes'];
-    const data = filteredAndSortedExpenses.map(expense => [
-      format(new Date(expense.date), 'yyyy-MM-dd'),
+    const headers = [
+      "Date",
+      "Vendor",
+      "Category",
+      "Department",
+      "Amount",
+      "Status",
+      "Notes",
+    ];
+    const data = filteredAndSortedExpenses.map((expense) => [
+      format(new Date(expense.date), "yyyy-MM-dd"),
       expense.vendor,
-      expenseCategories.find(c => c.value === expense.category)?.label ?? expense.category,
-      departments.find(d => d.value === expense.department)?.label ?? expense.department,
+      expenseCategories.find((c) => c.value === expense.category)?.label ??
+        expense.category,
+      departments.find((d) => d.value === expense.department)?.label ??
+        expense.department,
       expense.amount.toFixed(2),
       expense.status,
-      expense.notes
+      expense.notes,
     ]);
 
     const csvContent = [
-      headers.join(','),
-      ...data.map(row => row.join(','))
-    ].join('\n');
+      headers.join(","),
+      ...data.map((row) => row.join(",")),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `expenses_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.download = `expenses_${format(new Date(), "yyyy-MM-dd")}.csv`;
     link.click();
   };
 
   const generatePDFReport = () => {
     const doc = new jsPDF();
-    
+
     // Add title
     doc.setFontSize(16);
-    doc.text('Expense Report', 14, 20);
-    
+    doc.text("Expense Report", 14, 20);
+
     // Add filters summary
     doc.setFontSize(10);
     let yPos = 30;
     if (filterDateFrom || filterDateTo) {
-      const dateRange = `Date Range: ${filterDateFrom || 'Any'} to ${filterDateTo || 'Any'}`;
+      const dateRange = `Date Range: ${filterDateFrom || "Any"} to ${filterDateTo || "Any"}`;
       doc.text(dateRange, 14, yPos);
       yPos += 6;
     }
     if (filterCategory) {
-      const category = `Category: ${expenseCategories.find(c => c.value === filterCategory)?.label || filterCategory}`;
+      const category = `Category: ${expenseCategories.find((c) => c.value === filterCategory)?.label || filterCategory}`;
       doc.text(category, 14, yPos);
       yPos += 6;
     }
     if (filterDepartment) {
-      const department = `Department: ${departments.find(d => d.value === filterDepartment)?.label || filterDepartment}`;
+      const department = `Department: ${departments.find((d) => d.value === filterDepartment)?.label || filterDepartment}`;
       doc.text(department, 14, yPos);
       yPos += 6;
     }
@@ -259,43 +281,55 @@ export default function ExpenseTracking() {
     }
 
     // Add generation date
-    const generatedDate = `Generated on: ${format(new Date(), 'MMM d, yyyy HH:mm')}`;
+    const generatedDate = `Generated on: ${format(new Date(), "MMM d, yyyy HH:mm")}`;
     doc.text(generatedDate, 14, yPos);
     yPos += 10;
 
     // Calculate totals
-    const totalAmount = filteredAndSortedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const totalByStatus = filteredAndSortedExpenses.reduce((acc, expense) => {
-      acc[expense.status] = (acc[expense.status] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
+    const totalAmount = filteredAndSortedExpenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0,
+    );
+    const totalByStatus = filteredAndSortedExpenses.reduce(
+      (acc, expense) => {
+        acc[expense.status] = (acc[expense.status] || 0) + expense.amount;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Add summary section
     doc.setFontSize(12);
-    doc.text('Summary', 14, yPos);
+    doc.text("Summary", 14, yPos);
     yPos += 6;
     doc.setFontSize(10);
     doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 14, yPos);
     yPos += 6;
     Object.entries(totalByStatus).forEach(([status, amount]) => {
-      doc.text(`${status.charAt(0).toUpperCase() + status.slice(1)}: $${amount.toFixed(2)}`, 14, yPos);
+      doc.text(
+        `${status.charAt(0).toUpperCase() + status.slice(1)}: $${amount.toFixed(2)}`,
+        14,
+        yPos,
+      );
       yPos += 6;
     });
     yPos += 6;
 
     // Add expense table
     const headers = [
-      ['Date', 'Vendor', 'Category', 'Department', 'Amount', 'Status', 'Notes']
+      ["Date", "Vendor", "Category", "Department", "Amount", "Status", "Notes"],
     ];
 
-    const data = filteredAndSortedExpenses.map(expense => [
-      format(new Date(expense.date), 'MMM d, yyyy'),
+    const data = filteredAndSortedExpenses.map((expense) => [
+      format(new Date(expense.date), "MMM d, yyyy"),
       expense.vendor,
-      expenseCategories.find(c => c.value === expense.category)?.label ?? expense.category,
-      departments.find(d => d.value === expense.department)?.label ?? expense.department,
+      expenseCategories.find((c) => c.value === expense.category)?.label ??
+        expense.category,
+      departments.find((d) => d.value === expense.department)?.label ??
+        expense.department,
       `$${expense.amount.toFixed(2)}`,
       expense.status.charAt(0).toUpperCase() + expense.status.slice(1),
-      expense.notes
+      expense.notes,
     ]);
 
     (doc as any).autoTable({
@@ -312,49 +346,66 @@ export default function ExpenseTracking() {
         3: { cellWidth: 25 }, // Department
         4: { cellWidth: 20 }, // Amount
         5: { cellWidth: 20 }, // Status
-        6: { cellWidth: 'auto' } // Notes
+        6: { cellWidth: "auto" }, // Notes
       },
       margin: { top: 10 },
       didDrawPage: (data: any) => {
         // Add page number at the bottom
         const pageNumber = `Page ${data.pageNumber} of ${doc.getNumberOfPages()}`;
         doc.setFontSize(8);
-        doc.text(pageNumber, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10, { align: 'right' });
-      }
+        doc.text(
+          pageNumber,
+          doc.internal.pageSize.width - 20,
+          doc.internal.pageSize.height - 10,
+          { align: "right" },
+        );
+      },
     });
 
     // Save the PDF
-    doc.save(`expense_report_${format(new Date(), 'yyyy-MM-dd_HHmm')}.pdf`);
+    doc.save(`expense_report_${format(new Date(), "yyyy-MM-dd_HHmm")}.pdf`);
   };
 
   const filteredAndSortedExpenses = expenses
-    .filter(expense => {
-      const matchesSearch = searchTerm === '' || 
+    .filter((expense) => {
+      const matchesSearch =
+        searchTerm === "" ||
         expense.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expense.notes.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = filterCategory === '' || expense.category === filterCategory;
-      const matchesStatus = filterStatus === '' || expense.status === filterStatus;
-      const matchesDepartment = filterDepartment === '' || expense.department === filterDepartment;
-      
+
+      const matchesCategory =
+        filterCategory === "" || expense.category === filterCategory;
+      const matchesStatus =
+        filterStatus === "" || expense.status === filterStatus;
+      const matchesDepartment =
+        filterDepartment === "" || expense.department === filterDepartment;
+
       const expenseDate = new Date(expense.date);
-      const matchesDateFrom = !filterDateFrom || expenseDate >= new Date(filterDateFrom);
-      const matchesDateTo = !filterDateTo || expenseDate <= new Date(filterDateTo);
-      
-      return matchesSearch && matchesCategory && matchesStatus && 
-             matchesDepartment && matchesDateFrom && matchesDateTo;
+      const matchesDateFrom =
+        !filterDateFrom || expenseDate >= new Date(filterDateFrom);
+      const matchesDateTo =
+        !filterDateTo || expenseDate <= new Date(filterDateTo);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesStatus &&
+        matchesDepartment &&
+        matchesDateFrom &&
+        matchesDateTo
+      );
     })
     .sort((a, b) => {
       const { key, direction } = sortConfig;
       const aValue = a[key];
       const bValue = b[key];
-      
+
       if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return direction === 'asc' ? -1 : 1;
-      if (bValue == null) return direction === 'asc' ? 1 : -1;
-      
-      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+      if (aValue == null) return direction === "asc" ? -1 : 1;
+      if (bValue == null) return direction === "asc" ? 1 : -1;
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
     });
 
@@ -379,9 +430,7 @@ export default function ExpenseTracking() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={() => setShowForm(true)}>
-            Add Expense
-          </Button>
+          <Button onClick={() => setShowForm(true)}>Add Expense</Button>
         </div>
       </div>
 
@@ -418,7 +467,9 @@ export default function ExpenseTracking() {
                 <Select
                   label="Category*"
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, category: e.target.value })
+                  }
                   options={expenseCategories}
                   required
                 />
@@ -428,7 +479,9 @@ export default function ExpenseTracking() {
                 <Select
                   label="Payment Method*"
                   value={form.paymentMethod}
-                  onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, paymentMethod: e.target.value })
+                  }
                   options={paymentMethods}
                   required
                 />
@@ -457,7 +510,9 @@ export default function ExpenseTracking() {
                 <Select
                   label="Department*"
                   value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, department: e.target.value })
+                  }
                   options={departments}
                   required
                 />
@@ -483,11 +538,8 @@ export default function ExpenseTracking() {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Expense'}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Expense"}
               </Button>
             </div>
           </form>
@@ -511,7 +563,7 @@ export default function ExpenseTracking() {
                 </div>
                 <div>
                   <label className="font-medium">Date</label>
-                  <p>{format(new Date(selectedExpense.date), 'MMM d, yyyy')}</p>
+                  <p>{format(new Date(selectedExpense.date), "MMM d, yyyy")}</p>
                 </div>
                 <div>
                   <label className="font-medium">Vendor</label>
@@ -519,11 +571,17 @@ export default function ExpenseTracking() {
                 </div>
                 <div>
                   <label className="font-medium">Category</label>
-                  <p>{expenseCategories.find(c => c.value === selectedExpense.category)?.label}</p>
+                  <p>
+                    {
+                      expenseCategories.find(
+                        (c) => c.value === selectedExpense.category,
+                      )?.label
+                    }
+                  </p>
                 </div>
               </div>
-              
-              {selectedExpense.status === 'pending' && (
+
+              {selectedExpense.status === "pending" && (
                 <div className="space-y-4">
                   <Textarea
                     label="Rejection Reason"
@@ -540,7 +598,9 @@ export default function ExpenseTracking() {
                     </Button>
                     <Button
                       variant="destructive"
-                      onClick={() => selectedExpense && handleReject(selectedExpense)}
+                      onClick={() =>
+                        selectedExpense && handleReject(selectedExpense)
+                      }
                       disabled={!rejectionReason}
                     >
                       <X className="w-4 h-4 mr-2" />
@@ -548,7 +608,9 @@ export default function ExpenseTracking() {
                     </Button>
                     <Button
                       variant="primary"
-                      onClick={() => selectedExpense && handleApprove(selectedExpense)}
+                      onClick={() =>
+                        selectedExpense && handleApprove(selectedExpense)
+                      }
                     >
                       <Check className="w-4 h-4 mr-2" />
                       Approve
@@ -568,7 +630,7 @@ export default function ExpenseTracking() {
               <div className="flex flex-wrap gap-4">
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
                     <Input
                       className="pl-9"
                       placeholder="Search expenses..."
@@ -581,8 +643,8 @@ export default function ExpenseTracking() {
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
                   options={[
-                    { value: '', label: 'All Categories' },
-                    ...expenseCategories
+                    { value: "", label: "All Categories" },
+                    ...expenseCategories,
                   ]}
                   className="w-40"
                 />
@@ -590,10 +652,10 @@ export default function ExpenseTracking() {
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   options={[
-                    { value: '', label: 'All Statuses' },
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'approved', label: 'Approved' },
-                    { value: 'rejected', label: 'Rejected' }
+                    { value: "", label: "All Statuses" },
+                    { value: "pending", label: "Pending" },
+                    { value: "approved", label: "Approved" },
+                    { value: "rejected", label: "Rejected" },
                   ]}
                   className="w-40"
                 />
@@ -601,8 +663,8 @@ export default function ExpenseTracking() {
                   value={filterDepartment}
                   onChange={(e) => setFilterDepartment(e.target.value)}
                   options={[
-                    { value: '', label: 'All Departments' },
-                    ...departments
+                    { value: "", label: "All Departments" },
+                    ...departments,
                   ]}
                   className="w-40"
                 />
@@ -627,30 +689,38 @@ export default function ExpenseTracking() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
-                      onClick={() => handleSort('date')}
+                      onClick={() => handleSort("date")}
                     >
-                      Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      Date{" "}
+                      {sortConfig.key === "date" &&
+                        (sortConfig.direction === "asc" ? "↑" : "↓")}
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
-                      onClick={() => handleSort('vendor')}
+                      onClick={() => handleSort("vendor")}
                     >
-                      Vendor {sortConfig.key === 'vendor' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      Vendor{" "}
+                      {sortConfig.key === "vendor" &&
+                        (sortConfig.direction === "asc" ? "↑" : "↓")}
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
-                      onClick={() => handleSort('category')}
+                      onClick={() => handleSort("category")}
                     >
-                      Category {sortConfig.key === 'category' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      Category{" "}
+                      {sortConfig.key === "category" &&
+                        (sortConfig.direction === "asc" ? "↑" : "↓")}
                     </TableHead>
                     <TableHead>Department</TableHead>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer text-right"
-                      onClick={() => handleSort('amount')}
+                      onClick={() => handleSort("amount")}
                     >
-                      Amount {sortConfig.key === 'amount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      Amount{" "}
+                      {sortConfig.key === "amount" &&
+                        (sortConfig.direction === "asc" ? "↑" : "↓")}
                     </TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -659,27 +729,43 @@ export default function ExpenseTracking() {
                 <TableBody>
                   {filteredAndSortedExpenses.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-zinc-500 py-4">
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-neutral-500 py-4"
+                      >
                         No expenses found
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredAndSortedExpenses.map((expense) => (
                       <TableRow key={expense.id}>
-                        <TableCell>{format(new Date(expense.date), 'MMM d, yyyy')}</TableCell>
+                        <TableCell>
+                          {format(new Date(expense.date), "MMM d, yyyy")}
+                        </TableCell>
                         <TableCell>{expense.vendor}</TableCell>
                         <TableCell>
-                          {expenseCategories.find(c => c.value === expense.category)?.label}
+                          {
+                            expenseCategories.find(
+                              (c) => c.value === expense.category,
+                            )?.label
+                          }
                         </TableCell>
                         <TableCell>
-                          {departments.find(d => d.value === expense.department)?.label}
+                          {
+                            departments.find(
+                              (d) => d.value === expense.department,
+                            )?.label
+                          }
                         </TableCell>
                         <TableCell className="text-right">
                           ${expense.amount.toFixed(2)}
                         </TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[expense.status]}`}>
-                            {expense.status.charAt(0).toUpperCase() + expense.status.slice(1)}
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[expense.status]}`}
+                          >
+                            {expense.status.charAt(0).toUpperCase() +
+                              expense.status.slice(1)}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -699,7 +785,9 @@ export default function ExpenseTracking() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => window.open(expense.receiptUrl)}
+                                  onClick={() =>
+                                    window.open(expense.receiptUrl)
+                                  }
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
@@ -707,7 +795,7 @@ export default function ExpenseTracking() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => {
-                                    const link = document.createElement('a');
+                                    const link = document.createElement("a");
                                     link.href = expense.receiptUrl!;
                                     link.download = `receipt-${expense.id}`;
                                     link.click();

@@ -245,11 +245,11 @@ export const JobTitleHistory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <History className="h-8 w-8" />
           Job / Title History
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="text-neutral-600 dark:text-neutral-400 mt-2">
           Store and track job titles per employee. Changing an employee&apos;s
           title records it in history and updates their current title.
         </p>
@@ -369,7 +369,7 @@ export const JobTitleHistory: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 dark:border-dark-300">
+                    <tr className="border-b border-neutral-200 dark:border-dark-300">
                       <th className="text-left py-3 px-2 font-medium">Title</th>
                       <th className="text-left py-3 px-2 font-medium">
                         Effective from
@@ -383,7 +383,7 @@ export const JobTitleHistory: React.FC = () => {
                     {history.map((entry) => (
                       <tr
                         key={entry.id}
-                        className="border-b border-zinc-100 dark:border-dark-200"
+                        className="border-b border-neutral-100 dark:border-dark-200"
                       >
                         <td className="py-2 px-2">{entry.title}</td>
                         <td className="py-2 px-2 text-muted-foreground">

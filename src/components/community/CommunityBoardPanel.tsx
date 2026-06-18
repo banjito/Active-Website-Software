@@ -99,14 +99,14 @@ function FeedSkeleton() {
       {[1, 2, 3].map((k) => (
         <div
           key={k}
-          className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-2.5 bg-zinc-50 dark:bg-dark-200/50"
+          className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-2.5 bg-neutral-50 dark:bg-dark-200/50"
         >
           <div className="flex gap-2">
-            <div className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-dark-200" />
+            <div className="h-8 w-8 rounded-full bg-neutral-200 dark:bg-dark-200" />
             <div className="flex-1 space-y-2">
-              <div className="h-2.5 w-28 bg-zinc-200 dark:bg-dark-200 rounded" />
-              <div className="h-2 w-full bg-zinc-100 dark:bg-dark-200 rounded" />
-              <div className="h-2 w-[75%] bg-zinc-100 dark:bg-dark-200 rounded" />
+              <div className="h-2.5 w-28 bg-neutral-200 dark:bg-dark-200 rounded" />
+              <div className="h-2 w-full bg-neutral-100 dark:bg-dark-200 rounded" />
+              <div className="h-2 w-[75%] bg-neutral-100 dark:bg-dark-200 rounded" />
             </div>
           </div>
         </div>
@@ -307,8 +307,8 @@ export function CommunityBoardPanel() {
 
   return (
     <div className="flex max-h-[min(85vh,640px)] w-full min-w-0 flex-col bg-white dark:bg-dark-150">
-      <div className="shrink-0 border-none border-zinc-200 dark:border-zinc-700 px-4 py-3 text-center">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+      <div className="shrink-0 border-none border-neutral-200 dark:border-neutral-700 px-4 py-3 text-center">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
           Community Board
         </h2>
       </div>
@@ -326,7 +326,7 @@ export function CommunityBoardPanel() {
           {loading ? <FeedSkeleton /> : null}
 
           {!loading && !error && posts.length === 0 && (
-            <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-600 px-4 py-8 text-center text-sm text-zinc-600 dark:text-zinc-300">
+            <div className="rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 px-4 py-8 text-center text-sm text-neutral-600 dark:text-neutral-300">
               No posts yet — be the first to share something!
             </div>
           )}
@@ -351,7 +351,7 @@ export function CommunityBoardPanel() {
                 type="button"
                 onClick={() => loadMore()}
                 disabled={loadingMore}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-dark-200 disabled:opacity-50"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
               >
                 {loadingMore ? <LoadingSpinner size="xs" /> : "Load more"}
               </button>

@@ -57,18 +57,18 @@ export function Modal({
         {/* Header */}
         <div
           className={cn(
-            "flex items-center justify-between border-b dark:border-zinc-700 flex-shrink-0",
+            "flex items-center justify-between border-b dark:border-neutral-700 flex-shrink-0",
             size === "full" ? "px-6 py-4" : "px-6 py-4",
           )}
         >
           {title && (
-            <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
               {title}
             </h3>
           )}
           <button
             type="button"
-            className="text-zinc-400 hover:text-zinc-500 focus:outline-none"
+            className="text-neutral-400 hover:text-neutral-500 focus:outline-none"
             onClick={onClose}
           >
             <X className="h-5 w-5" />

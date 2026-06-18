@@ -83,7 +83,7 @@ export default function ResetPassword() {
             </h2>
           </div>
 
-          <Card className="bg-[#f26722] border border-zinc-800 shadow-sm">
+          <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
             <CardContent className="p-12">
               {checkingSession ? (
                 <p className="text-sm text-black">Checking reset link...</p>
@@ -116,11 +116,11 @@ export default function ResetPassword() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-zinc-400" />}
+                      leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
                       minLength={6}
                       placeholder="Enter new password"
                       hint="Password must be at least 6 characters"
-                      className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
 
                     <Input
@@ -132,10 +132,10 @@ export default function ResetPassword() {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-zinc-400" />}
+                      leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
                       minLength={6}
                       placeholder="Re-enter new password"
-                      className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   </div>
 

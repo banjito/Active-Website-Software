@@ -2,18 +2,18 @@ import React from "react";
 
 const EULA: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900">
+    <div className="min-h-screen bg-white dark:bg-neutral-900">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
           End User License Agreement (EULA)
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8">
           Last Updated: December 17, 2024
         </p>
 
-        <div className="prose dark:prose-invert max-w-none space-y-6 text-zinc-700 dark:text-zinc-300">
+        <div className="prose dark:prose-invert max-w-none space-y-6 text-neutral-700 dark:text-neutral-300">
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               1. Acceptance of Terms
             </h2>
             <p>
@@ -26,7 +26,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               2. License Grant
             </h2>
             <p>
@@ -51,7 +51,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               3. QuickBooks Integration
             </h2>
             <p>
@@ -86,7 +86,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               4. Data Usage and Storage
             </h2>
             <p>
@@ -109,7 +109,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               5. User Responsibilities
             </h2>
             <p>You agree to:</p>
@@ -134,7 +134,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               6. Intellectual Property
             </h2>
             <p>
@@ -146,7 +146,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               7. Disclaimer of Warranties
             </h2>
             <p>
@@ -159,7 +159,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               8. Limitation of Liability
             </h2>
             <p>
@@ -172,7 +172,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               9. Termination
             </h2>
             <p>
@@ -185,7 +185,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               10. Changes to This Agreement
             </h2>
             <p>
@@ -198,7 +198,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               11. Governing Law
             </h2>
             <p>
@@ -209,7 +209,7 @@ const EULA: React.FC = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mt-8 mb-4">
               12. Contact Information
             </h2>
             <p>
@@ -226,8 +226,8 @@ const EULA: React.FC = () => {
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             © {new Date().getFullYear()} AMP OS. All rights reserved.
           </p>
         </div>

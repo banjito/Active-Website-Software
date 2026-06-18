@@ -16,7 +16,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
-          <div className="text-xs text-zinc-500 dark:text-white mb-2">
+          <div className="text-xs text-neutral-500 dark:text-white mb-2">
             Overall Health
           </div>
           <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-2">
@@ -28,18 +28,18 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">
+          <div className="text-xs text-neutral-500 dark:text-white">
             Engagement
           </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               85%
             </div>
             <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
               ▲ 5%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
             <div
               className="h-full bg-green-500 rounded-full"
               style={{ width: "85%" }}
@@ -48,18 +48,18 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">
+          <div className="text-xs text-neutral-500 dark:text-white">
             Satisfaction
           </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               92%
             </div>
             <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
               ▲ 3%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
             <div
               className="h-full bg-green-500 rounded-full"
               style={{ width: "92%" }}
@@ -68,18 +68,18 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">
+          <div className="text-xs text-neutral-500 dark:text-white">
             Response Time
           </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               78%
             </div>
             <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">
               ▼ 2%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
             <div
               className="h-full bg-yellow-500 rounded-full"
               style={{ width: "78%" }}
@@ -90,44 +90,44 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
 
       {/* Health Trend */}
       <div className="mb-8">
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Health Trend
         </h3>
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
           <div className="h-64 flex items-end justify-between px-2">
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-32 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Jan
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-24 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Feb
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-40 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Mar
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-36 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Apr
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-44 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 May
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
               <div className="h-48 w-4 bg-[#f26722] rounded-t-sm"></div>
-              <div className="text-xs text-zinc-500 dark:text-white mt-2">
+              <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Jun
               </div>
             </div>
@@ -137,29 +137,29 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
 
       {/* Recent Surveys */}
       <div className="mb-8">
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Recent Surveys
         </h3>
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
           <div className="mb-6">
             <div className="flex justify-between mb-2">
               <div>
-                <span className="font-medium text-zinc-900 dark:text-white">
+                <span className="font-medium text-neutral-900 dark:text-white">
                   Q1 Satisfaction Survey
                 </span>
                 <span className="ml-3 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
                   High
                 </span>
               </div>
-              <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="text-sm text-neutral-500 dark:text-white">
                 Score: 9/10
               </div>
             </div>
-            <div className="text-sm text-zinc-500 dark:text-white mb-2">
+            <div className="text-sm text-neutral-500 dark:text-white mb-2">
               Completed: Mar 15, 2023
             </div>
             <div className="text-sm mb-1">Satisfaction</div>
-            <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
               <div
                 className="h-full bg-green-500 rounded-full"
                 style={{ width: "90%" }}
@@ -170,22 +170,22 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
           <div>
             <div className="flex justify-between mb-2">
               <div>
-                <span className="font-medium text-zinc-900 dark:text-white">
+                <span className="font-medium text-neutral-900 dark:text-white">
                   Support Response Survey
                 </span>
                 <span className="ml-3 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
                   Medium
                 </span>
               </div>
-              <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="text-sm text-neutral-500 dark:text-white">
                 Score: 7/10
               </div>
             </div>
-            <div className="text-sm text-zinc-500 dark:text-white mb-2">
+            <div className="text-sm text-neutral-500 dark:text-white mb-2">
               Completed: Feb 10, 2023
             </div>
             <div className="text-sm mb-1">Satisfaction</div>
-            <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
               <div
                 className="h-full bg-yellow-500 rounded-full"
                 style={{ width: "70%" }}
@@ -205,11 +205,11 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Risk Factors */}
         <div>
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Risk Factors
           </h3>
           <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-            <div className="mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="mb-4 pb-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
                 <div className="flex-shrink-0 w-5 h-5 text-yellow-400">
                   <svg
@@ -225,10 +225,10 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                  <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                     Slow response times
                   </h4>
-                  <p className="mt-1 text-sm text-zinc-500 dark:text-white">
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-white">
                     Average response time increased by 15% in the last 30 days
                   </p>
                 </div>
@@ -251,10 +251,10 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                  <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                     Delayed project milestones
                   </h4>
-                  <p className="mt-1 text-sm text-zinc-500 dark:text-white">
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-white">
                     2 milestones have been delayed in the current quarter
                   </p>
                 </div>
@@ -262,11 +262,11 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
             </div>
 
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
+              <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-2">
                 Recommended Actions
               </h4>
               <ul className="space-y-2">
-                <li className="flex items-center text-sm text-zinc-600 dark:text-white">
+                <li className="flex items-center text-sm text-neutral-600 dark:text-white">
                   <svg
                     className="w-4 h-4 mr-1.5 text-green-500 dark:text-green-400 flex-shrink-0"
                     fill="currentColor"
@@ -281,7 +281,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                   </svg>
                   Schedule quarterly review meeting
                 </li>
-                <li className="flex items-center text-sm text-zinc-600 dark:text-white">
+                <li className="flex items-center text-sm text-neutral-600 dark:text-white">
                   <svg
                     className="w-4 h-4 mr-1.5 text-green-500 dark:text-green-400 flex-shrink-0"
                     fill="currentColor"
@@ -296,7 +296,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                   </svg>
                   Review support ticket response workflows
                 </li>
-                <li className="flex items-center text-sm text-zinc-600 dark:text-white">
+                <li className="flex items-center text-sm text-neutral-600 dark:text-white">
                   <svg
                     className="w-4 h-4 mr-1.5 text-green-500 dark:text-green-400 flex-shrink-0"
                     fill="currentColor"
@@ -318,17 +318,17 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
 
         {/* Activity Metrics */}
         <div>
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Activity Metrics
           </h3>
           <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-zinc-50 dark:bg-dark-150 p-3 rounded-lg">
-                <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+                <div className="text-sm text-neutral-500 dark:text-white">
                   Support Tickets
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-white mr-2">
+                  <span className="text-2xl font-bold text-neutral-900 dark:text-white mr-2">
                     8
                   </span>
                   <span className="text-sm text-green-600 dark:text-green-400">
@@ -349,17 +349,17 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                     2 (20%)
                   </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-white mt-1">
+                <div className="text-xs text-neutral-500 dark:text-white mt-1">
                   Last 30 days
                 </div>
               </div>
 
-              <div className="bg-zinc-50 dark:bg-dark-150 p-3 rounded-lg">
-                <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+                <div className="text-sm text-neutral-500 dark:text-white">
                   Active Users
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-white mr-2">
+                  <span className="text-2xl font-bold text-neutral-900 dark:text-white mr-2">
                     12
                   </span>
                   <span className="text-sm text-green-600 dark:text-green-400">
@@ -380,17 +380,17 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                     3 (33%)
                   </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-white mt-1">
+                <div className="text-xs text-neutral-500 dark:text-white mt-1">
                   Last 30 days
                 </div>
               </div>
 
-              <div className="bg-zinc-50 dark:bg-dark-150 p-3 rounded-lg">
-                <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+                <div className="text-sm text-neutral-500 dark:text-white">
                   Feature Usage
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-white mr-2">
+                  <span className="text-2xl font-bold text-neutral-900 dark:text-white mr-2">
                     85%
                   </span>
                   <span className="text-sm text-green-600 dark:text-green-400">
@@ -411,17 +411,17 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                     5%
                   </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-white mt-1">
+                <div className="text-xs text-neutral-500 dark:text-white mt-1">
                   Key features
                 </div>
               </div>
 
-              <div className="bg-zinc-50 dark:bg-dark-150 p-3 rounded-lg">
-                <div className="text-sm text-zinc-500 dark:text-white">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+                <div className="text-sm text-neutral-500 dark:text-white">
                   Login Frequency
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-white mr-2">
+                  <span className="text-2xl font-bold text-neutral-900 dark:text-white mr-2">
                     4.2
                   </span>
                   <span className="text-sm text-yellow-600 dark:text-yellow-400">
@@ -442,7 +442,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                     0.3
                   </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-white mt-1">
+                <div className="text-xs text-neutral-500 dark:text-white mt-1">
                   Per week avg.
                 </div>
               </div>
@@ -459,7 +459,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
       </div>
 
       {/* Last updated info */}
-      <div className="mt-4 text-right text-xs text-zinc-500 dark:text-white">
+      <div className="mt-4 text-right text-xs text-neutral-500 dark:text-white">
         Last updated: {format(lastUpdated, "MMM d, yyyy")}
       </div>
     </div>

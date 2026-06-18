@@ -351,9 +351,9 @@ export const PublicCareerPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-zinc-800 shadow-sm border-b border-zinc-200 dark:border-zinc-700">
+      <header className="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-200 dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -365,10 +365,10 @@ export const PublicCareerPage: React.FC = () => {
                 />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
                   Join Our Team
                 </h1>
-                <p className="text-zinc-600 dark:text-zinc-400 mt-1">
+                <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                   Explore exciting career opportunities
                 </p>
               </div>
@@ -380,22 +380,22 @@ export const PublicCareerPage: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
-        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 mb-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search jobs by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
               />
             </div>
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2.5 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             >
               <option value="all">All Departments</option>
               {departments.map((dept) => (
@@ -409,19 +409,19 @@ export const PublicCareerPage: React.FC = () => {
 
         {/* Job Listings */}
         {loading ? (
-          <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-12">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center">
               <LoadingSpinner size="md" />
             </div>
           </div>
         ) : filteredRequisitions.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-12">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center">
-              <Briefcase className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Briefcase className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No positions available
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Check back soon for new opportunities
               </p>
             </div>
@@ -431,14 +431,14 @@ export const PublicCareerPage: React.FC = () => {
             {filteredRequisitions.map((req) => (
               <div
                 key={req.id}
-                className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
                       {req.title}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                       <span className="flex items-center gap-1.5">
                         <MapPin className="h-4 w-4" />
                         {req.location}
@@ -455,7 +455,7 @@ export const PublicCareerPage: React.FC = () => {
                         )}
                       </span>
                       {req.employment_type && (
-                        <span className="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                        <span className="px-2 py-1 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
                           {req.employment_type}
                         </span>
                       )}
@@ -463,7 +463,7 @@ export const PublicCareerPage: React.FC = () => {
                     {(req.description || req.requirements) && (
                       <div className="mb-4">
                         <div
-                          className={`text-zinc-700 dark:text-zinc-300 prose prose-sm max-w-none [&_p]:m-0 [&_p]:mb-2 [&_ul]:my-2 [&_ol]:my-2 ${expandedRequisitionId === req.id ? "" : "line-clamp-3"}`}
+                          className={`text-neutral-700 dark:text-neutral-300 prose prose-sm max-w-none [&_p]:m-0 [&_p]:mb-2 [&_ul]:my-2 [&_ol]:my-2 ${expandedRequisitionId === req.id ? "" : "line-clamp-3"}`}
                           dangerouslySetInnerHTML={{
                             __html: getJobRequisitionDisplayHtml(req, {
                               excludeNotes: true,
@@ -510,9 +510,9 @@ export const PublicCareerPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700">
+      <footer className="mt-auto bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="text-center text-sm text-neutral-600 dark:text-neutral-400">
             <p>
               © {new Date().getFullYear()} AMP Quality Electrical Services. All
               rights reserved.
@@ -551,13 +551,13 @@ export const PublicCareerPage: React.FC = () => {
           <div className="space-y-4 py-4">
             {/* Personal Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Personal Information
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -573,7 +573,7 @@ export const PublicCareerPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Last Name <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -590,7 +590,7 @@ export const PublicCareerPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -608,7 +608,7 @@ export const PublicCareerPage: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Phone
                   </label>
                   <Input
@@ -624,7 +624,7 @@ export const PublicCareerPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Location
                   </label>
                   <Input
@@ -643,11 +643,11 @@ export const PublicCareerPage: React.FC = () => {
 
             {/* Resume Upload */}
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Resume <span className="text-red-500">*</span>
               </h3>
-              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-6">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-6">
                 <input
                   type="file"
                   id="resume-upload"
@@ -659,18 +659,18 @@ export const PublicCareerPage: React.FC = () => {
                   htmlFor="resume-upload"
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
-                  <Upload className="h-8 w-8 text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="h-8 w-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     {applicationForm.resume
                       ? applicationForm.resume.name
                       : "Click to upload resume (PDF or Word)"}
                   </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
                     Max file size: 10MB
                   </span>
                 </label>
                 {applicationForm.resume && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="h-4 w-4" />
                     <span>{applicationForm.resume.name}</span>
                     <button
@@ -688,7 +688,7 @@ export const PublicCareerPage: React.FC = () => {
 
             {/* Cover Letter */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Notes (Optional)
               </label>
               <textarea
@@ -701,23 +701,23 @@ export const PublicCareerPage: React.FC = () => {
                 }
                 placeholder="Tell us why you're interested in this position..."
                 rows={5}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none"
               />
             </div>
 
             {/* EEO Information (Required) */}
-            <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-700 pt-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Equal Employment Opportunity{" "}
                 <span className="text-red-500">*</span>
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 This information is required for compliance reporting and will
                 be kept confidential.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Gender <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -728,7 +728,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_gender: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="Male">Male</option>
@@ -738,7 +738,7 @@ export const PublicCareerPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Race/Ethnicity <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -749,7 +749,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_race: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="American Indian or Alaska Native">
@@ -781,9 +781,9 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_veteran: e.target.checked,
                       })
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     I identify as a protected veteran
                   </span>
                 </label>
@@ -797,28 +797,28 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_disability: e.target.checked,
                       })
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     I have a disability
                   </span>
                 </label>
               </div>
 
               {/* FR (Flame-Resistant) clothing sizes - optional; used for field roles */}
-              <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-700 mt-4">
-                <h4 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+              <div className="space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-700 mt-4">
+                <h4 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                   <Shirt className="h-4 w-4 text-[#f26722]" />
                   FR clothing sizes (Required)
                 </h4>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   If this role may require flame-resistant (FR) clothing,
                   provide your sizes. You can update these in your profile after
                   hire if needed.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                       Shirt
                     </label>
                     <Input
@@ -830,11 +830,11 @@ export const PublicCareerPage: React.FC = () => {
                         })
                       }
                       placeholder="e.g. M, L, XL"
-                      className="bg-white dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600"
+                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                       Pants
                     </label>
                     <Input
@@ -846,11 +846,11 @@ export const PublicCareerPage: React.FC = () => {
                         })
                       }
                       placeholder="e.g. 32x30"
-                      className="bg-white dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600"
+                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                       Jacket
                     </label>
                     <Input
@@ -862,7 +862,7 @@ export const PublicCareerPage: React.FC = () => {
                         })
                       }
                       placeholder="e.g. L, XL"
-                      className="bg-white dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600"
+                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
                     />
                   </div>
                 </div>
@@ -873,14 +873,14 @@ export const PublicCareerPage: React.FC = () => {
             {isSubmitting && uploadProgress > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-neutral-600 dark:text-neutral-400">
                     Uploading...
                   </span>
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-neutral-600 dark:text-neutral-400">
                     {uploadProgress}%
                   </span>
                 </div>
-                <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
+                <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
                   <div
                     className="bg-[#f26722] h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}

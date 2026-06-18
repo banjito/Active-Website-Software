@@ -125,7 +125,7 @@
         --portal-card-color: #831843;
     }
 
-    .portal-click-card:has(.text-zinc-500) {
+    .portal-click-card:has(.text-neutral-500) {
         --portal-card-color: #374151;
     }
 
@@ -211,7 +211,7 @@
         background-color: #831843;
     }
 
-    .portal-click-card:has(.text-zinc-500):hover {
+    .portal-click-card:has(.text-neutral-500):hover {
         background-color: #374151;
     }
 
@@ -358,20 +358,20 @@
     .form-select,
     .form-textarea {
         @apply mt-1 block w-full p-2
-      bg-zinc-100 dark:bg-dark-100
-      border border-zinc-300 dark:border-zinc-600
+      bg-neutral-100 dark:bg-dark-100
+      border border-neutral-300 dark:border-neutral-600
       rounded-md shadow-sm
       focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
-      text-zinc-900 dark:text-white;
+      text-neutral-900 dark:text-white;
     }
 
     .form-input[readonly] {
-        @apply bg-zinc-200 dark:bg-dark-200
-      text-zinc-700 dark:text-zinc-300;
+        @apply bg-neutral-200 dark:bg-dark-200
+      text-neutral-700 dark:text-neutral-300;
     }
 
     .form-label {
-        @apply text-zinc-900 dark:text-white;
+        @apply text-neutral-900 dark:text-white;
     }
 
     /* CT Identification alignment: labels fixed width, inputs fill, compact height */

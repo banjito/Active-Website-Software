@@ -153,25 +153,25 @@ export default function EquipmentAssignmentModal({
       title={`Assign Equipment: ${equipment.name}`}
     >
       <div className="space-y-4">
-        <div className="bg-zinc-50 p-4 rounded-lg mb-4">
-          <h3 className="text-sm font-medium text-zinc-500 mb-2">
+        <div className="bg-neutral-50 p-4 rounded-lg mb-4">
+          <h3 className="text-sm font-medium text-neutral-500 mb-2">
             Equipment Information
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-zinc-500">Name</p>
+              <p className="text-xs text-neutral-500">Name</p>
               <p className="text-sm font-medium">{equipment.name}</p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Serial Number</p>
+              <p className="text-xs text-neutral-500">Serial Number</p>
               <p className="text-sm font-medium">{equipment.serial_number}</p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Type</p>
+              <p className="text-xs text-neutral-500">Type</p>
               <p className="text-sm font-medium">{equipment.type}</p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Model</p>
+              <p className="text-xs text-neutral-500">Model</p>
               <p className="text-sm font-medium">{equipment.model}</p>
             </div>
           </div>

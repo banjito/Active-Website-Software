@@ -137,7 +137,7 @@ const STATUS_OPTIONS = [
   {
     value: "archived",
     label: "Archived",
-    color: "text-zinc-500 bg-zinc-100 dark:bg-zinc-800",
+    color: "text-neutral-500 bg-neutral-100 dark:bg-neutral-800",
   },
 ];
 
@@ -572,11 +572,11 @@ export const ExitSurveys: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageSquare className="h-6 w-6 text-[#f26722]" />
             Exit Surveys
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             Collect optional feedback from departing employees
           </p>
         </div>
@@ -608,7 +608,7 @@ export const ExitSurveys: React.FC = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <Input
                 placeholder="Search surveys..."
                 value={search}
@@ -647,11 +647,11 @@ export const ExitSurveys: React.FC = () => {
             </div>
           ) : filteredSurveys.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
-              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">
                 No surveys found
               </p>
-              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
                 {search || filterStatus !== "all"
                   ? "Try adjusting your filters"
                   : "Create your first exit survey"}
@@ -667,40 +667,40 @@ export const ExitSurveys: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Survey
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Questions
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Sent
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Responses
                     </th>
-                    <th className="text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Status
                     </th>
-                    <th className="text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-6 py-3">
+                    <th className="text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-6 py-3">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {filteredSurveys.map((s) => (
                     <tr
                       key={s.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-zinc-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             {s.name}
                           </p>
                           {s.description && (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
                               {s.description}
                             </p>
                           )}
@@ -719,17 +719,17 @@ export const ExitSurveys: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
-                          <FileText className="h-4 w-4 text-zinc-400" />
+                        <span className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300">
+                          <FileText className="h-4 w-4 text-neutral-400" />
                           {s.questions.length}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300"
+                          className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300"
                           title={`${getCompletedCount(s.id)} of ${getAssignmentCount(s.id)} completed`}
                         >
-                          <Send className="h-4 w-4 text-zinc-400" />
+                          <Send className="h-4 w-4 text-neutral-400" />
                           {getAssignmentCount(s.id)} sent
                         </span>
                       </td>
@@ -737,10 +737,10 @@ export const ExitSurveys: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openResponses(s)}
-                          className="inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:text-[#f26722] hover:underline"
+                          className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300 hover:text-[#f26722] hover:underline"
                           title="View who filled it out and their answers"
                         >
-                          <BarChart3 className="h-4 w-4 text-zinc-400" />
+                          <BarChart3 className="h-4 w-4 text-neutral-400" />
                           {getResponseCount(s.id)} response
                           {getResponseCount(s.id) !== 1 ? "s" : ""}
                         </button>
@@ -825,7 +825,7 @@ export const ExitSurveys: React.FC = () => {
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Survey Name *
                 </label>
                 <Input
@@ -837,7 +837,7 @@ export const ExitSurveys: React.FC = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Description
                 </label>
                 <Textarea
@@ -850,7 +850,7 @@ export const ExitSurveys: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Status
                 </label>
                 <select
@@ -861,7 +861,7 @@ export const ExitSurveys: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                  className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -881,9 +881,9 @@ export const ExitSurveys: React.FC = () => {
                         is_template: e.target.checked,
                       }))
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Save as template
                   </span>
                 </label>
@@ -897,14 +897,14 @@ export const ExitSurveys: React.FC = () => {
                         is_optional: e.target.checked,
                       }))
                     }
-                    className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                   />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Optional (recommended)
                   </span>
                 </label>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Templates are reusable surveys you can send to individual
                 employees via unique links.
               </p>
@@ -913,12 +913,12 @@ export const ExitSurveys: React.FC = () => {
             {/* Attached documents */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
                   <Paperclip className="h-4 w-4 text-[#f26722]" />
                   Attached documents (optional)
                 </label>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                 Add policy PDFs, handbooks, or e-sign documents for the employee
                 to view when taking the survey.
               </p>
@@ -927,7 +927,7 @@ export const ExitSurveys: React.FC = () => {
                   {(formData.attached_documents ?? []).map((doc, i) => (
                     <li
                       key={i}
-                      className="flex items-center justify-between gap-2 py-2 px-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                      className="flex items-center justify-between gap-2 py-2 px-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
                     >
                       <span
                         className="text-sm truncate flex-1"
@@ -941,7 +941,7 @@ export const ExitSurveys: React.FC = () => {
                         size="sm"
                         onClick={() => removeAttachedDoc(i)}
                       >
-                        <X className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+                        <X className="h-4 w-4 text-neutral-400 hover:text-red-500" />
                       </Button>
                     </li>
                   ))}
@@ -958,7 +958,7 @@ export const ExitSurveys: React.FC = () => {
                   <Link2 className="h-3.5 w-3.5 mr-1.5" />
                   Add from document library
                 </Button>
-                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-zinc-300 dark:border-zinc-600 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-300 dark:border-neutral-600 rounded-md cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
@@ -975,8 +975,8 @@ export const ExitSurveys: React.FC = () => {
                 </label>
               </div>
               {showDocPicker && availableDocs.length > 0 && (
-                <div className="mt-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg max-h-40 overflow-y-auto">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                <div className="mt-3 p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg max-h-40 overflow-y-auto">
+                  <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
                     Select a document to attach
                   </p>
                   <div className="space-y-1">
@@ -990,7 +990,7 @@ export const ExitSurveys: React.FC = () => {
                             file_url: d.file_url!,
                           })
                         }
-                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-[#f26722]/10 text-zinc-700 dark:text-zinc-300"
+                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-[#f26722]/10 text-neutral-700 dark:text-neutral-300"
                       >
                         {d.name}
                       </button>
@@ -1003,7 +1003,7 @@ export const ExitSurveys: React.FC = () => {
             {/* Questions Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Questions ({formData.questions.length})
                 </label>
                 <Button
@@ -1017,9 +1017,9 @@ export const ExitSurveys: React.FC = () => {
                 </Button>
               </div>
               {formData.questions.length === 0 ? (
-                <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg p-6 text-center">
-                  <FileText className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-                  <p className="text-sm text-zinc-500">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                  <FileText className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+                  <p className="text-sm text-neutral-500">
                     No questions yet. Add questions to collect feedback.
                   </p>
                 </div>
@@ -1028,7 +1028,7 @@ export const ExitSurveys: React.FC = () => {
                   {formData.questions.map((q, i) => (
                     <div
                       key={q.id}
-                      className="flex gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <Input
@@ -1044,7 +1044,7 @@ export const ExitSurveys: React.FC = () => {
                           onChange={(e) =>
                             updateQuestion(i, "type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {QUESTION_TYPE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -1059,9 +1059,9 @@ export const ExitSurveys: React.FC = () => {
                             onChange={(e) =>
                               updateQuestion(i, "required", e.target.checked)
                             }
-                            className="rounded border-zinc-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
                           />
-                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                          <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
                           </span>
                         </label>
@@ -1072,7 +1072,7 @@ export const ExitSurveys: React.FC = () => {
                         size="sm"
                         onClick={() => removeQuestion(i)}
                       >
-                        <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+                        <Trash2 className="h-4 w-4 text-neutral-400 hover:text-red-500" />
                       </Button>
                     </div>
                   ))}
@@ -1125,7 +1125,7 @@ export const ExitSurveys: React.FC = () => {
 
               {(selectedSurvey.attached_documents?.length ?? 0) > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                  <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-2">
                     Attached documents (
                     {selectedSurvey.attached_documents!.length})
                   </h4>
@@ -1133,7 +1133,7 @@ export const ExitSurveys: React.FC = () => {
                     {selectedSurvey.attached_documents!.map((d, i) => (
                       <li
                         key={i}
-                        className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2"
+                        className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
                       >
                         <FileText className="h-4 w-4 text-[#f26722]" />
                         {d.name}
@@ -1143,23 +1143,25 @@ export const ExitSurveys: React.FC = () => {
                 </div>
               )}
               <div>
-                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-3">
+                <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3">
                   Questions ({selectedSurvey.questions.length})
                 </h4>
                 {selectedSurvey.questions.length === 0 ? (
-                  <p className="text-sm text-zinc-500">No questions defined</p>
+                  <p className="text-sm text-neutral-500">
+                    No questions defined
+                  </p>
                 ) : (
                   <ol className="space-y-3">
                     {selectedSurvey.questions.map((q, i) => (
                       <li key={q.id} className="flex gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-medium text-neutral-600 dark:text-neutral-400">
                           {i + 1}
                         </span>
                         <div>
-                          <p className="text-sm text-zinc-900 dark:text-white">
+                          <p className="text-sm text-neutral-900 dark:text-white">
                             {q.prompt}
                           </p>
-                          <p className="text-xs text-zinc-500 mt-0.5">
+                          <p className="text-xs text-neutral-500 mt-0.5">
                             {
                               QUESTION_TYPE_OPTIONS.find(
                                 (o) => o.value === q.type,
@@ -1209,11 +1211,11 @@ export const ExitSurveys: React.FC = () => {
           </DialogHeader>
           {surveyResponses.length === 0 ? (
             <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 mx-auto mb-3 text-zinc-300 dark:text-zinc-600" />
-              <p className="text-zinc-500 dark:text-zinc-400">
+              <BarChart3 className="h-12 w-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+              <p className="text-neutral-500 dark:text-neutral-400">
                 No responses yet
               </p>
-              <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
                 Responses will appear here as employees complete the survey via
                 their unique link.
               </p>
@@ -1223,13 +1225,13 @@ export const ExitSurveys: React.FC = () => {
               {surveyResponses.map((r) => (
                 <div
                   key={r.id}
-                  className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
                 >
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-700">
-                    <span className="font-medium text-zinc-900 dark:text-white">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className="font-medium text-neutral-900 dark:text-white">
                       {r.employee_name || "Anonymous"}
                     </span>
-                    <span className="text-sm text-zinc-500">
+                    <span className="text-sm text-neutral-500">
                       Submitted {new Date(r.submitted_at).toLocaleDateString()}{" "}
                       at{" "}
                       {new Date(r.submitted_at).toLocaleTimeString([], {
@@ -1247,10 +1249,10 @@ export const ExitSurveys: React.FC = () => {
                         const display = formatResponseValue(val);
                         return (
                           <div key={q.id} className="text-sm">
-                            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-0.5">
+                            <p className="font-medium text-neutral-700 dark:text-neutral-300 mb-0.5">
                               {q.prompt}
                             </p>
-                            <p className="text-zinc-600 dark:text-zinc-400 pl-0">
+                            <p className="text-neutral-600 dark:text-neutral-400 pl-0">
                               {display}
                             </p>
                           </div>
@@ -1291,11 +1293,11 @@ export const ExitSurveys: React.FC = () => {
             {!generatedLink ? (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     Employee
                   </label>
                   {loadingEmployees ? (
-                    <div className="flex items-center gap-2 text-sm text-zinc-500">
+                    <div className="flex items-center gap-2 text-sm text-neutral-500">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <LoadingSpinner size="md" />
                     </div>
@@ -1310,7 +1312,7 @@ export const ExitSurveys: React.FC = () => {
                       <select
                         value={sendEmployeeId}
                         onChange={(e) => setSendEmployeeId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm"
+                        className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                       >
                         <option value="">Select an employee</option>
                         {employees
@@ -1348,11 +1350,11 @@ export const ExitSurveys: React.FC = () => {
               </>
             ) : (
               <>
-                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 p-3 border border-zinc-200 dark:border-zinc-700">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-3 border border-neutral-200 dark:border-neutral-700">
+                  <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
                     Individual survey link
                   </p>
-                  <p className="text-sm text-zinc-900 dark:text-white break-all font-mono">
+                  <p className="text-sm text-neutral-900 dark:text-white break-all font-mono">
                     {generatedLink}
                   </p>
                 </div>

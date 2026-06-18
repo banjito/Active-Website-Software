@@ -2287,7 +2287,7 @@ export default function OpportunityDetail() {
   function getStatusColor(status: string) {
     switch (status.toLowerCase()) {
       case "awareness":
-        return "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100";
+        return "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100";
       case "interest":
         return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
       case "quote":
@@ -2303,9 +2303,9 @@ export default function OpportunityDetail() {
       case "lost":
         return "bg-red-500 text-white dark:bg-red-600";
       case "no quote":
-        return "bg-zinc-500 text-white dark:bg-zinc-600";
+        return "bg-neutral-500 text-white dark:bg-neutral-600";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100";
+        return "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100";
     }
   }
 
@@ -2315,7 +2315,7 @@ export default function OpportunityDetail() {
 
   function getEstimateApprovalColor(status: string | null) {
     if (!status)
-      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400";
+      return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
     switch (status) {
       case "sent":
         return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
@@ -2327,9 +2327,9 @@ export default function OpportunityDetail() {
         return "bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100";
       case "no_quote":
       case "no quote":
-        return "bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
       default:
-        return "bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
     }
   }
 
@@ -3170,13 +3170,13 @@ export default function OpportunityDetail() {
   const isEmbed = new URLSearchParams(location.search).get("embed") === "true";
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-dark-background">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-background">
       {!isEmbed && (
         <div className="bg-white shadow-sm p-4 mb-6 dark:bg-dark-150 dark:border-b dark:border-dark-200">
           <div className="flex items-center gap-3">
             <Link
               to="/sales-dashboard/opportunities"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+              className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
               Back to Opportunities
@@ -3193,7 +3193,7 @@ export default function OpportunityDetail() {
                 disabled={!adjacentOpportunityIds.previous}
                 aria-label="Previous Opportunity"
                 title="Previous Opportunity"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -3208,7 +3208,7 @@ export default function OpportunityDetail() {
                 disabled={!adjacentOpportunityIds.next}
                 aria-label="Next Opportunity"
                 title="Next Opportunity"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -3238,9 +3238,9 @@ export default function OpportunityDetail() {
               </p>
             </div>
           )}
-          <div className="flex justify-between items-center p-4 border-b border-zinc-300 dark:border-dark-300">
+          <div className="flex justify-between items-center p-4 border-b border-neutral-300 dark:border-dark-300">
             <div className="flex items-center">
-              <h2 className="text-xl font-semibold text-zinc-800 dark:text-dark-800">
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-dark-800">
                 {opportunity.quote_number}: {opportunity.title}
               </h2>
             </div>
@@ -3271,7 +3271,7 @@ export default function OpportunityDetail() {
               {!isEditing && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 transition-colors flex items-center">
+                    <button className="px-4 py-2 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex items-center">
                       Manage Opportunity
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </button>
@@ -3410,7 +3410,7 @@ export default function OpportunityDetail() {
             mergedList.length > 0 && (
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                     Merged Opportunities
                   </div>
                   <div className="space-x-2">
@@ -3442,7 +3442,7 @@ export default function OpportunityDetail() {
                               );
                             }
                           }}
-                          className={`text-xs px-3 py-1 rounded ${isPrimary ? "bg-blue-600 text-white" : "bg-zinc-100 dark:bg-dark-150 text-zinc-700 dark:text-zinc-200"}`}
+                          className={`text-xs px-3 py-1 rounded ${isPrimary ? "bg-blue-600 text-white" : "bg-neutral-100 dark:bg-dark-150 text-neutral-700 dark:text-neutral-200"}`}
                         >
                           {m.quote_number}
                         </button>
@@ -3461,7 +3461,7 @@ export default function OpportunityDetail() {
                         className={`border rounded-md p-3 bg-white dark:bg-dark-150 ${isPrimary ? "ring-2 ring-blue-400" : ""}`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <div className="text-sm font-semibold text-zinc-900 dark:text-white">
+                          <div className="text-sm font-semibold text-neutral-900 dark:text-white">
                             {m.quote_number}
                           </div>
                           {isPrimary ? (
@@ -3485,23 +3485,23 @@ export default function OpportunityDetail() {
                             </button>
                           )}
                         </div>
-                        <div className="text-xs text-zinc-600 dark:text-white mb-2">
+                        <div className="text-xs text-neutral-600 dark:text-white mb-2">
                           {m.customers?.company_name ||
                             m.customers?.name ||
                             "Unknown Customer"}
                         </div>
-                        <div className="text-sm text-zinc-800 dark:text-zinc-200 line-clamp-2">
+                        <div className="text-sm text-neutral-800 dark:text-neutral-200 line-clamp-2">
                           {m.title}
                         </div>
-                        <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-zinc-600 dark:text-white">
+                        <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-neutral-600 dark:text-white">
                           <div>
-                            <span className="text-zinc-500 dark:text-white">
+                            <span className="text-neutral-500 dark:text-white">
                               Status:
                             </span>{" "}
                             {m.status}
                           </div>
                           <div>
-                            <span className="text-zinc-500 dark:text-white">
+                            <span className="text-neutral-500 dark:text-white">
                               Created:
                             </span>{" "}
                             {m.opportunity_created_date
@@ -3510,7 +3510,7 @@ export default function OpportunityDetail() {
                           </div>
                           {/* Removed Expected Value from merge cards */}
                           <div>
-                            <span className="text-zinc-500 dark:text-white">
+                            <span className="text-neutral-500 dark:text-white">
                               Probability:
                             </span>{" "}
                             {m.probability != null ? `${m.probability}%` : "-"}
@@ -3573,7 +3573,7 @@ export default function OpportunityDetail() {
             <div className="p-6">
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Customer
                   </label>
                   <input
@@ -3581,10 +3581,10 @@ export default function OpportunityDetail() {
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
                     placeholder="Search customers (name or company)"
-                    className="mt-1 mb-2 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                   {editFormData.customer_id && (
-                    <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+                    <div className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
                       Selected:{" "}
                       {customers.find((c) => c.id === editFormData.customer_id)
                         ?.company_name ||
@@ -3608,7 +3608,7 @@ export default function OpportunityDetail() {
                       </button>
                     </div>
                   )}
-                  <div className="max-h-48 overflow-y-auto border border-zinc-300 dark:border-zinc-600 rounded-md">
+                  <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
                     {customers
                       .filter(
                         (customer) =>
@@ -3638,8 +3638,8 @@ export default function OpportunityDetail() {
                             }}
                             className={`w-full text-left px-3 py-2 text-sm ${
                               isSelected
-                                ? "bg-orange-50 text-zinc-900 dark:bg-orange-900/20 dark:text-white"
-                                : "hover:bg-zinc-50 dark:hover:bg-dark-200 text-zinc-700 dark:text-zinc-200"
+                                ? "bg-orange-50 text-neutral-900 dark:bg-orange-900/20 dark:text-white"
+                                : "hover:bg-neutral-50 dark:hover:bg-dark-200 text-neutral-700 dark:text-neutral-200"
                             }`}
                           >
                             {customer.company_name || customer.name}
@@ -3656,7 +3656,7 @@ export default function OpportunityDetail() {
                           .includes(customerSearch.toLowerCase()),
                     ).length === 0 &&
                       customerSearch && (
-                        <div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        <div className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
                           No matches
                         </div>
                       )}
@@ -3664,7 +3664,7 @@ export default function OpportunityDetail() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                     Contact
                   </label>
                   <select
@@ -3676,7 +3676,7 @@ export default function OpportunityDetail() {
                         contact_id: e.target.value || null,
                       }))
                     }
-                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     disabled={!editFormData.customer_id}
                   >
                     <option
@@ -3700,7 +3700,7 @@ export default function OpportunityDetail() {
                 <div>
                   <label
                     htmlFor="title"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Title
                   </label>
@@ -3711,14 +3711,14 @@ export default function OpportunityDetail() {
                     value={editFormData.title}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Description
                   </label>
@@ -3728,7 +3728,7 @@ export default function OpportunityDetail() {
                     value={editFormData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -3736,7 +3736,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="expected_value"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Expected Value ($)
                     </label>
@@ -3746,14 +3746,14 @@ export default function OpportunityDetail() {
                       name="expected_value"
                       value={editFormData.expected_value}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="probability"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Probability (%)
                     </label>
@@ -3763,7 +3763,7 @@ export default function OpportunityDetail() {
                       name="probability"
                       value={editFormData.probability}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                       min="0"
                       max="100"
                     />
@@ -3774,7 +3774,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="status"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Status
                     </label>
@@ -3784,7 +3784,7 @@ export default function OpportunityDetail() {
                       value={editFormData.status}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value="awareness"
@@ -3846,7 +3846,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="opportunity_created_date"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Opportunity Created Date
                     </label>
@@ -3856,14 +3856,14 @@ export default function OpportunityDetail() {
                       name="opportunity_created_date"
                       value={editFormData.opportunity_created_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="letter_proposal_date"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Letter Proposal Date
                     </label>
@@ -3873,14 +3873,14 @@ export default function OpportunityDetail() {
                       name="letter_proposal_date"
                       value={editFormData.letter_proposal_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="proposal_due_date"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Proposal Due Date
                     </label>
@@ -3890,7 +3890,7 @@ export default function OpportunityDetail() {
                       name="proposal_due_date"
                       value={editFormData.proposal_due_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
                 </div>
@@ -3899,7 +3899,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="amp_division"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       AMP Division
                     </label>
@@ -3909,7 +3909,7 @@ export default function OpportunityDetail() {
                       value={editFormData.amp_division}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -3959,7 +3959,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="opportunity_type"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Opportunity Type
                     </label>
@@ -3968,7 +3968,7 @@ export default function OpportunityDetail() {
                       name="opportunity_type"
                       value={editFormData.opportunity_type}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value="large_acceptance"
@@ -4003,7 +4003,7 @@ export default function OpportunityDetail() {
                     </select>
                     {(editFormData.opportunity_type === "large_acceptance" ||
                       editFormData.opportunity_type === "small_acceptance") && (
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         Auto-adjusts based on quoted amount (Small &lt;$100k,
                         Large ≥$100k)
                       </p>
@@ -4013,7 +4013,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="documents_stage"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Documents Stage
                     </label>
@@ -4022,7 +4022,7 @@ export default function OpportunityDetail() {
                       name="documents_stage"
                       value={editFormData.documents_stage || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -4098,7 +4098,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="selected_letter_proposal"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Letter Proposal Source
                     </label>
@@ -4107,7 +4107,7 @@ export default function OpportunityDetail() {
                       name="selected_letter_proposal"
                       value={editFormData.selected_letter_proposal}
                       onChange={handleLetterProposalChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -4137,7 +4137,7 @@ export default function OpportunityDetail() {
                         );
                       })}
                     </select>
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                       Selecting a letter proposal will auto-fill the quoted
                       amount below. You can still adjust it manually.
                     </p>
@@ -4147,7 +4147,7 @@ export default function OpportunityDetail() {
                 <div>
                   <label
                     htmlFor="quoted_amount"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Quoted Amount (NET 30) ($)
                   </label>
@@ -4157,7 +4157,7 @@ export default function OpportunityDetail() {
                     name="quoted_amount"
                     value={editFormData.quoted_amount}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     placeholder="Enter NET 30 price"
                   />
                   {editFormData.selected_letter_proposal &&
@@ -4172,7 +4172,7 @@ export default function OpportunityDetail() {
                 <div>
                   <label
                     htmlFor="notes"
-                    className="block text-sm font-medium text-zinc-700 dark:text-white"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
                   >
                     Notes
                   </label>
@@ -4182,7 +4182,7 @@ export default function OpportunityDetail() {
                     value={editFormData.notes}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -4190,7 +4190,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="reviewed_by"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Reviewed By
                     </label>
@@ -4200,7 +4200,7 @@ export default function OpportunityDetail() {
                       name="reviewed_by"
                       value={editFormData.reviewed_by}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                       placeholder="Enter reviewer name"
                     />
                   </div>
@@ -4208,7 +4208,7 @@ export default function OpportunityDetail() {
                   <div>
                     <label
                       htmlFor="prepared_by"
-                      className="block text-sm font-medium text-zinc-700 dark:text-white"
+                      className="block text-sm font-medium text-neutral-700 dark:text-white"
                     >
                       Quote Prepared By (Auto-populated)
                     </label>
@@ -4219,15 +4219,15 @@ export default function OpportunityDetail() {
                       value={quotePreparedBy || editFormData.prepared_by}
                       onChange={handleInputChange}
                       readOnly
-                      className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-zinc-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
                       placeholder="Auto-populated from quote creators"
                     />
                   </div>
                 </div>
 
                 {/* Job Information Section */}
-                <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                  <h4 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+                <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                  <h4 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                     Job Information
                   </h4>
 
@@ -4235,7 +4235,7 @@ export default function OpportunityDetail() {
                     <div>
                       <label
                         htmlFor="jobsite_location"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white"
                       >
                         Jobsite Location / Address
                       </label>
@@ -4245,17 +4245,17 @@ export default function OpportunityDetail() {
                         name="jobsite_location"
                         value={editFormData.jobsite_location}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                         placeholder="Enter jobsite address"
                       />
                     </div>
 
                     {/* Accepted Letter Proposal */}
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Accepted Letter Proposal
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(() => {
                           const selectedId =
                             (opportunity as any).selected_letter_proposal || "";
@@ -4278,7 +4278,7 @@ export default function OpportunityDetail() {
                       <div>
                         <label
                           htmlFor="estimated_start_date"
-                          className="block text-sm font-medium text-zinc-700 dark:text-white"
+                          className="block text-sm font-medium text-neutral-700 dark:text-white"
                         >
                           Start Date
                         </label>
@@ -4288,14 +4288,14 @@ export default function OpportunityDetail() {
                           name="estimated_start_date"
                           value={editFormData.estimated_start_date}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </div>
 
                       <div>
                         <label
                           htmlFor="estimated_end_date"
-                          className="block text-sm font-medium text-zinc-700 dark:text-white"
+                          className="block text-sm font-medium text-neutral-700 dark:text-white"
                         >
                           End Date
                         </label>
@@ -4306,7 +4306,7 @@ export default function OpportunityDetail() {
                           value={editFormData.estimated_end_date}
                           onChange={handleInputChange}
                           min={editFormData.estimated_start_date || undefined}
-                          className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </div>
                     </div>
@@ -4314,7 +4314,7 @@ export default function OpportunityDetail() {
                     <div>
                       <label
                         htmlFor="period_of_performance"
-                        className="block text-sm font-medium text-zinc-700 dark:text-white"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white"
                       >
                         Period of Performance
                       </label>
@@ -4324,20 +4324,20 @@ export default function OpportunityDetail() {
                         name="period_of_performance"
                         value={editFormData.period_of_performance}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                         placeholder="e.g., 2 weeks, 30 days"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">
                         Total Man Hours
                       </label>
                       <div className="space-y-3">
                         {/* Quote Selection */}
                         {availableQuotes.length > 0 ? (
-                          <div className="border border-zinc-300 dark:border-zinc-600 rounded-md p-3">
-                            <p className="text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                          <div className="border border-neutral-300 dark:border-neutral-600 rounded-md p-3">
+                            <p className="text-sm font-medium text-neutral-700 dark:text-white mb-2">
                               Select Estimates to Calculate Hours:
                             </p>
                             <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -4357,9 +4357,9 @@ export default function OpportunityDetail() {
                                         e.target.checked,
                                       )
                                     }
-                                    className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
+                                    className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
                                   />
-                                  <span className="text-sm text-zinc-700 dark:text-white">
+                                  <span className="text-sm text-neutral-700 dark:text-white">
                                     {quote.title} (
                                     {quote.totalManHours.toFixed(1)} hours)
                                   </span>
@@ -4367,8 +4367,8 @@ export default function OpportunityDetail() {
                               ))}
                             </div>
                             {selectedQuoteIds.length > 0 && (
-                              <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-600">
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {selectedQuoteIds.length} estimate
                                   {selectedQuoteIds.length !== 1
                                     ? "s"
@@ -4379,7 +4379,7 @@ export default function OpportunityDetail() {
                             )}
                           </div>
                         ) : (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
                             No estimates available. Create an estimate to
                             calculate man hours automatically.
                           </p>
@@ -4389,7 +4389,7 @@ export default function OpportunityDetail() {
                         <div>
                           <label
                             htmlFor="total_man_hours"
-                            className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                            className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1"
                           >
                             Total Hours (calculated from selected estimates or
                             enter manually):
@@ -4400,7 +4400,7 @@ export default function OpportunityDetail() {
                             name="total_man_hours"
                             value={editFormData.total_man_hours}
                             onChange={handleInputChange}
-                            className="block w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                             placeholder="0"
                             min="0"
                             step="0.1"
@@ -4414,7 +4414,7 @@ export default function OpportunityDetail() {
                 <div className="mt-5 flex justify-end">
                   <button
                     type="button"
-                    className="mr-3 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none disabled:opacity-50"
+                    className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none disabled:opacity-50"
                     onClick={() => setIsEditing(false)}
                     disabled={isSubmitting}
                   >
@@ -4434,31 +4434,31 @@ export default function OpportunityDetail() {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-dark-900 mb-3">
+                  <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
                     Opportunity Details
                   </h3>
-                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-zinc-200 dark:border-dark-300 p-4">
+                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-neutral-200 dark:border-dark-300 p-4">
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Quote Number
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {opportunity.quote_number}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Customer
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {customer?.company_name || customer?.name}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Contact
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(() => {
                           const c = contacts.find(
                             (c) => c.id === (opportunity as any).contact_id,
@@ -4474,26 +4474,26 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Title
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {opportunity.title}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Description
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900 whitespace-pre-line">
+                      <p className="text-neutral-900 dark:text-dark-900 whitespace-pre-line">
                         {opportunity.description || "No description"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Estimate Approval
                       </p>
-                      <p className="text-xs text-zinc-400 dark:text-dark-500 mt-0.5 mb-1">
+                      <p className="text-xs text-neutral-400 dark:text-dark-500 mt-0.5 mb-1">
                         In Progress = working on the estimate. No Quote = not
                         submitting a quote for this opportunity.
                       </p>
@@ -4523,7 +4523,7 @@ export default function OpportunityDetail() {
                               handleEstimateApprovalStatusChange(e.target.value)
                             }
                             disabled={isSavingEstimateStatus}
-                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-zinc-200 dark:border-zinc-600 dark:bg-dark-150 dark:text-white"
+                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
                             autoFocus={latestEstimateId != null}
                             onBlur={() =>
                               latestEstimateId &&
@@ -4552,16 +4552,16 @@ export default function OpportunityDetail() {
                               No Quote — not submitting
                             </option>
                           </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-zinc-500" />
+                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
                           {isSavingEstimateStatus && (
-                            <span className="text-xs text-zinc-500 dark:text-dark-400 ml-2">
+                            <span className="text-xs text-neutral-500 dark:text-dark-400 ml-2">
                               Saving...
                             </span>
                           )}
                         </div>
                       )}
                       {!latestEstimateId && (
-                        <p className="text-zinc-500 dark:text-dark-500 text-xs mt-1.5">
+                        <p className="text-neutral-500 dark:text-dark-500 text-xs mt-1.5">
                           Set status above or{" "}
                           <button
                             type="button"
@@ -4578,7 +4578,7 @@ export default function OpportunityDetail() {
                       )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Status
                       </p>
                       {isStatusEditing ? (
@@ -4586,7 +4586,7 @@ export default function OpportunityDetail() {
                           <select
                             value={opportunity.status}
                             onChange={(e) => handleStatusChange(e.target.value)}
-                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-zinc-200"
+                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200"
                             autoFocus
                             onBlur={() => setIsStatusEditing(false)}
                           >
@@ -4604,7 +4604,7 @@ export default function OpportunityDetail() {
                             <option value="lost">Lost</option>
                             <option value="no quote">No Quote</option>
                           </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-zinc-500" />
+                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
                         </div>
                       ) : (
                         <button
@@ -4622,17 +4622,17 @@ export default function OpportunityDetail() {
                       {opportunity.status !== "awarded" &&
                         opportunity.status !== "lost" &&
                         !opportunity.job_id && (
-                          <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                          <p className="text-xs text-neutral-500 dark:text-white mt-1">
                             Change status above or use "Convert to Job" button
                             to create a job
                           </p>
                         )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Accepted Letter Proposal
                       </p>
-                      <p className="text-sm text-zinc-900 dark:text-dark-900">
+                      <p className="text-sm text-neutral-900 dark:text-dark-900">
                         {(() => {
                           const selectedId =
                             (opportunity as any).selected_letter_proposal || "";
@@ -4649,10 +4649,10 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         AMP Division
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {opportunity.amp_division ? (
                           <button
                             onClick={(e) => {
@@ -4672,7 +4672,7 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Opportunity Type
                       </p>
                       {isOpportunityTypeEditing ? (
@@ -4696,7 +4696,7 @@ export default function OpportunityDetail() {
                             onChange={(e) =>
                               handleOpportunityTypeChange(e.target.value)
                             }
-                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-zinc-200 dark:border-zinc-600 dark:bg-dark-150 dark:text-white"
+                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
                             autoFocus
                             onBlur={() => setIsOpportunityTypeEditing(false)}
                           >
@@ -4715,14 +4715,14 @@ export default function OpportunityDetail() {
                             </option>
                             <option value="other">Other</option>
                           </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-zinc-500" />
+                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
                         </div>
                       ) : (
                         <button
                           onClick={() => setIsOpportunityTypeEditing(true)}
                           className="mt-1 text-left"
                         >
-                          <span className="text-zinc-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
+                          <span className="text-neutral-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
                             {(() => {
                               let type = (opportunity as any).opportunity_type;
 
@@ -4761,7 +4761,7 @@ export default function OpportunityDetail() {
                       )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Documents Stage
                       </p>
                       {isDocumentsStageEditing ? (
@@ -4771,7 +4771,7 @@ export default function OpportunityDetail() {
                             onChange={(e) =>
                               handleDocumentsStageChange(e.target.value)
                             }
-                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-zinc-200 dark:border-zinc-600 dark:bg-dark-150 dark:text-white"
+                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
                             autoFocus
                             onBlur={() => setIsDocumentsStageEditing(false)}
                           >
@@ -4795,14 +4795,14 @@ export default function OpportunityDetail() {
                             <option value="90%">90%</option>
                             <option value="95%">95%</option>
                           </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-zinc-500" />
+                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
                         </div>
                       ) : (
                         <button
                           onClick={() => setIsDocumentsStageEditing(true)}
                           className="mt-1 text-left"
                         >
-                          <span className="text-zinc-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
+                          <span className="text-neutral-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
                             {(opportunity as any).documents_stage ||
                               "Not specified"}
                             <ChevronDown className="ml-1 h-3 w-3 inline" />
@@ -4815,7 +4815,7 @@ export default function OpportunityDetail() {
                       if (opportunity.job_id) {
                         return (
                           <div className="mb-4">
-                            <p className="text-sm text-zinc-500 dark:text-dark-400">
+                            <p className="text-sm text-neutral-500 dark:text-dark-400">
                               Job Status
                             </p>
                             <div className="flex items-center gap-2">
@@ -4838,16 +4838,16 @@ export default function OpportunityDetail() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-dark-900 mb-3">
+                  <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
                     Financial & Timeline
                   </h3>
-                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-zinc-200 dark:border-dark-300 p-4">
+                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-neutral-200 dark:border-dark-300 p-4">
                     {/* Expected Value removed from details view */}
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Probability
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {opportunity.probability !== null &&
                         opportunity.probability !== undefined
                           ? `${opportunity.probability}%`
@@ -4855,10 +4855,10 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Quoted Amount (NET 30)
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(() => {
                           const selectedId =
                             (opportunity as any).selected_letter_proposal || "";
@@ -4877,7 +4877,7 @@ export default function OpportunityDetail() {
 
                           if (!sourceLetter) {
                             return (
-                              <span className="text-zinc-400 dark:text-zinc-500 italic">
+                              <span className="text-neutral-400 dark:text-neutral-500 italic">
                                 No letter proposal generated
                               </span>
                             );
@@ -4908,7 +4908,7 @@ export default function OpportunityDetail() {
                               <span className="text-lg font-semibold">
                                 {formatMoney(letterAmount)}
                               </span>
-                              <span className="ml-2 text-xs text-zinc-400 dark:text-zinc-500">
+                              <span className="ml-2 text-xs text-neutral-400 dark:text-neutral-500">
                                 from {isSelected ? "" : "latest "}
                                 {letterLabel}
                                 {!isSelected && letterProposals.length > 1
@@ -4922,10 +4922,10 @@ export default function OpportunityDetail() {
                     </div>
                     <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Opportunity Created Date
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {opportunity.opportunity_created_date
                             ? formatDateSafe(
                                 opportunity.opportunity_created_date,
@@ -4935,20 +4935,20 @@ export default function OpportunityDetail() {
                       </div>
 
                       <div>
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Opportunity Created By
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {opportunityCreator || "Not specified"}
                         </p>
                       </div>
                     </div>
 
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Letter Proposal Date
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {opportunity.letter_proposal_date
                           ? formatDateSafe(opportunity.letter_proposal_date)
                           : "Not generated yet"}
@@ -4956,30 +4956,30 @@ export default function OpportunityDetail() {
                     </div>
                     {opportunity.proposal_due_date && (
                       <div className="mb-4">
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Proposal Due Date
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {formatDateSafe(opportunity.proposal_due_date)}
                         </p>
                       </div>
                     )}
                     {opportunity.awarded_date && (
                       <div className="mb-4">
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Awarded Date
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {formatDateSafe(opportunity.awarded_date)}
                         </p>
                       </div>
                     )}
                     <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Start Date
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {(opportunity as any).estimated_start_date
                             ? formatDateSafe(
                                 (opportunity as any).estimated_start_date,
@@ -4989,10 +4989,10 @@ export default function OpportunityDetail() {
                       </div>
 
                       <div>
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           End Date
                         </p>
-                        <p className="text-zinc-900 dark:text-dark-900">
+                        <p className="text-neutral-900 dark:text-dark-900">
                           {(opportunity as any).estimated_end_date
                             ? formatDateSafe(
                                 (opportunity as any).estimated_end_date,
@@ -5003,18 +5003,18 @@ export default function OpportunityDetail() {
                     </div>
                     {/* Removed duplicate Proposal Due Date block (already shown above) */}
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Reviewed By
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(opportunity as any).reviewed_by || "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Quote Prepared By
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {quotePreparedBy ||
                           (opportunity as any).prepared_by ||
                           "Not specified"}
@@ -5023,28 +5023,28 @@ export default function OpportunityDetail() {
 
                     {/* Job Information Fields */}
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Jobsite Location
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(opportunity as any).jobsite_location ||
                           "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Period of Performance
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(opportunity as any).period_of_performance ||
                           "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-zinc-500 dark:text-dark-400">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Total Man Hours
                       </p>
-                      <p className="text-zinc-900 dark:text-dark-900">
+                      <p className="text-neutral-900 dark:text-dark-900">
                         {(opportunity as any).total_man_hours
                           ? `${(opportunity as any).total_man_hours} hours`
                           : "Not specified"}
@@ -5052,9 +5052,9 @@ export default function OpportunityDetail() {
                     </div>
 
                     {/* Documents Section */}
-                    <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
                       <div className="flex justify-between items-center mb-3">
-                        <p className="text-sm text-zinc-500 dark:text-dark-400">
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
                           Documents
                         </p>
                         <div className="flex gap-2">
@@ -5088,10 +5088,10 @@ export default function OpportunityDetail() {
                           {subcontractorAgreements.map((agreement) => (
                             <div
                               key={agreement.id}
-                              className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-dark-150 rounded-md"
+                              className="flex items-center justify-between p-2 bg-neutral-50 dark:bg-dark-150 rounded-md"
                             >
                               <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4 text-zinc-500" />
+                                <FileText className="h-4 w-4 text-neutral-500" />
                                 <div className="flex-1">
                                   <button
                                     onClick={() => handlePreviewFile(agreement)}
@@ -5099,7 +5099,7 @@ export default function OpportunityDetail() {
                                   >
                                     {agreement.name}
                                   </button>
-                                  <p className="text-xs text-zinc-500 dark:text-white">
+                                  <p className="text-xs text-neutral-500 dark:text-white">
                                     {formatDateSafe(agreement.upload_date)} •
                                     <span
                                       className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
@@ -5109,7 +5109,7 @@ export default function OpportunityDetail() {
                                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
                                             : agreement.status === "expired"
                                               ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                              : "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/20 dark:text-white"
+                                              : "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-white"
                                       }`}
                                     >
                                       {agreement.status}
@@ -5127,7 +5127,7 @@ export default function OpportunityDetail() {
                                         .value as SubcontractorAgreement["status"],
                                     )
                                   }
-                                  className="text-xs p-1 rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                                  className="text-xs p-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                                 >
                                   <option value="pending">Pending</option>
                                   <option value="signed">Signed</option>
@@ -5176,7 +5176,7 @@ export default function OpportunityDetail() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-sm text-zinc-500 dark:text-white italic">
+                        <p className="text-sm text-neutral-500 dark:text-white italic">
                           No documents uploaded yet.
                         </p>
                       )}
@@ -5198,11 +5198,11 @@ export default function OpportunityDetail() {
 
                 {opportunity.notes && (
                   <div className="col-span-1 md:col-span-2">
-                    <h3 className="text-lg font-medium text-zinc-900 dark:text-dark-900 mb-3">
+                    <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
                       Notes
                     </h3>
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-md">
-                      <p className="text-zinc-900 dark:text-dark-900 whitespace-pre-line">
+                      <p className="text-neutral-900 dark:text-dark-900 whitespace-pre-line">
                         {opportunity.notes}
                       </p>
                     </div>
@@ -5212,7 +5212,7 @@ export default function OpportunityDetail() {
 
               {/* Add Estimate Sheet section */}
               <div className="mt-8">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-dark-900 mb-3">
+                <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
                   Estimate
                 </h3>
                 <div className="bg-white dark:bg-dark-150 p-4 rounded-md text-center">
@@ -5297,7 +5297,7 @@ export default function OpportunityDetail() {
                 <div className="absolute top-0 right-0 pt-4 pr-4">
                   <button
                     type="button"
-                    className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-zinc-200"
+                    className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-neutral-200"
                     onClick={() => setConfirmConvertToJobOpen(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -5305,16 +5305,16 @@ export default function OpportunityDetail() {
                   </button>
                 </div>
 
-                <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+                <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                   Convert Opportunity to Job
                 </Dialog.Title>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     Select Accepted Letter Proposal
                   </label>
                   {lettersForSelect.length === 0 ? (
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       No saved letters found for this opportunity. You can
                       continue without selecting one.
                     </p>
@@ -5322,7 +5322,7 @@ export default function OpportunityDetail() {
                     <select
                       value={selectedLetterId}
                       onChange={(e) => setSelectedLetterId(e.target.value)}
-                      className="w-full border border-zinc-300 dark:border-zinc-600 rounded-md px-3 py-2 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                      className="w-full border border-neutral-300 dark:border-neutral-600 rounded-md px-3 py-2 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                     >
                       <option value="">-- Select Letter --</option>
                       {lettersForSelect.map((l) => (
@@ -5334,18 +5334,18 @@ export default function OpportunityDetail() {
                   )}
                 </div>
 
-                <p className="text-zinc-700 dark:text-white mb-4">
+                <p className="text-neutral-700 dark:text-white mb-4">
                   Are you sure you want to create a job from this opportunity?
                   This action will:
                 </p>
 
-                <ul className="text-sm text-zinc-600 dark:text-white mb-4 space-y-1">
+                <ul className="text-sm text-neutral-600 dark:text-white mb-4 space-y-1">
                   <li>• Create a new job record in the system</li>
                   <li>• Link the opportunity to the new job</li>
                   <li>• Keep the opportunity status unchanged</li>
                 </ul>
 
-                <p className="text-zinc-700 dark:text-white mb-4">
+                <p className="text-neutral-700 dark:text-white mb-4">
                   The opportunity will remain in its current status. You can
                   change the status separately if needed.
                 </p>
@@ -5353,7 +5353,7 @@ export default function OpportunityDetail() {
                 <div className="mt-5 flex justify-end space-x-3">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                     onClick={() => setConfirmConvertToJobOpen(false)}
                   >
                     Cancel
@@ -5384,7 +5384,7 @@ export default function OpportunityDetail() {
                 <div className="absolute top-0 right-0 pt-4 pr-4">
                   <button
                     type="button"
-                    className="text-zinc-400 hover:text-zinc-500"
+                    className="text-neutral-400 hover:text-neutral-500"
                     onClick={() => setShowJobDialog(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -5392,44 +5392,44 @@ export default function OpportunityDetail() {
                   </button>
                 </div>
 
-                <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-dark-900 mb-4">
+                <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-4">
                   Job Details
                 </Dialog.Title>
 
                 {jobDetails ? (
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Job Title
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.title}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Job Number
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.job_number}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Status
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.status}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Customer
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.customer?.company_name ||
                           jobDetails.customer?.name ||
                           "No customer assigned"}
@@ -5437,10 +5437,10 @@ export default function OpportunityDetail() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Start Date
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.start_date
                           ? formatDateSafe(jobDetails.start_date)
                           : "Not set"}
@@ -5448,10 +5448,10 @@ export default function OpportunityDetail() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Due Date
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {jobDetails.due_date
                           ? formatDateSafe(jobDetails.due_date)
                           : "Not set"}
@@ -5459,29 +5459,29 @@ export default function OpportunityDetail() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Quoted Amount
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         ${jobDetails.budget?.toLocaleString() || "0"}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                         Division
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-sm text-neutral-900 dark:text-white">
                         {formatDivisionName(jobDetails.division || "")}
                       </p>
                     </div>
 
                     {jobDetails.description && (
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-500 dark:text-white">
+                        <h3 className="text-sm font-medium text-neutral-500 dark:text-white">
                           Description
                         </h3>
-                        <p className="mt-1 text-sm text-zinc-900 dark:text-white whitespace-pre-wrap">
+                        <p className="mt-1 text-sm text-neutral-900 dark:text-white whitespace-pre-wrap">
                           {jobDetails.description}
                         </p>
                       </div>
@@ -5489,7 +5489,7 @@ export default function OpportunityDetail() {
                   </div>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-zinc-500 dark:text-white">
+                    <p className="text-neutral-500 dark:text-white">
                       <LoadingSpinner size="md" />
                     </p>
                   </div>
@@ -5521,14 +5521,14 @@ export default function OpportunityDetail() {
 
               <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-4xl w-full mx-auto shadow-xl max-h-[90vh] flex flex-col">
                 {/* Modal Header */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
+                <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-zinc-500" />
+                    <FileText className="h-5 w-5 text-neutral-500" />
                     <div>
-                      <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
                         {previewFile?.name}
                       </Dialog.Title>
-                      <p className="text-sm text-zinc-500 dark:text-white">
+                      <p className="text-sm text-neutral-500 dark:text-white">
                         {previewFile && formatDateSafe(previewFile.upload_date)}{" "}
                         •
                         <span
@@ -5539,7 +5539,7 @@ export default function OpportunityDetail() {
                                 ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
                                 : previewFile?.status === "expired"
                                   ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                  : "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/20 dark:text-white"
+                                  : "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-white"
                           }`}
                         >
                           {previewFile?.status}
@@ -5564,7 +5564,7 @@ export default function OpportunityDetail() {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowPreviewModal(false)}
-                      className="text-zinc-500 hover:text-zinc-700"
+                      className="text-neutral-500 hover:text-neutral-700"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -5596,17 +5596,17 @@ export default function OpportunityDetail() {
                         <div className="h-full">
                           <iframe
                             src={previewFile.file_url}
-                            className="w-full h-full min-h-[600px] border border-zinc-200 dark:border-zinc-700 rounded bg-white"
+                            className="w-full h-full min-h-[600px] border border-neutral-200 dark:border-neutral-700 rounded bg-white"
                             title={previewFile.name}
                           />
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                          <FileText className="h-16 w-16 text-zinc-400 mb-4" />
-                          <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-2">
+                          <FileText className="h-16 w-16 text-neutral-400 mb-4" />
+                          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
                             Preview not available
                           </h3>
-                          <p className="text-zinc-500 dark:text-white mb-4">
+                          <p className="text-neutral-500 dark:text-white mb-4">
                             This file type cannot be previewed in the browser.
                           </p>
                           <Button
@@ -5641,7 +5641,7 @@ export default function OpportunityDetail() {
                 <div className="absolute top-0 right-0 pt-4 pr-4">
                   <button
                     type="button"
-                    className="text-zinc-400 hover:text-zinc-500 dark:text-white dark:hover:text-zinc-200"
+                    className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-neutral-200"
                     onClick={() => setShowDeleteConfirm(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -5649,17 +5649,17 @@ export default function OpportunityDetail() {
                   </button>
                 </div>
 
-                <Dialog.Title className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+                <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                   Delete Opportunity
                 </Dialog.Title>
-                <p className="text-sm text-zinc-600 dark:text-white mb-6">
+                <p className="text-sm text-neutral-600 dark:text-white mb-6">
                   Are you sure you want to delete this opportunity? This action
                   cannot be undone.
                 </p>
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-dark-200 focus:outline-none"
+                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                     onClick={() => setShowDeleteConfirm(false)}
                   >
                     Cancel

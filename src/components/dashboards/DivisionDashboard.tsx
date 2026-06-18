@@ -513,7 +513,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   }
 
@@ -571,7 +571,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70 mobile-text-xs">
                 Customers
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white mobile-text-lg">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mobile-text-lg">
                 {counts.customers}
               </p>
               <Link to={`/${division}/customers`}>
@@ -598,7 +598,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Contacts
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.contacts}
               </p>
               <Link to={`/${division}/contacts`}>
@@ -626,7 +626,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                   Documents
                 </p>
-                <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                   {counts.documents}
                 </p>
                 <Link to={`/${division}/reports`}>
@@ -649,7 +649,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 3. Job Status Section */}
-      <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
+      <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
         Job Status
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -659,7 +659,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Active Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.activeJobs}
               </p>
             </div>
@@ -675,7 +675,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Upcoming Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.upcomingJobs}
               </p>
             </div>
@@ -691,7 +691,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Completed Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.completedJobs}
               </p>
             </div>
@@ -703,7 +703,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 4. Recent Activity Tabs */}
-      <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
+      <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
         Recent Activity
       </h2>
       <Card>
@@ -781,7 +781,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
           <TabsContent value="jobs" className="p-3 sm:p-6">
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {recentJobs.length === 0 ? (
-                <div className="text-center py-6 text-zinc-500 text-sm sm:text-base">
+                <div className="text-center py-6 text-neutral-500 text-sm sm:text-base">
                   No recent jobs found
                 </div>
               ) : (
@@ -796,7 +796,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                                 <p className="font-medium text-[#f26722] truncate text-sm sm:text-base mobile-card-title">
                                   {maskJobTitle(job.title)}
                                 </p>
-                                <p className="text-xs sm:text-sm text-zinc-600 dark:text-white mt-1 line-clamp-2 mobile-text-xs">
+                                <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2 mobile-text-xs">
                                   {maskCustomerName(
                                     job.customers?.company_name ||
                                       job.customers?.name,
@@ -815,7 +815,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                               </Badge>
                             </div>
 
-                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-zinc-500 dark:text-white border-t border-zinc-100 dark:border-zinc-700 mt-2 sm:mt-3">
+                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-neutral-500 dark:text-white border-t border-neutral-100 dark:border-neutral-700 mt-2 sm:mt-3">
                               <div className="flex items-center min-w-0 flex-1">
                                 <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
                                 <span className="truncate">
@@ -865,11 +865,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             <TabsContent value="documents" className="p-3 sm:p-6">
               <Card>
                 <div className="p-4 sm:p-6 text-center py-6 sm:py-8">
-                  <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-zinc-300 dark:text-white" />
+                  <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-neutral-300 dark:text-white" />
                   <h3 className="text-base sm:text-lg font-medium mb-2">
                     Documentation Module
                   </h3>
-                  <p className="text-sm sm:text-base text-zinc-500 dark:text-white mb-4">
+                  <p className="text-sm sm:text-base text-neutral-500 dark:text-white mb-4">
                     Access to division-specific documentation and files.
                   </p>
                   <Button className="touch-target">Browse Documentation</Button>

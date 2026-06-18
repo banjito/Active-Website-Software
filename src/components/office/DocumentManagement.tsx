@@ -360,7 +360,7 @@ const DocumentManagement: React.FC = () => {
       case "gif":
         return <FileText className="h-6 w-6 text-purple-500" />;
       default:
-        return <FileText className="h-6 w-6 text-zinc-500" />;
+        return <FileText className="h-6 w-6 text-neutral-500" />;
     }
   };
 
@@ -370,7 +370,7 @@ const DocumentManagement: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="relative flex-1 w-full sm:max-w-xs">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
             size={18}
           />
           <Input
@@ -434,7 +434,7 @@ const DocumentManagement: React.FC = () => {
             <CardContent>
               <ul className="space-y-2">
                 <li
-                  className={`p-2 rounded cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-between ${selectedFolder === null ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`p-2 rounded cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between ${selectedFolder === null ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   onClick={() => setSelectedFolder(null)}
                 >
                   <div className="flex items-center">
@@ -445,7 +445,7 @@ const DocumentManagement: React.FC = () => {
                 {folders.map((folder) => (
                   <li
                     key={folder.id}
-                    className={`p-2 rounded cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-between ${selectedFolder === folder.id ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                    className={`p-2 rounded cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between ${selectedFolder === folder.id ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     onClick={() => setSelectedFolder(folder.id)}
                   >
                     <div className="flex items-center">
@@ -488,14 +488,14 @@ const DocumentManagement: React.FC = () => {
                 className={`border-2 border-dashed rounded-lg p-8 mb-6 text-center transition-colors ${
                   isDragging
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-zinc-300 dark:border-zinc-700"
+                    : "border-neutral-300 dark:border-neutral-700"
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <Upload className="h-8 w-8 mx-auto mb-2 text-zinc-400" />
-                <p className="text-zinc-500 dark:text-white">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-neutral-400" />
+                <p className="text-neutral-500 dark:text-white">
                   Drag and drop files here or{" "}
                   <button
                     className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
@@ -509,11 +509,11 @@ const DocumentManagement: React.FC = () => {
               {/* Documents list */}
               {filteredDocuments.length === 0 ? (
                 <div className="text-center py-6">
-                  <FileText className="h-10 w-10 mx-auto mb-2 text-zinc-400" />
-                  <p className="text-zinc-500">No documents found</p>
+                  <FileText className="h-10 w-10 mx-auto mb-2 text-neutral-400" />
+                  <p className="text-neutral-500">No documents found</p>
                 </div>
               ) : (
-                <div className="divide-y dark:divide-zinc-800">
+                <div className="divide-y dark:divide-neutral-800">
                   {filteredDocuments.map((doc) => (
                     <div
                       key={doc.id}
@@ -523,7 +523,7 @@ const DocumentManagement: React.FC = () => {
                         {getFileIcon(doc.type)}
                         <div className="ml-3">
                           <p className="font-medium">{doc.name}</p>
-                          <div className="flex items-center mt-1 text-sm text-zinc-500">
+                          <div className="flex items-center mt-1 text-sm text-neutral-500">
                             <span className="mr-3">{doc.size}</span>
                             <span className="flex items-center">
                               <Clock size={14} className="mr-1" />
@@ -588,7 +588,7 @@ const DocumentManagement: React.FC = () => {
                           {getFileIcon(file.name.split(".").pop() || "")}
                           <span className="ml-2">{file.name}</span>
                         </div>
-                        <span className="text-sm text-zinc-500">
+                        <span className="text-sm text-neutral-500">
                           {(file.size / (1024 * 1024)).toFixed(1)} MB
                         </span>
                       </li>

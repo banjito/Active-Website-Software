@@ -102,7 +102,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
       className={`bg-white dark:bg-dark-150 border-2 rounded-lg transition-all ${
         isSelected
           ? "border-[#f26722] shadow-lg"
-          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+          : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
       }`}
     >
       {/* Section Header */}
@@ -110,14 +110,14 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         className={`flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 border-b ${
           isSelected
             ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
-            : "border-zinc-200 dark:border-zinc-700"
+            : "border-neutral-200 dark:border-neutral-700"
         }`}
       >
         {/* Drag Handle */}
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hidden md:block"
+          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hidden md:block"
         >
           <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
         </button>
@@ -125,7 +125,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         {/* Section Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-xs md:text-sm font-semibold text-zinc-900 dark:text-white truncate">
+            <h3 className="text-xs md:text-sm font-semibold text-neutral-900 dark:text-white truncate">
               {section.title}
             </h3>
             {isFormulaEditing && (
@@ -135,17 +135,17 @@ const SortableSection: React.FC<SortableSectionProps> = ({
               </span>
             )}
             {!section.showInPrint && (
-              <span className="hidden md:flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="hidden md:flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
                 <EyeOff className="w-3 h-3" />
                 Hidden in print
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
             {componentDef?.name || section.componentType}
           </p>
           <p
-            className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 truncate"
+            className="font-mono text-[10px] text-neutral-400 dark:text-neutral-500 truncate"
             title={`${section.title || "Section"} — use in formulas e.g. {${getSectionReferenceCode(section)}.C1.R2} (${section.title || "Section"}, column 1, row 2)`}
           >
             {getSectionReferenceCode(section)} ({section.title || "Section"})
@@ -156,7 +156,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         <div className="flex items-center gap-0.5 md:gap-1">
           <button
             onClick={onSelect}
-            className="p-1.5 md:p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
+            className="p-1.5 md:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded"
             title="Edit section"
           >
             <Settings className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -164,7 +164,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 
           <button
             onClick={onDuplicate}
-            className="hidden md:block p-1.5 md:p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
+            className="hidden md:block p-1.5 md:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded"
             title="Duplicate section"
           >
             <Copy className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -172,7 +172,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 
           <button
             onClick={onDelete}
-            className="p-1.5 md:p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded"
+            className="p-1.5 md:p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded"
             title="Delete section"
           >
             <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -213,10 +213,10 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
 
   return (
     <div className="space-y-3 w-full min-w-0">
-      <div className="flex flex-wrap items-center gap-3 text-xs pb-2 border-b border-zinc-200 dark:border-zinc-600">
+      <div className="flex flex-wrap items-center gap-3 text-xs pb-2 border-b border-neutral-200 dark:border-neutral-600">
         {(section.settingFields ?? []).map((sf) => (
           <div key={sf.id} className="flex items-center gap-1.5">
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-neutral-700 dark:text-neutral-300">
               {sf.label}:
             </span>
             <select
@@ -224,7 +224,7 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
               onChange={(e) =>
                 setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))
               }
-              className="px-2 py-1 text-xs border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-1 focus:ring-[#f26722]"
+              className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722]"
             >
               {sf.options.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -237,13 +237,13 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
       </div>
       {visibleColumns.length > 0 && visibleRows.length > 0 ? (
         <div className="overflow-x-auto w-full min-w-0">
-          <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
+          <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
             <thead>
               <tr>
                 {visibleColumns.map((col) => (
                   <th
                     key={col.id}
-                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium"
+                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium"
                     style={col.width ? { width: col.width } : undefined}
                   >
                     {col.label}
@@ -254,15 +254,15 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
             <tbody>
               {visibleRows.map((row) => (
                 <tr key={row.id}>
-                  <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 font-medium text-zinc-700 dark:text-zinc-300">
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 font-medium text-neutral-700 dark:text-neutral-300">
                     {row.label}
                   </td>
                   {visibleColumns.slice(1).map((col) => (
                     <td
                       key={col.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                     >
-                      <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded" />
+                      <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded" />
                     </td>
                   ))}
                 </tr>
@@ -271,12 +271,12 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
           </table>
         </div>
       ) : (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 italic py-2">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 italic py-2">
           No rows/columns visible for the selected settings.
         </p>
       )}
       <div className="flex items-center gap-2 text-[10px]">
-        <span className="text-zinc-500 dark:text-zinc-400">
+        <span className="text-neutral-500 dark:text-neutral-400">
           {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""},{" "}
           {visibleColumns.length} col{visibleColumns.length !== 1 ? "s" : ""}{" "}
           &middot; {(section.conditionalRows ?? []).length} total defined
@@ -351,11 +351,11 @@ const SectionPreview: React.FC<{
             </code>
           </div>
         )}
-        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
+        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
           <thead>
             <tr>
               {isFormulaEditing && (
-                <th className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 bg-zinc-50 dark:bg-dark-200 text-center font-medium w-8 text-[10px] text-zinc-400">
+                <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-50 dark:bg-dark-200 text-center font-medium w-8 text-[10px] text-neutral-400">
                   #
                 </th>
               )}
@@ -369,13 +369,13 @@ const SectionPreview: React.FC<{
                 return (
                   <th
                     key={col.id}
-                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium align-top"
+                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium align-top"
                     style={col.width ? { width: col.width } : undefined}
                   >
                     <div>
                       {col.label}
                       {col.width && (
-                        <span className="text-[9px] text-zinc-400 ml-1">
+                        <span className="text-[9px] text-neutral-400 ml-1">
                           ({col.width})
                         </span>
                       )}
@@ -387,7 +387,7 @@ const SectionPreview: React.FC<{
                       {sameRowRef}
                     </div>
                     {!isFormulaEditing && (
-                      <div className="text-[9px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      <div className="text-[9px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                         ({section.title || "Section"}, column {cNum}, same row)
                       </div>
                     )}
@@ -400,7 +400,7 @@ const SectionPreview: React.FC<{
             {Array.from({ length: displayRows }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {isFormulaEditing && (
-                  <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-[10px] text-zinc-400 bg-zinc-50 dark:bg-dark-200">
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-[10px] text-neutral-400 bg-neutral-50 dark:bg-dark-200">
                     R{rowIndex + 1}
                   </td>
                 )}
@@ -418,7 +418,7 @@ const SectionPreview: React.FC<{
                     return (
                       <td
                         key={col.id}
-                        className="border border-zinc-300 dark:border-zinc-600 p-0"
+                        className="border border-neutral-300 dark:border-neutral-600 p-0"
                         style={col.width ? { width: col.width } : undefined}
                       >
                         <input
@@ -435,7 +435,7 @@ const SectionPreview: React.FC<{
                           placeholder={
                             colLevelFormula || "e.g. {JD.TCF} or {IR.C1.R2}"
                           }
-                          className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-zinc-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 focus:bg-amber-50 dark:focus:bg-amber-900/20 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                          className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-neutral-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 focus:bg-amber-50 dark:focus:bg-amber-900/20 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                           title={`Cell ${code}.C${section.columns!.indexOf(col) + 1}.R${rowIndex + 1} — e.g. {JD.TCF} for TCF, {section.C1.R2} for table ref`}
                         />
                       </td>
@@ -445,7 +445,7 @@ const SectionPreview: React.FC<{
                   return (
                     <td
                       key={col.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                       style={col.width ? { width: col.width } : undefined}
                     >
                       {cellFormula ? (
@@ -455,7 +455,7 @@ const SectionPreview: React.FC<{
                           </span>
                         </div>
                       ) : (
-                        <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded"></div>
+                        <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded"></div>
                       )}
                     </td>
                   );
@@ -466,12 +466,12 @@ const SectionPreview: React.FC<{
               <tr>
                 <td
                   colSpan={section.columns.length + (isFormulaEditing ? 1 : 0)}
-                  className="border border-zinc-300 dark:border-zinc-600 p-0"
+                  className="border border-neutral-300 dark:border-neutral-600 p-0"
                 >
                   <button
                     type="button"
                     onClick={() => onRequestEditFormulas?.(section.id)}
-                    className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-zinc-200 dark:border-zinc-600"
+                    className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-neutral-200 dark:border-neutral-600"
                   >
                     Show all {totalRows} rows and edit formulas…
                   </button>
@@ -481,14 +481,14 @@ const SectionPreview: React.FC<{
           </tbody>
         </table>
         {isFormulaEditing && (
-          <p className="mt-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
             Showing all {totalRows} rows. Empty cells use column-level behavior.
             Per-cell formulas override column settings.
           </p>
         )}
         {!isFormulaEditing && (
           <div className="flex items-center gap-2 mt-1.5 text-[10px]">
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span className="text-neutral-500 dark:text-neutral-400">
               {totalRows} row{totalRows !== 1 ? "s" : ""}
             </span>
             {section.allowAddRows && (
@@ -498,7 +498,7 @@ const SectionPreview: React.FC<{
               <span className="text-red-500">- Remove Row</span>
             )}
             {!section.allowAddRows && !section.allowRemoveRows && (
-              <span className="text-zinc-400 dark:text-zinc-500 italic">
+              <span className="text-neutral-400 dark:text-neutral-500 italic">
                 fixed rows
               </span>
             )}
@@ -530,19 +530,19 @@ const SectionPreview: React.FC<{
     const isJobInfo = section.componentType === "job-info";
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
+        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
           <tbody>
             {fieldRows.map((row, rowIdx) => (
               <tr key={rowIdx}>
                 {row.map((field) => (
                   <td
                     key={field.id}
-                    className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 align-top"
+                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 align-top"
                   >
-                    <div className="font-medium text-zinc-700 dark:text-zinc-300">
+                    <div className="font-medium text-neutral-700 dark:text-neutral-300">
                       {field.label}
                       {field.unit && (
-                        <span className="text-zinc-500 ml-1">
+                        <span className="text-neutral-500 ml-1">
                           ({field.unit})
                         </span>
                       )}
@@ -562,7 +562,7 @@ const SectionPreview: React.FC<{
                       {`{${code}.${field.id}}`}
                     </div>
                     <div
-                      className={`h-6 mt-1 ${field.readOnly ? "bg-zinc-200 dark:bg-dark-200" : "bg-zinc-100 dark:bg-dark-100"} rounded`}
+                      className={`h-6 mt-1 ${field.readOnly ? "bg-neutral-200 dark:bg-dark-200" : "bg-neutral-100 dark:bg-dark-100"} rounded`}
                     ></div>
                   </td>
                 ))}
@@ -570,7 +570,7 @@ const SectionPreview: React.FC<{
                   Array.from({ length: columns - row.length }).map((_, i) => (
                     <td
                       key={`empty-${i}`}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                     ></td>
                   ))}
               </tr>
@@ -578,7 +578,7 @@ const SectionPreview: React.FC<{
           </tbody>
         </table>
         {isJobInfo && (
-          <p className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+          <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
             Use <span className="font-mono">{"{JD.TCF}"}</span> in formulas for
             Temperature Correction Factor
           </p>
@@ -592,11 +592,11 @@ const SectionPreview: React.FC<{
     const code = getSectionReferenceCode(section);
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
+        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
           <tbody>
             <tr>
-              <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
-                <div className="font-medium text-zinc-700 dark:text-zinc-300">
+              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
+                <div className="font-medium text-neutral-700 dark:text-neutral-300">
                   {section.field.label}
                 </div>
                 <div
@@ -606,7 +606,7 @@ const SectionPreview: React.FC<{
                   {`{${code}.${section.field.id}}`}
                 </div>
                 <div
-                  className={`${section.field.type === "textarea" ? "h-16" : "h-6"} mt-1 bg-zinc-100 dark:bg-dark-100 rounded`}
+                  className={`${section.field.type === "textarea" ? "h-16" : "h-6"} mt-1 bg-neutral-100 dark:bg-dark-100 rounded`}
                 ></div>
               </td>
             </tr>
@@ -620,16 +620,16 @@ const SectionPreview: React.FC<{
   if (section.checklistItems && section.checklistItems.length > 0) {
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 text-xs">
+        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
           <thead>
             <tr>
-              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium w-24">
+              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium w-24">
                 NETA Section
               </th>
-              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium">
+              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium">
                 Description
               </th>
-              <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-50 dark:bg-dark-200 text-left font-medium w-32">
+              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium w-32">
                 Result
               </th>
             </tr>
@@ -637,14 +637,14 @@ const SectionPreview: React.FC<{
           <tbody>
             {section.checklistItems.slice(0, 3).map((item) => (
               <tr key={item.id}>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                   {item.netaSection || "-"}
                 </td>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                   {item.description}
                 </td>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
-                  <div className="h-6 bg-zinc-100 dark:bg-dark-100 rounded"></div>
+                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
+                  <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded"></div>
                 </td>
               </tr>
             ))}
@@ -652,7 +652,7 @@ const SectionPreview: React.FC<{
               <tr>
                 <td
                   colSpan={3}
-                  className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-zinc-500 dark:text-zinc-400"
+                  className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-neutral-500 dark:text-neutral-400"
                 >
                   ... {section.checklistItems.length - 3} more items
                 </td>
@@ -665,7 +665,7 @@ const SectionPreview: React.FC<{
   }
 
   return (
-    <div className="text-center text-zinc-500 dark:text-zinc-400 py-4 text-sm">
+    <div className="text-center text-neutral-500 dark:text-neutral-400 py-4 text-sm">
       No preview available
     </div>
   );

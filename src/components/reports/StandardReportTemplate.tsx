@@ -374,7 +374,7 @@ const StandardReportTemplate: React.FC = () => {
     <div className="p-6 flex justify-center">
       <div className="max-w-7xl w-full space-y-6">
         {/* Print Header - Only visible when printing */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+        <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
             alt="AMP Logo"
@@ -395,10 +395,10 @@ const StandardReportTemplate: React.FC = () => {
         </div>
 
         {/* On-screen heading */}
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           Standard Report Template
         </h1>
-        <p className="text-zinc-600 dark:text-white">
+        <p className="text-neutral-600 dark:text-white">
           This is a template component. Use the standardized structure defined
           in src/types/standardReportStructure.ts when creating new reports.
         </p>

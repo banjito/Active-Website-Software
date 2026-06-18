@@ -85,13 +85,13 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
   return (
     <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-[#f26722]" />
           Interactions Feed
         </h2>
         <button
           onClick={load}
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-[#f26722] dark:text-zinc-400"
+          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-[#f26722] dark:text-neutral-400"
           title="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -100,7 +100,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
       </div>
 
       {/* Filter tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-zinc-200 dark:border-zinc-700">
+      <div className="flex space-x-4 mb-6 border-b border-neutral-200 dark:border-neutral-700">
         {(["all", "call", "email", "in_person"] as const).map((f) => (
           <button
             key={f}
@@ -108,7 +108,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
             className={`px-4 py-2 text-sm font-medium ${
               filter === f
                 ? "text-[#f26722] border-b-2 border-[#f26722]"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+                : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
             }`}
           >
             {f === "all"
@@ -129,12 +129,12 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
       )}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-zinc-500">
+        <div className="py-12 text-center text-sm text-neutral-500">
           Loading interactions…
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-zinc-500">
-          <Feather className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
+        <div className="py-12 text-center text-neutral-500">
+          <Feather className="h-8 w-8 mx-auto mb-2 text-neutral-300 dark:text-neutral-600" />
           <p className="text-sm">No interactions logged yet.</p>
           <p className="text-xs mt-1">
             Use the “Log interaction” button in the top bar to add one.
@@ -145,20 +145,20 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
           {filtered.map((item, idx) => (
             <div key={item.id} className="relative">
               {idx < filtered.length - 1 && (
-                <div className="absolute top-0 left-6 h-full w-0.5 bg-zinc-200 dark:bg-zinc-700" />
+                <div className="absolute top-0 left-6 h-full w-0.5 bg-neutral-200 dark:bg-neutral-700" />
               )}
               <div className="flex items-start relative">
                 <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                   <div
-                    className={`h-8 w-8 rounded-full ${typeBg(item.note_type)} flex items-center justify-center border-4 border-white dark:border-zinc-800`}
+                    className={`h-8 w-8 rounded-full ${typeBg(item.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
                   >
                     {typeIcon(item.note_type)}
                   </div>
                 </div>
-                <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-600 w-full">
+                <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 w-full">
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
-                      <h3 className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                      <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                         <Link
                           to={`/sales-dashboard/customers/${item.customer_id}`}
                           className="hover:text-[#f26722] hover:underline"
@@ -167,7 +167,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                         </Link>
                         {item.contact_id && (
                           <>
-                            <span className="text-zinc-400"> · </span>
+                            <span className="text-neutral-400"> · </span>
                             <Link
                               to={`/sales-dashboard/contacts/${item.contact_id}`}
                               className="hover:text-[#f26722] hover:underline"
@@ -177,7 +177,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                           </>
                         )}
                       </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         {format(
                           new Date(item.occurred_at),
                           "MMM d, yyyy 'at' h:mm a",
@@ -190,7 +190,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                       {interactionTypeLabel(item.note_type)}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap">
+                  <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap">
                     {item.context}
                   </p>
                   <div className="mt-3 flex items-center gap-2">
@@ -201,7 +201,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                       )}
                       size={24}
                     />
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       Logged by: {item.author_email}
                     </p>
                   </div>

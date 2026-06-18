@@ -371,13 +371,13 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
 
   return (
     <>
-      <div className="flex flex-col min-h-[280px] max-h-[400px] bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-base font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+      <div className="flex flex-col min-h-[280px] max-h-[400px] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageCircle className="h-4 w-4 text-[#f26722]" />
             Comments & feedback
           </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             {canComment
               ? "Add a comment or feedback."
               : "Only authorized users can add comments."}
@@ -386,8 +386,8 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {notes.length === 0 ? (
             <div className="text-center py-8">
-              <MessageCircle className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-500" />
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <MessageCircle className="mx-auto h-10 w-10 text-neutral-400 dark:text-neutral-500" />
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {canComment
                   ? "No comments yet. Be the first to add feedback."
                   : "No comments yet."}
@@ -412,7 +412,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
-                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")
+                        : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
                   >
@@ -435,24 +435,24 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                       <button
                         type="button"
                         onClick={() => setProfileViewUserId(note.user_id)}
-                        className={`text-xs font-medium text-zinc-900 dark:text-white hover:underline ${isCurrentUser ? "text-right" : "text-left"}`}
+                        className={`text-xs font-medium text-neutral-900 dark:text-white hover:underline ${isCurrentUser ? "text-right" : "text-left"}`}
                       >
                         {isCurrentUser ? "You" : getUserDisplayName(note)}
                       </button>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
                         {formatDate(note.created_at)}
                         {note.edited && " (edited)"}
                       </span>
                     </div>
                     <div
-                      className={`rounded-lg px-3 py-2 text-sm ${isCurrentUser ? "bg-[#f26722] text-white" : "bg-zinc-100 dark:bg-dark-100 text-zinc-900 dark:text-white"}`}
+                      className={`rounded-lg px-3 py-2 text-sm ${isCurrentUser ? "bg-[#f26722] text-white" : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"}`}
                     >
                       {isEditing ? (
                         <div className="space-y-2">
                           <textarea
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
-                            className="w-full p-2 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                            className="w-full p-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                             rows={2}
                             autoFocus
                           />
@@ -463,7 +463,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                                 setEditingNoteId(null);
                                 setEditContent("");
                               }}
-                              className="p-1 text-zinc-500 hover:text-zinc-700 rounded"
+                              className="p-1 text-neutral-500 hover:text-neutral-700 rounded"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
@@ -483,7 +483,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                           </p>
                           {note.attachment_url && (
                             <div
-                              className={`mt-1.5 pt-1.5 border-t ${isCurrentUser ? "border-white/20" : "border-zinc-200 dark:border-zinc-600"}`}
+                              className={`mt-1.5 pt-1.5 border-t ${isCurrentUser ? "border-white/20" : "border-neutral-200 dark:border-neutral-600"}`}
                             >
                               <a
                                 href={note.attachment_url}
@@ -515,7 +515,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                             setEditingNoteId(note.id);
                             setEditContent(note.content);
                           }}
-                          className="p-0.5 text-zinc-400 hover:text-zinc-600"
+                          className="p-0.5 text-neutral-400 hover:text-neutral-600"
                           title="Edit"
                         >
                           <Pencil className="w-3 h-3" />
@@ -523,7 +523,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                         <button
                           type="button"
                           onClick={() => handleDelete(note.id)}
-                          className="p-0.5 text-zinc-400 hover:text-red-500"
+                          className="p-0.5 text-neutral-400 hover:text-red-500"
                           title="Delete"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -538,14 +538,14 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
           <div ref={notesEndRef} />
         </div>
         {canComment && (
-          <div className="border-t border-zinc-200 dark:border-zinc-700 px-3 py-2">
+          <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-2">
             {selectedFile && (
-              <div className="mb-2 flex items-center gap-2 px-2 py-1.5 bg-zinc-100 dark:bg-dark-100 rounded text-sm">
+              <div className="mb-2 flex items-center gap-2 px-2 py-1.5 bg-neutral-100 dark:bg-dark-100 rounded text-sm">
                 {getFileIcon(selectedFile.type)}
-                <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">
+                <span className="flex-1 truncate text-neutral-700 dark:text-neutral-300">
                   {selectedFile.name}
                 </span>
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-neutral-500">
                   {formatFileSize(selectedFile.size)}
                 </span>
                 <button
@@ -554,7 +554,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                     setSelectedFile(null);
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
-                  className="p-0.5 text-zinc-400 hover:text-zinc-600"
+                  className="p-0.5 text-neutral-400 hover:text-neutral-600"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -566,7 +566,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-1 min-w-0 h-8 px-2 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-100 text-zinc-900 dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="flex-1 min-w-0 h-8 px-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -584,7 +584,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded shrink-0"
+                className="p-1.5 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 rounded shrink-0"
                 title="Attach file"
               >
                 <Paperclip className="w-4 h-4" />
@@ -603,7 +603,9 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
               </button>
             </form>
             {uploading && (
-              <p className="mt-0.5 text-[10px] text-zinc-500">Uploading...</p>
+              <p className="mt-0.5 text-[10px] text-neutral-500">
+                Uploading...
+              </p>
             )}
           </div>
         )}

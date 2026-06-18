@@ -154,12 +154,12 @@ const eventCategories = [
   { value: "holiday", label: "Holiday", color: "bg-red-500" },
   { value: "deadline", label: "Deadline", color: "bg-amber-500" },
   { value: "training", label: "Training", color: "bg-purple-500" },
-  { value: "other", label: "Other", color: "bg-zinc-500" },
+  { value: "other", label: "Other", color: "bg-neutral-500" },
 ];
 
 const getCategoryColor = (category: EventCategory) => {
   return (
-    eventCategories.find((c) => c.value === category)?.color || "bg-zinc-500"
+    eventCategories.find((c) => c.value === category)?.color || "bg-neutral-500"
   );
 };
 
@@ -378,7 +378,7 @@ export default function CalendarSystem() {
           h-24 border p-1 overflow-hidden
           ${isToday ? "bg-blue-50 dark:bg-blue-900/20" : ""}
           ${isSelected ? "ring-2 ring-blue-500" : ""}
-          ${!isCurrentMonth ? "bg-zinc-50 text-zinc-400 dark:bg-dark-150/50 dark:text-white" : ""}
+          ${!isCurrentMonth ? "bg-neutral-50 text-neutral-400 dark:bg-dark-150/50 dark:text-white" : ""}
         `}
         onClick={() => setSelectedDate(day)}
       >
@@ -400,7 +400,7 @@ export default function CalendarSystem() {
             </div>
           ))}
           {dayEvents.length > 3 && (
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-neutral-500">
               +{dayEvents.length - 3} more
             </div>
           )}
@@ -436,14 +436,14 @@ export default function CalendarSystem() {
       <div className="overflow-auto max-h-[600px]">
         <div className="grid grid-cols-8 min-w-[800px]">
           {/* Header row with day names */}
-          <div className="sticky top-0 bg-white dark:bg-zinc-950 z-10 border-b font-semibold">
+          <div className="sticky top-0 bg-white dark:bg-neutral-950 z-10 border-b font-semibold">
             Hour
           </div>
           {weekDays.map((day) => (
             <div
               key={day.toString()}
               className={`
-                sticky top-0 bg-white dark:bg-zinc-950 z-10 p-2 text-center border-b font-semibold
+                sticky top-0 bg-white dark:bg-neutral-950 z-10 p-2 text-center border-b font-semibold
                 ${isSameDay(day, new Date()) ? "bg-blue-50 dark:bg-blue-900/20" : ""}
               `}
             >
@@ -455,7 +455,7 @@ export default function CalendarSystem() {
           {/* Hour rows */}
           {hourRows.map((hour) => (
             <React.Fragment key={hour}>
-              <div className="border-r border-b py-2 px-1 text-sm sticky left-0 bg-white dark:bg-zinc-950">
+              <div className="border-r border-b py-2 px-1 text-sm sticky left-0 bg-white dark:bg-neutral-950">
                 {hour.toString().padStart(2, "0")}:00
               </div>
               {weekDays.map((day) => {
@@ -509,7 +509,7 @@ export default function CalendarSystem() {
     return (
       <div className="overflow-auto max-h-[600px]">
         <div className="relative">
-          <div className="sticky top-0 bg-white dark:bg-zinc-950 z-10 p-2 text-center border-b font-semibold">
+          <div className="sticky top-0 bg-white dark:bg-neutral-950 z-10 p-2 text-center border-b font-semibold">
             <div>{format(selectedDate, "EEEE")}</div>
             <div>{format(selectedDate, "MMMM d, yyyy")}</div>
           </div>
@@ -532,7 +532,7 @@ export default function CalendarSystem() {
 
             return (
               <div key={hour} className="grid grid-cols-6 border-b">
-                <div className="border-r py-4 px-2 text-sm col-span-1 sticky left-0 bg-white dark:bg-zinc-950">
+                <div className="border-r py-4 px-2 text-sm col-span-1 sticky left-0 bg-white dark:bg-neutral-950">
                   {hour.toString().padStart(2, "0")}:00
                 </div>
                 <div className="p-2 col-span-5">
@@ -711,7 +711,7 @@ export default function CalendarSystem() {
               </Tabs>
 
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
                 <Input
                   className="pl-9 w-40 md:w-60"
                   placeholder="Search events..."
@@ -920,7 +920,7 @@ export default function CalendarSystem() {
                 }
                 placeholder="John Doe, Jane Smith (comma separated)"
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-neutral-500">
                 Separate names with commas
               </p>
             </div>

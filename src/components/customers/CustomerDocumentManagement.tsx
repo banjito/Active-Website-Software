@@ -702,62 +702,66 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
       {/* Document Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">
+          <div className="text-xs text-neutral-500 dark:text-white">
             All Documents
           </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               24
             </div>
             <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
               ▲ 4
             </div>
           </div>
-          <div className="mt-2 text-xs text-zinc-500 dark:text-white">
+          <div className="mt-2 text-xs text-neutral-500 dark:text-white">
             Last 30 days
           </div>
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">Contracts</div>
+          <div className="text-xs text-neutral-500 dark:text-white">
+            Contracts
+          </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               6
             </div>
             <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">
               ▲ 1
             </div>
           </div>
-          <div className="mt-2 text-xs text-zinc-500 dark:text-white">
+          <div className="mt-2 text-xs text-neutral-500 dark:text-white">
             Active contracts
           </div>
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">Invoices</div>
+          <div className="text-xs text-neutral-500 dark:text-white">
+            Invoices
+          </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               8
             </div>
             <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">
               ▼ 2
             </div>
           </div>
-          <div className="mt-2 text-xs text-zinc-500 dark:text-white">
+          <div className="mt-2 text-xs text-neutral-500 dark:text-white">
             Last quarter
           </div>
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-          <div className="text-xs text-zinc-500 dark:text-white">
+          <div className="text-xs text-neutral-500 dark:text-white">
             Storage Used
           </div>
           <div className="flex items-end mt-1">
-            <div className="text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               45.2MB
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-zinc-200 dark:bg-zinc-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
             <div
               className="h-full bg-blue-500 rounded-full"
               style={{ width: "15%" }}
@@ -768,37 +772,37 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
       {/* Recent Documents */}
       <div className="mb-8">
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Recent Documents
         </h3>
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow overflow-hidden">
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-600">
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+          <div className="divide-y divide-neutral-200 dark:divide-neutral-600">
+            <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
               <div className="flex items-center">
                 {getFileTypeIcon("pdf")}
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Q1 Service Agreement.pdf
                     </h4>
                     <div className="flex items-center">
                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 mr-2">
                         Contract
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         2.4 MB
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Uploaded by: John Smith • Apr 12, 2023
                     </p>
                     <div className="flex space-x-2">
                       <button className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                         Download
                       </button>
-                      <button className="text-xs text-zinc-600 hover:text-zinc-800 dark:text-white dark:hover:text-zinc-300">
+                      <button className="text-xs text-neutral-600 hover:text-neutral-800 dark:text-white dark:hover:text-neutral-300">
                         Share
                       </button>
                     </div>
@@ -807,32 +811,32 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
               </div>
             </div>
 
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+            <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
               <div className="flex items-center">
                 {getFileTypeIcon("pdf")}
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Invoice #INV-2023-045.pdf
                     </h4>
                     <div className="flex items-center">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 mr-2">
                         Invoice
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         1.2 MB
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Uploaded by: Jane Doe • Apr 8, 2023
                     </p>
                     <div className="flex space-x-2">
                       <button className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                         Download
                       </button>
-                      <button className="text-xs text-zinc-600 hover:text-zinc-800 dark:text-white dark:hover:text-zinc-300">
+                      <button className="text-xs text-neutral-600 hover:text-neutral-800 dark:text-white dark:hover:text-neutral-300">
                         Share
                       </button>
                     </div>
@@ -841,32 +845,32 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
               </div>
             </div>
 
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+            <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
               <div className="flex items-center">
                 {getFileTypeIcon("doc")}
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Project Requirements.docx
                     </h4>
                     <div className="flex items-center">
                       <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300 mr-2">
                         Specification
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         856 KB
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Uploaded by: Michael Brown • Apr 5, 2023
                     </p>
                     <div className="flex space-x-2">
                       <button className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                         Download
                       </button>
-                      <button className="text-xs text-zinc-600 hover:text-zinc-800 dark:text-white dark:hover:text-zinc-300">
+                      <button className="text-xs text-neutral-600 hover:text-neutral-800 dark:text-white dark:hover:text-neutral-300">
                         Share
                       </button>
                     </div>
@@ -875,32 +879,32 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
               </div>
             </div>
 
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+            <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
               <div className="flex items-center">
                 {getFileTypeIcon("img")}
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                       Site Photos.zip
                     </h4>
                     <div className="flex items-center">
                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 mr-2">
                         Photos
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         15.8 MB
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Uploaded by: Sarah Johnson • Mar 28, 2023
                     </p>
                     <div className="flex space-x-2">
                       <button className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                         Download
                       </button>
-                      <button className="text-xs text-zinc-600 hover:text-zinc-800 dark:text-white dark:hover:text-zinc-300">
+                      <button className="text-xs text-neutral-600 hover:text-neutral-800 dark:text-white dark:hover:text-neutral-300">
                         Share
                       </button>
                     </div>
@@ -916,12 +920,12 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Folders */}
         <div>
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Document Folders
           </h3>
           <div className="bg-white dark:bg-dark-150 rounded-lg shadow overflow-hidden">
-            <div className="divide-y divide-zinc-200 dark:divide-zinc-600">
-              <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+            <div className="divide-y divide-neutral-200 dark:divide-neutral-600">
+              <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -941,21 +945,21 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex justify-between">
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                         Contracts
                       </h4>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         6 files
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-white mt-1">
                       Last modified: Apr 12, 2023
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+              <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -975,21 +979,21 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex justify-between">
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                         Invoices
                       </h4>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         8 files
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-white mt-1">
                       Last modified: Apr 8, 2023
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+              <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -1009,21 +1013,21 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex justify-between">
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                         Project Files
                       </h4>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         5 files
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-white mt-1">
                       Last modified: Apr 5, 2023
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-600 transition-colors">
+              <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -1043,14 +1047,14 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex justify-between">
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                         Media
                       </h4>
-                      <span className="text-xs text-zinc-500 dark:text-white">
+                      <span className="text-xs text-neutral-500 dark:text-white">
                         5 files
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-white mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-white mt-1">
                       Last modified: Mar 28, 2023
                     </p>
                   </div>
@@ -1062,11 +1066,11 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
         {/* Recent Activity */}
         <div>
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Recent Activity
           </h3>
           <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <svg
@@ -1085,20 +1089,20 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-zinc-800 dark:text-zinc-200">
+                  <p className="text-sm text-neutral-800 dark:text-neutral-200">
                     <span className="font-medium">John Smith</span> uploaded{" "}
                     <span className="font-medium">
                       Q1 Service Agreement.pdf
                     </span>
                   </p>
-                  <span className="text-xs text-zinc-500 dark:text-white">
+                  <span className="text-xs text-neutral-500 dark:text-white">
                     Apr 12, 2023 at 10:45 AM
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
                 <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
                   <svg
@@ -1123,20 +1127,20 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-zinc-800 dark:text-zinc-200">
+                  <p className="text-sm text-neutral-800 dark:text-neutral-200">
                     <span className="font-medium">Jane Doe</span> viewed{" "}
                     <span className="font-medium">
                       Invoice #INV-2023-045.pdf
                     </span>
                   </p>
-                  <span className="text-xs text-zinc-500 dark:text-white">
+                  <span className="text-xs text-neutral-500 dark:text-white">
                     Apr 10, 2023 at 3:22 PM
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                   <svg
@@ -1155,14 +1159,14 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-zinc-800 dark:text-zinc-200">
+                  <p className="text-sm text-neutral-800 dark:text-neutral-200">
                     <span className="font-medium">Michael Brown</span>{" "}
                     downloaded{" "}
                     <span className="font-medium">
                       Project Requirements.docx
                     </span>
                   </p>
-                  <span className="text-xs text-zinc-500 dark:text-white">
+                  <span className="text-xs text-neutral-500 dark:text-white">
                     Apr 7, 2023 at 9:15 AM
                   </span>
                 </div>
@@ -1188,11 +1192,11 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-zinc-800 dark:text-zinc-200">
+                  <p className="text-sm text-neutral-800 dark:text-neutral-200">
                     <span className="font-medium">Sarah Johnson</span> deleted{" "}
                     <span className="font-medium">Old Contract Draft.docx</span>
                   </p>
-                  <span className="text-xs text-zinc-500 dark:text-white">
+                  <span className="text-xs text-neutral-500 dark:text-white">
                     Apr 5, 2023 at 2:30 PM
                   </span>
                 </div>
@@ -1224,7 +1228,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
       </div>
 
       {/* Last updated info */}
-      <div className="mt-4 text-right text-xs text-zinc-500 dark:text-white">
+      <div className="mt-4 text-right text-xs text-neutral-500 dark:text-white">
         Last updated: {format(lastUpdated, "MMM d, yyyy")}
       </div>
     </div>

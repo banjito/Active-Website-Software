@@ -234,10 +234,10 @@ Your Team`,
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Candidate Communication
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create email templates, select candidates, and fill in their
             info—like offer letters—then copy or open in your email client.
           </p>
@@ -276,7 +276,7 @@ Your Team`,
                 <LoadingSpinner size="md" />
               </div>
             ) : templates.length === 0 ? (
-              <p className="text-zinc-500">
+              <p className="text-neutral-500">
                 No templates yet. Create one to get started.
               </p>
             ) : (
@@ -284,14 +284,14 @@ Your Team`,
                 {templates.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
                   >
                     <div>
-                      <span className="font-medium text-zinc-900 dark:text-white">
+                      <span className="font-medium text-neutral-900 dark:text-white">
                         {t.name}
                       </span>
                       {t.subject && (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                           {t.subject}
                         </p>
                       )}
@@ -421,13 +421,13 @@ Your Team`,
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Template
               </label>
               <select
                 value={selectedTemplateId}
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               >
                 <option value="">Select a template...</option>
                 {templates.map((t) => (
@@ -438,12 +438,12 @@ Your Team`,
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Candidates
               </label>
-              <div className="border border-zinc-300 dark:border-zinc-600 rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
                 {candidates.length === 0 ? (
-                  <p className="text-zinc-500 text-sm">No candidates.</p>
+                  <p className="text-neutral-500 text-sm">No candidates.</p>
                 ) : (
                   candidates.map((c) => (
                     <label
@@ -454,12 +454,14 @@ Your Team`,
                         type="checkbox"
                         checked={selectedCandidateIds.includes(c.id)}
                         onChange={() => toggleCandidate(c.id)}
-                        className="h-4 w-4 rounded border-zinc-300"
+                        className="h-4 w-4 rounded border-neutral-300"
                       />
-                      <span className="text-sm text-zinc-900 dark:text-white">
+                      <span className="text-sm text-neutral-900 dark:text-white">
                         {c.first_name} {c.last_name} – {c.position_applied}
                       </span>
-                      <span className="text-xs text-zinc-500">({c.email})</span>
+                      <span className="text-xs text-neutral-500">
+                        ({c.email})
+                      </span>
                     </label>
                   ))
                 )}
@@ -468,18 +470,20 @@ Your Team`,
             {selectedCandidates.length > 0 && selectedTemplate && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Preview
                   </label>
                   {selectedCandidates.length > 1 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-zinc-500">Candidate:</span>
+                      <span className="text-xs text-neutral-500">
+                        Candidate:
+                      </span>
                       <select
                         value={previewCandidateIndex}
                         onChange={(e) =>
                           setPreviewCandidateIndex(Number(e.target.value))
                         }
-                        className="text-sm px-2 py-1 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100"
+                        className="text-sm px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100"
                       >
                         {selectedCandidates.map((c, i) => (
                           <option key={c.id} value={i}>
@@ -490,20 +494,20 @@ Your Team`,
                     </div>
                   )}
                 </div>
-                <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900/50 space-y-3">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
                   <div>
-                    <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                       Subject:
                     </span>
-                    <p className="text-zinc-900 dark:text-white mt-0.5">
+                    <p className="text-neutral-900 dark:text-white mt-0.5">
                       {filled.subject || "(empty)"}
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                       Body:
                     </span>
-                    <pre className="mt-0.5 text-sm text-zinc-900 dark:text-white whitespace-pre-wrap font-sans">
+                    <pre className="mt-0.5 text-sm text-neutral-900 dark:text-white whitespace-pre-wrap font-sans">
                       {filled.body || "(empty)"}
                     </pre>
                   </div>
@@ -539,8 +543,8 @@ Your Team`,
                   </div>
                 </div>
                 {selectedCandidates.length > 1 && (
-                  <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                  <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                       Copy or open for all selected:
                     </p>
                     <div className="flex flex-wrap gap-2">

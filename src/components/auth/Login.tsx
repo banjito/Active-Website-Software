@@ -366,7 +366,7 @@ export default function Login() {
             </h2>
           </div>
 
-          <Card className="bg-[#f26722] border border-zinc-800 shadow-sm">
+          <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
             <CardContent className="p-12">
               <form
                 className="space-y-8"
@@ -388,9 +388,9 @@ export default function Login() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    leftIcon={<Mail className="h-5 w-5 text-zinc-800" />}
+                    leftIcon={<Mail className="h-5 w-5 text-neutral-800" />}
                     placeholder="you@email.com"
-                    className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
+                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                   />
 
                   {!isForgotPasswordMode && (
@@ -405,7 +405,7 @@ export default function Login() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-zinc-400" />}
+                      leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
                       minLength={6}
                       placeholder="Enter your password"
                       hint={
@@ -413,7 +413,7 @@ export default function Login() {
                           ? "Password must be at least 6 characters"
                           : undefined
                       }
-                      className="bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-zinc-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   )}
 
@@ -454,8 +454,8 @@ export default function Login() {
                 )}
 
                 {showResendOption && (
-                  <div className="mt-4 p-4 bg-zinc-700/50 rounded-xl border border-zinc-600">
-                    <p className="text-sm text-zinc-300 mb-3">
+                  <div className="mt-4 p-4 bg-neutral-700/50 rounded-xl border border-neutral-600">
+                    <p className="text-sm text-neutral-300 mb-3">
                       Didn't receive the email? Check your spam folder or resend
                       it:
                     </p>
@@ -465,7 +465,7 @@ export default function Login() {
                         value={resendEmail}
                         onChange={(e) => setResendEmail(e.target.value)}
                         placeholder="your@ampqes.com"
-                        className="flex-1 bg-zinc-200 border-zinc-400 text-black placeholder-zinc-500 h-10"
+                        className="flex-1 bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-10"
                       />
                       <Button
                         type="button"
@@ -479,7 +479,7 @@ export default function Login() {
                         Resend
                       </Button>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-2">
+                    <p className="text-xs text-neutral-400 mt-2">
                       Note: Supabase free tier limits to 4 confirmation emails
                       per hour.
                     </p>
@@ -536,7 +536,7 @@ export default function Login() {
                       <UserPlus className="h-5 w-5" />
                     )
                   }
-                  className="mt-6 h-12 font-medium bg-transparent border-none hover:bg-zinc-800/10"
+                  className="mt-6 h-12 font-medium bg-transparent border-none hover:bg-neutral-800/10"
                 >
                   {isForgotPasswordMode
                     ? "Back to sign in"

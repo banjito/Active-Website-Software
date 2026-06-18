@@ -163,12 +163,12 @@ export const EeoReporting: React.FC = () => {
   }> = ({ label, count, percent, color }) => (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
-        <span className="text-zinc-700 dark:text-zinc-300">{label}</span>
-        <span className="font-medium text-zinc-900 dark:text-white">
+        <span className="text-neutral-700 dark:text-neutral-300">{label}</span>
+        <span className="font-medium text-neutral-900 dark:text-white">
           {count} ({percent}%)
         </span>
       </div>
-      <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2.5">
+      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5">
         <div
           className={`h-2.5 rounded-full ${color}`}
           style={{ width: `${Math.max(percent, 2)}%` }}
@@ -194,11 +194,11 @@ export const EeoReporting: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
             <Shield className="h-8 w-8 text-[#f26722]" />
             EEO Compliance Reporting
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Anonymized applicant demographics by position. No identifying
             information is stored or displayed.
           </p>
@@ -225,11 +225,11 @@ export const EeoReporting: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <FileBarChart className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <FileBarChart className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No EEO data yet
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 EEO data is collected during the application process and stored
                 anonymously here.
               </p>
@@ -342,10 +342,10 @@ export const EeoReporting: React.FC = () => {
                       >
                         <div className="flex items-center gap-2 mb-3">
                           {stageIcon}
-                          <h4 className="font-semibold text-zinc-900 dark:text-white">
+                          <h4 className="font-semibold text-neutral-900 dark:text-white">
                             {stage.label}
                           </h4>
-                          <span className="ml-auto text-lg font-bold text-zinc-900 dark:text-white">
+                          <span className="ml-auto text-lg font-bold text-neutral-900 dark:text-white">
                             {stage.total}
                           </span>
                         </div>
@@ -353,7 +353,7 @@ export const EeoReporting: React.FC = () => {
                         {stage.total > 0 ? (
                           <div className="space-y-3">
                             <div>
-                              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                              <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                                 Gender
                               </p>
                               <div className="space-y-1">
@@ -364,7 +364,7 @@ export const EeoReporting: React.FC = () => {
                                       key={label}
                                       className="flex justify-between text-sm"
                                     >
-                                      <span className="text-zinc-700 dark:text-zinc-300">
+                                      <span className="text-neutral-700 dark:text-neutral-300">
                                         {label}
                                       </span>
                                       <span className="font-medium">
@@ -376,7 +376,7 @@ export const EeoReporting: React.FC = () => {
                               </div>
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                              <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                                 Race / Ethnicity
                               </p>
                               <div className="space-y-1">
@@ -387,7 +387,7 @@ export const EeoReporting: React.FC = () => {
                                       key={label}
                                       className="flex justify-between text-sm"
                                     >
-                                      <span className="text-zinc-700 dark:text-zinc-300">
+                                      <span className="text-neutral-700 dark:text-neutral-300">
                                         {label}
                                       </span>
                                       <span className="font-medium">
@@ -398,12 +398,12 @@ export const EeoReporting: React.FC = () => {
                                   ))}
                               </div>
                             </div>
-                            <div className="flex gap-4 text-sm pt-1 border-t border-zinc-200 dark:border-zinc-700">
-                              <span className="text-zinc-700 dark:text-zinc-300">
+                            <div className="flex gap-4 text-sm pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                              <span className="text-neutral-700 dark:text-neutral-300">
                                 Veterans: <strong>{stage.veteranCount}</strong>{" "}
                                 ({stage.veteranPercent}%)
                               </span>
-                              <span className="text-zinc-700 dark:text-zinc-300">
+                              <span className="text-neutral-700 dark:text-neutral-300">
                                 Disability:{" "}
                                 <strong>{stage.disabilityCount}</strong> (
                                 {stage.disabilityPercent}%)
@@ -411,7 +411,7 @@ export const EeoReporting: React.FC = () => {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
                             No data for this stage
                           </p>
                         )}
@@ -447,7 +447,7 @@ export const EeoReporting: React.FC = () => {
                           "bg-blue-500",
                           "bg-pink-500",
                           "bg-purple-500",
-                          "bg-zinc-400",
+                          "bg-neutral-400",
                         ][idx % 4]
                       }
                     />
@@ -485,7 +485,7 @@ export const EeoReporting: React.FC = () => {
                           "bg-rose-500",
                           "bg-indigo-500",
                           "bg-lime-500",
-                          "bg-zinc-400",
+                          "bg-neutral-400",
                         ][idx % 7]
                       }
                     />

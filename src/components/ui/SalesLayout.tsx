@@ -26,7 +26,7 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background text-foreground">
-      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-zinc-200 dark:border-dark-200">
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
         <HeaderBar />
       </div>
 

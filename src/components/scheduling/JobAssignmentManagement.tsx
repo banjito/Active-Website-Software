@@ -437,7 +437,7 @@ export function JobAssignmentManagement({
       case "cancelled":
         return "bg-red-500";
       default:
-        return "bg-zinc-500";
+        return "bg-neutral-500";
     }
   };
 
@@ -457,7 +457,7 @@ export function JobAssignmentManagement({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-xs pl-9"
             />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
           </div>
 
           <Input
@@ -490,7 +490,7 @@ export function JobAssignmentManagement({
         <div className="mt-6">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
               <div className="flex justify-center py-6">
                 <LoadingSpinner size="md" />
               </div>
@@ -501,7 +501,7 @@ export function JobAssignmentManagement({
               <p>{error}</p>
             </div>
           ) : filteredAssignments.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500">
+            <div className="text-center py-8 text-neutral-500">
               <Briefcase className="h-8 w-8 mx-auto mb-2" />
               <p>No {activeTab} assignments found.</p>
             </div>
@@ -523,7 +523,7 @@ export function JobAssignmentManagement({
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex items-center text-sm">
-                        <User className="h-4 w-4 mr-2 text-zinc-500" />
+                        <User className="h-4 w-4 mr-2 text-neutral-500" />
                         <span>
                           {formatDisplayName(
                             assignment.user?.user_metadata?.name,
@@ -533,7 +533,7 @@ export function JobAssignmentManagement({
                       </div>
 
                       <div className="flex items-center text-sm">
-                        <CalendarIcon className="h-4 w-4 mr-2 text-zinc-500" />
+                        <CalendarIcon className="h-4 w-4 mr-2 text-neutral-500" />
                         <span>
                           {dayjs(assignment.assignment_date).format(
                             "MMM DD, YYYY",
@@ -542,7 +542,7 @@ export function JobAssignmentManagement({
                       </div>
 
                       <div className="flex items-center text-sm">
-                        <ClockIcon className="h-4 w-4 mr-2 text-zinc-500" />
+                        <ClockIcon className="h-4 w-4 mr-2 text-neutral-500" />
                         <span>
                           {assignment.start_time.substring(0, 5)} -{" "}
                           {assignment.end_time.substring(0, 5)}
@@ -551,8 +551,8 @@ export function JobAssignmentManagement({
 
                       {assignment.notes && (
                         <div className="text-sm mt-2">
-                          <p className="text-zinc-500 font-medium">Notes:</p>
-                          <p className="text-zinc-600">{assignment.notes}</p>
+                          <p className="text-neutral-500 font-medium">Notes:</p>
+                          <p className="text-neutral-600">{assignment.notes}</p>
                         </div>
                       )}
 
@@ -703,7 +703,7 @@ export function JobAssignmentManagement({
                 <label className="block text-sm font-medium mb-1">
                   Required Skills
                 </label>
-                <div className="bg-zinc-50 p-3 rounded-md text-sm">
+                <div className="bg-neutral-50 p-3 rounded-md text-sm">
                   {skillRequirements.map((skill) => (
                     <div key={skill.id} className="flex items-center mb-1">
                       <span className={skill.is_required ? "font-medium" : ""}>

@@ -258,19 +258,21 @@ export default function JobDiagnostics() {
         <div className="mb-8">
           <button
             onClick={() => navigate(`/jobs/${jobId}`)}
-            className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-700"
+            className="inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Job
           </button>
-          <h1 className="text-2xl font-bold text-zinc-900 mt-4">
+          <h1 className="text-2xl font-bold text-neutral-900 mt-4">
             Job Diagnostics
           </h1>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-            <span className="ml-3 text-zinc-600">Running diagnostics...</span>
+            <span className="ml-3 text-neutral-600">
+              Running diagnostics...
+            </span>
           </div>
         </div>
       </div>
@@ -282,12 +284,12 @@ export default function JobDiagnostics() {
       <div className="mb-8">
         <button
           onClick={() => navigate(`/jobs/${jobId}`)}
-          className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-700"
+          className="inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Job
         </button>
-        <h1 className="text-2xl font-bold text-zinc-900 mt-4">
+        <h1 className="text-2xl font-bold text-neutral-900 mt-4">
           Job Diagnostics
         </h1>
       </div>
@@ -295,24 +297,24 @@ export default function JobDiagnostics() {
       <div className="bg-white shadow rounded-lg overflow-hidden mb-6">
         <div className="p-6">
           <div className="mb-4">
-            <h2 className="text-lg font-medium text-zinc-900">
+            <h2 className="text-lg font-medium text-neutral-900">
               Job Information
             </h2>
             {job && (
               <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">
+                  <dt className="text-sm font-medium text-neutral-500">
                     Job Title
                   </dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {maskJobTitle(job.title)}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">
+                  <dt className="text-sm font-medium text-neutral-500">
                     Job Number
                   </dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {job.job_number || (
                       <span className="text-amber-500 font-medium">
                         Missing
@@ -321,16 +323,18 @@ export default function JobDiagnostics() {
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">Status</dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dt className="text-sm font-medium text-neutral-500">
+                    Status
+                  </dt>
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {formatStatusLabel(job.status)}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">
+                  <dt className="text-sm font-medium text-neutral-500">
                     Customer ID
                   </dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {job.customer_id}
                   </dd>
                 </div>
@@ -338,33 +342,41 @@ export default function JobDiagnostics() {
             )}
           </div>
 
-          <div className="pt-4 border-t border-zinc-200 mb-4">
-            <h2 className="text-lg font-medium text-zinc-900">
+          <div className="pt-4 border-t border-neutral-200 mb-4">
+            <h2 className="text-lg font-medium text-neutral-900">
               Customer Information
             </h2>
             {customer ? (
               <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">Company</dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dt className="text-sm font-medium text-neutral-500">
+                    Company
+                  </dt>
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {maskCustomerName(customer.company_name) || "Not specified"}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">Email</dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dt className="text-sm font-medium text-neutral-500">
+                    Email
+                  </dt>
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {customer.email || "Not specified"}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-500">Phone</dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dt className="text-sm font-medium text-neutral-500">
+                    Phone
+                  </dt>
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {customer.phone || "Not specified"}
                   </dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-sm font-medium text-zinc-500">Address</dt>
-                  <dd className="mt-1 text-sm text-zinc-900">
+                  <dt className="text-sm font-medium text-neutral-500">
+                    Address
+                  </dt>
+                  <dd className="mt-1 text-sm text-neutral-900">
                     {maskCustomerAddress(customer.address) || "Not specified"}
                   </dd>
                 </div>
@@ -410,7 +422,7 @@ export default function JobDiagnostics() {
       </div>
 
       <div className="bg-black rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 bg-zinc-800">
+        <div className="flex items-center justify-between px-4 py-2 bg-neutral-800">
           <div className="flex items-center">
             <Database className="h-4 w-4 text-green-400 mr-2" />
             <h3 className="text-sm font-medium text-white">Diagnostic Log</h3>
@@ -421,8 +433,8 @@ export default function JobDiagnostics() {
             </span>
           )}
         </div>
-        <div className="p-4 max-h-96 overflow-y-auto bg-zinc-900">
-          <pre className="text-sm font-mono text-zinc-300 whitespace-pre-wrap">
+        <div className="p-4 max-h-96 overflow-y-auto bg-neutral-900">
+          <pre className="text-sm font-mono text-neutral-300 whitespace-pre-wrap">
             {diagnosticOutput.map((line, index) => (
               <div key={index} className="py-1">
                 {line}

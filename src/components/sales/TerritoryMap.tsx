@@ -30,7 +30,7 @@ const TerritoryMap: React.FC<TerritoryMapProps> = ({ territory }) => {
       className="border rounded-md overflow-hidden"
       style={{ height: "200px" }}
     >
-      <div className="h-full w-full flex items-center justify-center bg-zinc-100 relative">
+      <div className="h-full w-full flex items-center justify-center bg-neutral-100 relative">
         <div
           className="absolute"
           style={{
@@ -46,15 +46,15 @@ const TerritoryMap: React.FC<TerritoryMapProps> = ({ territory }) => {
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center z-10">
-            <div className="font-semibold text-zinc-600">
+            <div className="font-semibold text-neutral-600">
               {territory.region}
             </div>
-            <div className="text-sm text-zinc-500">
+            <div className="text-sm text-neutral-500">
               {territory.accounts} accounts
             </div>
           </div>
         </div>
-        <div className="absolute bottom-2 right-2 text-xs text-zinc-500">
+        <div className="absolute bottom-2 right-2 text-xs text-neutral-500">
           Mock map visualization
         </div>
       </div>

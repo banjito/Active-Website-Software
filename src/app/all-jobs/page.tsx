@@ -80,7 +80,7 @@ function getStatusColor(status: string): string {
     case "billed":
       return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
     default:
-      return "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300";
+      return "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300";
   }
 }
 
@@ -388,7 +388,7 @@ export default function UnifiedJobsPage() {
   return (
     <PageLayout title="Global Portal">
       <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 mb-6">
+        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 mb-6">
           Jobs from all field service divisions, engineering, and scavenger.
           Each row is clearly labeled by source portal.
         </p>
@@ -412,7 +412,7 @@ export default function UnifiedJobsPage() {
         <div className="mt-6">
           <button
             onClick={() => setShowTotals(!showTotals)}
-            className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+            className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
           >
             {showTotals ? (
               <ChevronUp className="h-4 w-4" />
@@ -422,10 +422,10 @@ export default function UnifiedJobsPage() {
             {showTotals ? "Hide" : "Show"} Totals & Date Range
           </button>
           {showTotals && (
-            <div className="mt-4 bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-4">
+            <div className="mt-4 bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-white">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-white">
                     Date Range:
                   </label>
                   <button
@@ -434,7 +434,7 @@ export default function UnifiedJobsPage() {
                     className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                       allTime
                         ? "bg-[#f26722] text-white"
-                        : "bg-zinc-100 dark:bg-dark-100 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-200"
+                        : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
                     }`}
                   >
                     All Time
@@ -445,105 +445,105 @@ export default function UnifiedJobsPage() {
                         type="date"
                         value={dateRangeStart}
                         onChange={(e) => setDateRangeStart(e.target.value)}
-                        className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                       />
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-neutral-500 dark:text-neutral-400">
                         to
                       </span>
                       <input
                         type="date"
                         value={dateRangeEnd}
                         onChange={(e) => setDateRangeEnd(e.target.value)}
-                        className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                       />
                     </div>
                   )}
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                <div className="bg-zinc-50 dark:bg-dark-100 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                <div className="bg-neutral-50 dark:bg-dark-100 rounded-md p-3">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     All Jobs
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
                     $
                     {statusTotals.all.total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {statusTotals.all.count} jobs
                   </div>
                 </div>
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Pending
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
                     $
                     {statusTotals.pending.total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {statusTotals.pending.count} jobs
                   </div>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     In Progress
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
                     $
                     {statusTotals.in_progress.total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {statusTotals.in_progress.count} jobs
                   </div>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Completed
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
                     $
                     {statusTotals.completed.total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {statusTotals.completed.count} jobs
                   </div>
                 </div>
                 <div className="bg-purple-50 dark:bg-purple-900/20 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Billed
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="mt-1 text-lg font-semibold text-neutral-900 dark:text-white">
                     $
                     {statusTotals.billed.total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {statusTotals.billed.count} jobs
                   </div>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
                 <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Remaining Balance Left to Bill
                   </div>
                   <div
-                    className={`mt-1 text-2xl font-semibold ${(statusTotals.contractValueLeftToBill || 0) > 0 ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}
+                    className={`mt-1 text-2xl font-semibold ${(statusTotals.contractValueLeftToBill || 0) > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-900 dark:text-white"}`}
                   >
                     $
                     {(statusTotals.contractValueLeftToBill || 0).toLocaleString(
@@ -551,7 +551,7 @@ export default function UnifiedJobsPage() {
                       { minimumFractionDigits: 2, maximumFractionDigits: 2 },
                     )}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Sum of remaining balance from non-billed jobs
                   </div>
                 </div>
@@ -563,7 +563,7 @@ export default function UnifiedJobsPage() {
         {/* Status Tabs */}
         <div className="mt-6">
           <div
-            className="inline-flex rounded-md shadow-sm border border-zinc-200 dark:border-zinc-700 overflow-hidden"
+            className="inline-flex rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
             role="tablist"
           >
             {[
@@ -580,8 +580,8 @@ export default function UnifiedJobsPage() {
                 className={`px-4 py-2 text-sm font-medium focus:outline-none transition-colors ${
                   statusFilter === key
                     ? "bg-[#f26722] text-white"
-                    : "bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-dark-100"
-                }${key !== "billed" ? " border-r border-zinc-200 dark:border-zinc-700" : ""}`}
+                    : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-100"
+                }${key !== "billed" ? " border-r border-neutral-200 dark:border-neutral-700" : ""}`}
               >
                 {label}
               </button>
@@ -597,7 +597,7 @@ export default function UnifiedJobsPage() {
             className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               filterByContractValue
                 ? "bg-[#f26722] text-white"
-                : "bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-dark-100"
+                : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100"
             }`}
           >
             By Remaining Balance
@@ -612,9 +612,9 @@ export default function UnifiedJobsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
-              className="w-full px-4 py-2 pl-10 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <svg
                 className="h-5 w-5"
                 fill="none"
@@ -633,14 +633,14 @@ export default function UnifiedJobsPage() {
               <button
                 type="button"
                 onClick={() => setSearchTerm("")}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600"
               >
                 <X className="h-5 w-5" />
               </button>
             )}
           </div>
           {searchTerm && (
-            <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
               Found {filteredJobs.length} job
               {filteredJobs.length !== 1 ? "s" : ""} matching &quot;{searchTerm}
               &quot;
@@ -649,59 +649,59 @@ export default function UnifiedJobsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
+          <div className="text-center py-12 text-neutral-600 dark:text-neutral-400">
             <LoadingSpinner size="md" />
           </div>
         ) : (
           <>
             <div className="mt-8 -mx-4 overflow-x-auto sm:mx-0 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                <thead className="bg-zinc-50 dark:bg-dark-200">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+                <thead className="bg-neutral-50 dark:bg-dark-200">
                   <tr>
                     <th
                       scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider sm:pl-6"
+                      className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider sm:pl-6"
                     >
                       Source
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                      className="px-3 py-3.5 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                     >
                       Job #
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                      className="px-3 py-3.5 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                     >
                       Title
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                      className="px-3 py-3.5 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                     >
                       Customer
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                      className="px-3 py-3.5 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                      className="px-3 py-3.5 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                     >
                       Remaining Balance
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700 bg-white dark:bg-dark-150">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700 bg-white dark:bg-dark-150">
                   {paginatedJobs.length === 0 ? (
                     <tr>
                       <td
                         colSpan={6}
-                        className="py-12 text-center text-zinc-500 dark:text-zinc-400"
+                        className="py-12 text-center text-neutral-500 dark:text-neutral-400"
                       >
                         {jobs.length === 0
                           ? "No jobs found."
@@ -713,14 +713,14 @@ export default function UnifiedJobsPage() {
                       const div = (job.division || "").toLowerCase();
                       const badgeClass =
                         DIVISION_BADGE_CLASS[div] ||
-                        "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300";
+                        "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300";
                       const sourceLabel =
                         DIVISION_LABELS[div] || job.division || "—";
                       return (
                         <tr
                           key={job.id}
                           onClick={() => navigate(`/jobs/${job.id}`)}
-                          className="hover:bg-zinc-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
+                          className="hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
                         >
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6">
                             <span
@@ -729,13 +729,13 @@ export default function UnifiedJobsPage() {
                               {sourceLabel}
                             </span>
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-zinc-900 dark:text-white">
+                          <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-neutral-900 dark:text-white">
                             {job.job_number || "Pending"}
                           </td>
-                          <td className="px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300 max-w-xs truncate">
+                          <td className="px-3 py-4 text-sm text-neutral-600 dark:text-neutral-300 max-w-xs truncate">
                             {maskJobTitle(job.title)}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-600 dark:text-neutral-300">
                             {maskCustomerName(
                               job.customers?.company_name ||
                                 job.customers?.name,
@@ -768,7 +768,7 @@ export default function UnifiedJobsPage() {
                                 )}
                               </span>
                             ) : (
-                              <span className="text-zinc-400">—</span>
+                              <span className="text-neutral-400">—</span>
                             )}
                           </td>
                         </tr>
@@ -780,7 +780,7 @@ export default function UnifiedJobsPage() {
             </div>
             {!loading && filteredJobs.length > 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Showing {(pageSafe - 1) * PAGE_SIZE + 1}–
                   {Math.min(pageSafe * PAGE_SIZE, filteredJobs.length)} of{" "}
                   {filteredJobs.length} job
@@ -791,18 +791,18 @@ export default function UnifiedJobsPage() {
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={pageSafe <= 1}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     Previous
                   </button>
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     Page {pageSafe} of {totalPages}
                   </span>
                   <button
                     type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={pageSafe >= totalPages}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-700 dark:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-dark-100"
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     Next
                   </button>

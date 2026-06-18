@@ -13,10 +13,10 @@ export const ResumeParsing: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Resume Parsing
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Auto-capture applicant data from resumes
           </p>
         </div>
@@ -29,11 +29,11 @@ export const ResumeParsing: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-zinc-400" />
-            <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+            <FileText className="mx-auto h-12 w-12 text-neutral-400" />
+            <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
               Resume Parsing
             </h3>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
               Automated resume parsing and data extraction features coming soon
             </p>
           </div>

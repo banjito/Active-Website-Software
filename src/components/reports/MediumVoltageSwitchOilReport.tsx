@@ -449,16 +449,16 @@ const initialWaySectionContact: ContactResistance = {
 // Add these CSS classes near the top of the file, after the interfaces and before the component
 const tableStyles = {
   container:
-    "w-full overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700",
+    "w-full overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700",
   table:
-    "w-full min-w-full table-fixed divide-y divide-zinc-200 dark:divide-zinc-700",
+    "w-full min-w-full table-fixed divide-y divide-neutral-200 dark:divide-neutral-700",
   headerCell:
-    "px-2 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider whitespace-normal",
-  cell: "px-2 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal",
+    "px-2 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-normal",
+  cell: "px-2 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-md border-zinc-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
 };
 
 export default function MediumVoltageSwitchOilReport() {
@@ -1509,7 +1509,7 @@ export default function MediumVoltageSwitchOilReport() {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1570,12 +1570,12 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Job Information */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-2 gap-x-8 gap-y-4 print:hidden job-info-onscreen">
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Customer
                 </label>
                 <input
@@ -1583,11 +1583,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.customer}
                   onChange={(e) => handleChange("customer", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Job #
                 </label>
                 <input
@@ -1595,11 +1595,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.jobNumber}
                   onChange={(e) => handleChange("jobNumber", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Address
                 </label>
                 <input
@@ -1607,11 +1607,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Identifier
                 </label>
                 <input
@@ -1619,11 +1619,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.identifier}
                   onChange={(e) => handleChange("identifier", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Technicians
                 </label>
                 <input
@@ -1631,11 +1631,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Substation
                 </label>
                 <input
@@ -1643,11 +1643,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.substation}
                   onChange={(e) => handleChange("substation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Date
                 </label>
                 <input
@@ -1655,11 +1655,11 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                   Eqpt. Location
                 </label>
                 <input
@@ -1667,12 +1667,12 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                     Temperature
                   </label>
                   <div className="flex items-center gap-2">
@@ -1683,29 +1683,29 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("temperature", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
-                    <span className="text-zinc-600 dark:text-white">°F</span>
+                    <span className="text-neutral-600 dark:text-white">°F</span>
                     <input
                       type="number"
                       value={(((formData.temperature - 32) * 5) / 9).toFixed(0)}
                       readOnly
-                      className="block w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150 text-zinc-600 dark:text-white text-base"
+                      className="block w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
                     />
-                    <span className="text-zinc-600 dark:text-white">°C</span>
-                    <span className="text-zinc-600 dark:text-white ml-4">
+                    <span className="text-neutral-600 dark:text-white">°C</span>
+                    <span className="text-neutral-600 dark:text-white ml-4">
                       TCF
                     </span>
                     <input
                       type="number"
                       value={getTCF(fahrenheitToCelsius(formData.temperature))}
                       readOnly
-                      className="block w-16 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm bg-zinc-100 dark:bg-dark-150 text-zinc-600 dark:text-white text-base"
+                      className="block w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-600 dark:text-white mb-1">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-white mb-1">
                     Humidity
                   </label>
                   <div className="flex items-center gap-2">
@@ -1716,9 +1716,9 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("humidity", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
-                    <span className="text-zinc-600 dark:text-white">%</span>
+                    <span className="text-neutral-600 dark:text-white">%</span>
                   </div>
                 </div>
               </div>
@@ -1747,7 +1747,7 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Nameplate Data Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden nameplate-onscreen">
@@ -1875,7 +1875,7 @@ export default function MediumVoltageSwitchOilReport() {
 
             {/* Print-only Nameplate Data Table */}
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-zinc-300 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 print:border-black">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -1884,13 +1884,13 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Manufacturer:</div>
                       <div className="text-xs">
                         {formData.nameplate_manufacturer || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         System Voltage:
                       </div>
@@ -1898,13 +1898,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.nameplate_systemVoltage || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Catalog No.:</div>
                       <div className="text-xs">
                         {formData.nameplate_catalogNo || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Rated Voltage:
                       </div>
@@ -1914,7 +1914,7 @@ export default function MediumVoltageSwitchOilReport() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Serial Number:
                       </div>
@@ -1922,7 +1922,7 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.nameplate_serialNumber || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Rated Current:
                       </div>
@@ -1930,13 +1930,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.nameplate_ratedCurrent || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Date of Mfg.:</div>
                       <div className="text-xs">
                         {formData.nameplate_dateOfMfg || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">SCCR:</div>
                       <div className="text-xs">
                         {formData.nameplate_aicRating || ""}
@@ -1944,13 +1944,13 @@ export default function MediumVoltageSwitchOilReport() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Type:</div>
                       <div className="text-xs">
                         {formData.nameplate_type || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Impulse Level (BIL):
                       </div>
@@ -1958,8 +1958,8 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.nameplate_impulseLevelBIL || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black"></td>
-                    <td className="p-2 border border-zinc-300 print:border-black"></td>
+                    <td className="p-2 border border-neutral-300 print:border-black"></td>
+                    <td className="p-2 border border-neutral-300 print:border-black"></td>
                   </tr>
                 </tbody>
               </table>
@@ -1969,7 +1969,7 @@ export default function MediumVoltageSwitchOilReport() {
           {/* VFI Data Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               VFI Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden vfi-data-onscreen">
@@ -2067,7 +2067,7 @@ export default function MediumVoltageSwitchOilReport() {
 
             {/* Print-only VFI Data Table */}
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-zinc-300 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 print:border-black">
                 <colgroup>
                   <col style={{ width: "33.33%" }} />
                   <col style={{ width: "33.33%" }} />
@@ -2075,13 +2075,13 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Manufacturer:</div>
                       <div className="text-xs">
                         {formData.vfiData.manufacturer || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Rated Voltage:
                       </div>
@@ -2089,7 +2089,7 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.vfiData.ratedVoltage || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Catalog No.:</div>
                       <div className="text-xs">
                         {formData.vfiData.catalogNo || ""}
@@ -2097,7 +2097,7 @@ export default function MediumVoltageSwitchOilReport() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Rated Current:
                       </div>
@@ -2105,13 +2105,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.vfiData.ratedCurrent || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Type:</div>
                       <div className="text-xs">
                         {formData.vfiData.type || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">SCCR:</div>
                       <div className="text-xs">
                         {formData.vfiData.aicRating || ""}
@@ -2127,12 +2127,12 @@ export default function MediumVoltageSwitchOilReport() {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             {/* Measured Values Table */}
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Measured Insulation Resistance Values
             </h2>
             <div className="mb-4">
               <div className="flex items-center mb-2">
-                <span className="text-sm font-medium text-zinc-700 dark:text-white mr-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white mr-2">
                   INSULATION RESISTANCE TEST VOLTAGE:
                 </span>
                 <input
@@ -2152,13 +2152,13 @@ export default function MediumVoltageSwitchOilReport() {
                     setFormData((prev) => ({ ...prev, ...updates }));
                   }}
                   readOnly={!isEditMode}
-                  className="w-20 border border-zinc-300 dark:border-zinc-600 rounded px-2 py-1 text-sm"
+                  className="w-20 border border-neutral-300 dark:border-neutral-600 rounded px-2 py-1 text-sm"
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table
-                className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600"
+                className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600"
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
@@ -2176,37 +2176,37 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       WAY SECTION
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-B
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-C
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-A
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       UNITS
                     </th>
                   </tr>
@@ -2223,10 +2223,10 @@ export default function MediumVoltageSwitchOilReport() {
                     };
                     return (
                       <tr key={wayKey}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium">
                           {wayKey.toUpperCase()}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.ag}
@@ -2237,7 +2237,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.bg}
@@ -2248,7 +2248,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.cg}
@@ -2259,7 +2259,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.ab}
@@ -2270,7 +2270,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.bc}
@@ -2281,7 +2281,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.ca}
@@ -2292,7 +2292,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.lineA}
@@ -2303,7 +2303,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.lineB}
@@ -2314,7 +2314,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.lineC}
@@ -2325,7 +2325,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs">
                           {currentData.units}
                         </td>
                       </tr>
@@ -2336,13 +2336,13 @@ export default function MediumVoltageSwitchOilReport() {
             </div>
 
             {/* Temperature Corrected Values Table */}
-            <h2 className="text-xl font-semibold my-6 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold my-6 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Temperature Corrected Insulation Resistance
               Values
             </h2>
             <div className="mb-4">
               <div className="flex items-center mb-2">
-                <span className="text-sm font-medium text-zinc-700 dark:text-white mr-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white mr-2">
                   INSULATION RESISTANCE TEST VOLTAGE:{" "}
                   {formData.s1_insulationResistance.testVoltage}
                 </span>
@@ -2350,7 +2350,7 @@ export default function MediumVoltageSwitchOilReport() {
             </div>
             <div className="overflow-x-auto">
               <table
-                className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600"
+                className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600"
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
@@ -2368,37 +2368,37 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       WAY SECTION
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-B
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-C
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-A
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       UNITS
                     </th>
                   </tr>
@@ -2410,37 +2410,37 @@ export default function MediumVoltageSwitchOilReport() {
                     const currentData = formData[dataKey];
                     return (
                       <tr key={wayKey}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium">
                           {wayKey.toUpperCase()}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.ag}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.bg}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.cg}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.ab}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.bc}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.ca}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.lineA}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.lineB}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-sm">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-sm">
                           {currentData.lineC}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs">
                           {currentData.units}
                         </td>
                       </tr>
@@ -2454,12 +2454,12 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Contact Resistance Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Contact Resistance μΩ
             </h2>
             <div className="overflow-x-auto">
               <table
-                className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600"
+                className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600"
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
@@ -2474,28 +2474,28 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       WAY SECTION
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-PHASE
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-GROUND
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-PHASE
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-GROUND
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-PHASE
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-GROUND
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       UNITS
                     </th>
                   </tr>
@@ -2512,10 +2512,10 @@ export default function MediumVoltageSwitchOilReport() {
                     };
                     return (
                       <tr key={wayKey}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium">
                           {wayKey.toUpperCase()}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.aPhase}
@@ -2529,7 +2529,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.aGround}
@@ -2543,7 +2543,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.bPhase}
@@ -2557,7 +2557,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.bGround}
@@ -2571,7 +2571,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.cPhase}
@@ -2585,7 +2585,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                           <input
                             type="text"
                             value={currentData.cGround}
@@ -2599,7 +2599,7 @@ export default function MediumVoltageSwitchOilReport() {
                             className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs">
                           {currentData.units}
                         </td>
                       </tr>
@@ -2613,17 +2613,17 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Dielectric Withstand Tests Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Dielectric Withstand
             </h2>
 
             {/* Part 1: Way Section Tests */}
-            <h3 className="text-lg font-semibold my-3 text-zinc-800 dark:text-zinc-200">
+            <h3 className="text-lg font-semibold my-3 text-neutral-800 dark:text-neutral-200">
               Dielectric Withstand
             </h3>
             <div className="mb-4">
               <div className="flex items-center mb-2">
-                <span className="text-sm font-medium text-zinc-700 dark:text-white mr-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white mr-2">
                   DIELECTRIC WITHSTAND TEST VOLTAGE:
                 </span>
                 <input
@@ -2643,13 +2643,13 @@ export default function MediumVoltageSwitchOilReport() {
                     handleChange("dielectricWaySectionTests", updatedTests);
                   }}
                   readOnly={!isEditMode}
-                  className="w-20 border border-zinc-300 dark:border-zinc-600 rounded px-2 py-1 text-sm"
+                  className="w-20 border border-neutral-300 dark:border-neutral-600 rounded px-2 py-1 text-sm"
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table
-                className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600"
+                className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600"
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
@@ -2661,19 +2661,19 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       WAY SECTION
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C-G
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       UNITS
                     </th>
                   </tr>
@@ -2681,10 +2681,10 @@ export default function MediumVoltageSwitchOilReport() {
                 <tbody>
                   {formData.dielectricWaySectionTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs font-medium">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs font-medium">
                         {test.waySection}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={test.ag}
@@ -2699,7 +2699,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={test.bg}
@@ -2714,7 +2714,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={test.cg}
@@ -2729,7 +2729,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1 text-center text-xs">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs">
                         {test.units}
                       </td>
                     </tr>
@@ -2742,12 +2742,12 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Dielectric Withstand - VFI specific tests (bottom table in image) */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Dielectric Withstand - VFI specific tests
             </h2>
             <div className="overflow-x-auto">
               <table
-                className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600"
+                className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600"
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
@@ -2762,66 +2762,66 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
                     <th
                       colSpan={2}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"
                     >
                       Counter
                     </th>
                     <th
                       colSpan={3}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"
                     >
                       Vacuum Integrity (VFI Open)
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       VFI
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       Serial Number
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       As-Found
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       As-Left
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       A
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       B
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       C
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150">
                       Units
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
                     <th
                       colSpan={3}
-                      className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"
                     >
                       Test Voltage: 30 KVAC
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-1 text-center text-sm font-medium bg-zinc-100 dark:bg-dark-150"></th>
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm font-medium bg-neutral-100 dark:bg-dark-150"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.dielectricVFITests.map((vfiTest, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.vfiIdentifier}
@@ -2834,7 +2834,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.serialNumber}
@@ -2847,7 +2847,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.counterAsFound}
@@ -2860,7 +2860,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.counterAsLeft}
@@ -2873,7 +2873,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.vacuumIntegrityA}
@@ -2886,7 +2886,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.vacuumIntegrityB}
@@ -2899,7 +2899,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <input
                           type="text"
                           value={vfiTest.resultC}
@@ -2912,7 +2912,7 @@ export default function MediumVoltageSwitchOilReport() {
                           className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                         />
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-1 py-1">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                         <select
                           value={vfiTest.unitsC}
                           onChange={(e) => {
@@ -2963,7 +2963,7 @@ export default function MediumVoltageSwitchOilReport() {
           {/* Test Equipment Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4 mb-4 print:hidden test-eqpt-onscreen">
@@ -3227,7 +3227,7 @@ export default function MediumVoltageSwitchOilReport() {
 
             {/* Print-only Test Equipment Table */}
             <div className="hidden print:block">
-              <table className="w-full border-collapse border border-zinc-300 print:border-black">
+              <table className="w-full border-collapse border border-neutral-300 print:border-black">
                 <colgroup>
                   <col style={{ width: "25%" }} />
                   <col style={{ width: "25%" }} />
@@ -3236,7 +3236,7 @@ export default function MediumVoltageSwitchOilReport() {
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Megohmmeter - Megger:
                       </div>
@@ -3244,7 +3244,7 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_megohmmeter_megger || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Serial Number:
                       </div>
@@ -3252,13 +3252,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_megohmmeter_serialNo || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">AMP ID:</div>
                       <div className="text-xs">
                         {formData.testEquipment_megohmmeter_ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Cal Date:</div>
                       <div className="text-xs">
                         {formData.testEquipment_megohmmeter_calDate || ""}
@@ -3266,7 +3266,7 @@ export default function MediumVoltageSwitchOilReport() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Low Resistance - Model:
                       </div>
@@ -3274,7 +3274,7 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_lowResistance_model || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Serial Number:
                       </div>
@@ -3282,13 +3282,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_lowResistance_serialNo || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">AMP ID:</div>
                       <div className="text-xs">
                         {formData.testEquipment_lowResistance_ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Cal Date:</div>
                       <div className="text-xs">
                         {formData.testEquipment_lowResistance_calDate || ""}
@@ -3296,7 +3296,7 @@ export default function MediumVoltageSwitchOilReport() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Hipot - Model:
                       </div>
@@ -3304,7 +3304,7 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_hipot_model || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">
                         Serial Number:
                       </div>
@@ -3312,13 +3312,13 @@ export default function MediumVoltageSwitchOilReport() {
                         {formData.testEquipment_hipot_serialNo || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">AMP ID:</div>
                       <div className="text-xs">
                         {formData.testEquipment_hipot_ampId || ""}
                       </div>
                     </td>
-                    <td className="p-2 border border-zinc-300 print:border-black">
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold text-xs">Cal Date:</div>
                       <div className="text-xs">
                         {formData.testEquipment_hipot_calDate || ""}
@@ -3335,7 +3335,7 @@ export default function MediumVoltageSwitchOilReport() {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <textarea
@@ -3349,10 +3349,10 @@ export default function MediumVoltageSwitchOilReport() {
 
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full border-collapse border border-zinc-300 print:border-black">
+                <table className="w-full border-collapse border border-neutral-300 print:border-black">
                   <tbody>
                     <tr>
-                      <td className="p-3 border border-zinc-300 print:border-black">
+                      <td className="p-3 border border-neutral-300 print:border-black">
                         <div className="whitespace-pre-wrap text-xs">
                           {formData.comments}
                         </div>

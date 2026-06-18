@@ -135,11 +135,11 @@ export const ITOnboarding: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Laptop className="h-8 w-8 text-[#f26722]" />
             IT Onboarding
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             See who has IT equipment tasks assigned and mark them in progress or
             completed.
           </p>
@@ -186,7 +186,7 @@ export const ITOnboarding: React.FC = () => {
             )}
           </div>
           {filteredTasks.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 py-6">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 py-6">
               {tasks.length === 0
                 ? "No assigned IT tasks yet. Assign templates to people from Onboarding Tracking."
                 : `No tasks with status "${statusFilter === "all" ? "any" : statusFilter === "in_progress" ? "In progress" : statusFilter}".`}
@@ -195,17 +195,17 @@ export const ITOnboarding: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                    <th className="text-left py-3 px-2 font-medium text-neutral-700 dark:text-neutral-300">
                       Employee
                     </th>
-                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                    <th className="text-left py-3 px-2 font-medium text-neutral-700 dark:text-neutral-300">
                       Task
                     </th>
-                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                    <th className="text-left py-3 px-2 font-medium text-neutral-700 dark:text-neutral-300">
                       Status
                     </th>
-                    <th className="text-left py-3 px-2 font-medium text-zinc-700 dark:text-zinc-300">
+                    <th className="text-left py-3 px-2 font-medium text-neutral-700 dark:text-neutral-300">
                       Update
                     </th>
                   </tr>
@@ -214,10 +214,10 @@ export const ITOnboarding: React.FC = () => {
                   {paginatedTasks.map((t) => (
                     <tr
                       key={t.id}
-                      className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+                      className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer"
                       onClick={() => setDetailTask(t)}
                     >
-                      <td className="py-3 px-2 text-zinc-900 dark:text-white">
+                      <td className="py-3 px-2 text-neutral-900 dark:text-white">
                         {t.employeeName}
                       </td>
                       <td className="py-3 px-2">
@@ -243,7 +243,7 @@ export const ITOnboarding: React.FC = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                               : t.status === "in_progress"
                                 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                                : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                           }`}
                         >
                           {t.status === "in_progress"
@@ -288,8 +288,8 @@ export const ITOnboarding: React.FC = () => {
             </div>
           )}
           {filteredTasks.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page {page} of {totalPages} ({filteredTasks.length} total)
               </span>
               <div className="flex gap-2">
@@ -330,12 +330,12 @@ export const ITOnboarding: React.FC = () => {
             </DialogTitle>
             <DialogDescription>
               For:{" "}
-              <span className="font-medium text-zinc-900 dark:text-white">
+              <span className="font-medium text-neutral-900 dark:text-white">
                 {detailTask?.employeeName}
               </span>
               {detailTask?.description && (
                 <>
-                  <span className="block mt-2 text-zinc-600 dark:text-zinc-400">
+                  <span className="block mt-2 text-neutral-600 dark:text-neutral-400">
                     {detailTask.description}
                   </span>
                 </>
@@ -344,14 +344,14 @@ export const ITOnboarding: React.FC = () => {
           </DialogHeader>
           {detailTask && (
             <div className="space-y-4 pt-2">
-              <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 p-3">
-                <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+              <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-3">
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                   What to do
                 </h4>
-                <ul className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <ul className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
                   {detailTask.equipment_category && (
                     <li>
-                      <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                      <span className="font-medium text-neutral-700 dark:text-neutral-300">
                         Equipment:
                       </span>{" "}
                       {detailTask.equipment_category}
@@ -360,7 +360,7 @@ export const ITOnboarding: React.FC = () => {
                   {detailTask.software_requirements &&
                     detailTask.software_requirements.length > 0 && (
                       <li>
-                        <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">
                           Software:
                         </span>
                         <ul className="mt-1.5 space-y-1 pl-4">
@@ -381,7 +381,7 @@ export const ITOnboarding: React.FC = () => {
                   {detailTask.access_requirements &&
                     detailTask.access_requirements.length > 0 && (
                       <li>
-                        <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">
                           Access:
                         </span>
                         <ul className="mt-1.5 space-y-1 pl-4">
@@ -402,7 +402,7 @@ export const ITOnboarding: React.FC = () => {
                       detailTask.software_requirements.length === 0) &&
                     (!detailTask.access_requirements ||
                       detailTask.access_requirements.length === 0) && (
-                      <li className="text-zinc-500">
+                      <li className="text-neutral-500">
                         No specific items listed. See notes if any.
                       </li>
                     )}
@@ -410,10 +410,10 @@ export const ITOnboarding: React.FC = () => {
               </div>
               {detailTask.notes && (
                 <div>
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Notes
                   </span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap rounded border border-zinc-200 dark:border-zinc-700 p-2 bg-white dark:bg-zinc-800">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap rounded border border-neutral-200 dark:border-neutral-700 p-2 bg-white dark:bg-neutral-800">
                     {detailTask.notes}
                   </p>
                 </div>
@@ -423,7 +423,7 @@ export const ITOnboarding: React.FC = () => {
           <DialogFooter className="flex items-center gap-2 flex-wrap">
             {detailTask && (
               <>
-                <span className="text-sm text-zinc-500 mr-2">Status:</span>
+                <span className="text-sm text-neutral-500 mr-2">Status:</span>
                 {updatingId === detailTask.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (

@@ -34,7 +34,7 @@ const Progress: React.FC<{ value: number; className?: string }> = ({
 }) => {
   return (
     <div
-      className={`w-full bg-zinc-200 rounded-full h-2.5 dark:bg-dark-150 ${className}`}
+      className={`w-full bg-neutral-200 rounded-full h-2.5 dark:bg-dark-150 ${className}`}
     >
       <div
         className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
@@ -266,7 +266,10 @@ export const DataBackupControls: React.FC = () => {
     switch (type) {
       case "manual":
         return (
-          <Badge variant="outline" className="text-zinc-800 border-zinc-300">
+          <Badge
+            variant="outline"
+            className="text-neutral-800 border-neutral-300"
+          >
             Manual
           </Badge>
         );
@@ -299,10 +302,10 @@ export const DataBackupControls: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Data Backup & Restore
           </h2>
-          <p className="text-zinc-600 dark:text-white mt-1">
+          <p className="text-neutral-600 dark:text-white mt-1">
             Manage system backups and restore points
           </p>
         </div>
@@ -358,7 +361,7 @@ export const DataBackupControls: React.FC = () => {
               </Badge>
             </div>
 
-            <div className="text-sm text-zinc-600 dark:text-white">
+            <div className="text-sm text-neutral-600 dark:text-white">
               {lastBackupStatus.message}
             </div>
 
@@ -423,7 +426,7 @@ export const DataBackupControls: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-zinc-500" />
+                <Calendar className="h-5 w-5 text-neutral-500" />
                 <span className="font-medium">Automatic Backups</span>
               </div>
               <div className="relative inline-block w-10 mr-2 align-middle select-none">
@@ -440,7 +443,7 @@ export const DataBackupControls: React.FC = () => {
                   htmlFor="auto-backup-toggle"
                   className={`
                     block overflow-hidden h-6 rounded-full cursor-pointer
-                    ${backupSchedule.enabled ? "bg-green-500" : "bg-zinc-300"}
+                    ${backupSchedule.enabled ? "bg-green-500" : "bg-neutral-300"}
                   `}
                 >
                   <span
@@ -464,7 +467,7 @@ export const DataBackupControls: React.FC = () => {
                   updateBackupSchedule("frequency", e.target.value)
                 }
                 disabled={!backupSchedule.enabled}
-                className="w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -500,7 +503,7 @@ export const DataBackupControls: React.FC = () => {
                 max={365}
                 disabled={!backupSchedule.enabled}
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-neutral-500">
                 Backups older than {backupSchedule.retention} days will be
                 automatically deleted
               </p>
@@ -532,8 +535,8 @@ export const DataBackupControls: React.FC = () => {
               ))}
             </div>
           ) : backups.length === 0 ? (
-            <div className="text-center py-6 text-zinc-500">
-              <UploadCloud className="h-12 w-12 mx-auto text-zinc-400" />
+            <div className="text-center py-6 text-neutral-500">
+              <UploadCloud className="h-12 w-12 mx-auto text-neutral-400" />
               <p className="mt-2">No backups found</p>
               <Button
                 className="mt-4"
@@ -549,7 +552,7 @@ export const DataBackupControls: React.FC = () => {
                   key={backup.id}
                   className={`
                     p-4 border rounded-md relative
-                    ${backup.status === "failed" ? "border-red-200 bg-red-50" : "border-zinc-200 bg-white"}
+                    ${backup.status === "failed" ? "border-red-200 bg-red-50" : "border-neutral-200 bg-white"}
                     ${selectedBackup === backup.id && restoreStatus.inProgress ? "border-blue-300 bg-blue-50" : ""}
                   `}
                 >
@@ -559,7 +562,7 @@ export const DataBackupControls: React.FC = () => {
                         <FileText className="h-5 w-5 text-blue-500" />
                         <span className="font-medium">{backup.name}</span>
                       </div>
-                      <div className="text-sm text-zinc-500">
+                      <div className="text-sm text-neutral-500">
                         Created: {formatDate(backup.created_at)}
                       </div>
                     </div>

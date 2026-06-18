@@ -428,7 +428,7 @@ export default function AssetTracking() {
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
                   <Input
                     className="pl-9"
                     placeholder="Search assets..."
@@ -494,7 +494,7 @@ export default function AssetTracking() {
                       <TableRow key={asset.id}>
                         <TableCell>
                           <div className="font-medium">{asset.name}</div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="text-xs text-neutral-500">
                             SN: {asset.serialNumber}
                           </div>
                         </TableCell>
@@ -736,16 +736,16 @@ export default function AssetTracking() {
             )}
 
             {selectedAsset && (
-              <div className="p-3 bg-zinc-50 dark:bg-dark-150 rounded-md">
+              <div className="p-3 bg-neutral-50 dark:bg-dark-150 rounded-md">
                 <h3 className="font-medium">{selectedAsset.name}</h3>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Type:{" "}
                   {
                     assetTypes.find((t) => t.value === selectedAsset.type)
                       ?.label
                   }
                 </p>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   SN: {selectedAsset.serialNumber}
                 </p>
               </div>

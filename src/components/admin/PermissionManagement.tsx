@@ -435,12 +435,12 @@ const PermissionManagement: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8"
               />
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-neutral-400" />
             </div>
 
             <div className="border rounded-lg overflow-y-auto max-h-[500px]">
               {filteredUsers.length === 0 ? (
-                <div className="p-4 text-center text-zinc-500">
+                <div className="p-4 text-center text-neutral-500">
                   No users found
                 </div>
               ) : (
@@ -448,7 +448,7 @@ const PermissionManagement: React.FC = () => {
                   {filteredUsers.map((user) => (
                     <li
                       key={user.id}
-                      className={`px-3 py-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
+                      className={`px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                         selectedUser?.id === user.id
                           ? "bg-blue-50 dark:bg-blue-900"
                           : ""
@@ -459,10 +459,10 @@ const PermissionManagement: React.FC = () => {
                         <span className="font-medium">
                           {user.user_metadata?.name || "Unnamed User"}
                         </span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-xs text-neutral-500">
                           {user.email}
                         </span>
-                        <span className="text-xs text-zinc-600 dark:text-white">
+                        <span className="text-xs text-neutral-600 dark:text-white">
                           Role: {user.user_metadata?.role || "No role"}
                         </span>
                       </div>
@@ -476,8 +476,8 @@ const PermissionManagement: React.FC = () => {
           {/* Permissions display */}
           <div className="md:col-span-2 border rounded-lg p-4">
             {!selectedUser ? (
-              <div className="text-center py-20 text-zinc-500">
-                <Shield className="h-16 w-16 mx-auto mb-4 text-zinc-300" />
+              <div className="text-center py-20 text-neutral-500">
+                <Shield className="h-16 w-16 mx-auto mb-4 text-neutral-300" />
                 <p>Select a user to manage permissions</p>
               </div>
             ) : (
@@ -506,7 +506,7 @@ const PermissionManagement: React.FC = () => {
 
                 {/* Add permission form */}
                 {isAdding && (
-                  <div className="border rounded-lg p-4 mb-4 bg-zinc-50 dark:bg-dark-150">
+                  <div className="border rounded-lg p-4 mb-4 bg-neutral-50 dark:bg-dark-150">
                     <h4 className="font-medium mb-3">Grant New Permission</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -600,7 +600,7 @@ const PermissionManagement: React.FC = () => {
                                 document.getElementById("date-picker")?.click()
                               }
                             />
-                            <Calendar className="absolute right-2 top-2.5 h-4 w-4 text-zinc-400" />
+                            <Calendar className="absolute right-2 top-2.5 h-4 w-4 text-neutral-400" />
                           </div>
                           <DatePicker
                             id="date-picker"
@@ -646,7 +646,7 @@ const PermissionManagement: React.FC = () => {
                   {/* All permissions tab */}
                   <TabsContent value="all">
                     {Object.keys(groupedPermissions).length === 0 ? (
-                      <div className="text-center py-6 text-zinc-500">
+                      <div className="text-center py-6 text-neutral-500">
                         <p>No permissions found</p>
                       </div>
                     ) : (
@@ -657,7 +657,7 @@ const PermissionManagement: React.FC = () => {
                               key={resource}
                               className="border rounded-lg overflow-hidden"
                             >
-                              <div className="bg-zinc-50 dark:bg-dark-150 px-4 py-2 font-medium">
+                              <div className="bg-neutral-50 dark:bg-dark-150 px-4 py-2 font-medium">
                                 {resource.charAt(0).toUpperCase() +
                                   resource.slice(1)}
                               </div>
@@ -679,7 +679,7 @@ const PermissionManagement: React.FC = () => {
                                         {"condition" in permission &&
                                           typeof permission.condition ===
                                             "string" && (
-                                            <span className="text-xs ml-2 text-zinc-500">
+                                            <span className="text-xs ml-2 text-neutral-500">
                                               Condition: {permission.condition}
                                             </span>
                                           )}
@@ -698,7 +698,7 @@ const PermissionManagement: React.FC = () => {
                   {/* Direct permissions tab */}
                   <TabsContent value="direct">
                     {directPermissions.length === 0 ? (
-                      <div className="text-center py-6 text-zinc-500">
+                      <div className="text-center py-6 text-neutral-500">
                         <p>No direct permissions found</p>
                         <p className="text-xs mt-1">
                           All permissions are inherited from the user's role
@@ -708,23 +708,23 @@ const PermissionManagement: React.FC = () => {
                       <div className="border rounded-lg overflow-hidden">
                         <table className="min-w-full divide-y">
                           <thead>
-                            <tr className="bg-zinc-50 dark:bg-dark-150">
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                            <tr className="bg-neutral-50 dark:bg-dark-150">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Resource
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Action
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Scope
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Granted
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Expires
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
@@ -733,7 +733,7 @@ const PermissionManagement: React.FC = () => {
                             {directPermissions.map((permission) => (
                               <tr
                                 key={permission.id}
-                                className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                className="hover:bg-neutral-50 dark:hover:bg-neutral-800"
                               >
                                 <td className="px-4 py-2">
                                   {permission.resource.charAt(0).toUpperCase() +
@@ -746,10 +746,10 @@ const PermissionManagement: React.FC = () => {
                                 <td className="px-4 py-2">
                                   {getScopeBadge(permission.scope)}
                                 </td>
-                                <td className="px-4 py-2 text-sm text-zinc-500">
+                                <td className="px-4 py-2 text-sm text-neutral-500">
                                   {formatTime(permission.created_at)}
                                 </td>
-                                <td className="px-4 py-2 text-sm text-zinc-500">
+                                <td className="px-4 py-2 text-sm text-neutral-500">
                                   {permission.valid_until ? (
                                     formatTime(permission.valid_until)
                                   ) : (

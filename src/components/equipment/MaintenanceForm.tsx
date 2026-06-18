@@ -142,9 +142,9 @@ export default function MaintenanceForm({
       </h3>
 
       {equipmentDetails && (
-        <div className="bg-zinc-50 p-3 rounded mb-4">
+        <div className="bg-neutral-50 p-3 rounded mb-4">
           <p className="font-medium">{equipmentDetails.name}</p>
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-neutral-600">
             Type: {equipmentDetails.type} | Model: {equipmentDetails.model} |
             SN: {equipmentDetails.serial_number}
           </p>

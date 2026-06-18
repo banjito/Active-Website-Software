@@ -240,10 +240,10 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
       <div className="space-y-6">
         {/* File Selection */}
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Select PDF or Video File
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-300 dark:border-zinc-600 border-dashed rounded-lg hover:border-[#f26722] transition-colors">
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-[#f26722] transition-colors">
             <div className="space-y-1 text-center">
               {selectedFile ? (
                 <div className="flex flex-col items-center">
@@ -252,10 +252,10 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                   ) : (
                     <FileText className="w-12 h-12 text-[#f26722] mb-2" />
                   )}
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                     {isVideoFile(selectedFile) &&
                       selectedFile.size > 100 * 1024 * 1024 && (
@@ -274,8 +274,8 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                 </div>
               ) : (
                 <>
-                  <Upload className="mx-auto h-12 w-12 text-zinc-400" />
-                  <div className="flex text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="mx-auto h-12 w-12 text-neutral-400" />
+                  <div className="flex text-sm text-neutral-600 dark:text-neutral-400">
                     <label
                       htmlFor="file-upload"
                       className="relative cursor-pointer rounded-md font-medium text-[#f26722] hover:text-[#e55611] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f26722] focus-within:ring-offset-2"
@@ -293,7 +293,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     PDF up to {MAX_PDF_MB}MB • Video (MP4, WebM, MOV) up to{" "}
                     {MAX_VIDEO_MB}MB
                   </p>
@@ -307,7 +307,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         <div>
           <label
             htmlFor="document-name"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2"
           >
             Document Name *
           </label>
@@ -326,7 +326,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         <div>
           <label
             htmlFor="portal-category"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2"
           >
             Portal Category *
           </label>
@@ -337,7 +337,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
               setSelectedCategory(e.target.value as PortalCategory)
             }
             disabled={isUploading}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-dark-100 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
           >
             {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -351,14 +351,14 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         {isUploading && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="text-neutral-600 dark:text-neutral-400">
                 Uploading...
               </span>
-              <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="text-neutral-600 dark:text-neutral-400">
                 {uploadProgress}%
               </span>
             </div>
-            <div className="w-full bg-zinc-200 dark:bg-dark-100 rounded-full h-2">
+            <div className="w-full bg-neutral-200 dark:bg-dark-100 rounded-full h-2">
               <div
                 className="bg-[#f26722] h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -368,7 +368,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <Button
             type="button"
             variant="outline"

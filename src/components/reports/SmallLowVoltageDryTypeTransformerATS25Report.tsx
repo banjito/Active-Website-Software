@@ -1063,7 +1063,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1129,16 +1129,16 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={maskCustomerName(formData.customerName)}
@@ -1148,10 +1148,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={maskCustomerAddress(formData.customerLocation)}
@@ -1161,10 +1161,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.userName}
@@ -1180,10 +1180,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="date"
                       value={formData.date}
@@ -1196,10 +1196,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.identifier}
@@ -1217,10 +1217,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
               </div>
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.jobNumber}
@@ -1230,10 +1230,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.technicians}
@@ -1249,11 +1249,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
+                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
                       <input
                         type="number"
                         value={formData.temperature.fahrenheit}
@@ -1266,7 +1266,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     <span className="mx-2">{formData.temperature.celsius}</span>
                     <span className="mx-2">°C</span>
                     <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
+                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
                       <input
                         type="text"
                         value={formData.temperature.tcf.toFixed(3)}
@@ -1277,11 +1277,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                    <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                       <input
                         type="number"
                         value={formData.temperature.humidity || 0}
@@ -1302,10 +1302,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.substation}
@@ -1321,10 +1321,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={formData.eqptLocation}
@@ -1365,11 +1365,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                 <colgroup>
                   <col style={{ width: "33.33%" }} />
                   <col style={{ width: "33.33%" }} />
@@ -1378,13 +1378,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150">
                   {/* Row 1: Manufacturer, Catalog Number, Serial Number */}
                   <tr>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         Manufacturer:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.manufacturer}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1402,13 +1402,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.manufacturer || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         Catalog Number:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.catalogNumber}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1426,13 +1426,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.catalogNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         Serial Number:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.serialNumber}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1453,13 +1453,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   </tr>
                   {/* Row 2: KVA, Temp Rise, Impedance */}
                   <tr>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         KVA:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.kva}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1477,13 +1477,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.kva || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         Temp. Rise:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.tempRise}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1501,13 +1501,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.tempRise || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
-                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">
                         Impedance:
                       </div>
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.impedance}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1532,32 +1532,32 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
             {/* Voltages and Winding Connections */}
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 print:table-fixed print:w-full">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700 print:table-fixed print:w-full">
                 <thead>
                   <tr>
                     <th
-                      className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal"
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[9px] print:break-words print:whitespace-normal"
                       colSpan={2}
                     >
                       Voltages (V)
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[9px] print:break-words print:whitespace-normal">
                       Winding Connections
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[9px] print:break-words print:whitespace-normal">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[9px] print:break-words print:whitespace-normal">
                       Winding Material
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                       Primary
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden flex gap-2">
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.primaryVoltage1}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1573,7 +1573,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         />
                         <span>/</span>
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.primaryVoltage2}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1592,7 +1592,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.primaryVoltage2 || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.primaryWindingConnection}
@@ -1606,7 +1606,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_CONNECTIONS.map((c) => (
                             <option key={c} value={c}>
@@ -1619,7 +1619,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.primaryWindingConnection || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.primaryWindingMaterial}
@@ -1633,7 +1633,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_MATERIALS.map((m) => (
                             <option key={m} value={m}>
@@ -1648,13 +1648,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                       Secondary
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden flex gap-2">
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.secondaryVoltage1}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1670,7 +1670,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         />
                         <span>/</span>
                         <input
-                          className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.nameplate.secondaryVoltage2}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -1690,7 +1690,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.secondaryVoltage2 || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.secondaryWindingConnection}
@@ -1704,7 +1704,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_CONNECTIONS.map((c) => (
                             <option key={c} value={c}>
@@ -1717,7 +1717,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.nameplate.secondaryWindingConnection || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <select
                           value={formData.nameplate.secondaryWindingMaterial}
@@ -1731,7 +1731,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {WINDING_MATERIALS.map((m) => (
                             <option key={m} value={m}>
@@ -1751,7 +1751,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
             {/* Tap Position / Voltages */}
             <div className="mt-4">
-              <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                 <colgroup>
                   <col style={{ width: "15%" }} />
                   {TAP_POSITIONS.map((pos) => (
@@ -1760,20 +1760,20 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                 </colgroup>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                       Tap Position
                     </td>
                     {TAP_POSITIONS.map((pos) => (
                       <td
                         key={pos}
-                        className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 font-medium"
+                        className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 font-medium"
                       >
                         {pos}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                       Tap Voltages
                     </td>
                     {TAP_POSITIONS.map((pos) => {
@@ -1782,11 +1782,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                       return (
                         <td
                           key={pos}
-                          className="px-2 py-2 text-center border border-zinc-200 dark:border-zinc-700"
+                          className="px-2 py-2 text-center border border-neutral-200 dark:border-neutral-700"
                         >
                           <div className="print:hidden">
                             <input
-                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               value={(formData.nameplate[key] as string) || ""}
                               onChange={(e) =>
                                 handleChange((p) => ({
@@ -1813,11 +1813,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
             {/* Tap Position Left */}
             <div className="mt-4 flex items-center gap-4">
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Tap Position Left:
               </span>
               <input
-                className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 value={formData.nameplate.tapPositionLeft}
                 onChange={(e) =>
                   handleChange((p) => ({
@@ -1836,11 +1836,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 table-fixed vm-inspection-table">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed vm-inspection-table">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "68%" }} />
@@ -1848,22 +1848,22 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider"></th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"></th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                      <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
                         {item.id}
                       </td>
-                      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white whitespace-normal break-words">
+                      <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
                         {item.description}
                       </td>
                       <td className="px-3 py-2">
@@ -1879,7 +1879,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {VISUAL_INSPECTION_OPTIONS.map((opt) => (
                               <option key={opt} value={opt}>
@@ -1902,7 +1902,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
             <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
@@ -1917,7 +1917,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -1937,7 +1937,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className={`form-select ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-select ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {INSULATION_RESISTANCE_TEST_VOLTAGES.map((v) => (
                     <option key={v} value={v}>
@@ -1957,16 +1957,16 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditing}
-                  className={`form-input w-20 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                  className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 print:table-fixed print:w-full">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700 print:table-fixed print:w-full">
                 <thead>
                   <tr>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px] print:w-[12%]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px] print:w-[12%]"
                       rowSpan={2}
                     >
                       <span className="print:hidden">Winding Under Test</span>
@@ -1979,58 +1979,58 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                       </span>
                     </th>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]"
                       colSpan={2}
                     >
                       Measured Values
                     </th>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]"
                       colSpan={2}
                     >
                       Temp Corrected
                     </th>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px] print:w-[8%]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px] print:w-[8%]"
                       rowSpan={2}
                     >
                       Units
                     </th>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]"
                       colSpan={2}
                     >
                       Table 100.5
                     </th>
                     <th
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px] print:w-[8%]"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px] print:w-[8%]"
                       rowSpan={2}
                     >
                       Results
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       0.5 Min.
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       1 Min.
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       0.5 Min.
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       1 Min.
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       Value
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white">
                       Units
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.insulationRows.map((row, idx) => {
                     // Get the voltage for this row and calculate the Table 100.5 criteria
                     const voltageForRow = getVoltageForRow(idx);
@@ -2051,7 +2051,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     }
                     return (
                       <tr key={idx}>
-                        <td className="px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
                           {row.windingUnderTest}
                         </td>
                         <td className="px-3 py-2">
@@ -2066,7 +2066,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -2081,13 +2081,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`form-input w-full text-center ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
-                        <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white">
+                        <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
                           {row.corrected05Min || "-"}
                         </td>
-                        <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-white">
+                        <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
                           {row.corrected1Min || "-"}
                         </td>
                         <td className="px-3 py-2">
@@ -2100,7 +2100,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -2129,12 +2129,12 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
             {/* Dielectric Absorption Ratio */}
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700 print:table-fixed print:w-full">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700 print:table-fixed print:w-full">
                 <thead>
                   <tr>
                     <th
                       rowSpan={2}
-                      className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px] align-middle"
+                      className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px] align-middle"
                     >
                       <span className="print:hidden">
                         Dielectric Absorption Ratio
@@ -2147,43 +2147,43 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         Ratio
                       </span>
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Calculated as:
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Pri to Gnd
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Sec to Gnd
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Pri to Sec
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Criteria
                     </th>
-                    <th className="px-1 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 print:text-[7px]">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]">
                       Result
                     </th>
                   </tr>
                   <tr>
-                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px]">
+                    <td className="px-2 py-2 text-center text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px]">
                       1 Min. / 0.5 Min. Values
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px]">
+                    <td className="px-2 py-2 text-center text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px]">
                       {formData.dielectricAbsorptionRatio.priToGnd || "-"}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px]">
+                    <td className="px-2 py-2 text-center text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px]">
                       {formData.dielectricAbsorptionRatio.secToGnd || "-"}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px]">
+                    <td className="px-2 py-2 text-center text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px]">
                       {formData.dielectricAbsorptionRatio.priToSec || "-"}
                     </td>
-                    <td className="px-2 py-2 text-center text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px]">
+                    <td className="px-2 py-2 text-center text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px]">
                       {formData.dielectricAbsorptionRatio.criteria}
                     </td>
                     <td
-                      className={`px-2 py-2 text-center text-sm font-semibold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 print:text-[8px] ${formData.dielectricAbsorptionRatio.result === "Pass" ? "text-green-600 print:bg-green-100" : formData.dielectricAbsorptionRatio.result === "Fail" ? "text-red-600 print:bg-red-100" : ""}`}
+                      className={`px-2 py-2 text-center text-sm font-semibold border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 print:text-[8px] ${formData.dielectricAbsorptionRatio.result === "Pass" ? "text-green-600 print:bg-green-100" : formData.dielectricAbsorptionRatio.result === "Fail" ? "text-red-600 print:bg-red-100" : ""}`}
                     >
                       {formData.dielectricAbsorptionRatio.result || "-"}
                     </td>
@@ -2196,19 +2196,19 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Electrical - Turns Ratio Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Turns Ratio Tests
             </h2>
             <div className="flex flex-wrap gap-4 items-start">
               {/* Section 1: Tap Settings */}
               <div className="flex-shrink-0">
-                <table className="border-collapse border border-zinc-200 dark:border-zinc-700">
+                <table className="border-collapse border border-neutral-200 dark:border-neutral-700">
                   <tbody className="bg-white dark:bg-dark-150">
                     <tr>
-                      <td className="px-2 py-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-right whitespace-nowrap">
+                      <td className="px-2 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-right whitespace-nowrap">
                         Tap Under Test:
                       </td>
-                      <td className="px-2 py-1 border border-zinc-200 dark:border-zinc-700 w-20">
+                      <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700 w-20">
                         <div className="print:hidden">
                           <select
                             value={formData.turnsRatio.tapUnderTest}
@@ -2222,7 +2222,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`form-select w-full text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                            className={`form-select w-full text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {TAP_POSITIONS.map((pos) => (
                               <option key={pos} value={pos}>
@@ -2237,26 +2237,26 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-right whitespace-nowrap">
+                      <td className="px-2 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-right whitespace-nowrap">
                         Primary Winding Voltage:
                       </td>
-                      <td className="px-2 py-1 border border-zinc-200 dark:border-zinc-700 text-center text-sm">
+                      <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700 text-center text-sm">
                         {formData.turnsRatio.primaryWindingVoltage || "-"} V
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-right whitespace-nowrap">
+                      <td className="px-2 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-right whitespace-nowrap">
                         Secondary Winding Voltage:
                       </td>
-                      <td className="px-2 py-1 border border-zinc-200 dark:border-zinc-700 text-center text-sm">
+                      <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700 text-center text-sm">
                         {formData.turnsRatio.secondaryWindingVoltage || "-"} V
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-right whitespace-nowrap">
+                      <td className="px-2 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-right whitespace-nowrap">
                         Calculated Ratio (CR):
                       </td>
-                      <td className="px-2 py-1 border border-zinc-200 dark:border-zinc-700 text-center text-sm font-semibold">
+                      <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700 text-center text-sm font-semibold">
                         {formData.turnsRatio.calculatedRatio || "#DIV/0!"}
                       </td>
                     </tr>
@@ -2266,19 +2266,19 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
               {/* Section 2: Measured Ratio Table */}
               <div className="flex-grow">
-                <table className="border-collapse border border-zinc-200 dark:border-zinc-700 w-full">
+                <table className="border-collapse border border-neutral-200 dark:border-neutral-700 w-full">
                   <thead>
                     <tr>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                         Primary Winding
                       </th>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                         Measured Ratio (MR)
                       </th>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                         % Deviation from CR
                       </th>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                         Results
                       </th>
                     </tr>
@@ -2286,10 +2286,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                   <tbody className="bg-white dark:bg-dark-150">
                     {formData.turnsRatio.rows.map((row, idx) => (
                       <tr key={idx}>
-                        <td className="px-2 py-1 text-center text-sm border border-zinc-200 dark:border-zinc-700">
+                        <td className="px-2 py-1 text-center text-sm border border-neutral-200 dark:border-neutral-700">
                           {row.primaryWinding}
                         </td>
-                        <td className="px-2 py-1 border border-zinc-200 dark:border-zinc-700">
+                        <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700">
                           <div className="print:hidden">
                             <input
                               value={row.measuredRatio || ""}
@@ -2302,18 +2302,18 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                              className={`form-input w-full text-center text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center text-sm">
                             {row.measuredRatio || "-"}
                           </div>
                         </td>
-                        <td className="px-2 py-1 text-center text-sm border border-zinc-200 dark:border-zinc-700">
+                        <td className="px-2 py-1 text-center text-sm border border-neutral-200 dark:border-neutral-700">
                           {row.percentDeviation || "-"}
                         </td>
                         <td
-                          className={`px-2 py-1 text-center text-sm font-semibold border border-zinc-200 dark:border-zinc-700 ${row.result === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : row.result === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                          className={`px-2 py-1 text-center text-sm font-semibold border border-neutral-200 dark:border-neutral-700 ${row.result === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : row.result === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                         >
                           {row.result || "-"}
                         </td>
@@ -2325,30 +2325,30 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
               {/* Section 3: Difference Between MR */}
               <div className="flex-shrink-0">
-                <table className="border-collapse border border-zinc-200 dark:border-zinc-700">
+                <table className="border-collapse border border-neutral-200 dark:border-neutral-700">
                   <thead>
                     <tr>
                       <th
-                        className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700"
+                        className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700"
                         colSpan={2}
                       >
                         Difference (%) between MR
                       </th>
                     </tr>
                     <tr>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 w-16"></th>
-                      <th className="px-2 py-1 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 w-16">
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 w-16"></th>
+                      <th className="px-2 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 w-16">
                         Results
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150">
                     <tr>
-                      <td className="px-2 py-1 text-center text-sm border border-zinc-200 dark:border-zinc-700">
+                      <td className="px-2 py-1 text-center text-sm border border-neutral-200 dark:border-neutral-700">
                         {formData.turnsRatio.differenceBetweenMR || "N/A"}
                       </td>
                       <td
-                        className={`px-2 py-1 text-center text-sm font-semibold border border-zinc-200 dark:border-zinc-700 ${formData.turnsRatio.differenceResult === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.turnsRatio.differenceResult === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
+                        className={`px-2 py-1 text-center text-sm font-semibold border border-neutral-200 dark:border-neutral-700 ${formData.turnsRatio.differenceResult === "Pass" ? "text-green-600 bg-green-100 dark:bg-green-900 print:bg-green-100" : formData.turnsRatio.differenceResult === "Fail" ? "text-red-600 bg-red-100 dark:bg-red-900 print:bg-red-100" : ""}`}
                       >
                         {formData.turnsRatio.differenceResult || "N/A"}
                       </td>
@@ -2362,34 +2362,34 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700 border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700 w-32"></th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 w-32"></th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                       Name:
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                       Serial Number:
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                       AMP ID:
                     </th>
-                    <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-150 text-center text-xs font-medium text-zinc-500 dark:text-white uppercase border border-zinc-200 dark:border-zinc-700">
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700">
                       Cal Date:
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium border border-neutral-200 dark:border-neutral-700">
                       Megohmmeter:
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <EquipmentAutocomplete
                           value={formData.testEquipment.megohmmeter.name}
@@ -2445,10 +2445,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.name || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={
                             formData.testEquipment.megohmmeter.serialNumber
                           }
@@ -2471,10 +2471,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.serialNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.megohmmeter.ampId}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -2495,10 +2495,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.megohmmeter.ampId || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.megohmmeter.calDate}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -2521,10 +2521,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 text-sm font-medium border border-neutral-200 dark:border-neutral-700">
                       TTR Test Set:
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <EquipmentAutocomplete
                           value={formData.testEquipment.ttrTestSet.name}
@@ -2580,10 +2580,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.ttrTestSet.name || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.ttrTestSet.serialNumber}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -2604,10 +2604,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.ttrTestSet.serialNumber || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.ttrTestSet.ampId}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -2628,10 +2628,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
                         {formData.testEquipment.ttrTestSet.ampId || "-"}
                       </div>
                     </td>
-                    <td className="px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                    <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
                       <div className="print:hidden">
                         <input
-                          className={`form-input w-full ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                          className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           value={formData.testEquipment.ttrTestSet.calDate}
                           onChange={(e) =>
                             handleChange((p) => ({
@@ -2663,7 +2663,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>
             <textarea
@@ -2673,14 +2673,14 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
               }
               rows={4}
               readOnly={!isEditing}
-              className={`form-textarea w-full resize-none ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`form-textarea w-full resize-none ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-zinc-300 print:border-black print-comment-table">
+                <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
-                      <td className="p-2 align-top border border-zinc-300 print:border-black">
+                      <td className="p-2 align-top border border-neutral-300 print:border-black">
                         <div className="mt-0 whitespace-pre-wrap break-words">
                           {formData.comments}
                         </div>

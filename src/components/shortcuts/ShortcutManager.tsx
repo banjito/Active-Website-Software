@@ -269,18 +269,18 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
               <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
-            <div className="text-center py-6 border border-dashed border-zinc-300 rounded-md dark:border-zinc-600">
-              <LinkIcon className="h-10 w-10 mx-auto text-zinc-400 dark:text-white mb-2" />
-              <p className="text-zinc-500 dark:text-white">
+            <div className="text-center py-6 border border-dashed border-neutral-300 rounded-md dark:border-neutral-600">
+              <LinkIcon className="h-10 w-10 mx-auto text-neutral-400 dark:text-white mb-2" />
+              <p className="text-neutral-500 dark:text-white">
                 You don't have any shortcuts yet.
               </p>
-              <p className="text-zinc-500 dark:text-white text-sm">
+              <p className="text-neutral-500 dark:text-white text-sm">
                 Add shortcuts to quickly access your favorite pages.
               </p>
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center bg-zinc-50 dark:bg-dark-150 p-3 rounded text-sm border border-orange-100 dark:border-[#f26722]/30">
+              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 p-3 rounded text-sm border border-orange-100 dark:border-[#f26722]/30">
                 <MoveVertical className="h-4 w-4 mr-2 text-[#f26722]" />
                 <span>
                   <strong>To reorder:</strong> Click and drag any shortcut up or
@@ -313,7 +313,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                                 className={`flex items-center p-3 bg-white dark:bg-dark-150 border cursor-grab ${
                                   snapshot.isDragging
                                     ? "border-[#f26722] ring-2 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10"
-                                    : "border-zinc-200 dark:border-zinc-700 shadow-sm hover:border-orange-200 dark:hover:border-[#f26722]/30"
+                                    : "border-neutral-200 dark:border-neutral-700 shadow-sm hover:border-orange-200 dark:hover:border-[#f26722]/30"
                                 } rounded-md transition-all ${snapshot.isDragging ? "cursor-grabbing" : ""}`}
                               >
                                 <div className="flex items-center w-full">
@@ -322,7 +322,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                                     <div className="font-medium">
                                       {shortcut.title}
                                     </div>
-                                    <div className="text-sm text-zinc-500 dark:text-white truncate max-w-[240px]">
+                                    <div className="text-sm text-neutral-500 dark:text-white truncate max-w-[240px]">
                                       {shortcut.url}
                                     </div>
                                   </div>
@@ -340,7 +340,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                                       }}
                                       className="p-1.5 h-auto"
                                     >
-                                      <Edit2 className="h-4 w-4 text-zinc-500 dark:text-white" />
+                                      <Edit2 className="h-4 w-4 text-neutral-500 dark:text-white" />
                                     </Button>
                                     <Button
                                       size="sm"
@@ -399,7 +399,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                   <input
                     id="title"
                     name="title"
-                    className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="My Shortcut"
@@ -413,13 +413,13 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                   <input
                     id="url"
                     name="url"
-                    className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                     value={formData.url}
                     onChange={handleInputChange}
                     placeholder="/north_alabama/dashboard or https://example.com"
                     required
                   />
-                  <p className="text-xs text-zinc-500 dark:text-white">
+                  <p className="text-xs text-neutral-500 dark:text-white">
                     Use a relative path like "/north_alabama/dashboard" for
                     internal pages or a full URL for external sites.
                   </p>
@@ -427,7 +427,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                 <div className="flex justify-end space-x-2 pt-4">
                   <button
                     type="button"
-                    className="px-4 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 text-zinc-700 dark:text-white"
+                    className="px-4 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 text-neutral-700 dark:text-white"
                     onClick={handleCloseForm}
                   >
                     Cancel

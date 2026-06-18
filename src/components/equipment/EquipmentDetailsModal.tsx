@@ -36,44 +36,46 @@ export default function EquipmentDetailsModal({
       title={`Equipment Details: ${equipment.name}`}
     >
       <div className="space-y-6">
-        <div className="bg-zinc-50 p-4 rounded-lg">
+        <div className="bg-neutral-50 p-4 rounded-lg">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">
+              <h3 className="text-sm font-medium text-neutral-500">
                 Equipment Name
               </h3>
-              <p className="mt-1 text-sm text-zinc-900">{equipment.name}</p>
+              <p className="mt-1 text-sm text-neutral-900">{equipment.name}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">Type</h3>
-              <p className="mt-1 text-sm text-zinc-900">{equipment.type}</p>
+              <h3 className="text-sm font-medium text-neutral-500">Type</h3>
+              <p className="mt-1 text-sm text-neutral-900">{equipment.type}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">
+              <h3 className="text-sm font-medium text-neutral-500">
                 Serial Number
               </h3>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {equipment.serial_number}
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">Model</h3>
-              <p className="mt-1 text-sm text-zinc-900">{equipment.model}</p>
+              <h3 className="text-sm font-medium text-neutral-500">Model</h3>
+              <p className="mt-1 text-sm text-neutral-900">{equipment.model}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">
+              <h3 className="text-sm font-medium text-neutral-500">
                 Manufacturer
               </h3>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {equipment.manufacturer}
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">Location</h3>
-              <p className="mt-1 text-sm text-zinc-900">{equipment.location}</p>
+              <h3 className="text-sm font-medium text-neutral-500">Location</h3>
+              <p className="mt-1 text-sm text-neutral-900">
+                {equipment.location}
+              </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">Status</h3>
+              <h3 className="text-sm font-medium text-neutral-500">Status</h3>
               <p className="mt-1">
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
@@ -91,8 +93,8 @@ export default function EquipmentDetailsModal({
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-zinc-500">Division</h3>
-              <p className="mt-1 text-sm text-zinc-900">
+              <h3 className="text-sm font-medium text-neutral-500">Division</h3>
+              <p className="mt-1 text-sm text-neutral-900">
                 {equipment.division || "Not assigned"}
               </p>
             </div>
@@ -100,26 +102,26 @@ export default function EquipmentDetailsModal({
         </div>
 
         {/* Customer and Asset Information */}
-        <div className="bg-zinc-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-zinc-500 mb-3">
+        <div className="bg-neutral-50 p-4 rounded-lg">
+          <h3 className="text-sm font-medium text-neutral-500 mb-3">
             Related Information
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="text-xs font-medium text-zinc-500 flex items-center">
+              <h4 className="text-xs font-medium text-neutral-500 flex items-center">
                 <FaBuilding className="mr-1" /> Customer
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {equipment.customer
                   ? `${equipment.customer.name || ""} ${equipment.customer.company_name ? `(${equipment.customer.company_name})` : ""}`
                   : "No customer assigned"}
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-medium text-zinc-500 flex items-center">
+              <h4 className="text-xs font-medium text-neutral-500 flex items-center">
                 <FaToolbox className="mr-1" /> Asset
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {equipment.asset
                   ? `${equipment.asset.name || ""} ${equipment.asset.type ? `(${equipment.asset.type})` : ""}`
                   : "No asset assigned"}
@@ -128,38 +130,38 @@ export default function EquipmentDetailsModal({
           </div>
         </div>
 
-        <div className="bg-zinc-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-zinc-500 mb-3">Dates</h3>
+        <div className="bg-neutral-50 p-4 rounded-lg">
+          <h3 className="text-sm font-medium text-neutral-500 mb-3">Dates</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="text-xs font-medium text-zinc-500">
+              <h4 className="text-xs font-medium text-neutral-500">
                 Purchase Date
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {formatDate(equipment.purchase_date)}
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-medium text-zinc-500">
+              <h4 className="text-xs font-medium text-neutral-500">
                 Warranty Expiration
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {formatDate(equipment.warranty_expiration)}
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-medium text-zinc-500">
+              <h4 className="text-xs font-medium text-neutral-500">
                 Last Maintenance
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {formatDate(equipment.last_maintenance_date)}
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-medium text-zinc-500">
+              <h4 className="text-xs font-medium text-neutral-500">
                 Next Maintenance
               </h4>
-              <p className="mt-1 text-sm text-zinc-900">
+              <p className="mt-1 text-sm text-neutral-900">
                 {formatDate(equipment.next_maintenance_date)}
               </p>
             </div>
@@ -167,9 +169,9 @@ export default function EquipmentDetailsModal({
         </div>
 
         {equipment.notes && (
-          <div className="bg-zinc-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-zinc-500 mb-2">Notes</h3>
-            <p className="text-sm text-zinc-900 whitespace-pre-line">
+          <div className="bg-neutral-50 p-4 rounded-lg">
+            <h3 className="text-sm font-medium text-neutral-500 mb-2">Notes</h3>
+            <p className="text-sm text-neutral-900 whitespace-pre-line">
               {equipment.notes}
             </p>
           </div>

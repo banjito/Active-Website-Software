@@ -400,9 +400,9 @@ export default function OpportunityNotes({
 
   return (
     <>
-      <div className="flex flex-col min-h-[400px] max-h-[calc(100vh-320px)] bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+      <div className="flex flex-col min-h-[400px] max-h-[calc(100vh-320px)] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-[#f26722]" />
             Opportunity notes
           </h2>
@@ -411,8 +411,8 @@ export default function OpportunityNotes({
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {notes.length === 0 ? (
             <div className="text-center py-12">
-              <MessageCircle className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500" />
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <MessageCircle className="mx-auto h-12 w-12 text-neutral-400 dark:text-neutral-500" />
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Be the first to add a note to this opportunity.
               </p>
             </div>
@@ -432,7 +432,7 @@ export default function OpportunityNotes({
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
-                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")
+                        : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
                   >
@@ -451,11 +451,11 @@ export default function OpportunityNotes({
                       <button
                         type="button"
                         onClick={() => setProfileViewUserId(note.user_id)}
-                        className="text-sm font-medium text-zinc-900 dark:text-white hover:underline focus:outline-none text-left"
+                        className="text-sm font-medium text-neutral-900 dark:text-white hover:underline focus:outline-none text-left"
                       >
                         {isCurrentUser ? "You" : getUserDisplayName(note)}
                       </button>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
                         {formatDate(note.created_at)}
                         {note.edited && " (edited)"}
                       </span>
@@ -464,7 +464,7 @@ export default function OpportunityNotes({
                       className={`rounded-lg px-4 py-3 ${
                         isCurrentUser
                           ? "bg-[#f26722] text-white"
-                          : "bg-zinc-100 dark:bg-dark-100 text-zinc-900 dark:text-white"
+                          : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
                       }`}
                     >
                       {isEditing ? (
@@ -472,7 +472,7 @@ export default function OpportunityNotes({
                           <textarea
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
-                            className="w-full p-2 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                            className="w-full p-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                             rows={3}
                             autoFocus
                           />
@@ -483,7 +483,7 @@ export default function OpportunityNotes({
                                 setEditingNoteId(null);
                                 setEditContent("");
                               }}
-                              className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 bg-white dark:bg-dark-150 rounded"
+                              className="p-1.5 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 bg-white dark:bg-dark-150 rounded"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -503,7 +503,7 @@ export default function OpportunityNotes({
                           </p>
                           {note.attachment_url && (
                             <div
-                              className={`mt-2 pt-2 border-t ${isCurrentUser ? "border-white/20" : "border-zinc-200 dark:border-zinc-600"}`}
+                              className={`mt-2 pt-2 border-t ${isCurrentUser ? "border-white/20" : "border-neutral-200 dark:border-neutral-600"}`}
                             >
                               <a
                                 href={note.attachment_url}
@@ -535,7 +535,7 @@ export default function OpportunityNotes({
                             setEditingNoteId(note.id);
                             setEditContent(note.content);
                           }}
-                          className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                          className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                           title="Edit"
                         >
                           <Pencil className="w-3 h-3" />
@@ -543,7 +543,7 @@ export default function OpportunityNotes({
                         <button
                           type="button"
                           onClick={() => handleDelete(note.id)}
-                          className="p-1 text-zinc-400 hover:text-red-500"
+                          className="p-1 text-neutral-400 hover:text-red-500"
                           title="Delete"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -558,14 +558,14 @@ export default function OpportunityNotes({
           <div ref={notesEndRef} />
         </div>
 
-        <div className="border-t border-zinc-200 dark:border-zinc-700 px-3 py-1.5">
+        <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-1.5">
           {selectedFile && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-dark-100 rounded-lg">
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-lg">
               {getFileIcon(selectedFile.type)}
-              <span className="flex-1 text-sm text-zinc-700 dark:text-zinc-300 truncate">
+              <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {selectedFile.name}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-neutral-500">
                 {formatFileSize(selectedFile.size)}
               </span>
               <button
@@ -574,7 +574,7 @@ export default function OpportunityNotes({
                   setSelectedFile(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
-                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -592,7 +592,7 @@ export default function OpportunityNotes({
               }}
               placeholder="Add a note..."
               rows={1}
-              className="flex-1 min-w-0 px-2 py-1.5 text-sm leading-normal rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-100 text-zinc-900 dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none overflow-y-auto"
+              className="flex-1 min-w-0 px-2 py-1.5 text-sm leading-normal rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none overflow-y-auto"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
@@ -610,7 +610,7 @@ export default function OpportunityNotes({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded shrink-0"
+              className="p-1.5 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 rounded shrink-0"
               title="Attach file"
             >
               <Paperclip className="w-4 h-4" />
@@ -629,11 +629,11 @@ export default function OpportunityNotes({
             </button>
           </form>
           {uploading && (
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               Uploading...
             </p>
           )}
-          <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
             Enter for a new line · ⌘/Ctrl+Enter to send
           </p>
         </div>

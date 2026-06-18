@@ -264,7 +264,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Manage lab equipment and calibration records
                 </p>
                 <Button className="mt-4 w-full" size="sm">
@@ -284,7 +284,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   View and manage testing procedure documentation
                 </p>
                 <Button className="mt-4 w-full" size="sm">
@@ -304,7 +304,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Generate and deliver calibration certificates
                 </p>
                 <Button className="mt-4 w-full" size="sm">
@@ -324,7 +324,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-neutral-500">
                   Track and analyze quality control metrics
                 </p>
                 <Button className="mt-4 w-full" size="sm">
@@ -516,8 +516,10 @@ export function LabDashboard({ division }: LabDashboardProps) {
 
                       <div className="flex-1">
                         <p className="text-sm font-medium">{activity.action}</p>
-                        <p className="text-sm text-zinc-500">{activity.name}</p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-sm text-neutral-500">
+                          {activity.name}
+                        </p>
+                        <p className="text-xs text-neutral-400">
                           {formatDate(activity.date)}
                         </p>
                       </div>

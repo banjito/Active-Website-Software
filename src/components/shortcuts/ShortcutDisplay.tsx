@@ -68,13 +68,13 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="animate-pulse p-6 bg-zinc-50 dark:bg-[#1e1e1e] rounded-xl">
-        <div className="h-6 w-48 bg-zinc-200 dark:bg-dark-150 rounded mb-4"></div>
+      <div className="animate-pulse p-6 bg-neutral-50 dark:bg-[#1e1e1e] rounded-xl">
+        <div className="h-6 w-48 bg-neutral-200 dark:bg-dark-150 rounded mb-4"></div>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-zinc-200 dark:bg-dark-150 rounded"
+              className="h-16 bg-neutral-200 dark:bg-dark-150 rounded"
             />
           ))}
         </div>
@@ -84,7 +84,7 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (shortcuts.length === 0) {
     return (
-      <div className="p-6 bg-zinc-50 dark:bg-[#1e1e1e] rounded-xl">
+      <div className="p-6 bg-neutral-50 dark:bg-[#1e1e1e] rounded-xl">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">My Shortcuts</h3>
           <div className="flex items-center space-x-2">
@@ -92,7 +92,7 @@ export const ShortcutDisplay: React.FC = () => {
             {error && error.includes("drag") && (
               <button
                 onClick={() => setUseDndKit(!useDndKit)}
-                className="text-xs text-zinc-500 dark:text-white flex items-center"
+                className="text-xs text-neutral-500 dark:text-white flex items-center"
                 title="Switch drag and drop implementation"
               >
                 <span>
@@ -113,7 +113,7 @@ export const ShortcutDisplay: React.FC = () => {
           </div>
         </div>
         <div className="text-center py-8">
-          <p className="text-zinc-500 dark:text-white mb-2">
+          <p className="text-neutral-500 dark:text-white mb-2">
             You don't have any shortcuts yet.
           </p>
           <button
@@ -146,7 +146,7 @@ export const ShortcutDisplay: React.FC = () => {
           {error && error.includes("drag") && (
             <button
               onClick={() => setUseDndKit(!useDndKit)}
-              className="text-xs text-zinc-500 dark:text-white flex items-center"
+              className="text-xs text-neutral-500 dark:text-white flex items-center"
               title="Switch drag and drop implementation"
             >
               <span>
@@ -171,13 +171,13 @@ export const ShortcutDisplay: React.FC = () => {
           <Button
             key={shortcut.id}
             variant="outline"
-            className="h-auto py-3 px-4 flex flex-col items-center justify-center text-center border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-dark-200 transition-colors"
+            className="h-auto py-3 px-4 flex flex-col items-center justify-center text-center border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-dark-200 transition-colors"
             onClick={() => handleShortcutClick(shortcut.url)}
           >
             <span className="block w-full truncate font-medium">
               {shortcut.title}
             </span>
-            <div className="mt-1 text-xs text-zinc-500 dark:text-white flex items-center">
+            <div className="mt-1 text-xs text-neutral-500 dark:text-white flex items-center">
               {shortcut.url.startsWith("http") ? (
                 <ExternalLink className="h-3 w-3 mr-1" />
               ) : (
@@ -193,7 +193,7 @@ export const ShortcutDisplay: React.FC = () => {
         ))}
       </div>
 
-      <div className="mt-3 text-xs text-zinc-500 dark:text-white flex items-center justify-end">
+      <div className="mt-3 text-xs text-neutral-500 dark:text-white flex items-center justify-end">
         <Settings className="h-3 w-3 mr-1" />
         <span>
           Click <strong>Manage Shortcuts</strong> to add, edit, or drag and drop

@@ -290,11 +290,11 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   };
 
   return (
-    <div className="w-96 bg-white dark:bg-dark-150 border-l dark:border-zinc-700 flex flex-col overflow-hidden">
+    <div className="w-96 bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b dark:border-zinc-700 flex items-center justify-between gap-2">
+      <div className="p-4 border-b dark:border-neutral-700 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white shrink-0">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white shrink-0">
             Edit Section
           </h2>
           {(onSaveAsDefault ||
@@ -309,7 +309,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     savingNewComponent ||
                     updatingSavedComponent
                   }
-                  className="shrink-0 flex items-center gap-1 px-2 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded border border-zinc-200 dark:border-zinc-600"
+                  className="shrink-0 flex items-center gap-1 px-2 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded border border-neutral-200 dark:border-neutral-600"
                 >
                   Save as Component
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -328,7 +328,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                         ? "Updating…"
                         : "Update saved component"}
                     </DropdownMenuItem>
-                    <DropdownMenuLabel className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400">
+                    <DropdownMenuLabel className="text-[10px] font-normal text-neutral-500 dark:text-neutral-400">
                       Save changes back to this component in the library
                     </DropdownMenuLabel>
                   </>
@@ -343,7 +343,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       <Save className="w-3.5 h-3.5" />
                       {savingNewComponent ? "Saving…" : "Save as new component"}
                     </DropdownMenuItem>
-                    <DropdownMenuLabel className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400">
+                    <DropdownMenuLabel className="text-[10px] font-normal text-neutral-500 dark:text-neutral-400">
                       Add to component library so others can drag it into their
                       reports
                     </DropdownMenuLabel>
@@ -361,7 +361,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                         ? "Saving…"
                         : "Save as new default component"}
                     </DropdownMenuItem>
-                    <DropdownMenuLabel className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400">
+                    <DropdownMenuLabel className="text-[10px] font-normal text-neutral-500 dark:text-neutral-400">
                       Override default for this component type (column and
                       per-cell formulas)
                     </DropdownMenuLabel>
@@ -373,7 +373,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         </div>
         <button
           onClick={onClose}
-          className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 rounded shrink-0"
+          className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 rounded shrink-0"
         >
           <X className="w-5 h-5" />
         </button>
@@ -400,7 +400,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         {/* Basic Settings header with Edit Formulas button */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
               Basic Settings
             </h3>
             {section.columns &&
@@ -412,7 +412,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded border transition-colors ${
                     isFormulaEditing
                       ? "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-600"
+                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200 dark:border-neutral-600"
                   }`}
                 >
                   <FileCode2 className="w-3.5 h-3.5" />
@@ -423,7 +423,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 Section Title
               </label>
               <Input
@@ -434,7 +434,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 Reference code
               </label>
               <Input
@@ -445,7 +445,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 placeholder={getSectionReferenceCode(section)}
                 className="font-mono text-xs"
               />
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 e.g. {"{"}
                 {getSectionReferenceCode(section)}.C1.R2
                 {"}"} (
@@ -456,7 +456,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 )
               </p>
               {section.componentType === ComponentType.JOB_INFO && (
-                <p className="text-[10px] text-zinc-600 dark:text-zinc-300 mt-1 font-medium">
+                <p className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">
                   In formulas use {"{JD.TCF}"} for Temperature Correction Factor
                   (from this section’s temp/humidity).
                 </p>
@@ -473,7 +473,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               />
               <label
                 htmlFor="showInPrint"
-                className="text-sm text-zinc-700 dark:text-zinc-300 flex items-center gap-1"
+                className="text-sm text-neutral-700 dark:text-neutral-300 flex items-center gap-1"
               >
                 {section.showInPrint ? (
                   <Eye className="w-4 h-4" />
@@ -496,7 +496,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 />
                 <label
                   htmlFor="showDeviation"
-                  className="text-sm text-zinc-700 dark:text-zinc-300"
+                  className="text-sm text-neutral-700 dark:text-neutral-300"
                 >
                   Show Value Deviation (Phase / Neutral / Ground)
                 </label>
@@ -508,7 +508,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         {/* Table Settings (for table-based components) */}
         {section.columns && (
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
               Table Settings
             </h3>
 
@@ -516,7 +516,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               {/* Number of Rows - only for regular tables, not conditional tables */}
               {section.componentType !== ComponentType.CONDITIONAL_TABLE && (
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     Number of Rows
                   </label>
                   <div className="flex items-center gap-2">
@@ -533,7 +533,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       max={section.maxRows || 100}
                       className="w-24"
                     />
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
                       ({section.minRows || 1} - {section.maxRows || 100})
                     </span>
                   </div>
@@ -554,7 +554,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   />
                   <label
                     htmlFor="allowAddRows"
-                    className="text-sm text-zinc-700 dark:text-zinc-300"
+                    className="text-sm text-neutral-700 dark:text-neutral-300"
                   >
                     Allow adding rows
                   </label>
@@ -572,7 +572,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   />
                   <label
                     htmlFor="allowRemoveRows"
-                    className="text-sm text-zinc-700 dark:text-zinc-300"
+                    className="text-sm text-neutral-700 dark:text-neutral-300"
                   >
                     Allow removing rows
                   </label>
@@ -582,11 +582,11 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               {/* Link row count with another table */}
               {onLinkRowCountWith &&
                 section.componentType !== ComponentType.CONDITIONAL_TABLE && (
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
+                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                       Link row count with
                     </label>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-1.5">
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1.5">
                       When linked, adding or removing a row in one table updates
                       the other so formulas stay in sync.
                     </p>
@@ -604,7 +604,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       onChange={(e) =>
                         onLinkRowCountWith(e.target.value || null)
                       }
-                      className="w-full px-2 py-1.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                     >
                       <option value="">None</option>
                       {allSections
@@ -639,9 +639,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
               {/* Fields above table (e.g. Test Voltage, Test Duration) - only for non-conditional tables */}
               {section.componentType !== ComponentType.CONDITIONAL_TABLE && (
-                <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                       Fields above table
                     </label>
                     <Button
@@ -666,7 +666,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       Add field
                     </Button>
                   </div>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-2">
                     Optional inputs shown above the table (e.g. Test Voltage,
                     Test Duration). Choose input type for each.
                   </p>
@@ -674,7 +674,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     {(section.aboveTableFields || []).map((f, idx) => (
                       <div
                         key={f.id}
-                        className="p-2 rounded border border-zinc-200 dark:border-zinc-600 space-y-1.5 bg-zinc-50/50 dark:bg-dark-100/50"
+                        className="p-2 rounded border border-neutral-200 dark:border-neutral-600 space-y-1.5 bg-neutral-50/50 dark:bg-dark-100/50"
                       >
                         <div className="flex items-center gap-2">
                           <Input
@@ -713,7 +713,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                               };
                               onUpdate({ aboveTableFields: next });
                             }}
-                            className="px-2 py-1 text-xs bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-600 rounded text-zinc-900 dark:text-white"
+                            className="px-2 py-1 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white"
                           >
                             <option value={FieldType.TEXT}>Text</option>
                             <option value={FieldType.NUMBER}>Number</option>
@@ -728,14 +728,14 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                               ).filter((_, i) => i !== idx);
                               onUpdate({ aboveTableFields: next });
                             }}
-                            className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+                            className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                         {f.type === FieldType.SELECT && (
                           <div className="pl-1 space-y-1">
-                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                            <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
                               Options:
                             </span>
                             {(f.options || []).map((opt, oIdx) => (
@@ -773,7 +773,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                     };
                                     onUpdate({ aboveTableFields: next });
                                   }}
-                                  className="p-1 text-zinc-400 hover:text-red-600"
+                                  className="p-1 text-neutral-400 hover:text-red-600"
                                 >
                                   <X className="w-3 h-3" />
                                 </button>
@@ -808,17 +808,17 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               )}
 
               {/* Print layout (table margins & row height) */}
-              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
-                <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
+                <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                   Print layout
                 </h4>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                   Margins and row height for preview and print/PDF (e.g. 0, 4px,
                   0.25in).
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                       Margin top
                     </label>
                     <Input
@@ -836,7 +836,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                       Margin bottom
                     </label>
                     <Input
@@ -854,7 +854,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                       Margin left
                     </label>
                     <Input
@@ -872,7 +872,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                       Margin right
                     </label>
                     <Input
@@ -891,7 +891,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   </div>
                 </div>
                 <div className="mt-2">
-                  <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                     Row height
                   </label>
                   <Input
@@ -913,7 +913,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               {/* Columns */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                     Columns
                   </label>
                   <div className="flex items-center gap-1">
@@ -1008,15 +1008,15 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 (section.columns?.length &&
                   (section.settingFields?.length ||
                     section.conditionalRows?.length))) && (
-                <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3 space-y-4">
-                  <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3 space-y-4">
+                  <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     Conditional table (dropdowns control visible rows)
                   </h4>
 
                   {/* Setting fields (dropdowns above the table) */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                         Setting dropdowns
                       </label>
                       <Button
@@ -1049,7 +1049,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       {(section.settingFields || []).map((sf, idx) => (
                         <div
                           key={sf.id}
-                          className="p-2 rounded border border-zinc-200 dark:border-zinc-600 space-y-1.5"
+                          className="p-2 rounded border border-neutral-200 dark:border-neutral-600 space-y-1.5"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <Input
@@ -1075,7 +1075,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                               <Trash2 className="w-3 h-3 text-red-500" />
                             </Button>
                           </div>
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
                             Options:{" "}
                             {sf.options
                               .map((o) => o.label || o.value)
@@ -1085,7 +1085,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             {sf.options.map((opt, oIdx) => (
                               <span
                                 key={oIdx}
-                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-dark-200 text-[10px]"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-dark-200 text-[10px]"
                               >
                                 <Input
                                   value={opt.value}
@@ -1144,7 +1144,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             </button>
                           </div>
                           <div>
-                            <label className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                            <label className="text-[10px] text-neutral-500 dark:text-neutral-400">
                               Default:{" "}
                             </label>
                             <select
@@ -1174,7 +1174,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   {/* Conditional rows: label + visible when which setting values */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                         Rows (visibility by setting)
                       </label>
                       <Button
@@ -1209,7 +1209,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       {(section.conditionalRows || []).map((row, rIdx) => (
                         <div
                           key={row.id}
-                          className="p-2 rounded border border-zinc-200 dark:border-zinc-600 space-y-1.5"
+                          className="p-2 rounded border border-neutral-200 dark:border-neutral-600 space-y-1.5"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <Input
@@ -1249,7 +1249,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                 key={sf.id}
                                 className="flex flex-wrap items-center gap-1.5 text-[10px]"
                               >
-                                <span className="text-zinc-500 dark:text-zinc-400">
+                                <span className="text-neutral-500 dark:text-neutral-400">
                                   Show when {sf.label}:
                                 </span>
                                 {sf.options.map((opt) => {
@@ -1316,18 +1316,18 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         {/* Fields Settings (for grouped field components) */}
         {section.fields && (
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
               Fields
             </h3>
 
             <div className="space-y-3">
               {/* Layout — Job Details is fixed 5 wide × 2 down; others can choose */}
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Layout
                 </label>
                 {section.componentType === ComponentType.JOB_INFO ? (
-                  <div className="px-3 py-2 rounded-md bg-zinc-100 dark:bg-dark-200 text-zinc-700 dark:text-zinc-300 text-sm border border-zinc-200 dark:border-zinc-600">
+                  <div className="px-3 py-2 rounded-md bg-neutral-100 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300 text-sm border border-neutral-200 dark:border-neutral-600">
                     5 columns, 2 rows (fixed for Job Details)
                   </div>
                 ) : (
@@ -1336,7 +1336,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     onChange={(e) =>
                       onUpdate({ layout: e.target.value as any })
                     }
-                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-sm"
                   >
                     <option value="single-column">Single Column</option>
                     <option value="two-column">Two Columns</option>
@@ -1351,7 +1351,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               {/* Field List */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                     Fields
                   </label>
                   <Button
@@ -1409,7 +1409,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         {/* Single Field Settings */}
         {section.field && (
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
               Field Settings
             </h3>
 
@@ -1432,13 +1432,13 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         {/* Checklist Items (for inspection components) */}
         {section.checklistItems && (
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
               Checklist Items
             </h3>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {section.checklistItems.length} items
                 </span>
                 <Button
@@ -1496,16 +1496,16 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
           (section.fields?.length ||
             section.field ||
             section.checklistItems?.length) && (
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
                 Print layout
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                 Table margins and row height for preview and print/PDF.
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                     Margin top
                   </label>
                   <Input
@@ -1523,7 +1523,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                     Margin bottom
                   </label>
                   <Input
@@ -1541,7 +1541,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                     Margin left
                   </label>
                   <Input
@@ -1559,7 +1559,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                     Margin right
                   </label>
                   <Input
@@ -1578,7 +1578,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 </div>
               </div>
               <div className="mt-2">
-                <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
+                <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
                   Row height
                 </label>
                 <Input
@@ -1724,12 +1724,12 @@ const ColumnEditor: React.FC<{
   };
 
   return (
-    <div className="bg-zinc-50 dark:bg-dark-100 rounded p-3 space-y-2">
+    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
         {dragHandleProps && (
           <button
             type="button"
-            className="cursor-grab active:cursor-grabbing p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 touch-none"
+            className="cursor-grab active:cursor-grabbing p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 touch-none"
             {...dragHandleProps}
           >
             <GripVertical className="w-3.5 h-3.5" />
@@ -1737,20 +1737,20 @@ const ColumnEditor: React.FC<{
         )}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-zinc-900 dark:text-white"
+          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
         >
           {column.label}
         </button>
         <button
           onClick={onDelete}
-          className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+          className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
         >
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
 
       {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-zinc-700">
+        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
           <Input
             value={column.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
@@ -1759,7 +1759,7 @@ const ColumnEditor: React.FC<{
           />
 
           <div>
-            <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">
+            <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
               Column width (e.g. 25%, 100px, auto)
             </label>
             <Input
@@ -1772,11 +1772,11 @@ const ColumnEditor: React.FC<{
 
           {/* Conditional table: show column only when these setting values are selected */}
           {settingFields && settingFields.length > 0 && (
-            <div className="space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-600">
-              <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block">
+            <div className="space-y-1.5 pt-1 border-t border-neutral-200 dark:border-neutral-600">
+              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
                 Show column when
               </label>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
                 Leave all unchecked to show for every selection.
               </p>
               {settingFields.map((sf) => {
@@ -1791,7 +1791,7 @@ const ColumnEditor: React.FC<{
                     key={sf.id}
                     className="flex flex-wrap items-center gap-1.5 text-[10px]"
                   >
-                    <span className="text-zinc-500 dark:text-zinc-400">
+                    <span className="text-neutral-500 dark:text-neutral-400">
                       {sf.label}:
                     </span>
                     {sf.options.map((opt) => {
@@ -1837,7 +1837,7 @@ const ColumnEditor: React.FC<{
           {/* Cell value: User entry | Populate from report | Calculate from report */}
           {allSections.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block">
+              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
                 Cell value
               </span>
               <div className="flex flex-col gap-1.5">
@@ -1849,7 +1849,7 @@ const ColumnEditor: React.FC<{
                     onChange={() => handleBehaviorChange("user")}
                     className="rounded"
                   />
-                  <Type className="w-3.5 h-3.5 text-zinc-500" />
+                  <Type className="w-3.5 h-3.5 text-neutral-500" />
                   <span className="text-xs">User entry</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -1860,7 +1860,7 @@ const ColumnEditor: React.FC<{
                     onChange={() => handleBehaviorChange("populate")}
                     className="rounded"
                   />
-                  <Link2 className="w-3.5 h-3.5 text-zinc-500" />
+                  <Link2 className="w-3.5 h-3.5 text-neutral-500" />
                   <span className="text-xs">Populate from field</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -1871,14 +1871,14 @@ const ColumnEditor: React.FC<{
                     onChange={() => handleBehaviorChange("calculate")}
                     className="rounded"
                   />
-                  <Calculator className="w-3.5 h-3.5 text-zinc-500" />
+                  <Calculator className="w-3.5 h-3.5 text-neutral-500" />
                   <span className="text-xs">Calculate from formula</span>
                 </label>
               </div>
 
               {behavior === "user" && (
-                <div className="mt-2 space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-600">
-                  <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block">
+                <div className="mt-2 space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
+                  <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
                     Input type
                   </label>
                   <select
@@ -1896,7 +1896,7 @@ const ColumnEditor: React.FC<{
                       }
                       onUpdate({ field: { ...field, ...updates } });
                     }}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-zinc-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
                   >
                     <option value={FieldType.TEXT}>Text</option>
                     <option value={FieldType.NUMBER}>Number</option>
@@ -1906,7 +1906,7 @@ const ColumnEditor: React.FC<{
                   {field.type === FieldType.SELECT && (
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <span className="text-xs text-neutral-600 dark:text-neutral-400">
                           Dropdown options ({(field.options || []).length})
                         </span>
                         <button
@@ -1926,7 +1926,7 @@ const ColumnEditor: React.FC<{
                               },
                             });
                           }}
-                          className="h-6 px-2 text-xs border border-zinc-300 dark:border-zinc-600 rounded hover:bg-zinc-100 dark:hover:bg-dark-200 inline-flex items-center gap-1"
+                          className="h-6 px-2 text-xs border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-100 dark:hover:bg-dark-200 inline-flex items-center gap-1"
                         >
                           <Plus className="w-3 h-3" />
                           Add option
@@ -1963,7 +1963,7 @@ const ColumnEditor: React.FC<{
                                   field: { ...field, options: next },
                                 });
                               }}
-                              className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
+                              className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
                               title="Remove option"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -1972,7 +1972,7 @@ const ColumnEditor: React.FC<{
                         ))}
                       </ul>
                       {(field.options || []).length === 0 && (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
                           Add options above so users can pick a value.
                         </p>
                       )}
@@ -1983,13 +1983,13 @@ const ColumnEditor: React.FC<{
 
               {behavior === "populate" && (
                 <div className="mt-2">
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">
+                  <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
                     Copy value from (pick section, column, and row)
                   </label>
                   <select
                     value={getPopulateFromValue()}
                     onChange={(e) => handlePopulateFromSelect(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-zinc-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
                   >
                     <option value="">— Select a field —</option>
                     {Array.from(
@@ -2013,11 +2013,11 @@ const ColumnEditor: React.FC<{
 
               {behavior === "calculate" && (
                 <div className="mt-2 space-y-1.5">
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400 block">
+                  <label className="text-xs text-neutral-500 dark:text-neutral-400 block">
                     Formula — use refs like {"{IR.C1.R2}"} (table) or{" "}
                     {"{JD.TCF}"} (Job Details TCF)
                   </label>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
                     Job Details: {"{JD.TCF}"} = Temperature Correction Factor
                     (from temp/humidity). Add a Job Details section to the form
                     to use it.
@@ -2059,20 +2059,20 @@ const ColumnEditor: React.FC<{
                             },
                           });
                         }}
-                        className="px-2 py-1 text-xs font-mono bg-zinc-200 dark:bg-zinc-600 rounded hover:bg-[#f26722] hover:text-white dark:hover:bg-[#e55611]"
+                        className="px-2 py-1 text-xs font-mono bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-[#f26722] hover:text-white dark:hover:bg-[#e55611]"
                         title={`${opt.friendlyRef} — ${opt.description}`}
                       >
                         {opt.friendlyRef}
                       </button>
                     ))}
                     {refOptions.length > 8 && (
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-neutral-500">
                         +{refOptions.length - 8} more below
                       </span>
                     )}
                   </div>
                   <select
-                    className="w-full mt-1 px-2 py-1 text-xs font-mono bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded-md"
+                    className="w-full mt-1 px-2 py-1 text-xs font-mono bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md"
                     onChange={(e) => {
                       const token = e.target.value;
                       if (!token) return;
@@ -2161,18 +2161,18 @@ const FieldEditor: React.FC<{
   };
 
   return (
-    <div className="bg-zinc-50 dark:bg-dark-100 rounded p-3 space-y-2">
+    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-zinc-900 dark:text-white"
+          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
         >
           {field.label}
         </button>
         {!hideDelete && (
           <button
             onClick={onDelete}
-            className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+            className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -2180,7 +2180,7 @@ const FieldEditor: React.FC<{
       </div>
 
       {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-zinc-700">
+        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
           <Input
             value={field.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
@@ -2201,7 +2201,7 @@ const FieldEditor: React.FC<{
               }
               onUpdate(updates);
             }}
-            className="px-2 py-1 bg-white dark:bg-dark-150 border border-zinc-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-zinc-900 dark:text-white text-xs"
+            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-xs"
           >
             <option value={FieldType.TEXT}>Text</option>
             <option value={FieldType.NUMBER}>Number</option>
@@ -2212,16 +2212,16 @@ const FieldEditor: React.FC<{
           </select>
 
           {field.type === FieldType.SELECT && (
-            <div className="space-y-2 pt-1 border-t dark:border-zinc-700">
+            <div className="space-y-2 pt-1 border-t dark:border-neutral-700">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                   Dropdown options ({(field.options || []).length})
                 </span>
                 <button
                   type="button"
                   onClick={handleAddOption}
                   disabled={addOptionCooldown}
-                  className="h-6 px-2 text-xs shrink-0 border border-zinc-300 dark:border-zinc-600 rounded hover:bg-zinc-100 dark:hover:bg-dark-200 inline-flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
+                  className="h-6 px-2 text-xs shrink-0 border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-100 dark:hover:bg-dark-200 inline-flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <Plus className="w-3 h-3" />
                   {addOptionCooldown ? "…" : "Add"}
@@ -2254,7 +2254,7 @@ const FieldEditor: React.FC<{
                         );
                         onUpdate({ options: next });
                       }}
-                      className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
+                      className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
                       title="Remove option"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -2263,13 +2263,13 @@ const FieldEditor: React.FC<{
                 ))}
               </ul>
               {(field.options || []).length === 0 && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   No options yet. Click Add to define dropdown choices.
                 </p>
               )}
 
               {(field.options || []).length > 8 && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Scroll above to see all options. You can add as many as you
                   need.
                 </p>
@@ -2296,7 +2296,7 @@ const FieldEditor: React.FC<{
             />
             <label
               htmlFor={`required-${field.id}`}
-              className="text-xs text-zinc-700 dark:text-zinc-300"
+              className="text-xs text-neutral-700 dark:text-neutral-300"
             >
               Required
             </label>
@@ -2318,25 +2318,25 @@ const ChecklistItemEditor: React.FC<{
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="bg-zinc-50 dark:bg-dark-100 rounded p-3 space-y-2">
+    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-zinc-900 dark:text-white"
+          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
         >
           {item.netaSection || "No section"}:{" "}
           {item.description.substring(0, 40)}...
         </button>
         <button
           onClick={onDelete}
-          className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+          className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
         >
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
 
       {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-zinc-700">
+        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
           <Input
             value={item.netaSection}
             onChange={(e) => onUpdate({ netaSection: e.target.value })}

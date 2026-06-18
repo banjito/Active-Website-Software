@@ -68,7 +68,7 @@ const SortableShortcutItem = ({ shortcut, onEdit, onDelete }) => {
       className={`group flex items-center px-2 py-1 bg-white dark:bg-dark-150 border ${
         isDragging
           ? "border-[#f26722] ring-1 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10 scale-[1.02]"
-          : "border-zinc-200 dark:border-zinc-700 hover:border-orange-200 dark:hover:border-[#f26722]/30 hover:bg-zinc-50 dark:hover:bg-dark-100"
+          : "border-neutral-200 dark:border-neutral-700 hover:border-orange-200 dark:hover:border-[#f26722]/30 hover:bg-neutral-50 dark:hover:bg-dark-100"
       } rounded cursor-grab transition-all duration-150 ${isDragging ? "cursor-grabbing z-50" : ""}`}
       {...attributes}
       {...listeners}
@@ -79,7 +79,7 @@ const SortableShortcutItem = ({ shortcut, onEdit, onDelete }) => {
           <div className="text-xs font-medium truncate leading-tight">
             {shortcut.title}
           </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-tight mt-0.5">
+          <div className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate leading-tight mt-0.5">
             {shortcut.url}
           </div>
         </div>
@@ -98,9 +98,9 @@ const SortableShortcutItem = ({ shortcut, onEdit, onDelete }) => {
             onTouchStart={(e) => {
               e.stopPropagation();
             }}
-            className="p-0.5 h-auto hover:bg-zinc-200 dark:hover:bg-dark-200 rounded"
+            className="p-0.5 h-auto hover:bg-neutral-200 dark:hover:bg-dark-200 rounded"
           >
-            <Edit2 className="h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+            <Edit2 className="h-3 w-3 text-neutral-600 dark:text-neutral-300" />
           </Button>
           <Button
             size="sm"
@@ -402,7 +402,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
     >
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-[500px] max-h-[85vh] flex flex-col overflow-hidden">
         {/* Fixed Header */}
-        <div className="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-700 px-4 py-3">
+        <div className="flex-shrink-0 border-b border-neutral-200 dark:border-neutral-700 px-4 py-3">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-semibold">Manage Shortcuts</h2>
             <Button variant="ghost" size="sm" onClick={onClose} className="p-1">
@@ -425,7 +425,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">
               {shortcuts.length} / {MAX_SHORTCUTS} shortcuts
             </span>
             <div className="flex gap-2">
@@ -472,7 +472,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
           style={{ scrollBehavior: "smooth" }}
         >
           {quickAddOpen || isFormOpen ? (
-            <div className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
               {quickAddOpen
                 ? "Search and select shortcuts above, then click Add Selected."
                 : "Fill in the form to add or edit a shortcut."}
@@ -482,20 +482,20 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
               <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-zinc-300 rounded-md dark:border-zinc-600">
-              <LinkIcon className="h-10 w-10 mx-auto text-zinc-400 dark:text-white mb-2" />
-              <p className="text-zinc-500 dark:text-white">
+            <div className="text-center py-8 border border-dashed border-neutral-300 rounded-md dark:border-neutral-600">
+              <LinkIcon className="h-10 w-10 mx-auto text-neutral-400 dark:text-white mb-2" />
+              <p className="text-neutral-500 dark:text-white">
                 You don't have any shortcuts yet.
               </p>
-              <p className="text-zinc-500 dark:text-white text-sm mt-1">
+              <p className="text-neutral-500 dark:text-white text-sm mt-1">
                 Add shortcuts to quickly access your favorite pages.
               </p>
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center bg-zinc-50 dark:bg-dark-150 px-2 py-1.5 rounded text-xs border border-orange-100 dark:border-[#f26722]/30 sticky top-0 z-10">
+              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 px-2 py-1.5 rounded text-xs border border-orange-100 dark:border-[#f26722]/30 sticky top-0 z-10">
                 <MoveVertical className="h-3 w-3 mr-1.5 text-[#f26722] flex-shrink-0" />
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-neutral-700 dark:text-neutral-300">
                   <strong>Drag to reorder</strong>
                 </span>
               </div>
@@ -545,23 +545,23 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
               {quickAddOpen ? (
                 <>
                   {/* Fixed Header */}
-                  <div className="flex-shrink-0 p-4 border-b border-zinc-200 dark:border-zinc-700">
+                  <div className="flex-shrink-0 p-4 border-b border-neutral-200 dark:border-neutral-700">
                     <h3 className="text-lg font-semibold mb-3">
                       Quick Add Shortcuts
                     </h3>
                     <div className="flex items-center gap-2">
-                      <Search className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                      <Search className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                       <input
                         autoFocus
                         placeholder="Search portals and links..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-[#f26722]"
+                        className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-[#f26722]"
                       />
                     </div>
                     {Object.keys(selectedQuick).filter((k) => selectedQuick[k])
                       .length > 0 && (
-                      <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                      <div className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
                         {
                           Object.keys(selectedQuick).filter(
                             (k) => selectedQuick[k],
@@ -578,22 +578,22 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                     style={{ scrollBehavior: "smooth" }}
                   >
                     {quickAddItems.length === 0 ? (
-                      <div className="p-8 text-center text-sm text-zinc-500">
+                      <div className="p-8 text-center text-sm text-neutral-500">
                         No matches found
                       </div>
                     ) : (
-                      <ul className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                      <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
                         {quickAddItems.map((it) => (
                           <li
                             key={it.key}
-                            className="hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
+                            className="hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
                           >
                             <label className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={!!selectedQuick[it.key]}
                                 onChange={() => toggleQuickSelect(it.key)}
-                                className="h-4 w-4 text-[#f26722] border-zinc-300 rounded focus:ring-[#f26722]"
+                                className="h-4 w-4 text-[#f26722] border-neutral-300 rounded focus:ring-[#f26722]"
                               />
                               <span className="text-sm flex-1">{it.label}</span>
                             </label>
@@ -604,7 +604,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                   </div>
 
                   {/* Fixed Footer */}
-                  <div className="flex-shrink-0 p-4 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-200">
+                  <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-200">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="outline"
@@ -650,7 +650,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                       >
                         Built-in
                       </button>
-                      <span className="text-zinc-400">/</span>
+                      <span className="text-neutral-400">/</span>
                       <button
                         type="button"
                         className={`${!useBuiltin ? "font-semibold" : ""}`}
@@ -664,7 +664,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Portal</label>
                           <select
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                             value={selectedPortal}
                             onChange={(e) => {
                               setSelectedPortal(e.target.value);
@@ -687,7 +687,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                             Destination
                           </label>
                           <select
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                             value={selectedOption}
                             onChange={(e) => setSelectedOption(e.target.value)}
                           >
@@ -714,7 +714,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                           <input
                             id="title"
                             name="title"
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                             value={formData.title}
                             onChange={handleInputChange}
                             placeholder="My Shortcut"
@@ -728,7 +728,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                           <input
                             id="url"
                             name="url"
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
                             value={formData.url}
                             onChange={handleInputChange}
                             placeholder="/north_alabama/dashboard or https://example.com"
@@ -740,7 +740,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                     <div className="flex justify-end space-x-2 pt-4">
                       <button
                         type="button"
-                        className="px-4 py-2 border border-zinc-300 rounded-md dark:border-zinc-700 text-zinc-700 dark:text-white"
+                        className="px-4 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 text-neutral-700 dark:text-white"
                         onClick={handleCloseForm}
                       >
                         Cancel

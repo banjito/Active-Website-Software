@@ -524,13 +524,13 @@ export default function JobNotes({ jobId }: JobNotesProps) {
 
   return (
     <>
-      <div className="flex flex-col min-h-[700px] max-h-[calc(100vh-300px)] bg-white dark:bg-dark-150 rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <div className="flex flex-col min-h-[700px] max-h-[calc(100vh-300px)] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
             Job Notes
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Team updates and communication for this job
           </p>
         </div>
@@ -539,11 +539,11 @@ export default function JobNotes({ jobId }: JobNotesProps) {
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {notes.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500" />
-              <h3 className="mt-4 text-sm font-medium text-zinc-900 dark:text-white">
+              <FileText className="mx-auto h-12 w-12 text-neutral-400 dark:text-neutral-500" />
+              <h3 className="mt-4 text-sm font-medium text-neutral-900 dark:text-white">
                 No notes yet
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Be the first to add a note to this job.
               </p>
             </div>
@@ -568,7 +568,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
-                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")
+                        : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
                   >
@@ -594,11 +594,11 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                       <button
                         type="button"
                         onClick={() => setProfileViewUserId(note.user_id)}
-                        className={`text-sm font-medium text-zinc-900 dark:text-white hover:underline focus:outline-none ${isCurrentUser ? "text-right" : "text-left"}`}
+                        className={`text-sm font-medium text-neutral-900 dark:text-white hover:underline focus:outline-none ${isCurrentUser ? "text-right" : "text-left"}`}
                       >
                         {isCurrentUser ? "You" : getUserDisplayName(note)}
                       </button>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
                         {formatDate(note.created_at)}
                         {note.edited && " (edited)"}
                       </span>
@@ -609,7 +609,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                       className={`rounded-lg px-4 py-3 ${
                         isCurrentUser
                           ? "bg-[#f26722] text-white"
-                          : "bg-zinc-100 dark:bg-dark-100 text-zinc-900 dark:text-white"
+                          : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
                       }`}
                     >
                       {isEditing ? (
@@ -617,14 +617,14 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                           <textarea
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
-                            className="w-full p-2 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-150 text-zinc-900 dark:text-white resize-none"
+                            className="w-full p-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                             rows={3}
                             autoFocus
                           />
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={cancelEditing}
-                              className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 bg-white dark:bg-dark-150 rounded"
+                              className="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 bg-white dark:bg-dark-150 rounded"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -648,7 +648,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                               className={`mt-2 pt-2 border-t ${
                                 isCurrentUser
                                   ? "border-white/20"
-                                  : "border-zinc-200 dark:border-zinc-600"
+                                  : "border-neutral-200 dark:border-neutral-600"
                               }`}
                             >
                               <a
@@ -683,14 +683,14 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                       <div className="flex gap-1 mt-1 justify-end">
                         <button
                           onClick={() => startEditing(note)}
-                          className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                          className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                           title="Edit"
                         >
                           <Pencil className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => handleDelete(note.id)}
-                          className="p-1 text-zinc-400 hover:text-red-500"
+                          className="p-1 text-neutral-400 hover:text-red-500"
                           title="Delete"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -706,15 +706,15 @@ export default function JobNotes({ jobId }: JobNotesProps) {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-zinc-200 dark:border-zinc-700 p-4">
+        <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
           {/* Selected file preview */}
           {selectedFile && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-dark-100 rounded-lg">
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-lg">
               {getFileIcon(selectedFile.type)}
-              <span className="flex-1 text-sm text-zinc-700 dark:text-zinc-300 truncate">
+              <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {selectedFile.name}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-neutral-500">
                 {formatFileSize(selectedFile.size)}
               </span>
               <button
@@ -722,7 +722,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                   setSelectedFile(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
-                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -735,7 +735,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a note..."
-                className="w-full px-4 py-3 text-sm rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-dark-100 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full px-4 py-3 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 rows={2}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -757,7 +757,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-3 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded-lg transition-colors"
+              className="p-3 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-lg transition-colors"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
@@ -779,12 +779,12 @@ export default function JobNotes({ jobId }: JobNotesProps) {
           </form>
 
           {uploading && (
-            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
               Uploading attachment...
             </p>
           )}
 
-          <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
             Press Enter to send, Shift+Enter for new line
           </p>
         </div>

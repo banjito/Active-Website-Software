@@ -163,7 +163,7 @@ export default function DebugTableCheck() {
 
       {loading ? (
         <div className="flex items-center justify-center p-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-900"></div>
         </div>
       ) : error ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -176,7 +176,7 @@ export default function DebugTableCheck() {
           <div className="mb-6">
             <h3 className="font-medium mb-2">Available tables:</h3>
             {tables.length === 0 ? (
-              <p className="italic text-zinc-500">No tables found</p>
+              <p className="italic text-neutral-500">No tables found</p>
             ) : (
               <ul className="list-disc pl-5">
                 {tables.map((table, index) => (
@@ -225,7 +225,7 @@ export default function DebugTableCheck() {
               If automatic creation doesn't work, run the following in Supabase
               SQL Editor:
             </p>
-            <pre className="bg-zinc-100 p-3 rounded mt-2 overflow-x-auto text-sm">
+            <pre className="bg-neutral-100 p-3 rounded mt-2 overflow-x-auto text-sm">
               {`-- Run in Supabase SQL Editor
 CREATE TABLE IF NOT EXISTS transformer_reports (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

@@ -366,7 +366,7 @@ function getStatusBadgeClass(status: HealthStatus): string {
     case "error":
       return "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300";
     case "unknown":
-      return "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-dark-300 dark:bg-dark-200 dark:text-zinc-300";
+      return "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-dark-300 dark:bg-dark-200 dark:text-neutral-300";
   }
 }
 
@@ -376,7 +376,7 @@ function StatusIcon({ status }: { status: HealthStatus }) {
   if (status === "degraded")
     return <AlertCircle className="h-5 w-5 text-yellow-500" />;
   if (status === "error") return <XCircle className="h-5 w-5 text-red-500" />;
-  return <AlertCircle className="h-5 w-5 text-zinc-500" />;
+  return <AlertCircle className="h-5 w-5 text-neutral-500" />;
 }
 
 function MetricCard({
@@ -393,20 +393,20 @@ function MetricCard({
   status: HealthStatus;
 }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
+    <div className="rounded-md border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <div className="rounded-md bg-zinc-100 p-2 dark:bg-dark-300">
+          <div className="rounded-md bg-neutral-100 p-2 dark:bg-dark-300">
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+            <p className="text-sm font-medium text-neutral-900 dark:text-white">
               {label}
             </p>
-            <p className="mt-1 break-words text-2xl font-bold text-zinc-900 dark:text-white">
+            <p className="mt-1 break-words text-2xl font-bold text-neutral-900 dark:text-white">
               {value}
             </p>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-300">
               {helper}
             </p>
           </div>
@@ -419,30 +419,30 @@ function MetricCard({
 
 function CheckRow({ check }: { check: HealthCheck }) {
   return (
-    <div className="flex flex-col gap-2 border-b border-zinc-100 py-3 last:border-0 dark:border-dark-300 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-2 border-b border-neutral-100 py-3 last:border-0 dark:border-dark-300 md:flex-row md:items-center md:justify-between">
       <div className="flex min-w-0 items-start gap-2">
         <StatusIcon status={check.status} />
         <div className="min-w-0">
-          <p className="font-medium text-zinc-900 dark:text-white">
+          <p className="font-medium text-neutral-900 dark:text-white">
             {check.name}
           </p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">
             {check.message}
           </p>
           {check.detail && (
-            <p className="mt-1 break-words text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 break-words text-xs text-neutral-500 dark:text-neutral-400">
               {check.detail}
             </p>
           )}
           {check.action && (
-            <p className="mt-1 text-xs font-medium text-zinc-700 dark:text-zinc-200">
+            <p className="mt-1 text-xs font-medium text-neutral-700 dark:text-neutral-200">
               {check.action}
             </p>
           )}
         </div>
       </div>
       {typeof check.responseTime === "number" && (
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {check.responseTime}ms
         </span>
       )}
@@ -530,9 +530,9 @@ export const SystemHealthMonitoring: React.FC = () => {
   }, [stats]);
 
   return (
-    <Card className="border border-zinc-200 bg-white shadow-sm dark:border-dark-300 dark:bg-dark-150">
+    <Card className="border border-neutral-200 bg-white shadow-sm dark:border-dark-300 dark:bg-dark-150">
       <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
-        <CardTitle className="flex items-center text-lg font-medium text-zinc-900 dark:text-white">
+        <CardTitle className="flex items-center text-lg font-medium text-neutral-900 dark:text-white">
           <Server className="mr-2 h-5 w-5 text-blue-500" />
           System Health
         </CardTitle>
@@ -649,7 +649,7 @@ export const SystemHealthMonitoring: React.FC = () => {
               <TabsContent value="live" className="mt-4">
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                   <Card className="p-4">
-                    <h4 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                    <h4 className="mb-3 text-sm font-medium text-neutral-500 dark:text-neutral-300">
                       App Data Checks
                     </h4>
                     <div>
@@ -660,7 +660,7 @@ export const SystemHealthMonitoring: React.FC = () => {
                   </Card>
 
                   <Card className="p-4">
-                    <h4 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                    <h4 className="mb-3 text-sm font-medium text-neutral-500 dark:text-neutral-300">
                       Response Times
                     </h4>
                     <div className="h-72">
@@ -693,34 +693,34 @@ export const SystemHealthMonitoring: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Card className="p-4">
-                      <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                      <h4 className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
                         Database Size
                       </h4>
-                      <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                         {stats.database.size}
                       </p>
                     </Card>
                     <Card className="p-4">
-                      <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                      <h4 className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
                         Tables
                       </h4>
-                      <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                         {stats.database.tables}
                       </p>
                     </Card>
                     <Card className="p-4">
-                      <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                      <h4 className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
                         Estimated Rows
                       </h4>
-                      <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                         {stats.database.rows.toLocaleString()}
                       </p>
                     </Card>
                     <Card className="p-4">
-                      <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                      <h4 className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
                         Functions
                       </h4>
-                      <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
                         {stats.database.functions}
                       </p>
                     </Card>
@@ -742,7 +742,7 @@ export const SystemHealthMonitoring: React.FC = () => {
 
               <TabsContent value="storage" className="mt-4">
                 <Card className="p-4">
-                  <h4 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-300">
+                  <h4 className="mb-3 text-sm font-medium text-neutral-500 dark:text-neutral-300">
                     Storage Buckets
                   </h4>
                   <div>

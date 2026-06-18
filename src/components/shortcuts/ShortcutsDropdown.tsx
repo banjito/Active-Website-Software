@@ -79,13 +79,13 @@ const SortableRow: React.FC<{
       className={`group flex items-center gap-1 rounded-lg pl-1 pr-1.5 ${
         isDragging
           ? "bg-orange-50 dark:bg-[#f26722]/10 ring-1 ring-[#f26722]/40 shadow-md z-50"
-          : "hover:bg-zinc-50 dark:hover:bg-dark-200"
+          : "hover:bg-neutral-50 dark:hover:bg-dark-200"
       } transition-colors`}
     >
       <button
         type="button"
         aria-label="Drag to reorder"
-        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-zinc-300 hover:text-[#f26722] dark:text-zinc-600 dark:hover:text-[#f26722] active:cursor-grabbing"
+        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-neutral-300 hover:text-[#f26722] dark:text-neutral-600 dark:hover:text-[#f26722] active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
@@ -99,17 +99,17 @@ const SortableRow: React.FC<{
         title={shortcut.url}
       >
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">
+          <span className="block truncate text-sm font-medium text-neutral-800 dark:text-neutral-100">
             {shortcut.title}
           </span>
-          <span className="block truncate text-[11px] leading-tight text-zinc-400 dark:text-zinc-500">
+          <span className="block truncate text-[11px] leading-tight text-neutral-400 dark:text-neutral-500">
             {shortcut.url}
           </span>
         </span>
         {isExternal ? (
-          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" />
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-neutral-300 dark:text-neutral-600" />
         ) : (
-          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" />
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-neutral-300 dark:text-neutral-600" />
         )}
       </button>
 
@@ -118,7 +118,7 @@ const SortableRow: React.FC<{
           type="button"
           aria-label={`Edit ${shortcut.title}`}
           onClick={() => onEdit(shortcut)}
-          className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-dark-100 dark:hover:text-zinc-200"
+          className="rounded p-1 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-dark-100 dark:hover:text-neutral-200"
         >
           <Edit2 className="h-3.5 w-3.5" />
         </button>
@@ -126,7 +126,7 @@ const SortableRow: React.FC<{
           type="button"
           aria-label={`Delete ${shortcut.title}`}
           onClick={() => onDelete(shortcut.id!)}
-          className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+          className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -352,7 +352,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
   return (
     <div className="flex max-h-[32rem] w-80 flex-col overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 dark:bg-dark-150 dark:ring-white/10">
       {/* Header */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-zinc-100 px-3 py-2.5 dark:border-dark-200">
+      <div className="flex shrink-0 items-center gap-2 border-b border-neutral-100 px-3 py-2.5 dark:border-dark-200">
         {view !== "list" && (
           <button
             type="button"
@@ -363,16 +363,16 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               setSelectedQuick({});
               setSearchQuery("");
             }}
-            className="-ml-1 rounded-md p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-dark-200"
+            className="-ml-1 rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-dark-200"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
         )}
-        <span className="flex-1 text-sm font-semibold text-zinc-900 dark:text-white">
+        <span className="flex-1 text-sm font-semibold text-neutral-900 dark:text-white">
           {headerTitle}
         </span>
         {view === "list" && (
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-dark-200 dark:text-zinc-400">
+          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-500 dark:bg-dark-200 dark:text-neutral-400">
             {shortcuts.length}/{MAX_SHORTCUTS}
           </span>
         )}
@@ -399,10 +399,10 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               </div>
             ) : shortcuts.length === 0 ? (
               <div className="px-4 py-10 text-center">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                   No shortcuts yet
                 </p>
-                <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
                   Add shortcuts to jump to your favorite pages.
                 </p>
               </div>
@@ -436,14 +436,14 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
         {view === "form" && (
           <form onSubmit={handleSave} className="space-y-3 p-3">
             {!editingId && (
-              <div className="flex rounded-lg bg-zinc-100 p-0.5 text-xs font-medium dark:bg-dark-200">
+              <div className="flex rounded-lg bg-neutral-100 p-0.5 text-xs font-medium dark:bg-dark-200">
                 <button
                   type="button"
                   onClick={() => setUseBuiltin(true)}
                   className={`flex-1 rounded-md px-2 py-1.5 transition-colors ${
                     useBuiltin
-                      ? "bg-white text-zinc-900 shadow-sm dark:bg-dark-100 dark:text-white"
-                      : "text-zinc-500 dark:text-zinc-400"
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-dark-100 dark:text-white"
+                      : "text-neutral-500 dark:text-neutral-400"
                   }`}
                 >
                   Built-in page
@@ -453,8 +453,8 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                   onClick={() => setUseBuiltin(false)}
                   className={`flex-1 rounded-md px-2 py-1.5 transition-colors ${
                     !useBuiltin
-                      ? "bg-white text-zinc-900 shadow-sm dark:bg-dark-100 dark:text-white"
-                      : "text-zinc-500 dark:text-zinc-400"
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-dark-100 dark:text-white"
+                      : "text-neutral-500 dark:text-neutral-400"
                   }`}
                 >
                   Custom URL
@@ -465,11 +465,11 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
             {useBuiltin && !editingId ? (
               <>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                  <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                     Portal
                   </label>
                   <select
-                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedPortal}
                     onChange={(e) => {
                       setSelectedPortal(e.target.value);
@@ -488,11 +488,11 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                  <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                     Destination
                   </label>
                   <select
-                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedOption}
                     onChange={(e) => setSelectedOption(e.target.value)}
                   >
@@ -511,7 +511,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               <>
                 <div className="space-y-1">
                   <label
-                    className="text-xs font-medium text-zinc-600 dark:text-zinc-300"
+                    className="text-xs font-medium text-neutral-600 dark:text-neutral-300"
                     htmlFor="sc-title"
                   >
                     Name
@@ -524,12 +524,12 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     }
                     placeholder="My Shortcut"
                     required
-                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
                 <div className="space-y-1">
                   <label
-                    className="text-xs font-medium text-zinc-600 dark:text-zinc-300"
+                    className="text-xs font-medium text-neutral-600 dark:text-neutral-300"
                     htmlFor="sc-url"
                   >
                     URL or path
@@ -542,7 +542,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     }
                     placeholder="/north_alabama/dashboard or https://…"
                     required
-                    className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-md border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
               </>
@@ -555,7 +555,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                   setView("list");
                   setError(null);
                 }}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-dark-200"
+                className="rounded-md px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-200"
               >
                 Cancel
               </button>
@@ -578,8 +578,8 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
         {view === "quick" && (
           <div>
             <div className="sticky top-0 z-10 bg-white p-2.5 dark:bg-dark-150">
-              <div className="flex items-center gap-2 rounded-md border border-zinc-300 px-2.5 py-1.5 focus-within:border-[#f26722] focus-within:ring-1 focus-within:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100">
-                <Search className="h-4 w-4 shrink-0 text-zinc-400" />
+              <div className="flex items-center gap-2 rounded-md border border-neutral-300 px-2.5 py-1.5 focus-within:border-[#f26722] focus-within:ring-1 focus-within:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100">
+                <Search className="h-4 w-4 shrink-0 text-neutral-400" />
                 <input
                   autoFocus
                   value={searchQuery}
@@ -593,13 +593,13 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     onClick={() => setSearchQuery("")}
                     aria-label="Clear"
                   >
-                    <X className="h-3.5 w-3.5 text-zinc-400 hover:text-zinc-600" />
+                    <X className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
                   </button>
                 )}
               </div>
             </div>
             {quickAddItems.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-zinc-400">
+              <div className="px-4 py-8 text-center text-sm text-neutral-400">
                 No matches
               </div>
             ) : (
@@ -608,12 +608,12 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                   const checked = !!selectedQuick[it.key];
                   return (
                     <li key={it.key}>
-                      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-50 dark:hover:bg-dark-200">
+                      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-neutral-50 dark:hover:bg-dark-200">
                         <span
                           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                             checked
                               ? "border-[#f26722] bg-[#f26722] text-white"
-                              : "border-zinc-300 dark:border-dark-200"
+                              : "border-neutral-300 dark:border-dark-200"
                           }`}
                         >
                           {checked && <Check className="h-3 w-3" />}
@@ -629,7 +629,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                           }
                           className="sr-only"
                         />
-                        <span className="min-w-0 flex-1 truncate text-sm text-zinc-700 dark:text-zinc-200">
+                        <span className="min-w-0 flex-1 truncate text-sm text-neutral-700 dark:text-neutral-200">
                           {it.label}
                         </span>
                       </label>
@@ -644,7 +644,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
 
       {/* Footer */}
       {view === "list" && (
-        <div className="flex shrink-0 items-center gap-2 border-t border-zinc-100 p-2 dark:border-dark-200">
+        <div className="flex shrink-0 items-center gap-2 border-t border-neutral-100 p-2 dark:border-dark-200">
           <button
             type="button"
             onClick={() => {
@@ -654,7 +654,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               setView("quick");
             }}
             disabled={atMax}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-dark-200 dark:text-zinc-200 dark:hover:bg-dark-200"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-neutral-300 px-2 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-dark-200 dark:text-neutral-200 dark:hover:bg-dark-200"
           >
             <Search className="h-3.5 w-3.5" />
             Quick add
@@ -672,7 +672,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
       )}
 
       {view === "quick" && (
-        <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-100 p-2 dark:border-dark-200">
+        <div className="flex shrink-0 justify-end gap-2 border-t border-neutral-100 p-2 dark:border-dark-200">
           <button
             type="button"
             onClick={() => {
@@ -680,7 +680,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               setSelectedQuick({});
               setSearchQuery("");
             }}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-dark-200"
+            className="rounded-md px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-200"
           >
             Cancel
           </button>

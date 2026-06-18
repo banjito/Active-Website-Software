@@ -625,7 +625,7 @@ export const JobRequisitions: React.FC = () => {
   const getStatusColor = (status: JobRequisition["status"]) => {
     switch (status) {
       case "draft":
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200";
       case "pending_approval":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case "approved":
@@ -635,7 +635,7 @@ export const JobRequisitions: React.FC = () => {
       case "closed":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -726,10 +726,10 @@ export const JobRequisitions: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Job Requisitions
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage open job positions
           </p>
         </div>
@@ -759,24 +759,24 @@ export const JobRequisitions: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Total
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
               {stats.total}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Draft
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
+            <div className="text-2xl font-bold text-neutral-600 dark:text-neutral-400">
               {stats.draft}
             </div>
           </CardContent>
@@ -837,21 +837,21 @@ export const JobRequisitions: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <input
                   type="text"
                   placeholder="Search by title, department, or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-zinc-400" />
+                <Filter className="h-4 w-4 text-neutral-400" />
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 >
                   <option value="all">All Status</option>
                   <option value="draft">Draft</option>
@@ -864,7 +864,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -876,7 +876,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Priorities</option>
                 <option value="low">Low</option>
@@ -886,7 +886,7 @@ export const JobRequisitions: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   {filteredAndSortedRequisitions.length} of{" "}
                   {requisitions.length} requisitions
                 </span>
@@ -924,11 +924,11 @@ export const JobRequisitions: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Briefcase className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Briefcase className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No requisitions found
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {searchTerm ||
                 filterStatus !== "all" ||
                 filterDepartment !== "all" ||
@@ -944,85 +944,85 @@ export const JobRequisitions: React.FC = () => {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-zinc-50 dark:bg-dark-100 border-b border-zinc-200 dark:border-dark-200">
+                <thead className="bg-neutral-50 dark:bg-dark-100 border-b border-neutral-200 dark:border-dark-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort("title")}
-                        className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Title
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort("department")}
-                        className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Department
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       Location
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       Salary Range
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort("status")}
-                        className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Status
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort("priority")}
-                        className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Priority
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort("created_at")}
-                        className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Created
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-dark-200">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-dark-200">
                   {filteredAndSortedRequisitions.map((req) => (
                     <tr
                       key={req.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-dark-100"
+                      className="hover:bg-neutral-50 dark:hover:bg-dark-100"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                        <div className="text-sm font-medium text-neutral-900 dark:text-white">
                           {req.title}
                         </div>
-                        <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <div className="text-sm text-neutral-500 dark:text-neutral-400">
                           {req.employment_type}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                         {req.department}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                         {req.location}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                         {formatSalaryRange(
                           req.salary_range_min,
                           req.salary_range_max,
@@ -1042,14 +1042,14 @@ export const JobRequisitions: React.FC = () => {
                               ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                               : req.priority === "medium"
                                 ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                                : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
                           }`}
                         >
                           {req.priority.charAt(0).toUpperCase() +
                             req.priority.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                         {new Date(req.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -1125,7 +1125,7 @@ export const JobRequisitions: React.FC = () => {
                     </CardDescription>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
                       Created: {new Date(req.created_at).toLocaleDateString()}
                     </span>
                     <span
@@ -1134,7 +1134,7 @@ export const JobRequisitions: React.FC = () => {
                           ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                           : req.priority === "medium"
                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                            : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
                       }`}
                     >
                       {req.priority.charAt(0).toUpperCase() +
@@ -1147,8 +1147,8 @@ export const JobRequisitions: React.FC = () => {
               <CardContent>
                 {/* Approver chain indicator */}
                 {approversMap[req.id] && approversMap[req.id].length > 0 && (
-                  <div className="flex items-center gap-2 mb-3 pb-3 border-b border-zinc-100 dark:border-dark-200">
-                    <Users className="h-4 w-4 text-zinc-400 shrink-0" />
+                  <div className="flex items-center gap-2 mb-3 pb-3 border-b border-neutral-100 dark:border-dark-200">
+                    <Users className="h-4 w-4 text-neutral-400 shrink-0" />
                     <div className="flex items-center gap-1">
                       {approversMap[req.id].map((approver, idx) => {
                         const isCurrentStep =
@@ -1157,7 +1157,7 @@ export const JobRequisitions: React.FC = () => {
                         return (
                           <React.Fragment key={approver.id}>
                             {idx > 0 && (
-                              <span className="text-zinc-300 dark:text-zinc-600 text-xs mx-0.5">
+                              <span className="text-neutral-300 dark:text-neutral-600 text-xs mx-0.5">
                                 &rarr;
                               </span>
                             )}
@@ -1169,7 +1169,7 @@ export const JobRequisitions: React.FC = () => {
                                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                                     : isCurrentStep
                                       ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                      : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                               }`}
                             >
                               {approver.status === "approved" && (
@@ -1363,7 +1363,7 @@ export const JobRequisitions: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Job Description, Requirements & Notes
               </label>
               <RichTextEditor
@@ -1378,12 +1378,12 @@ export const JobRequisitions: React.FC = () => {
             </div>
 
             {/* Approvers Section */}
-            <div className="border-t border-zinc-200 dark:border-dark-200 pt-4">
-              <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 <Users className="h-4 w-4" />
                 Approval Chain
               </label>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
                 Assign 1-3 approvers who will review this requisition in order
                 before it can be posted to the career page.
               </p>
@@ -1396,16 +1396,16 @@ export const JobRequisitions: React.FC = () => {
                     return (
                       <div
                         key={uid}
-                        className="flex items-center gap-2 p-2.5 border border-zinc-200 dark:border-dark-200 rounded-lg bg-zinc-50 dark:bg-dark-100"
+                        className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
                       >
                         <div className="w-6 h-6 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                             {u?.name || "Unknown"}
                           </p>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                             {u?.email}
                           </p>
                         </div>
@@ -1414,7 +1414,7 @@ export const JobRequisitions: React.FC = () => {
                             type="button"
                             onClick={() => moveApprover(idx, "up")}
                             disabled={idx === 0}
-                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
                           >
                             <ChevronUp className="h-4 w-4" />
                           </button>
@@ -1422,7 +1422,7 @@ export const JobRequisitions: React.FC = () => {
                             type="button"
                             onClick={() => moveApprover(idx, "down")}
                             disabled={idx === selectedApprovers.length - 1}
-                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
                           >
                             <ChevronDown className="h-4 w-4" />
                           </button>
@@ -1444,7 +1444,7 @@ export const JobRequisitions: React.FC = () => {
               {selectedApprovers.length < 3 && (
                 <div>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                     <input
                       type="text"
                       placeholder={
@@ -1454,13 +1454,13 @@ export const JobRequisitions: React.FC = () => {
                       }
                       value={approverSearchTerm}
                       onChange={(e) => setApproverSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
                     />
                   </div>
                   {approverSearchTerm && (
-                    <div className="mt-1 max-h-40 overflow-y-auto border border-zinc-200 dark:border-dark-200 rounded-lg shadow-sm">
+                    <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg shadow-sm">
                       {filteredUsers.length === 0 ? (
-                        <p className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                           No users found
                         </p>
                       ) : (
@@ -1469,12 +1469,12 @@ export const JobRequisitions: React.FC = () => {
                             key={u.id}
                             type="button"
                             onClick={() => addApprover(u.id)}
-                            className="w-full text-left px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-dark-200 last:border-b-0 transition-colors"
+                            className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-dark-200 last:border-b-0 transition-colors"
                           >
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                            <p className="text-sm font-medium text-neutral-900 dark:text-white">
                               {u.name}
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
                               {u.email}
                             </p>
                           </button>
@@ -1486,7 +1486,7 @@ export const JobRequisitions: React.FC = () => {
               )}
 
               {selectedApprovers.length === 0 && (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 italic">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 italic">
                   No approvers assigned yet. You can add them now or when
                   submitting for approval.
                 </p>
@@ -1611,7 +1611,7 @@ export const JobRequisitions: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Job Description, Requirements & Notes
               </label>
               <RichTextEditor
@@ -1628,12 +1628,12 @@ export const JobRequisitions: React.FC = () => {
             {/* Approvers Section (editable for draft/pending) */}
             {(selectedRequisition?.status === "draft" ||
               selectedRequisition?.status === "pending_approval") && (
-              <div className="border-t border-zinc-200 dark:border-dark-200 pt-4">
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   <Users className="h-4 w-4" />
                   Approval Chain
                 </label>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
                   Assign 1-3 approvers who will review this requisition in
                   order.
                 </p>
@@ -1645,16 +1645,16 @@ export const JobRequisitions: React.FC = () => {
                       return (
                         <div
                           key={uid}
-                          className="flex items-center gap-2 p-2.5 border border-zinc-200 dark:border-dark-200 rounded-lg bg-zinc-50 dark:bg-dark-100"
+                          className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
                         >
                           <div className="w-6 h-6 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
                             {idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                            <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                               {u?.name || "Unknown"}
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                               {u?.email}
                             </p>
                           </div>
@@ -1663,7 +1663,7 @@ export const JobRequisitions: React.FC = () => {
                               type="button"
                               onClick={() => moveApprover(idx, "up")}
                               disabled={idx === 0}
-                              className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
+                              className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
                             >
                               <ChevronUp className="h-4 w-4" />
                             </button>
@@ -1671,7 +1671,7 @@ export const JobRequisitions: React.FC = () => {
                               type="button"
                               onClick={() => moveApprover(idx, "down")}
                               disabled={idx === selectedApprovers.length - 1}
-                              className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
+                              className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30 transition-colors"
                             >
                               <ChevronDown className="h-4 w-4" />
                             </button>
@@ -1692,7 +1692,7 @@ export const JobRequisitions: React.FC = () => {
                 {selectedApprovers.length < 3 && (
                   <div>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                       <input
                         type="text"
                         placeholder={
@@ -1702,13 +1702,13 @@ export const JobRequisitions: React.FC = () => {
                         }
                         value={approverSearchTerm}
                         onChange={(e) => setApproverSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
                       />
                     </div>
                     {approverSearchTerm && (
-                      <div className="mt-1 max-h-40 overflow-y-auto border border-zinc-200 dark:border-dark-200 rounded-lg shadow-sm">
+                      <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg shadow-sm">
                         {filteredUsers.length === 0 ? (
-                          <p className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
+                          <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                             No users found
                           </p>
                         ) : (
@@ -1717,12 +1717,12 @@ export const JobRequisitions: React.FC = () => {
                               key={u.id}
                               type="button"
                               onClick={() => addApprover(u.id)}
-                              className="w-full text-left px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-dark-200 last:border-b-0 transition-colors"
+                              className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-dark-200 last:border-b-0 transition-colors"
                             >
-                              <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                 {u.name}
                               </p>
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                 {u.email}
                               </p>
                             </button>
@@ -1734,7 +1734,7 @@ export const JobRequisitions: React.FC = () => {
                 )}
 
                 {selectedApprovers.length === 0 && (
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 italic">
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 italic">
                     No approvers assigned yet.
                   </p>
                 )}
@@ -1746,8 +1746,8 @@ export const JobRequisitions: React.FC = () => {
               selectedRequisition.status !== "draft" &&
               selectedRequisition.status !== "pending_approval" &&
               approversMap[selectedRequisition.id]?.length > 0 && (
-                <div className="border-t border-zinc-200 dark:border-dark-200 pt-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
+                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     <Users className="h-4 w-4" />
                     Approval Chain
                   </label>
@@ -1761,7 +1761,7 @@ export const JobRequisitions: React.FC = () => {
                               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
                               : approver.status === "rejected"
                                 ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
-                                : "border-zinc-200 bg-zinc-50 dark:border-dark-200 dark:bg-dark-100"
+                                : "border-neutral-200 bg-neutral-50 dark:border-dark-200 dark:bg-dark-100"
                           }`}
                         >
                           <div
@@ -1770,7 +1770,7 @@ export const JobRequisitions: React.FC = () => {
                                 ? "bg-green-500 text-white"
                                 : approver.status === "rejected"
                                   ? "bg-red-500 text-white"
-                                  : "bg-zinc-300 text-zinc-600 dark:bg-zinc-600 dark:text-zinc-300"
+                                  : "bg-neutral-300 text-neutral-600 dark:bg-neutral-600 dark:text-neutral-300"
                             }`}
                           >
                             {approver.status === "approved" ? (
@@ -1782,10 +1782,10 @@ export const JobRequisitions: React.FC = () => {
                             )}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                            <p className="text-sm font-medium text-neutral-900 dark:text-white">
                               {getUserName(approver.approver_user_id)}
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
                               {approver.status === "approved"
                                 ? "Approved"
                                 : approver.status === "rejected"
@@ -1826,34 +1826,34 @@ export const JobRequisitions: React.FC = () => {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Department
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.department}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Location
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.location}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Employment Type
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {selectedRequisition.employment_type}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Salary Range
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {formatSalaryRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
@@ -1861,18 +1861,18 @@ export const JobRequisitions: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Status
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {getStatusLabel(selectedRequisition.status)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Priority
                   </label>
-                  <p className="text-zinc-900 dark:text-white capitalize">
+                  <p className="text-neutral-900 dark:text-white capitalize">
                     {selectedRequisition.priority}
                   </p>
                 </div>
@@ -1881,40 +1881,40 @@ export const JobRequisitions: React.FC = () => {
                 selectedRequisition.requirements ||
                 selectedRequisition.notes) && (
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2 block">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2 block">
                     Job Description, Requirements & Notes
                   </label>
                   <div
-                    className="text-zinc-900 dark:text-white prose prose-sm dark:prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
+                    className="text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
                     dangerouslySetInnerHTML={{
                       __html: getJobRequisitionDisplayHtml(selectedRequisition),
                     }}
                   />
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-200 dark:border-dark-200">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-200 dark:border-dark-200">
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Created
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {new Date(selectedRequisition.created_at).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Last Updated
                   </label>
-                  <p className="text-zinc-900 dark:text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {new Date(selectedRequisition.updated_at).toLocaleString()}
                   </p>
                 </div>
                 {selectedRequisition.approved_at && (
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Approved
                     </label>
-                    <p className="text-zinc-900 dark:text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       {new Date(
                         selectedRequisition.approved_at,
                       ).toLocaleString()}
@@ -1923,20 +1923,20 @@ export const JobRequisitions: React.FC = () => {
                 )}
                 {selectedRequisition.posted_at && (
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Posted
                     </label>
-                    <p className="text-zinc-900 dark:text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       {new Date(selectedRequisition.posted_at).toLocaleString()}
                     </p>
                   </div>
                 )}
                 {selectedRequisition.closed_at && (
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Closed
                     </label>
-                    <p className="text-zinc-900 dark:text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       {new Date(selectedRequisition.closed_at).toLocaleString()}
                     </p>
                   </div>
@@ -1946,8 +1946,8 @@ export const JobRequisitions: React.FC = () => {
               {/* Approval Chain */}
               {approversMap[selectedRequisition.id] &&
                 approversMap[selectedRequisition.id].length > 0 && (
-                  <div className="pt-4 border-t border-zinc-200 dark:border-dark-200">
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3 block">
+                  <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-3 block">
                       Approval Chain
                     </label>
                     <div className="space-y-2">
@@ -1967,7 +1967,7 @@ export const JobRequisitions: React.FC = () => {
                                     ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
                                     : isCurrentStep
                                       ? "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20"
-                                      : "border-zinc-200 bg-zinc-50 dark:border-dark-200 dark:bg-dark-100"
+                                      : "border-neutral-200 bg-neutral-50 dark:border-dark-200 dark:bg-dark-100"
                               }`}
                             >
                               <div
@@ -1978,7 +1978,7 @@ export const JobRequisitions: React.FC = () => {
                                       ? "bg-red-500 text-white"
                                       : isCurrentStep
                                         ? "bg-yellow-500 text-white"
-                                        : "bg-zinc-300 text-zinc-600 dark:bg-zinc-600 dark:text-zinc-300"
+                                        : "bg-neutral-300 text-neutral-600 dark:bg-neutral-600 dark:text-neutral-300"
                                 }`}
                               >
                                 {approver.status === "approved" ? (
@@ -1990,10 +1990,10 @@ export const JobRequisitions: React.FC = () => {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                                <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                   {getUserName(approver.approver_user_id)}
                                 </p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {approver.status === "approved"
                                     ? `Approved ${approver.decided_at ? new Date(approver.decided_at).toLocaleString() : ""}`
                                     : approver.status === "rejected"
@@ -2071,7 +2071,7 @@ export const JobRequisitions: React.FC = () => {
             {/* Selected Approvers (ordered) */}
             {selectedApprovers.length > 0 && (
               <div>
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2 block">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 block">
                   Approval Order ({selectedApprovers.length}/3)
                 </label>
                 <div className="space-y-2">
@@ -2080,16 +2080,16 @@ export const JobRequisitions: React.FC = () => {
                     return (
                       <div
                         key={uid}
-                        className="flex items-center gap-2 p-3 border border-zinc-200 dark:border-dark-200 rounded-lg bg-zinc-50 dark:bg-dark-100"
+                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
                       >
                         <div className="w-7 h-7 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                             {u?.name || "Unknown"}
                           </p>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                             {u?.email}
                           </p>
                         </div>
@@ -2098,7 +2098,7 @@ export const JobRequisitions: React.FC = () => {
                             type="button"
                             onClick={() => moveApprover(idx, "up")}
                             disabled={idx === 0}
-                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30"
                           >
                             <ChevronUp className="h-4 w-4" />
                           </button>
@@ -2106,7 +2106,7 @@ export const JobRequisitions: React.FC = () => {
                             type="button"
                             onClick={() => moveApprover(idx, "down")}
                             disabled={idx === selectedApprovers.length - 1}
-                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-dark-200 disabled:opacity-30"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-dark-200 disabled:opacity-30"
                           >
                             <ChevronDown className="h-4 w-4" />
                           </button>
@@ -2128,25 +2128,25 @@ export const JobRequisitions: React.FC = () => {
             {/* Add Approver Search */}
             {selectedApprovers.length < 3 && (
               <div>
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2 block">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 block">
                   {selectedApprovers.length === 0
                     ? "Search for approvers"
                     : "Add another approver"}
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                   <input
                     type="text"
                     placeholder="Search by name or email..."
                     value={approverSearchTerm}
                     onChange={(e) => setApproverSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
                 </div>
                 {approverSearchTerm && (
-                  <div className="mt-2 max-h-48 overflow-y-auto border border-zinc-200 dark:border-dark-200 rounded-lg">
+                  <div className="mt-2 max-h-48 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg">
                     {filteredUsers.length === 0 ? (
-                      <p className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                         No users found
                       </p>
                     ) : (
@@ -2155,12 +2155,12 @@ export const JobRequisitions: React.FC = () => {
                           key={u.id}
                           type="button"
                           onClick={() => addApprover(u.id)}
-                          className="w-full text-left p-3 hover:bg-zinc-100 dark:hover:bg-dark-100 border-b border-zinc-100 dark:border-dark-200 last:border-b-0"
+                          className="w-full text-left p-3 hover:bg-neutral-100 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-dark-200 last:border-b-0"
                         >
-                          <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-white">
                             {u.name}
                           </p>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
                             {u.email}
                           </p>
                         </button>

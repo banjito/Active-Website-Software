@@ -24,12 +24,12 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-medium">Data Encryption</h3>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       Manage encryption for sensitive data
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-zinc-400" />
+                <ChevronRight className="h-5 w-5 text-neutral-400" />
               </div>
             </CardContent>
           </Card>

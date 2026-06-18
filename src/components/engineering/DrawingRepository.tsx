@@ -192,7 +192,7 @@ const DrawingRepository: React.FC = () => {
         );
       default:
         return (
-          <Badge className="bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100">
+          <Badge className="bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100">
             {status}
           </Badge>
         );
@@ -292,7 +292,7 @@ const DrawingRepository: React.FC = () => {
         {/* Search and filter row */}
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -336,7 +336,7 @@ const DrawingRepository: React.FC = () => {
                     <p className="text-sm mb-2">Project: {drawing.project}</p>
                     <p className="text-sm truncate">{drawing.description}</p>
                   </CardContent>
-                  <CardFooter className="text-xs text-zinc-500">
+                  <CardFooter className="text-xs text-neutral-500">
                     <div className="flex justify-between w-full">
                       <span>By: {drawing.author}</span>
                       <span>Date: {drawing.date}</span>
@@ -361,7 +361,7 @@ const DrawingRepository: React.FC = () => {
                         className={
                           project.status === "active"
                             ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                            : "bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-zinc-100"
+                            : "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100"
                         }
                       >
                         {project.status}
@@ -428,8 +428,8 @@ const DrawingRepository: React.FC = () => {
                   <h4 className="text-sm font-semibold mb-1">Description</h4>
                   <p>{selectedDrawing.description}</p>
                 </div>
-                <div className="bg-zinc-100 dark:bg-dark-300 p-4 rounded-lg flex items-center justify-center h-64">
-                  <div className="flex flex-col items-center text-zinc-500">
+                <div className="bg-neutral-100 dark:bg-dark-300 p-4 rounded-lg flex items-center justify-center h-64">
+                  <div className="flex flex-col items-center text-neutral-500">
                     <FileText className="w-12 h-12 mb-2" />
                     <p>Drawing preview would display here</p>
                   </div>
@@ -446,7 +446,7 @@ const DrawingRepository: React.FC = () => {
         {/* Add Drawing Modal */}
         {showDrawingModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center p-6 border-b">
                 <h3 className="text-xl font-semibold">Add New Drawing</h3>
                 <Button
@@ -584,7 +584,7 @@ const DrawingRepository: React.FC = () => {
                   <label className="text-sm font-medium">
                     Upload Drawing (coming soon)
                   </label>
-                  <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center text-zinc-500">
+                  <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center text-neutral-500">
                     <Upload className="h-8 w-8 mb-2" />
                     <p className="text-sm">
                       Drag & drop a file or click to browse
@@ -618,7 +618,7 @@ const DrawingRepository: React.FC = () => {
         {/* Add Project Modal */}
         {showProjectModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center p-6 border-b">
                 <h3 className="text-xl font-semibold">Add New Project</h3>
                 <Button

@@ -93,7 +93,7 @@ const formatSLAStatus = (status: SLAComplianceStatus) => {
     default:
       return {
         label: "Unknown",
-        color: "bg-zinc-100 text-zinc-800",
+        color: "bg-neutral-100 text-neutral-800",
         icon: <Clock className="h-4 w-4" />,
       };
   }
@@ -110,7 +110,7 @@ const formatPriority = (priority: SLAPriority) => {
     case "critical":
       return { label: "Critical", color: "bg-red-100 text-red-800" };
     default:
-      return { label: "Unknown", color: "bg-zinc-100 text-zinc-800" };
+      return { label: "Unknown", color: "bg-neutral-100 text-neutral-800" };
   }
 };
 
@@ -442,7 +442,7 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                           ? formatPriority(definition.priority)
                           : {
                               label: "Unknown",
-                              color: "bg-zinc-100 text-zinc-800",
+                              color: "bg-neutral-100 text-neutral-800",
                             };
 
                         return (
@@ -577,7 +577,10 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
                           </TableCell>
                           <TableCell>
                             {violation.acknowledged ? (
-                              <Badge variant="outline" className="bg-zinc-100">
+                              <Badge
+                                variant="outline"
+                                className="bg-neutral-100"
+                              >
                                 Acknowledged
                               </Badge>
                             ) : (

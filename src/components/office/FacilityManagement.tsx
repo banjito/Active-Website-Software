@@ -380,7 +380,7 @@ export default function FacilityManagement() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-xl">{room.name}</CardTitle>
-            <div className="flex items-center gap-2 text-sm text-zinc-500 mt-1">
+            <div className="flex items-center gap-2 text-sm text-neutral-500 mt-1">
               <Users className="w-4 h-4" />
               <span>Capacity: {room.capacity}</span>
               <MapPin className="w-4 h-4 ml-2" />
@@ -415,7 +415,7 @@ export default function FacilityManagement() {
                       className="flex items-center justify-between text-sm"
                     >
                       <span className="font-medium">{booking.title}</span>
-                      <span className="text-zinc-500">
+                      <span className="text-neutral-500">
                         {format(parseISO(booking.startTime), "HH:mm")} -
                         {format(parseISO(booking.endTime), "HH:mm")}
                       </span>
@@ -423,7 +423,9 @@ export default function FacilityManagement() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500">No bookings for today</p>
+                <p className="text-sm text-neutral-500">
+                  No bookings for today
+                </p>
               )}
             </div>
             <Button
@@ -483,7 +485,7 @@ export default function FacilityManagement() {
                         Search Rooms
                       </label>
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 h-4 w-4" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500 h-4 w-4" />
                         <Input
                           className="pl-9"
                           placeholder="Search by name or amenities..."
@@ -557,7 +559,7 @@ export default function FacilityManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-lg">{selectedRoom.name}</h3>
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-neutral-500">
                     Capacity: {selectedRoom.capacity} people
                   </p>
                 </div>
@@ -667,7 +669,7 @@ export default function FacilityManagement() {
             </div>
 
             {bookingForm.isRecurring && (
-              <div className="space-y-4 border-l-2 border-zinc-200 pl-4 ml-2">
+              <div className="space-y-4 border-l-2 border-neutral-200 pl-4 ml-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Frequency</label>

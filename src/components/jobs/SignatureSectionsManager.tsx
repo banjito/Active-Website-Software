@@ -133,7 +133,7 @@ export const SignatureSectionsManager: React.FC<
 
         <div className="flex-1 overflow-y-auto pr-2 space-y-6">
           {sections.length === 0 && (
-            <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+            <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
               <p>No sections yet. Click "Add Section" to get started.</p>
             </div>
           )}
@@ -141,7 +141,7 @@ export const SignatureSectionsManager: React.FC<
           {sections.map((section, sectionIndex) => (
             <div
               key={sectionIndex}
-              className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 space-y-4"
+              className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 space-y-4"
             >
               <div className="flex items-center gap-2">
                 <Input
@@ -162,9 +162,9 @@ export const SignatureSectionsManager: React.FC<
                 </Button>
               </div>
 
-              <div className="space-y-3 pl-4 border-l-2 border-zinc-200 dark:border-zinc-700">
+              <div className="space-y-3 pl-4 border-l-2 border-neutral-200 dark:border-neutral-700">
                 {section.people.length === 0 && (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
                     No people in this section. Click "Add Person" below.
                   </p>
                 )}
@@ -172,10 +172,10 @@ export const SignatureSectionsManager: React.FC<
                 {section.people.map((person, personIndex) => (
                   <div
                     key={personIndex}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-zinc-50 dark:bg-dark-200 rounded"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-neutral-50 dark:bg-dark-200 rounded"
                   >
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         Name *
                       </label>
                       <Input
@@ -205,7 +205,7 @@ export const SignatureSectionsManager: React.FC<
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         Title
                       </label>
                       <Input
@@ -223,7 +223,7 @@ export const SignatureSectionsManager: React.FC<
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         Email
                       </label>
                       <Input
@@ -242,7 +242,7 @@ export const SignatureSectionsManager: React.FC<
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         Phone
                       </label>
                       <div className="flex gap-2">

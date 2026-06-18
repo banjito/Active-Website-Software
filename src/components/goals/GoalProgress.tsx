@@ -45,7 +45,7 @@ export const GoalProgress: React.FC<GoalProgressProps> = ({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-medium text-zinc-700 dark:text-white">
+        <span className="text-sm font-medium text-neutral-700 dark:text-white">
           {percentage.toFixed(0)}% Complete
         </span>
         {statusIcon && (
@@ -64,7 +64,7 @@ export const GoalProgress: React.FC<GoalProgressProps> = ({
         )}
       </div>
 
-      <div className="w-full h-2 bg-zinc-200 dark:bg-dark-300 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-neutral-200 dark:bg-dark-300 rounded-full overflow-hidden">
         <div
           className={`h-full ${statusColor} rounded-full`}
           style={{ width: `${Math.min(100, percentage)}%` }}
@@ -72,7 +72,7 @@ export const GoalProgress: React.FC<GoalProgressProps> = ({
       </div>
 
       {showDetails && (
-        <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-zinc-500 dark:text-white">
+        <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-neutral-500 dark:text-white">
           <div>
             <span className="block font-medium">Time Remaining</span>
             <span>{timeRemaining} days</span>

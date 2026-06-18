@@ -106,9 +106,9 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
   }, [localFilters]);
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-zinc-200 dark:border-dark-300">
-      <div className="flex items-center justify-between p-3 border-b border-zinc-200 dark:border-dark-300">
-        <h3 className="font-medium text-zinc-900 dark:text-white">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300">
+      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-dark-300">
+        <h3 className="font-medium text-neutral-900 dark:text-white">
           Search Filters
         </h3>
         <div className="flex items-center space-x-2">
@@ -116,13 +116,13 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
             variant="ghost"
             size="sm"
             onClick={resetFilters}
-            className="text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
+            className="text-neutral-500 hover:text-neutral-700 dark:text-dark-400 dark:hover:text-dark-300"
           >
             Reset
           </Button>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
+            className="text-neutral-500 hover:text-neutral-700 dark:text-dark-400 dark:hover:text-dark-300"
           >
             <X size={18} />
           </button>
@@ -132,7 +132,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
       <div className="p-3 space-y-4">
         {/* Mode Toggle */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700 dark:text-dark-300">
+          <span className="text-sm font-medium text-neutral-700 dark:text-dark-300">
             Advanced Search Mode
           </span>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -142,13 +142,13 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
               checked={localFilters.advancedMode}
               onChange={toggleAdvancedMode}
             />
-            <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-[#f26722]"></div>
+            <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-[#f26722]"></div>
           </label>
         </div>
 
         {/* Entity Types */}
         <div>
-          <h4 className="text-sm font-medium text-zinc-700 dark:text-dark-300 mb-2">
+          <h4 className="text-sm font-medium text-neutral-700 dark:text-dark-300 mb-2">
             Entity Types
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -159,11 +159,11 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
                   id={`entity-${entity.id}`}
                   checked={localFilters.entityTypes.includes(entity.id)}
                   onChange={() => toggleEntityType(entity.id)}
-                  className="w-4 h-4 text-[#f26722] bg-zinc-100 border-zinc-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-zinc-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
+                  className="w-4 h-4 text-[#f26722] bg-neutral-100 border-neutral-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-neutral-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
                 />
                 <label
                   htmlFor={`entity-${entity.id}`}
-                  className="ml-2 text-sm font-medium text-zinc-900 dark:text-dark-200"
+                  className="ml-2 text-sm font-medium text-neutral-900 dark:text-dark-200"
                 >
                   {entity.label}
                 </label>
@@ -174,7 +174,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
 
         {/* Divisions */}
         <div>
-          <h4 className="text-sm font-medium text-zinc-700 dark:text-dark-300 mb-2">
+          <h4 className="text-sm font-medium text-neutral-700 dark:text-dark-300 mb-2">
             Divisions
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -185,11 +185,11 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
                   id={`division-${division.id}`}
                   checked={localFilters.divisions.includes(division.id)}
                   onChange={() => toggleDivision(division.id)}
-                  className="w-4 h-4 text-[#f26722] bg-zinc-100 border-zinc-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-zinc-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
+                  className="w-4 h-4 text-[#f26722] bg-neutral-100 border-neutral-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-neutral-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
                 />
                 <label
                   htmlFor={`division-${division.id}`}
-                  className="ml-2 text-sm font-medium text-zinc-900 dark:text-dark-200"
+                  className="ml-2 text-sm font-medium text-neutral-900 dark:text-dark-200"
                 >
                   {division.label}
                 </label>

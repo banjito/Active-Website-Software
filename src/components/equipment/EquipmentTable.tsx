@@ -44,9 +44,9 @@ export function EquipmentTable({
       case "maintenance":
         return "bg-yellow-100 text-yellow-800";
       case "retired":
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -100,7 +100,7 @@ export function EquipmentTable({
             equipment.map((item) => (
               <TableRow
                 key={item.id}
-                className="cursor-pointer hover:bg-zinc-50"
+                className="cursor-pointer hover:bg-neutral-50"
                 onClick={() => onViewDetails(item)}
               >
                 <TableCell className="font-medium">{item.name}</TableCell>

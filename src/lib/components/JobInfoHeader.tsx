@@ -58,7 +58,7 @@ export function JobInfoHeader({
   if (loading) {
     console.log("JobInfoHeader: Showing loading state");
     return (
-      <div className="text-sm text-zinc-500 dark:text-dark-400">
+      <div className="text-sm text-neutral-500 dark:text-dark-400">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -87,40 +87,40 @@ export function JobInfoHeader({
   console.log("JobInfoHeader: Rendering complete info", formattedInfo);
 
   return (
-    <div className="job-info-header bg-zinc-50 dark:bg-dark-800 p-4 rounded-md border border-zinc-200 dark:border-dark-600 mb-4">
+    <div className="job-info-header bg-neutral-50 dark:bg-dark-800 p-4 rounded-md border border-neutral-200 dark:border-dark-600 mb-4">
       <div className="flex flex-wrap gap-4">
         <div>
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-dark-400">
+          <h3 className="text-sm font-medium text-neutral-500 dark:text-dark-400">
             Job #
           </h3>
-          <p className="text-sm font-bold text-zinc-900 dark:text-dark-100">
+          <p className="text-sm font-bold text-neutral-900 dark:text-dark-100">
             {formattedInfo.jobNumber}
           </p>
         </div>
 
         <div>
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-dark-400">
+          <h3 className="text-sm font-medium text-neutral-500 dark:text-dark-400">
             Title
           </h3>
-          <p className="text-sm font-bold text-zinc-900 dark:text-dark-100">
+          <p className="text-sm font-bold text-neutral-900 dark:text-dark-100">
             {formattedInfo.title}
           </p>
         </div>
 
         <div className="flex-grow">
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-dark-400">
+          <h3 className="text-sm font-medium text-neutral-500 dark:text-dark-400">
             Customer
           </h3>
-          <p className="text-sm font-bold text-zinc-900 dark:text-dark-100">
+          <p className="text-sm font-bold text-neutral-900 dark:text-dark-100">
             {formattedInfo.customer}
           </p>
         </div>
 
         <div className="flex-grow">
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-dark-400">
+          <h3 className="text-sm font-medium text-neutral-500 dark:text-dark-400">
             Address
           </h3>
-          <p className="text-sm font-bold text-zinc-900 dark:text-dark-100">
+          <p className="text-sm font-bold text-neutral-900 dark:text-dark-100">
             {formattedInfo.address}
           </p>
         </div>

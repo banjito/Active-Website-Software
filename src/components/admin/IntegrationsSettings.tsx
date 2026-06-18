@@ -176,7 +176,7 @@ export const IntegrationsSettings: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Integrations</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Manage external service connections
           </p>
         </div>
@@ -204,7 +204,7 @@ export const IntegrationsSettings: React.FC = () => {
               </div>
               <div>
                 <CardTitle>QuickBooks Online</CardTitle>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Sync invoices, estimates, and customers
                 </p>
               </div>
@@ -236,8 +236,8 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Connection Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Building2 className="h-4 w-4" />
                     Company
                   </div>
@@ -265,8 +265,8 @@ export const IntegrationsSettings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Key className="h-4 w-4" />
                     Realm ID
                   </div>
@@ -275,8 +275,8 @@ export const IntegrationsSettings: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Clock className="h-4 w-4" />
                     Connected On
                   </div>
@@ -291,10 +291,10 @@ export const IntegrationsSettings: React.FC = () => {
                       ? "bg-red-50 dark:bg-red-900/20"
                       : isTokenExpiringSoon(status.integration.expires_at)
                         ? "bg-yellow-50 dark:bg-yellow-900/20"
-                        : "bg-zinc-50 dark:bg-zinc-800"
+                        : "bg-neutral-50 dark:bg-neutral-800"
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Clock className="h-4 w-4" />
                     Token Expires
                   </div>
@@ -321,7 +321,7 @@ export const IntegrationsSettings: React.FC = () => {
 
               {/* Environment Badge */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
                   Environment:
                 </span>
                 <span
@@ -373,13 +373,13 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Not Connected State */}
               <div className="py-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-                  <XCircle className="h-8 w-8 text-zinc-400" />
+                <div className="w-16 h-16 mx-auto mb-4 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center">
+                  <XCircle className="h-8 w-8 text-neutral-400" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">
                   QuickBooks Not Connected
                 </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 max-w-md mx-auto">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-md mx-auto">
                   Connect your QuickBooks Online account to sync invoices,
                   estimates, customers, and more with your jobs.
                 </p>
@@ -421,42 +421,42 @@ export const IntegrationsSettings: React.FC = () => {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
                 <p className="text-sm font-medium">
                   QB_CLIENT_ID (Server-side)
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   Set as Supabase secret for the Edge Function
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
                 <p className="text-sm font-medium">
                   QB_CLIENT_SECRET (Server-side)
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   Set as Supabase secret for the Edge Function
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
                 <p className="text-sm font-medium">Edge Function Deployed</p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-neutral-500">
                   Run:{" "}
-                  <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                  <code className="bg-neutral-100 dark:bg-neutral-800 px-1 rounded">
                     supabase functions deploy quickbooks-oauth
                   </code>
                 </p>
@@ -464,13 +464,13 @@ export const IntegrationsSettings: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
                 <p className="text-sm font-medium">Database Table Created</p>
-                <p className="text-xs text-zinc-500">
-                  <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                <p className="text-xs text-neutral-500">
+                  <code className="bg-neutral-100 dark:bg-neutral-800 px-1 rounded">
                     common.quickbooks_integrations
                   </code>{" "}
                   table

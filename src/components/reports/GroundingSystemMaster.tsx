@@ -438,7 +438,7 @@ const GroundingSystemMaster: React.FC = () => {
         <div className="max-w-7xl w-full space-y-6 print:space-y-0">
           {/* Global print header (hidden now in favor of per-row headers) */}
           <div className="hidden">
-            <div className="relative flex items-center justify-between border-b-2 border-zinc-800 pb-4 mb-4">
+            <div className="relative flex items-center justify-between border-b-2 border-neutral-800 pb-4 mb-4">
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                 alt="AMP Logo"
@@ -487,7 +487,7 @@ const GroundingSystemMaster: React.FC = () => {
           <div className="mb-6 flex items-center gap-2 print:hidden">
             <label
               htmlFor="report-format"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap"
             >
               Report format:
             </label>
@@ -498,7 +498,7 @@ const GroundingSystemMaster: React.FC = () => {
                 setReportFormat(e.target.value as "condensed" | "uncondensed")
               }
               disabled={!isEditing}
-              className={`form-select text-sm py-1.5 px-2 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150 cursor-default" : ""}`}
+              className={`form-select text-sm py-1.5 px-2 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-default" : ""}`}
             >
               <option value="uncondensed">
                 Uncondensed (one page per test)
@@ -512,17 +512,17 @@ const GroundingSystemMaster: React.FC = () => {
             className={`mb-6 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
             <div className="mt-6 w-full h-1 bg-[#f26722] my-4" aria-hidden />
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 job-info-onscreen">
               {/* Left Column */}
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Customer
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={maskCustomerName(jobInfo.customer)}
@@ -535,10 +535,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Site Address
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={maskCustomerAddress(jobInfo.address)}
@@ -551,10 +551,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     User
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={jobInfo.user}
@@ -567,10 +567,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Date
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="date"
                       value={jobInfo.date}
@@ -583,10 +583,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Identifier
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={identifier}
@@ -600,10 +600,10 @@ const GroundingSystemMaster: React.FC = () => {
               {/* Right Column */}
               <div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Job #
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={jobInfo.jobNumber}
@@ -616,10 +616,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Technicians
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={jobInfo.technicians}
@@ -635,11 +635,11 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Temp.
                   </label>
                   <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-zinc-300 dark:border-zinc-600">
+                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
                       <input
                         type="number"
                         value={jobInfo.temperature.fahrenheit}
@@ -665,11 +665,11 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Humidity
                   </label>
                   <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                    <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                       <input
                         type="number"
                         value={jobInfo.temperature.humidity}
@@ -690,10 +690,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Substation
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={jobInfo.substation}
@@ -709,10 +709,10 @@ const GroundingSystemMaster: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
                     Eqpt. Location
                   </label>
-                  <div className="flex-1 border-b border-zinc-300 dark:border-zinc-600">
+                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
                     <input
                       type="text"
                       value={jobInfo.eqptLocation}
@@ -736,40 +736,40 @@ const GroundingSystemMaster: React.FC = () => {
             className={`mb-6 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
             <div className="mt-6 w-full h-1 bg-[#f26722] my-4" aria-hidden />
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Visual and Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-zinc-300 dark:border-zinc-600">
+              <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600">
                 <colgroup>
                   <col style={{ width: "12%" }} />
                   <col style={{ width: "70%" }} />
                   <col style={{ width: "18%" }} />
                 </colgroup>
-                <thead className="bg-zinc-50 dark:bg-dark-150">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       NETA Section
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-xs font-medium text-zinc-500 dark:text-white uppercase tracking-wider">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-dark-150 divide-y divide-zinc-200 dark:divide-zinc-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                       7.13.A.1
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
                       Verify ground system is in compliance with drawings,
                       specifications, and NFPA 70, National Electrical Code,
                       Article 250.
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <select
                         value={alternateReportData.visualMechanicalResults[0]}
                         onChange={(e) =>
@@ -783,7 +783,7 @@ const GroundingSystemMaster: React.FC = () => {
                           }))
                         }
                         disabled={!isEditing}
-                        className={`w-full form-select border-zinc-300 dark:border-zinc-600 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full form-select border-neutral-300 dark:border-neutral-600 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">— Select —</option>
                         <option value="Satisfactory">Satisfactory</option>
@@ -795,13 +795,13 @@ const GroundingSystemMaster: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                       7.13.A.2
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
                       Inspect physical and mechanical condition.
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <select
                         value={alternateReportData.visualMechanicalResults[1]}
                         onChange={(e) =>
@@ -815,7 +815,7 @@ const GroundingSystemMaster: React.FC = () => {
                           }))
                         }
                         disabled={!isEditing}
-                        className={`w-full form-select border-zinc-300 dark:border-zinc-600 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full form-select border-neutral-300 dark:border-neutral-600 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">— Select —</option>
                         <option value="Satisfactory">Satisfactory</option>
@@ -827,11 +827,11 @@ const GroundingSystemMaster: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 align-top whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 align-top whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                       7.13.A.3
                     </td>
                     <td
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white"
                       style={{ hyphens: "none" }}
                     >
                       Inspect accessible electrical connections for high
@@ -846,7 +846,7 @@ const GroundingSystemMaster: React.FC = () => {
                       accordance with manufacturer&apos;s published data or
                       Table 100.12.
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <select
                         value={alternateReportData.visualMechanicalResults[2]}
                         onChange={(e) =>
@@ -860,7 +860,7 @@ const GroundingSystemMaster: React.FC = () => {
                           }))
                         }
                         disabled={!isEditing}
-                        className={`w-full form-select border-zinc-300 dark:border-zinc-600 ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full form-select border-neutral-300 dark:border-neutral-600 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         <option value="">— Select —</option>
                         <option value="Satisfactory">Satisfactory</option>
@@ -896,13 +896,13 @@ const GroundingSystemMaster: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setRowCount((c) => Math.max(1, c - 10))}
-                  className="px-2 py-1 text-sm bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded"
+                  className="px-2 py-1 text-sm bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded"
                 >
                   -10
                 </button>
                 <button
                   onClick={() => setRowCount((c) => Math.max(1, c - 1))}
-                  className="px-2 py-1 text-sm bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded"
+                  className="px-2 py-1 text-sm bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded"
                 >
                   -1
                 </button>
@@ -917,13 +917,13 @@ const GroundingSystemMaster: React.FC = () => {
                 />
                 <button
                   onClick={() => setRowCount((c) => c + 1)}
-                  className="px-2 py-1 text-sm bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded"
+                  className="px-2 py-1 text-sm bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded"
                 >
                   +1
                 </button>
                 <button
                   onClick={() => setRowCount((c) => c + 10)}
-                  className="px-2 py-1 text-sm bg-zinc-100 dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600 rounded"
+                  className="px-2 py-1 text-sm bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded"
                 >
                   +10
                 </button>
@@ -942,7 +942,7 @@ const GroundingSystemMaster: React.FC = () => {
                   onMouseLeave={onHeaderMouseUp}
                   style={{ cursor: "grab" }}
                 >
-                  <tr className="bg-zinc-50 dark:bg-dark-200">
+                  <tr className="bg-neutral-50 dark:bg-dark-200">
                     <th className="px-2 py-2 text-left">Ground Point</th>
                     <th className="px-2 py-2 text-left">Location</th>
                     <th className="px-2 py-2 text-left">FROM</th>
@@ -971,12 +971,12 @@ const GroundingSystemMaster: React.FC = () => {
                       className={
                         idx % 2 === 0
                           ? "bg-white dark:bg-dark-150"
-                          : "bg-zinc-50 dark:bg-dark-200"
+                          : "bg-neutral-50 dark:bg-dark-200"
                       }
                     >
                       <td className="px-2 py-1 whitespace-nowrap">
                         <input
-                          className="w-24 bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:outline-none"
+                          className="w-24 bg-transparent border-b border-neutral-300 dark:border-neutral-700 focus:outline-none"
                           value={r.pointLabel || `PTP #${idx + 1}`}
                           onChange={(e) => {
                             const newValue = e.target.value;
@@ -1071,7 +1071,7 @@ const GroundingSystemMaster: React.FC = () => {
                           <div className="flex gap-1">
                             <button
                               type="button"
-                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-zinc-200 text-zinc-700 dark:bg-dark-100 dark:text-white"}`}
+                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
                               onClick={() =>
                                 setRows((rs) => {
                                   const c = [...rs];
@@ -1084,7 +1084,7 @@ const GroundingSystemMaster: React.FC = () => {
                             </button>
                             <button
                               type="button"
-                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "FAIL" ? "bg-red-600 text-white" : "bg-zinc-200 text-zinc-700 dark:bg-dark-100 dark:text-white"}`}
+                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "FAIL" ? "bg-red-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
                               onClick={() =>
                                 setRows((rs) => {
                                   const c = [...rs];
@@ -1263,30 +1263,30 @@ const GroundingSystemMaster: React.FC = () => {
             className={`mb-20 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
             <div className="mt-6 w-full h-1 bg-[#f26722] mb-4" />
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Test Equipment Used (Low Resistance Ohmmeter)
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+              <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-dark-150">
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                  <tr className="bg-neutral-50 dark:bg-dark-150">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       Model / Name
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       Serial Number
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       AMP ID
                     </th>
-                    <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-left text-sm font-medium text-zinc-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
                       Cal Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <EquipmentAutocomplete
                         value={alternateReportData.testEquipment.name}
                         onChange={(v) =>
@@ -1315,7 +1315,7 @@ const GroundingSystemMaster: React.FC = () => {
                         className="w-full"
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <input
                         type="text"
                         value={alternateReportData.testEquipment.serialNumber}
@@ -1332,7 +1332,7 @@ const GroundingSystemMaster: React.FC = () => {
                         className={`w-full form-input border-0 p-0 bg-transparent focus:ring-0 ${!isEditing ? "bg-transparent" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <input
                         type="text"
                         value={alternateReportData.testEquipment.ampId}
@@ -1349,7 +1349,7 @@ const GroundingSystemMaster: React.FC = () => {
                         className={`w-full form-input border-0 p-0 bg-transparent focus:ring-0 ${!isEditing ? "bg-transparent" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <input
                         type="text"
                         value={alternateReportData.testEquipment.calDate}
@@ -1514,7 +1514,7 @@ const GroundingSystemMaster: React.FC = () => {
             <div className="gsm-ula-pages">
               {rows.map((r, idx) => (
                 <div key={idx} className="gsm-page">
-                  <div className="gsm-header relative flex items-start justify-between border-b-2 border-zinc-800 pb-2 mb-2">
+                  <div className="gsm-header relative flex items-start justify-between border-b-2 border-neutral-800 pb-2 mb-2">
                     <img
                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                       alt="AMP Logo"
@@ -1636,7 +1636,7 @@ const GroundingSystemMaster: React.FC = () => {
             {/* Alternate layout: dense report with Visual/Mechanical, Electrical Tests, Test Equipment */}
             <div className="gsm-alternate-pages">
               <div className="gsm-alternate-page">
-                <div className="gsm-header relative flex items-start justify-between border-b-2 border-zinc-800 pb-2 mb-2">
+                <div className="gsm-header relative flex items-start justify-between border-b-2 border-neutral-800 pb-2 mb-2">
                   <img
                     src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                     alt="AMP Logo"
@@ -1721,7 +1721,7 @@ const GroundingSystemMaster: React.FC = () => {
                         <col style={{ width: "18%" }} />
                       </colgroup>
                       <thead>
-                        <tr className="bg-zinc-100">
+                        <tr className="bg-neutral-100">
                           <th className="border border-black px-2 py-1 text-left font-semibold">
                             NETA Section
                           </th>
@@ -1795,7 +1795,7 @@ const GroundingSystemMaster: React.FC = () => {
                     </h2>
                     <table className="w-full border-collapse border border-black text-[9px]">
                       <thead>
-                        <tr className="bg-zinc-100">
+                        <tr className="bg-neutral-100">
                           <th
                             className="border border-black px-1 py-1 text-center font-semibold"
                             style={{ width: "36px" }}
@@ -1861,7 +1861,7 @@ const GroundingSystemMaster: React.FC = () => {
                     </h2>
                     <table className="w-full border-collapse border border-black text-[10px]">
                       <thead>
-                        <tr className="bg-zinc-100">
+                        <tr className="bg-neutral-100">
                           <th className="border border-black px-2 py-1 text-left font-semibold">
                             Model / Name
                           </th>

@@ -238,7 +238,7 @@ export const FieldTechDashboard: React.FC = () => {
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   }
 
@@ -250,7 +250,7 @@ export const FieldTechDashboard: React.FC = () => {
         </div>
       )}
 
-      <p className="mb-6 sm:mb-8 text-sm sm:text-base text-zinc-600 dark:text-dark-400">
+      <p className="mb-6 sm:mb-8 text-sm sm:text-base text-neutral-600 dark:text-dark-400">
         Alabama, Tennessee, Georgia, and International
       </p>
 
@@ -263,15 +263,15 @@ export const FieldTechDashboard: React.FC = () => {
                   <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-zinc-900 dark:text-white text-sm sm:text-base truncate">
+                  <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
                     Job Management
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-white line-clamp-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-white line-clamp-2">
                     View all jobs across divisions
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
           </Link>
         </Card>
@@ -284,15 +284,15 @@ export const FieldTechDashboard: React.FC = () => {
                   <Building className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-zinc-900 dark:text-white text-sm sm:text-base truncate">
+                  <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
                     Customers
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-white line-clamp-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-white line-clamp-2">
                     Browse customer accounts
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
           </Link>
         </Card>
@@ -305,15 +305,15 @@ export const FieldTechDashboard: React.FC = () => {
                   <Users2 className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-zinc-900 dark:text-white text-sm sm:text-base truncate">
+                  <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
                     Contacts
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-white line-clamp-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-white line-clamp-2">
                     View customer contacts
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
           </Link>
         </Card>
@@ -326,15 +326,15 @@ export const FieldTechDashboard: React.FC = () => {
                   <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-zinc-900 dark:text-white text-sm sm:text-base truncate">
+                  <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
                     Equipment
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-white line-clamp-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-white line-clamp-2">
                     Manage equipment
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
           </Link>
         </Card>
@@ -347,7 +347,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Customers
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.customers}
               </p>
               <Link to="/field-tech/customers">
@@ -373,7 +373,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Contacts
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.contacts}
               </p>
               <Link to="/field-tech/contacts">
@@ -399,7 +399,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Documents
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.documents}
               </p>
               <Link to="/field-tech/reports">
@@ -420,7 +420,7 @@ export const FieldTechDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-white mb-3 sm:mb-4">
+      <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
         Job Status
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -430,7 +430,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Active Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.activeJobs}
               </p>
             </div>
@@ -446,7 +446,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Upcoming Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.upcomingJobs}
               </p>
             </div>
@@ -462,7 +462,7 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Completed Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
                 {counts.completedJobs}
               </p>
             </div>
@@ -473,7 +473,7 @@ export const FieldTechDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-white mb-3 sm:mb-4">
+      <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
         Recent Activity
       </h2>
       <Card>
@@ -495,7 +495,7 @@ export const FieldTechDashboard: React.FC = () => {
           <TabsContent value="jobs" className="p-3 sm:p-6">
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {recentJobs.length === 0 ? (
-                <div className="text-center py-6 text-zinc-500 text-sm sm:text-base">
+                <div className="text-center py-6 text-neutral-500 text-sm sm:text-base">
                   No recent jobs found
                 </div>
               ) : (
@@ -510,7 +510,7 @@ export const FieldTechDashboard: React.FC = () => {
                                 <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">
                                   {maskJobTitle(job.title)}
                                 </p>
-                                <p className="text-xs sm:text-sm text-zinc-600 dark:text-white mt-1 line-clamp-2">
+                                <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2">
                                   {maskCustomerName(
                                     job.customers?.company_name ||
                                       job.customers?.name,
@@ -523,7 +523,7 @@ export const FieldTechDashboard: React.FC = () => {
                                 {formatStatusLabel(job.status)}
                               </Badge>
                             </div>
-                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-zinc-500 dark:text-white border-t border-zinc-100 dark:border-zinc-700 mt-2 sm:mt-3">
+                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-neutral-500 dark:text-white border-t border-neutral-100 dark:border-neutral-700 mt-2 sm:mt-3">
                               <div className="flex items-center min-w-0 flex-1">
                                 <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
                                 <span className="truncate">

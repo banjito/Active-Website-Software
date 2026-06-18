@@ -54,7 +54,7 @@ Moved `JobInfoPrintTable` outside the wrapper div and placed it directly after t
 ### 2. Updated Print Header Spacing
 Changed header spacing from `pb-4 mb-6` to `pb-2 mb-2` for minimal spacing:
 ```tsx
-<div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-2 mb-2 relative">
+<div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-2 mb-2 relative">
 ```
 
 ### 3. Removed Wrapper Padding in Print

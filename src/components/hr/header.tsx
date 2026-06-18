@@ -18,19 +18,21 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-white shadow-sm">
+    <header className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 bg-white shadow-sm">
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-900">{title}</h1>
-        {subtitle && <p className="text-sm text-zinc-600 mt-0.5">{subtitle}</p>}
+        <h1 className="text-2xl font-semibold text-neutral-900">{title}</h1>
+        {subtitle && (
+          <p className="text-sm text-neutral-600 mt-0.5">{subtitle}</p>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <Input
             placeholder="Search employees..."
-            className="w-64 pl-9 bg-zinc-50 border-zinc-300"
+            className="w-64 pl-9 bg-neutral-50 border-neutral-300"
           />
         </div>
 

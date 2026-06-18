@@ -333,7 +333,7 @@ export function EquipmentTracking({
       case "retired":
         return "bg-red-500";
       default:
-        return "bg-zinc-500";
+        return "bg-neutral-500";
     }
   };
 
@@ -363,7 +363,7 @@ export function EquipmentTracking({
     if (loading) {
       return (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
           <div className="flex justify-center py-6">
             <LoadingSpinner size="md" />
           </div>
@@ -382,7 +382,7 @@ export function EquipmentTracking({
 
     if (filteredEquipment.length === 0) {
       return (
-        <div className="text-center py-8 text-zinc-500">
+        <div className="text-center py-8 text-neutral-500">
           <Settings className="h-8 w-8 mx-auto mb-2" />
           <p>No equipment found. Add some equipment to get started.</p>
         </div>
@@ -407,7 +407,7 @@ export function EquipmentTracking({
                 >
                   {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                 </Badge>
-                <div className="p-2 rounded-full bg-zinc-100">
+                <div className="p-2 rounded-full bg-neutral-100">
                   {getCategoryIcon(item.category)}
                 </div>
               </div>
@@ -416,28 +416,28 @@ export function EquipmentTracking({
             <CardContent>
               <div className="space-y-2">
                 {item.description && (
-                  <p className="text-sm text-zinc-500 line-clamp-2">
+                  <p className="text-sm text-neutral-500 line-clamp-2">
                     {item.description}
                   </p>
                 )}
 
                 {item.location && (
                   <div className="flex items-center text-sm">
-                    <MapPin className="h-4 w-4 mr-2 text-zinc-500" />
+                    <MapPin className="h-4 w-4 mr-2 text-neutral-500" />
                     <span>{item.location}</span>
                   </div>
                 )}
 
                 {item.assigned_to && (
                   <div className="flex items-center text-sm">
-                    <User className="h-4 w-4 mr-2 text-zinc-500" />
+                    <User className="h-4 w-4 mr-2 text-neutral-500" />
                     <span>Assigned to user</span>
                   </div>
                 )}
 
                 {item.condition_rating && (
                   <div className="flex items-center text-sm">
-                    <AlertTriangle className="h-4 w-4 mr-2 text-zinc-500" />
+                    <AlertTriangle className="h-4 w-4 mr-2 text-neutral-500" />
                     <span>Condition: {item.condition_rating}/5</span>
                   </div>
                 )}
@@ -460,7 +460,7 @@ export function EquipmentTracking({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
             />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
           </div>
 
           <Select
@@ -577,7 +577,7 @@ export function EquipmentTracking({
             </div>
 
             {isVehicle && (
-              <div className="space-y-4 border p-4 rounded-md bg-zinc-50">
+              <div className="space-y-4 border p-4 rounded-md bg-neutral-50">
                 <h3 className="font-medium">Vehicle Details</h3>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -688,7 +688,7 @@ export function EquipmentTracking({
                 value={equipmentForm.condition_rating || 5}
                 onChange={handleEquipmentInputChange}
               />
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-neutral-500 mt-1">
                 Rating from 1 (poor) to 5 (excellent)
               </p>
             </div>

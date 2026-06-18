@@ -43,15 +43,15 @@ export default function EngineeringDashboard() {
                   <PencilRuler className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Design Approval
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Review and approve engineering designs
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -64,15 +64,15 @@ export default function EngineeringDashboard() {
                   <Book className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Technical Documentation
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Access engineering documents and manuals
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -85,15 +85,15 @@ export default function EngineeringDashboard() {
                   <FileCode className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Standards & Compliance
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Access engineering standards and updates
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -106,15 +106,15 @@ export default function EngineeringDashboard() {
                   <FileSymlink className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Drawing Repository
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Access technical drawings and blueprints
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -127,15 +127,15 @@ export default function EngineeringDashboard() {
                   <Building className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Customers
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Manage engineering customers
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -148,15 +148,15 @@ export default function EngineeringDashboard() {
                   <Briefcase className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-white">
+                  <h3 className="font-medium text-neutral-900 dark:text-white">
                     Jobs & Projects
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
                     Manage engineering projects
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400" />
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
             </div>
           </Link>
         </Card>
@@ -172,10 +172,10 @@ export default function EngineeringDashboard() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
                   Design Reviews
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   24
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-white">
+                <p className="text-xs text-neutral-500 dark:text-white">
                   8 pending approval
                 </p>
               </div>
@@ -191,10 +191,10 @@ export default function EngineeringDashboard() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
                   Active Projects
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   12
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-white">
+                <p className="text-xs text-neutral-500 dark:text-white">
                   3 in critical phase
                 </p>
               </div>
@@ -210,10 +210,10 @@ export default function EngineeringDashboard() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
                   Standard Updates
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   7
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-white">
+                <p className="text-xs text-neutral-500 dark:text-white">
                   2 require action
                 </p>
               </div>
@@ -229,10 +229,10 @@ export default function EngineeringDashboard() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
                   Compliance
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   98%
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-white">
+                <p className="text-xs text-neutral-500 dark:text-white">
                   Above target (95%)
                 </p>
               </div>
@@ -258,7 +258,7 @@ export default function EngineeringDashboard() {
                   <p className="text-sm font-medium">
                     Main Line Power Distribution Design approved
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     Yesterday at 2:34 PM
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export default function EngineeringDashboard() {
                     Technical Documentation updated for Transformer
                     Specifications
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     2 days ago
                   </p>
                 </div>
@@ -285,7 +285,7 @@ export default function EngineeringDashboard() {
                   <p className="text-sm font-medium">
                     IEEE 1547 Standard update notification
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     Last week
                   </p>
                 </div>

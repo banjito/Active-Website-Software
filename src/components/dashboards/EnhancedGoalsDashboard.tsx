@@ -12,10 +12,10 @@ export function EnhancedGoalsDashboard() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Sales Goals Analytics
           </h1>
-          <p className="text-zinc-500 dark:text-white mt-1">
+          <p className="text-neutral-500 dark:text-white mt-1">
             Track, analyze, and optimize your sales goals performance
           </p>
         </div>
@@ -60,7 +60,7 @@ export function EnhancedGoalsDashboard() {
 
         <TabsContent value="goals" className="space-y-6">
           <div className="bg-white dark:bg-dark-150 p-6 rounded-lg shadow-sm">
-            <p className="text-center text-zinc-500 dark:text-white mb-4">
+            <p className="text-center text-neutral-500 dark:text-white mb-4">
               This tab will contain goal management functionality - create,
               edit, and delete goals.
             </p>

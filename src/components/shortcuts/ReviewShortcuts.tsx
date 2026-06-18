@@ -104,11 +104,11 @@ export const ReviewShortcuts: React.FC = () => {
   if (jobsWithReports.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <FileText className="h-12 w-12 text-zinc-400 dark:text-white mb-3" />
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">
+        <FileText className="h-12 w-12 text-neutral-400 dark:text-white mb-3" />
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
           No Reports Awaiting Review
         </h3>
-        <p className="text-zinc-600 dark:text-white">
+        <p className="text-neutral-600 dark:text-white">
           All reports have been reviewed or none are currently submitted.
         </p>
       </div>
@@ -120,7 +120,7 @@ export const ReviewShortcuts: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <FileText className="h-5 w-5 text-[#f26722] mr-2" />
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
             Jobs with Reports Ready for Review
           </h3>
           <Badge variant="secondary" className="ml-2">
@@ -143,12 +143,12 @@ export const ReviewShortcuts: React.FC = () => {
           <div
             key={job.id}
             onClick={() => handleJobClick(job.id)}
-            className="bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 hover:bg-zinc-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
+            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-zinc-900 dark:text-white truncate">
+                  <h4 className="font-medium text-neutral-900 dark:text-white truncate">
                     {job.job_number
                       ? `${job.job_number} - ${job.title}`
                       : job.title}
@@ -159,22 +159,22 @@ export const ReviewShortcuts: React.FC = () => {
                 </div>
 
                 {(job.company_name || job.customer_name) && (
-                  <p className="text-sm text-zinc-600 dark:text-white mb-2">
+                  <p className="text-sm text-neutral-600 dark:text-white mb-2">
                     {job.company_name || job.customer_name}
                   </p>
                 )}
 
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 text-zinc-400 mr-1" />
-                    <span className="text-zinc-600 dark:text-white">
+                    <FileText className="h-4 w-4 text-neutral-400 mr-1" />
+                    <span className="text-neutral-600 dark:text-white">
                       {job.reports_count} report
                       {job.reports_count !== 1 ? "s" : ""}
                     </span>
                   </div>
 
                   <div className="flex items-center">
-                    <Clock className="h-4 w-4 text-zinc-400 mr-1" />
+                    <Clock className="h-4 w-4 text-neutral-400 mr-1" />
                     <span
                       className={`font-medium ${getReviewUrgencyColorClass(job.oldest_report_date)}`}
                     >
@@ -184,18 +184,18 @@ export const ReviewShortcuts: React.FC = () => {
                 </div>
               </div>
 
-              <ChevronRight className="h-5 w-5 text-zinc-400 flex-shrink-0 ml-2" />
+              <ChevronRight className="h-5 w-5 text-neutral-400 flex-shrink-0 ml-2" />
             </div>
 
             {job.reports.length > 1 && (
-              <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
+              <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
                 <div className="space-y-1">
                   {job.reports.slice(0, 3).map((report) => (
                     <div
                       key={report.id}
                       className="flex items-center justify-between text-xs"
                     >
-                      <span className="text-zinc-600 dark:text-white truncate">
+                      <span className="text-neutral-600 dark:text-white truncate">
                         {report.title}
                       </span>
                       <span
@@ -206,7 +206,7 @@ export const ReviewShortcuts: React.FC = () => {
                     </div>
                   ))}
                   {job.reports.length > 3 && (
-                    <div className="text-xs text-zinc-500 dark:text-white italic">
+                    <div className="text-xs text-neutral-500 dark:text-white italic">
                       +{job.reports.length - 3} more reports
                     </div>
                   )}

@@ -194,7 +194,7 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
 
   return (
     <div
-      className={`flex items-center justify-between w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 cursor-pointer text-zinc-900 dark:text-zinc-100 ${open ? "ring-2 ring-blue-500 outline-none" : ""} ${className}`}
+      className={`flex items-center justify-between w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 cursor-pointer text-neutral-900 dark:text-neutral-100 ${open ? "ring-2 ring-blue-500 outline-none" : ""} ${className}`}
       onClick={() => setOpen(!open)}
       {...props}
     >
@@ -239,7 +239,7 @@ export const SelectContent: React.FC<SelectContentProps> = ({
 
   return (
     <div
-      className={`absolute z-50 mt-1 w-full overflow-auto rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 shadow-lg max-h-60 py-1 ${alignClasses[align]} ${className}`}
+      className={`absolute z-50 mt-1 w-full overflow-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-lg max-h-60 py-1 ${alignClasses[align]} ${className}`}
     >
       {children}
     </div>
@@ -269,7 +269,7 @@ export const SelectItem: React.FC<SelectItemProps> = ({
 
   return (
     <div
-      className={`px-3 py-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
+      className={`px-3 py-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 ${
         isSelected
           ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
           : ""

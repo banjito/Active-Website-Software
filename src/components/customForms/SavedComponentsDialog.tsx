@@ -88,12 +88,12 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
             Saved components
           </DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 -mt-2">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 -mt-2">
           Click a component to add it to your form. Edit or delete from here.
         </p>
         <div className="flex-1 overflow-y-auto min-h-0 mt-4 space-y-4">
           {savedComponents.length === 0 ? (
-            <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
+            <div className="py-12 text-center text-neutral-500 dark:text-neutral-400">
               No saved components yet. Save a section as a new component from
               the section editor.
             </div>
@@ -105,10 +105,10 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
               return (
                 <div
                   key={saved.id}
-                  className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-150 overflow-hidden"
+                  className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 overflow-hidden"
                 >
-                  <div className="flex items-center justify-between gap-3 p-3 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-200">
-                    <h3 className="font-medium text-zinc-900 dark:text-white truncate">
+                  <div className="flex items-center justify-between gap-3 p-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-200">
+                    <h3 className="font-medium text-neutral-900 dark:text-white truncate">
                       {saved.name}
                     </h3>
                     <div className="flex items-center gap-2 shrink-0">
@@ -144,7 +144,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                         </Button>
                       ) : (
                         <div className="flex items-center gap-1">
-                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             Delete?
                           </span>
                           <Button
@@ -168,7 +168,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                     </div>
                   </div>
                   <div
-                    className="p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-dark-100 transition-colors"
+                    className="p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
                     onClick={() => handleAdd(saved, false)}
                     role="button"
                     tabIndex={0}
@@ -179,11 +179,11 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                       }
                     }}
                   >
-                    <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                    <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
                       Preview — click to add to form
                     </div>
-                    <div className="rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-dark-150 p-3 max-h-48 overflow-y-auto">
-                      <div className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 mb-2 border-b border-zinc-200 dark:border-zinc-600 pb-1">
+                    <div className="rounded border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-dark-150 p-3 max-h-48 overflow-y-auto">
+                      <div className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-2 border-b border-neutral-200 dark:border-neutral-600 pb-1">
                         {section.title}
                       </div>
                       <SectionContent section={section} />

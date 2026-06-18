@@ -359,7 +359,7 @@ export const EquipmentTracking = forwardRef<
       case "out-of-service":
         return "bg-red-100 text-red-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -379,9 +379,9 @@ export const EquipmentTracking = forwardRef<
       case "electrical":
         return "bg-amber-100 text-amber-800";
       case "computing":
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -431,7 +431,7 @@ export const EquipmentTracking = forwardRef<
             <h2 className="text-xl font-bold">{equipment.name}</h2>
             <button
               onClick={onClose}
-              className="text-zinc-500 hover:text-zinc-700"
+              className="text-neutral-500 hover:text-neutral-700"
             >
               <X className="h-5 w-5" />
             </button>
@@ -439,34 +439,34 @@ export const EquipmentTracking = forwardRef<
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <p className="text-sm text-zinc-500">Category</p>
+              <p className="text-sm text-neutral-500">Category</p>
               <p className="font-medium">{equipment.category}</p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Status</p>
+              <p className="text-sm text-neutral-500">Status</p>
               <Badge className={getStatusColor(equipment.status)}>
                 {equipment.status.charAt(0).toUpperCase() +
                   equipment.status.slice(1)}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Model</p>
+              <p className="text-sm text-neutral-500">Model</p>
               <p className="font-medium">{equipment.model || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Manufacturer</p>
+              <p className="text-sm text-neutral-500">Manufacturer</p>
               <p className="font-medium">{equipment.manufacturer || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Serial Number</p>
+              <p className="text-sm text-neutral-500">Serial Number</p>
               <p className="font-medium">{equipment.serial_number || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Division</p>
+              <p className="text-sm text-neutral-500">Division</p>
               <p className="font-medium">{equipment.location || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Calibration Date</p>
+              <p className="text-sm text-neutral-500">Calibration Date</p>
               <p className="font-medium">
                 {equipment.purchase_date
                   ? new Date(equipment.purchase_date).toLocaleDateString()
@@ -474,7 +474,7 @@ export const EquipmentTracking = forwardRef<
               </p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Calibration Expiration</p>
+              <p className="text-sm text-neutral-500">Calibration Expiration</p>
               <p className="font-medium">
                 {equipment.warranty_expiration
                   ? new Date(equipment.warranty_expiration).toLocaleDateString()
@@ -485,8 +485,8 @@ export const EquipmentTracking = forwardRef<
 
           {equipment.notes && (
             <div className="mb-4">
-              <p className="text-sm text-zinc-500 mb-1">Notes</p>
-              <p className="bg-zinc-50 p-3 rounded">{equipment.notes}</p>
+              <p className="text-sm text-neutral-500 mb-1">Notes</p>
+              <p className="bg-neutral-50 p-3 rounded">{equipment.notes}</p>
             </div>
           )}
 
@@ -578,7 +578,7 @@ export const EquipmentTracking = forwardRef<
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Equipment Name
                       </label>
                       <Input
@@ -593,7 +593,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Category
                       </label>
                       <Select
@@ -606,7 +606,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Status
                       </label>
                       <Select
@@ -619,7 +619,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Serial Number
                       </label>
                       <Input
@@ -633,7 +633,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Model
                       </label>
                       <Input
@@ -647,7 +647,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Manufacturer
                       </label>
                       <Input
@@ -661,7 +661,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Calibration Date
                       </label>
                       <Input
@@ -675,7 +675,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Calibration Expiration
                       </label>
                       <Input
@@ -692,7 +692,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Current Division
                       </label>
                       <Select
@@ -705,7 +705,7 @@ export const EquipmentTracking = forwardRef<
                     </div>
 
                     <div className="md:col-span-3">
-                      <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                         Notes
                       </label>
                       <textarea
@@ -714,7 +714,7 @@ export const EquipmentTracking = forwardRef<
                           setForm({ ...form, notes: e.target.value })
                         }
                         placeholder="Maintenance history, issues, etc."
-                        className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700 min-h-[100px]"
+                        className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
                       />
                     </div>
                   </div>
@@ -747,8 +747,8 @@ export const EquipmentTracking = forwardRef<
                 <LoadingSpinner size="md" />
               </div>
             ) : equipment.length === 0 ? (
-              <div className="text-center p-8 bg-zinc-50 rounded-md">
-                <p className="text-zinc-600">
+              <div className="text-center p-8 bg-neutral-50 rounded-md">
+                <p className="text-neutral-600">
                   No equipment found. Use the "Add Equipment" button above to
                   add items.
                 </p>
@@ -764,12 +764,12 @@ export const EquipmentTracking = forwardRef<
                     <CardContent className="p-4">
                       <div className="flex justify-between">
                         <div className="flex items-start space-x-3">
-                          <div className="p-2 bg-zinc-100 rounded-full">
-                            <Hammer className="h-6 w-6 text-zinc-600" />
+                          <div className="p-2 bg-neutral-100 rounded-full">
+                            <Hammer className="h-6 w-6 text-neutral-600" />
                           </div>
                           <div>
                             <h3 className="font-medium text-lg">{item.name}</h3>
-                            <p className="text-sm text-zinc-600">
+                            <p className="text-sm text-neutral-600">
                               {item.manufacturer} {item.model}
                             </p>
                             <div className="mt-2 flex flex-wrap gap-2">
@@ -791,7 +791,7 @@ export const EquipmentTracking = forwardRef<
                             </div>
 
                             {item.location && (
-                              <div className="mt-2 flex items-center text-sm text-zinc-600">
+                              <div className="mt-2 flex items-center text-sm text-neutral-600">
                                 <MapPin className="h-4 w-4 mr-1" />
                                 <span>{item.location}</span>
                               </div>

@@ -144,7 +144,7 @@ export default function CalibrationJobsPage() {
       completed: "bg-green-100 text-green-800",
       cancelled: "bg-red-100 text-red-800",
     };
-    return statusMap[status] || "bg-zinc-100 text-zinc-800";
+    return statusMap[status] || "bg-neutral-100 text-neutral-800";
   };
 
   const formatDate = (dateString?: string) => {
@@ -161,7 +161,7 @@ export default function CalibrationJobsPage() {
       <div className="flex items-center mb-4">
         <Link
           to="/calibration/dashboard"
-          className="mr-4 text-zinc-600 hover:text-zinc-900 dark:text-white dark:hover:text-white"
+          className="mr-4 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
@@ -189,7 +189,7 @@ export default function CalibrationJobsPage() {
 
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-3">Create a New Job</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-zinc-50 dark:bg-dark-150">
+        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-neutral-50 dark:bg-dark-150">
           <div id="calibration-job-button">
             <JobCreationForm
               division="calibration"
@@ -223,7 +223,7 @@ export default function CalibrationJobsPage() {
       {/* Filter Controls */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-3">Filter Jobs</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-zinc-50 dark:bg-dark-150">
+        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-neutral-50 dark:bg-dark-150">
           <Button
             variant="outline"
             className="flex items-center bg-white dark:bg-dark-150"
@@ -253,9 +253,9 @@ export default function CalibrationJobsPage() {
       </div>
 
       {/* Jobs List */}
-      <Card className="bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-sm">
-        <div className="border-b border-zinc-200 dark:border-zinc-700 p-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+      <Card className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-sm">
+        <div className="border-b border-neutral-200 dark:border-neutral-700 p-4 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
             NETA Technician Jobs
           </h2>
           <Button
@@ -275,7 +275,7 @@ export default function CalibrationJobsPage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="mb-4 text-zinc-500 dark:text-white">
+            <div className="mb-4 text-neutral-500 dark:text-white">
               No jobs found. Create a new job to get started.
             </div>
             <Button
@@ -290,27 +290,27 @@ export default function CalibrationJobsPage() {
             </Button>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+          <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="p-4 hover:bg-zinc-50 dark:hover:bg-dark-200 transition-colors"
+                className="p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 transition-colors"
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center">
-                      <h3 className="text-lg font-medium text-zinc-900 dark:text-white">
+                      <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
                         {maskJobTitle(job.title)}
                       </h3>
                       <Badge className={`ml-2 ${getStatusColor(job.status)}`}>
                         {formatStatusLabel(job.status)}
                       </Badge>
-                      <Badge className="ml-2 bg-zinc-100 text-zinc-800 dark:bg-dark-150 dark:text-white">
+                      <Badge className="ml-2 bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-white">
                         {job.division.charAt(0).toUpperCase() +
                           job.division.slice(1)}
                       </Badge>
                     </div>
-                    <p className="text-sm text-zinc-500 dark:text-white mt-1">
+                    <p className="text-sm text-neutral-500 dark:text-white mt-1">
                       Job #{job.job_number} •{" "}
                       {job.customers?.company_name ||
                         job.customers?.name ||
@@ -339,25 +339,25 @@ export default function CalibrationJobsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                   <div>
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Start Date
                     </p>
                     <p className="text-sm flex items-center">
-                      <Clock className="h-3 w-3 mr-1 text-zinc-400" />
+                      <Clock className="h-3 w-3 mr-1 text-neutral-400" />
                       {formatDate(job.start_date)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Due Date
                     </p>
                     <p className="text-sm flex items-center">
-                      <Clock className="h-3 w-3 mr-1 text-zinc-400" />
+                      <Clock className="h-3 w-3 mr-1 text-neutral-400" />
                       {formatDate(job.due_date)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500 dark:text-white">
+                    <p className="text-xs text-neutral-500 dark:text-white">
                       Budget
                     </p>
                     <p className="text-sm">

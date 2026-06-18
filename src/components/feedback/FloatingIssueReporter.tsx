@@ -218,14 +218,14 @@ export const FloatingIssueReporter: React.FC = () => {
       )}
 
       {open && (
-        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-4">
+        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               {type === "issue" ? "Report an Issue" : "Request a Feature"}
             </h3>
             <button
               onClick={() => setOpen(false)}
-              className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-white"
+              className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-white"
               aria-label="Close"
             >
               ✕
@@ -296,7 +296,7 @@ export const FloatingIssueReporter: React.FC = () => {
                   placeholder="Search by name..."
                 />
                 {showPartyDropdown && partySearch.trim() && (
-                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg max-h-32 overflow-y-auto">
+                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-32 overflow-y-auto">
                     {allUsers
                       .filter(
                         (u) =>
@@ -316,7 +316,7 @@ export const FloatingIssueReporter: React.FC = () => {
                             setPartySearch("");
                             setShowPartyDropdown(false);
                           }}
-                          className="block w-full text-left px-3 py-1.5 text-sm text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-dark-100"
+                          className="block w-full text-left px-3 py-1.5 text-sm text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-dark-100"
                         >
                           {u.name}
                         </button>
@@ -329,7 +329,7 @@ export const FloatingIssueReporter: React.FC = () => {
                           .toLowerCase()
                           .includes(partySearch.toLowerCase()),
                     ).length === 0 && (
-                      <div className="px-3 py-2 text-xs text-zinc-500">
+                      <div className="px-3 py-2 text-xs text-neutral-500">
                         No results
                       </div>
                     )}
@@ -343,7 +343,7 @@ export const FloatingIssueReporter: React.FC = () => {
                     return (
                       <span
                         key={uid}
-                        className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-dark-100 text-zinc-800 dark:text-zinc-200 text-xs px-2 py-1 rounded-full"
+                        className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-xs px-2 py-1 rounded-full"
                       >
                         {u?.name || "User"}
                         <button
@@ -353,7 +353,7 @@ export const FloatingIssueReporter: React.FC = () => {
                               prev.filter((id) => id !== uid),
                             )
                           }
-                          className="text-zinc-500 hover:text-red-500"
+                          className="text-neutral-500 hover:text-red-500"
                         >
                           ✕
                         </button>
@@ -383,10 +383,10 @@ export const FloatingIssueReporter: React.FC = () => {
                         <img
                           src={f.previewUrl}
                           alt={f.file.name}
-                          className="w-full h-16 object-cover rounded border border-zinc-200 dark:border-zinc-700"
+                          className="w-full h-16 object-cover rounded border border-neutral-200 dark:border-neutral-700"
                         />
                       ) : (
-                        <div className="w-full h-16 flex items-center justify-center rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-dark-100 text-xs text-zinc-600 dark:text-zinc-300 p-1 text-center">
+                        <div className="w-full h-16 flex items-center justify-center rounded border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-100 text-xs text-neutral-600 dark:text-neutral-300 p-1 text-center">
                           <span className="line-clamp-2 break-all">
                             {f.file.name}
                           </span>
@@ -405,7 +405,7 @@ export const FloatingIssueReporter: React.FC = () => {
               )}
             </div>
 
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">
               Page: {pageUrl || "unknown"}
             </div>
 
@@ -419,7 +419,7 @@ export const FloatingIssueReporter: React.FC = () => {
                   resetForm();
                   setOpen(false);
                 }}
-                className="bg-white dark:bg-dark-100 border border-zinc-300 dark:border-zinc-600"
+                className="bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                 disabled={submitting}
               >
                 Cancel

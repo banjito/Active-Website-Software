@@ -151,7 +151,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="p-1 text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
+                  className="p-1 text-neutral-500 hover:text-neutral-700 dark:text-dark-400 dark:hover:text-dark-300"
                 >
                   <X size={16} />
                 </button>
@@ -159,7 +159,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="ml-1 p-1 text-zinc-500 hover:text-zinc-700 dark:text-dark-400 dark:hover:text-dark-300"
+                className="ml-1 p-1 text-neutral-500 hover:text-neutral-700 dark:text-dark-400 dark:hover:text-dark-300"
               >
                 {showFilters ? (
                   <ChevronUp size={16} />
@@ -198,7 +198,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       )}
 
       {/* Keyboard shortcut hint */}
-      <div className="absolute right-3 bottom-[-20px] text-xs text-zinc-500 dark:text-dark-500">
+      <div className="absolute right-3 bottom-[-20px] text-xs text-neutral-500 dark:text-dark-500">
         Press / to search
       </div>
     </div>

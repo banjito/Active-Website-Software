@@ -329,10 +329,10 @@ export default function AdminUserManagement() {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             User Management
           </h2>
-          <p className="text-zinc-600 dark:text-white mt-1">
+          <p className="text-neutral-600 dark:text-white mt-1">
             Manage user accounts and assign roles.
           </p>
         </div>
@@ -369,39 +369,39 @@ export default function AdminUserManagement() {
           placeholder="Search users by name, email, or role..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+          className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
         />
       </div>
 
       {/* Users List */}
-      <div className="border border-zinc-200 dark:border-dark-300 rounded-lg overflow-hidden shadow-sm">
-        <div className="bg-zinc-50 dark:bg-dark-150 px-6 py-3 border-b border-zinc-200 dark:border-dark-300 flex items-center justify-between">
-          <h3 className="text-base font-medium text-zinc-700 dark:text-zinc-200">
+      <div className="border border-neutral-200 dark:border-dark-300 rounded-lg overflow-hidden shadow-sm">
+        <div className="bg-neutral-50 dark:bg-dark-150 px-6 py-3 border-b border-neutral-200 dark:border-dark-300 flex items-center justify-between">
+          <h3 className="text-base font-medium text-neutral-700 dark:text-neutral-200">
             All Users ({filteredUsers.length})
           </h3>
         </div>
 
         {loading ? (
-          <div className="bg-white dark:bg-dark-150 p-6 text-center text-zinc-500 dark:text-white">
+          <div className="bg-white dark:bg-dark-150 p-6 text-center text-neutral-500 dark:text-white">
             <LoadingSpinner size="md" />
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="bg-white dark:bg-dark-150 p-6 text-center text-zinc-500 dark:text-white">
+          <div className="bg-white dark:bg-dark-150 p-6 text-center text-neutral-500 dark:text-white">
             {searchQuery
               ? "No users found matching your search."
               : "No users found."}
           </div>
         ) : (
-          <div className="divide-y divide-zinc-200 dark:divide-dark-300">
+          <div className="divide-y divide-neutral-200 dark:divide-dark-300">
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="px-6 py-4 flex flex-col gap-4 bg-white dark:bg-dark-150 hover:bg-zinc-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150"
+                className="px-6 py-4 flex flex-col gap-4 bg-white dark:bg-dark-150 hover:bg-neutral-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
                     {/* Profile Image/Initial */}
-                    <div className="h-10 w-10 rounded-full bg-zinc-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {user.user_metadata?.profileImage ? (
                         <img
                           src={user.user_metadata.profileImage}
@@ -409,7 +409,7 @@ export default function AdminUserManagement() {
                           className="h-10 w-10 object-cover"
                         />
                       ) : (
-                        <span className="text-sm font-medium text-zinc-600 dark:text-white">
+                        <span className="text-sm font-medium text-neutral-600 dark:text-white">
                           {user.user_metadata?.name?.[0]?.toUpperCase() ||
                             user.email?.[0]?.toUpperCase() ||
                             "?"}
@@ -418,7 +418,7 @@ export default function AdminUserManagement() {
                     </div>
                     {/* Name, Email, Status Icons */}
                     <div className="ml-3 min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-white truncate flex items-center">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white truncate flex items-center">
                         <span className="truncate">
                           {user.user_metadata?.name || "Unnamed User"}
                         </span>
@@ -435,7 +435,7 @@ export default function AdminUserManagement() {
                           <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
                         )}
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-white truncate">
+                      <p className="text-xs text-neutral-500 dark:text-white truncate">
                         {user.email}
                       </p>
                     </div>
@@ -449,7 +449,7 @@ export default function AdminUserManagement() {
                         onChange={(e) =>
                           setSelectedRole(e.target.value as Role)
                         }
-                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       >
                         <option value="" disabled>
                           Select a role
@@ -474,7 +474,7 @@ export default function AdminUserManagement() {
                         size="sm"
                         variant="ghost"
                         onClick={handleCancelEdit}
-                        className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
                         aria-label="Cancel Edit"
                       >
                         <XCircle className="h-4 w-4" />
@@ -492,7 +492,7 @@ export default function AdminUserManagement() {
                             ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
                             : user.user_metadata?.role?.includes("Technician")
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "bg-zinc-100 text-zinc-800 dark:bg-dark-300 dark:text-white"
+                              : "bg-neutral-100 text-neutral-800 dark:bg-dark-300 dark:text-white"
                         }
                       `}
                         >
@@ -505,7 +505,7 @@ export default function AdminUserManagement() {
                         onClick={() =>
                           handleStartEdit(user.id, user.user_metadata?.role)
                         }
-                        className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
                         aria-label="Edit Role"
                       >
                         <Edit className="h-4 w-4" />
@@ -515,7 +515,7 @@ export default function AdminUserManagement() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleStartPasswordEdit(user.id)}
-                          className="px-2 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                          className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
                         >
                           <KeyRound className="h-4 w-4" />
                           <span className="ml-1">Change password</span>
@@ -535,21 +535,21 @@ export default function AdminUserManagement() {
                 </div>
 
                 {canChangePasswords && passwordUserId === user.id && (
-                  <div className="rounded-md border border-zinc-200 dark:border-dark-300 bg-zinc-50 dark:bg-dark-100 p-4">
+                  <div className="rounded-md border border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-100 p-4">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="New password"
-                        className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -568,7 +568,7 @@ export default function AdminUserManagement() {
                         variant="ghost"
                         onClick={handleCancelPasswordEdit}
                         disabled={passwordLoadingUserId === user.id}
-                        className="text-zinc-500 hover:bg-zinc-200 dark:hover:bg-dark-50"
+                        className="text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
                       >
                         Cancel
                       </Button>

@@ -736,7 +736,7 @@ export const CandidateTracking: React.FC = () => {
       case "rescheduled":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -821,7 +821,7 @@ export const CandidateTracking: React.FC = () => {
       case "rejected":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-zinc-100 text-zinc-800";
+        return "bg-neutral-100 text-neutral-800";
     }
   };
 
@@ -849,10 +849,10 @@ export const CandidateTracking: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Candidate Tracking (ATS)
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Manage candidate pipeline and screening
           </p>
         </div>
@@ -873,12 +873,12 @@ export const CandidateTracking: React.FC = () => {
         {statusOptions.map((status) => (
           <Card key={status.value}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+              <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                 {status.label}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+              <div className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {statusCounts[status.value] || 0}
               </div>
             </CardContent>
@@ -891,21 +891,21 @@ export const CandidateTracking: React.FC = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search candidates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
+              <Filter className="h-4 w-4 text-neutral-400" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Status</option>
                 {statusOptions.map((opt) => (
@@ -918,7 +918,7 @@ export const CandidateTracking: React.FC = () => {
             <select
               value={filterPosition}
               onChange={(e) => setFilterPosition(e.target.value)}
-              className="px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All Positions</option>
               {positions.map((pos) => (
@@ -944,11 +944,11 @@ export const CandidateTracking: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Users className="mx-auto h-12 w-12 text-zinc-400" />
-              <h3 className="mt-4 text-lg font-medium text-zinc-900 dark:text-white">
+              <Users className="mx-auto h-12 w-12 text-neutral-400" />
+              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
                 No candidates found
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {searchTerm ||
                 filterStatus !== "all" ||
                 filterPosition !== "all"
@@ -1043,7 +1043,7 @@ export const CandidateTracking: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4 text-zinc-600 dark:text-zinc-400">
+                    <div className="flex items-center gap-4 text-neutral-600 dark:text-neutral-400">
                       <span>Source: {candidate.source}</span>
                       <span>
                         Applied:{" "}
@@ -1060,12 +1060,12 @@ export const CandidateTracking: React.FC = () => {
                     </div>
                   </div>
                   {candidate.notes && (
-                    <div className="p-2 bg-zinc-50 dark:bg-dark-100 rounded text-sm text-zinc-700 dark:text-zinc-300">
+                    <div className="p-2 bg-neutral-50 dark:bg-dark-100 rounded text-sm text-neutral-700 dark:text-neutral-300">
                       <strong>Notes:</strong> {candidate.notes}
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-dark-200">
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-dark-200">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
                       {candidate.linked_user_email && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">
                           <Link2 className="h-3 w-3" />
@@ -1096,7 +1096,7 @@ export const CandidateTracking: React.FC = () => {
                             e.target.value as Candidate["status"],
                           )
                         }
-                        className="px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       >
                         {statusOptions.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -1232,10 +1232,10 @@ export const CandidateTracking: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white">
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white">
                 Resume (PDF, DOC, DOCX)
               </label>
-              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
                 <input
                   type="file"
                   id="resume-upload"
@@ -1251,16 +1251,16 @@ export const CandidateTracking: React.FC = () => {
                   htmlFor="resume-upload"
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
-                  <Upload className="h-8 w-8 text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="h-8 w-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     {resumeFile ? resumeFile.name : "Click to upload resume"}
                   </span>
-                  <span className="text-xs text-zinc-500 mt-1">
+                  <span className="text-xs text-neutral-500 mt-1">
                     Max 10MB • PDF, DOC, or DOCX
                   </span>
                 </label>
                 {resumeFile && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{resumeFile.name}</span>
                     <button
@@ -1276,10 +1276,10 @@ export const CandidateTracking: React.FC = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white">
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white">
                 Cover Letter (PDF, DOC, DOCX)
               </label>
-              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
                 <input
                   type="file"
                   id="cover-letter-upload"
@@ -1297,18 +1297,18 @@ export const CandidateTracking: React.FC = () => {
                   htmlFor="cover-letter-upload"
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
-                  <Upload className="h-8 w-8 text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="h-8 w-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     {coverLetterFile
                       ? coverLetterFile.name
                       : "Click to upload cover letter"}
                   </span>
-                  <span className="text-xs text-zinc-500 mt-1">
+                  <span className="text-xs text-neutral-500 mt-1">
                     Max 10MB • Optional
                   </span>
                 </label>
                 {coverLetterFile && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{coverLetterFile.name}</span>
                     <button
@@ -1324,10 +1324,10 @@ export const CandidateTracking: React.FC = () => {
               </div>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-200 dark:border-zinc-600" />
+                  <div className="w-full border-t border-neutral-200 dark:border-neutral-600" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="bg-white dark:bg-dark-100 px-2 text-zinc-500">
+                  <span className="bg-white dark:bg-dark-100 px-2 text-neutral-500">
                     or paste text
                   </span>
                 </div>
@@ -1348,11 +1348,11 @@ export const CandidateTracking: React.FC = () => {
               onChange={handleInputChange}
               rows={2}
             />
-            <div className="border-t border-zinc-200 dark:border-dark-200 pt-4">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+            <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
                 EEO Data (Voluntary)
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
                 Collected for compliance reporting only. This data is stored
                 anonymously and will not appear on the candidate profile.
               </p>
@@ -1399,11 +1399,11 @@ export const CandidateTracking: React.FC = () => {
                     name="eeo_veteran"
                     checked={formData.eeo_veteran}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-zinc-300"
+                    className="h-4 w-4 rounded border-neutral-300"
                   />
                   <label
                     htmlFor="eeo_veteran"
-                    className="text-sm text-zinc-700 dark:text-zinc-300"
+                    className="text-sm text-neutral-700 dark:text-neutral-300"
                   >
                     Protected Veteran
                   </label>
@@ -1415,11 +1415,11 @@ export const CandidateTracking: React.FC = () => {
                     name="eeo_disability"
                     checked={formData.eeo_disability}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-zinc-300"
+                    className="h-4 w-4 rounded border-neutral-300"
                   />
                   <label
                     htmlFor="eeo_disability"
-                    className="text-sm text-zinc-700 dark:text-zinc-300"
+                    className="text-sm text-neutral-700 dark:text-neutral-300"
                   >
                     Individual with Disability
                   </label>
@@ -1571,10 +1571,10 @@ export const CandidateTracking: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white">
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white">
                 Resume (PDF, DOC, DOCX)
               </label>
-              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
                 <input
                   type="file"
                   id="edit-resume-upload"
@@ -1590,20 +1590,20 @@ export const CandidateTracking: React.FC = () => {
                   htmlFor="edit-resume-upload"
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
-                  <Upload className="h-8 w-8 text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="h-8 w-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     {resumeFile
                       ? resumeFile.name
                       : selectedCandidate?.resume_url
                         ? "Upload new file to replace"
                         : "Click to upload resume"}
                   </span>
-                  <span className="text-xs text-zinc-500 mt-1">
+                  <span className="text-xs text-neutral-500 mt-1">
                     Max 10MB • Optional
                   </span>
                 </label>
                 {resumeFile && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{resumeFile.name}</span>
                     <button
@@ -1619,10 +1619,10 @@ export const CandidateTracking: React.FC = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white">
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white">
                 Cover Letter (PDF, DOC, DOCX)
               </label>
-              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
                 <input
                   type="file"
                   id="edit-cover-letter-upload"
@@ -1640,20 +1640,20 @@ export const CandidateTracking: React.FC = () => {
                   htmlFor="edit-cover-letter-upload"
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
-                  <Upload className="h-8 w-8 text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <Upload className="h-8 w-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     {coverLetterFile
                       ? coverLetterFile.name
                       : selectedCandidate?.cover_letter_url
                         ? "Upload new file to replace"
                         : "Click to upload cover letter"}
                   </span>
-                  <span className="text-xs text-zinc-500 mt-1">
+                  <span className="text-xs text-neutral-500 mt-1">
                     Max 10MB • Optional
                   </span>
                 </label>
                 {coverLetterFile && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{coverLetterFile.name}</span>
                     <button
@@ -1683,7 +1683,7 @@ export const CandidateTracking: React.FC = () => {
               onChange={handleInputChange}
               rows={3}
             />
-            <div className="border-t border-zinc-200 dark:border-dark-200 pt-4">
+            <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   label="FR shirt size"
@@ -1737,48 +1737,48 @@ export const CandidateTracking: React.FC = () => {
           {selectedCandidate && (
             <div className="space-y-6 py-4">
               {/* Basic Information */}
-              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-6">
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                   Contact Information
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
                       <Mail className="h-4 w-4" />
                       Email
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.email}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
                       <Phone className="h-4 w-4" />
                       Phone
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.phone || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       Location
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.location || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Position Applied
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.position_applied}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Status
                     </label>
                     <p className="mt-1">
@@ -1790,18 +1790,18 @@ export const CandidateTracking: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Source
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.source}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                       Applied Date
                     </label>
-                    <p className="text-zinc-900 dark:text-white mt-1">
+                    <p className="text-neutral-900 dark:text-white mt-1">
                       {new Date(
                         selectedCandidate.applied_date,
                       ).toLocaleDateString()}
@@ -1809,10 +1809,10 @@ export const CandidateTracking: React.FC = () => {
                   </div>
                   {selectedCandidate.last_contact_date && (
                     <div>
-                      <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Last Contact
                       </label>
-                      <p className="text-zinc-900 dark:text-white mt-1">
+                      <p className="text-neutral-900 dark:text-white mt-1">
                         {new Date(
                           selectedCandidate.last_contact_date,
                         ).toLocaleDateString()}
@@ -1824,25 +1824,25 @@ export const CandidateTracking: React.FC = () => {
 
               {/* Resume Section - Collapsible */}
               {selectedCandidate.resume_url && (
-                <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg">
                   <button
                     onClick={() => toggleSection("resume")}
-                    className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <FileText className="h-5 w-5 text-[#f26722]" />
-                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Resume
                       </h2>
                     </div>
                     {expandedSections.resume ? (
-                      <ChevronUp className="h-5 w-5 text-zinc-500" />
+                      <ChevronUp className="h-5 w-5 text-neutral-500" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-zinc-500" />
+                      <ChevronDown className="h-5 w-5 text-neutral-500" />
                     )}
                   </button>
                   {expandedSections.resume && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 p-4">
+                    <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="mb-3">
                         <a
                           href={selectedCandidate.resume_url}
@@ -1855,7 +1855,7 @@ export const CandidateTracking: React.FC = () => {
                         </a>
                       </div>
                       <div
-                        className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden"
+                        className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden"
                         style={{ height: "600px" }}
                       >
                         <iframe
@@ -1870,33 +1870,33 @@ export const CandidateTracking: React.FC = () => {
               )}
 
               {/* Interviews Section - Collapsible */}
-              <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg">
+              <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg">
                 <button
                   onClick={() => toggleSection("interviews")}
-                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-[#f26722]" />
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       Interviews ({candidateInterviews.length})
                     </h2>
                   </div>
                   {expandedSections.interviews ? (
-                    <ChevronUp className="h-5 w-5 text-zinc-500" />
+                    <ChevronUp className="h-5 w-5 text-neutral-500" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-zinc-500" />
+                    <ChevronDown className="h-5 w-5 text-neutral-500" />
                   )}
                 </button>
                 {expandedSections.interviews && (
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 p-4">
+                  <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
                     {loadingInterviews ? (
                       <div className="text-center py-8">
                         <LoadingSpinner size="sm" />
                       </div>
                     ) : candidateInterviews.length === 0 ? (
                       <div className="text-center py-8">
-                        <Calendar className="mx-auto h-12 w-12 text-zinc-400" />
-                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
+                        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                           No interviews scheduled
                         </p>
                       </div>
@@ -1929,7 +1929,7 @@ export const CandidateTracking: React.FC = () => {
                           return (
                             <div
                               key={interview.id}
-                              className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-white dark:bg-zinc-800"
+                              className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-white dark:bg-neutral-800"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
@@ -1937,7 +1937,7 @@ export const CandidateTracking: React.FC = () => {
                                     {getInterviewTypeIcon(
                                       interview.interview_type,
                                     )}
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white">
+                                    <h3 className="font-semibold text-neutral-900 dark:text-white">
                                       {stageName}
                                     </h3>
                                     <span
@@ -1949,7 +1949,7 @@ export const CandidateTracking: React.FC = () => {
                                         interview.status.slice(1)}
                                     </span>
                                   </div>
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-neutral-600 dark:text-neutral-400">
                                     <div className="flex items-center gap-2">
                                       <Calendar className="h-4 w-4" />
                                       <span>
@@ -1989,7 +1989,7 @@ export const CandidateTracking: React.FC = () => {
                                     )}
                                   </div>
                                   {interview.location && (
-                                    <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+                                    <div className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-2">
                                       <MapPinIcon className="h-4 w-4" />
                                       <span>{interview.location}</span>
                                     </div>
@@ -2012,8 +2012,8 @@ export const CandidateTracking: React.FC = () => {
 
                               {/* Interview Notes/Feedback */}
                               {feedbackData && (
-                                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                                  <h4 className="font-medium text-zinc-900 dark:text-white mb-3">
+                                <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                                  <h4 className="font-medium text-neutral-900 dark:text-white mb-3">
                                     Interview Notes
                                   </h4>
                                   <div className="space-y-3 text-sm">
@@ -2022,10 +2022,10 @@ export const CandidateTracking: React.FC = () => {
                                       <>
                                         {feedbackData.gettingToKnowNotes && (
                                           <div>
-                                            <strong className="text-zinc-700 dark:text-zinc-300">
+                                            <strong className="text-neutral-700 dark:text-neutral-300">
                                               Getting to Know Candidate:
                                             </strong>
-                                            <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                            <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                               {feedbackData.gettingToKnowNotes}
                                             </p>
                                           </div>
@@ -2033,10 +2033,10 @@ export const CandidateTracking: React.FC = () => {
                                         {feedbackData.whyApplyingChecked &&
                                           feedbackData.whyApplyingNotes && (
                                             <div>
-                                              <strong className="text-zinc-700 dark:text-zinc-300">
+                                              <strong className="text-neutral-700 dark:text-neutral-300">
                                                 Why applying to AMP:
                                               </strong>
-                                              <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                              <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                                 {feedbackData.whyApplyingNotes}
                                               </p>
                                             </div>
@@ -2044,10 +2044,10 @@ export const CandidateTracking: React.FC = () => {
                                         {feedbackData.loveJobChecked &&
                                           feedbackData.loveJobNotes && (
                                             <div>
-                                              <strong className="text-zinc-700 dark:text-zinc-300">
+                                              <strong className="text-neutral-700 dark:text-neutral-300">
                                                 What they love about their job:
                                               </strong>
-                                              <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                              <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                                 {feedbackData.loveJobNotes}
                                               </p>
                                             </div>
@@ -2055,11 +2055,11 @@ export const CandidateTracking: React.FC = () => {
                                         {feedbackData.notLoveJobChecked &&
                                           feedbackData.notLoveJobNotes && (
                                             <div>
-                                              <strong className="text-zinc-700 dark:text-zinc-300">
+                                              <strong className="text-neutral-700 dark:text-neutral-300">
                                                 What they don't love about their
                                                 job:
                                               </strong>
-                                              <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                              <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                                 {feedbackData.notLoveJobNotes}
                                               </p>
                                             </div>
@@ -2067,20 +2067,20 @@ export const CandidateTracking: React.FC = () => {
                                         {feedbackData.familyValuesChecked &&
                                           feedbackData.familyValuesNotes && (
                                             <div>
-                                              <strong className="text-zinc-700 dark:text-zinc-300">
+                                              <strong className="text-neutral-700 dark:text-neutral-300">
                                                 Family/Values/Morals:
                                               </strong>
-                                              <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                              <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                                 {feedbackData.familyValuesNotes}
                                               </p>
                                             </div>
                                           )}
                                         {feedbackData.fitCultureNotes && (
                                           <div>
-                                            <strong className="text-zinc-700 dark:text-zinc-300">
+                                            <strong className="text-neutral-700 dark:text-neutral-300">
                                               Cultural Fit:
                                             </strong>
-                                            <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                            <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                               {feedbackData.fitCultureNotes}
                                             </p>
                                           </div>
@@ -2092,20 +2092,20 @@ export const CandidateTracking: React.FC = () => {
                                       <>
                                         {feedbackData.workExperienceNotes && (
                                           <div>
-                                            <strong className="text-zinc-700 dark:text-zinc-300">
+                                            <strong className="text-neutral-700 dark:text-neutral-300">
                                               Work Experience:
                                             </strong>
-                                            <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                            <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                               {feedbackData.workExperienceNotes}
                                             </p>
                                           </div>
                                         )}
                                         {feedbackData.reactSituationsNotes && (
                                           <div>
-                                            <strong className="text-zinc-700 dark:text-zinc-300">
+                                            <strong className="text-neutral-700 dark:text-neutral-300">
                                               Reaction to Situations:
                                             </strong>
-                                            <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                            <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                               {
                                                 feedbackData.reactSituationsNotes
                                               }
@@ -2116,10 +2116,10 @@ export const CandidateTracking: React.FC = () => {
                                     )}
                                     {feedbackData.overallFeedback && (
                                       <div>
-                                        <strong className="text-zinc-700 dark:text-zinc-300">
+                                        <strong className="text-neutral-700 dark:text-neutral-300">
                                           Overall Feedback:
                                         </strong>
-                                        <p className="text-zinc-600 dark:text-zinc-400 mt-1 whitespace-pre-wrap">
+                                        <p className="text-neutral-600 dark:text-neutral-400 mt-1 whitespace-pre-wrap">
                                           {feedbackData.overallFeedback}
                                         </p>
                                       </div>
@@ -2128,11 +2128,11 @@ export const CandidateTracking: React.FC = () => {
                                 </div>
                               )}
                               {interview.notes && !feedbackData && (
-                                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                                  <h4 className="font-medium text-zinc-900 dark:text-white mb-2">
+                                <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                                  <h4 className="font-medium text-neutral-900 dark:text-white mb-2">
                                     Notes
                                   </h4>
-                                  <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">
                                     {interview.notes}
                                   </p>
                                 </div>
@@ -2149,25 +2149,25 @@ export const CandidateTracking: React.FC = () => {
               {/* Cover Letter Section - Collapsible */}
               {(selectedCandidate.cover_letter ||
                 selectedCandidate.cover_letter_url) && (
-                <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg">
                   <button
                     onClick={() => toggleSection("coverLetter")}
-                    className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <FileText className="h-5 w-5 text-[#f26722]" />
-                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Cover Letter
                       </h2>
                     </div>
                     {expandedSections.coverLetter ? (
-                      <ChevronUp className="h-5 w-5 text-zinc-500" />
+                      <ChevronUp className="h-5 w-5 text-neutral-500" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-zinc-500" />
+                      <ChevronDown className="h-5 w-5 text-neutral-500" />
                     )}
                   </button>
                   {expandedSections.coverLetter && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 p-4 space-y-4">
+                    <div className="border-t border-neutral-200 dark:border-neutral-700 p-4 space-y-4">
                       {selectedCandidate.cover_letter_url && (
                         <div>
                           <a
@@ -2182,7 +2182,7 @@ export const CandidateTracking: React.FC = () => {
                         </div>
                       )}
                       {selectedCandidate.cover_letter && (
-                        <p className="text-zinc-900 dark:text-white whitespace-pre-wrap bg-zinc-50 dark:bg-zinc-800 rounded p-4">
+                        <p className="text-neutral-900 dark:text-white whitespace-pre-wrap bg-neutral-50 dark:bg-neutral-800 rounded p-4">
                           {selectedCandidate.cover_letter}
                         </p>
                       )}
@@ -2195,37 +2195,37 @@ export const CandidateTracking: React.FC = () => {
               {(selectedCandidate.fr_shirt_size ||
                 selectedCandidate.fr_pant_size ||
                 selectedCandidate.fr_jacket_size) && (
-                <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-800">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-neutral-800">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                     FR Clothing Sizes
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                     {selectedCandidate.fr_shirt_size && (
                       <div>
-                        <label className="text-zinc-500 dark:text-zinc-400">
+                        <label className="text-neutral-500 dark:text-neutral-400">
                           Shirt:
                         </label>
-                        <span className="ml-2 text-zinc-900 dark:text-white">
+                        <span className="ml-2 text-neutral-900 dark:text-white">
                           {selectedCandidate.fr_shirt_size}
                         </span>
                       </div>
                     )}
                     {selectedCandidate.fr_pant_size && (
                       <div>
-                        <label className="text-zinc-500 dark:text-zinc-400">
+                        <label className="text-neutral-500 dark:text-neutral-400">
                           Pants:
                         </label>
-                        <span className="ml-2 text-zinc-900 dark:text-white">
+                        <span className="ml-2 text-neutral-900 dark:text-white">
                           {selectedCandidate.fr_pant_size}
                         </span>
                       </div>
                     )}
                     {selectedCandidate.fr_jacket_size && (
                       <div>
-                        <label className="text-zinc-500 dark:text-zinc-400">
+                        <label className="text-neutral-500 dark:text-neutral-400">
                           Jacket:
                         </label>
-                        <span className="ml-2 text-zinc-900 dark:text-white">
+                        <span className="ml-2 text-neutral-900 dark:text-white">
                           {selectedCandidate.fr_jacket_size}
                         </span>
                       </div>
@@ -2239,11 +2239,11 @@ export const CandidateTracking: React.FC = () => {
                 getDisplayStatus(selectedCandidate),
               ) && (
                 <div className="border-2 border-emerald-500/30 rounded-lg p-5 bg-emerald-50 dark:bg-emerald-900/10">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
                     <UserPlus className="h-5 w-5 text-emerald-600" />
                     Send to Onboarding
                   </h2>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                     Create an onboarding record for this candidate. Once
                     created, go to Onboarding Tracking to link their work
                     account and assign packets.
@@ -2260,7 +2260,7 @@ export const CandidateTracking: React.FC = () => {
                     )}
                     Send to Onboarding
                   </Button>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                     After sending, go to Onboarding Tracking to assign packets
                     and manage their onboarding process.
                   </p>
@@ -2272,11 +2272,11 @@ export const CandidateTracking: React.FC = () => {
                 getDisplayStatus(selectedCandidate),
               ) && (
                 <div className="border-2 border-[#f26722]/30 rounded-lg p-5 bg-orange-50 dark:bg-orange-900/10">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
                     <Link2 className="h-5 w-5 text-[#f26722]" />
                     Assign Work Account
                   </h2>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                     Link this candidate to their ampOS employee account
                     (@ampqes.com) to transfer documents.
                   </p>
@@ -2286,10 +2286,10 @@ export const CandidateTracking: React.FC = () => {
                       <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-zinc-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             Linked Account
                           </p>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
                             {selectedCandidate.linked_user_email}
                           </p>
                         </div>
@@ -2315,7 +2315,7 @@ export const CandidateTracking: React.FC = () => {
                         )}
                         Transfer Documents to Employee Profile
                       </Button>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         Transfers resume, cover letter, and signed offer letters
                         to the employee's document folder.
                       </p>
@@ -2330,25 +2330,25 @@ export const CandidateTracking: React.FC = () => {
                           placeholder="e.g. john.doe@ampqes.com"
                         />
                         {assignUserLoading && (
-                          <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-zinc-400" />
+                          <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-neutral-400" />
                         )}
                       </div>
                       {assignUserResults.length > 0 && (
-                        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+                        <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                           {assignUserResults.map((u) => (
                             <button
                               key={u.id}
                               type="button"
                               onClick={() => handleLinkUser(u.id, u.email)}
                               disabled={linkingUser}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-left border-b last:border-0 border-zinc-100 dark:border-zinc-700"
+                              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left border-b last:border-0 border-neutral-100 dark:border-neutral-700"
                             >
-                              <User className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                              <User className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                                <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                                   {u.name}
                                 </p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                                   {u.email}
                                 </p>
                               </div>
@@ -2360,7 +2360,7 @@ export const CandidateTracking: React.FC = () => {
                       {assignUserSearch.length >= 2 &&
                         assignUserResults.length === 0 &&
                         !assignUserLoading && (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
                             No matching @ampqes.com accounts found. Make sure
                             the employee has created their account.
                           </p>

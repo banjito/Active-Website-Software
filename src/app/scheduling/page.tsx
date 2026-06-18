@@ -113,7 +113,7 @@ export default function SchedulingPage() {
     <PageLayout title={`${formattedDivision} Division - Scheduling`}>
       <div className="container mx-auto px-4 py-6">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
             {formattedDivision} Division - Scheduling
           </h1>
         </div>
@@ -156,24 +156,24 @@ export default function SchedulingPage() {
             {selectedAssignment && (
               <div className="space-y-4">
                 {/* Job Information */}
-                <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     Job Information
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Job Number
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {selectedAssignment.job?.job_number || "N/A"}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Job Title
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {selectedAssignment.job?.title || "N/A"}
                       </p>
                     </div>
@@ -181,16 +181,16 @@ export default function SchedulingPage() {
                 </div>
 
                 {/* Assignment Information */}
-                <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     Assignment Details
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Assigned Technician
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {formatDisplayName(
                           selectedAssignment.user?.user_metadata?.name,
                           selectedAssignment.user?.email,
@@ -198,20 +198,20 @@ export default function SchedulingPage() {
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Date
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {dayjs(selectedAssignment.assignment_date).format(
                           "MMMM D, YYYY",
                         )}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Time
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {(() => {
                           const isAllDay =
                             selectedAssignment.start_time?.startsWith(
@@ -230,10 +230,10 @@ export default function SchedulingPage() {
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
                         Status
                       </label>
-                      <p className="font-medium text-zinc-900 dark:text-white capitalize">
+                      <p className="font-medium text-neutral-900 dark:text-white capitalize">
                         {selectedAssignment.status || "scheduled"}
                       </p>
                     </div>
@@ -242,11 +242,11 @@ export default function SchedulingPage() {
 
                 {/* Notes */}
                 {selectedAssignment.notes && (
-                  <div className="bg-zinc-50 dark:bg-dark-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                  <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                       Notes
                     </h3>
-                    <p className="text-sm text-zinc-900 dark:text-white whitespace-pre-wrap">
+                    <p className="text-sm text-neutral-900 dark:text-white whitespace-pre-wrap">
                       {selectedAssignment.notes}
                     </p>
                   </div>

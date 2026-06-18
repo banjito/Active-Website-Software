@@ -439,11 +439,11 @@ export function TechnicianScheduleManagement({
             <CardContent>
               {timeOffRequests.length === 0 ? (
                 <div className="text-center py-8">
-                  <Calendar className="mx-auto h-12 w-12 text-zinc-400" />
-                  <h3 className="mt-2 text-sm font-medium text-zinc-900">
+                  <Calendar className="mx-auto h-12 w-12 text-neutral-400" />
+                  <h3 className="mt-2 text-sm font-medium text-neutral-900">
                     No time-off requests
                   </h3>
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm text-neutral-500">
                     Create your first time-off request to get started
                   </p>
                 </div>
@@ -463,14 +463,14 @@ export function TechnicianScheduleManagement({
                             {request.status}
                           </span>
                         </div>
-                        <p className="text-sm text-zinc-500">
+                        <p className="text-sm text-neutral-500">
                           {dayjs(request.start_date).format("MMM D, YYYY")}
                           {request.start_date !== request.end_date &&
                             ` - ${dayjs(request.end_date).format("MMM D, YYYY")}`}
                           {request.start_time &&
                             ` (${request.start_time.substring(0, 5)} - ${request.end_time?.substring(0, 5) || "End of day"})`}
                         </p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-neutral-400">
                           Submitted on{" "}
                           {dayjs(request.created_at).format("MMM D, YYYY")}
                         </p>
@@ -537,7 +537,7 @@ export function TechnicianScheduleManagement({
               <CardTitle>Schedule Approvals</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-center py-4 text-zinc-500">
+              <p className="text-center py-4 text-neutral-500">
                 Schedule approval workflow will be implemented here
               </p>
             </CardContent>

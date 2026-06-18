@@ -294,10 +294,12 @@ export const Checklists: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      draft:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
       active:
         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      archived: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      archived:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     };
     return (
       <span
@@ -327,10 +329,10 @@ export const Checklists: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Onboarding Checklists
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage onboarding checklists with tasks and items
           </p>
         </div>
@@ -398,8 +400,8 @@ export const Checklists: React.FC = () => {
       ) : filteredChecklists.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <CheckSquare className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <CheckSquare className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">
               No checklists found
             </p>
           </CardContent>
@@ -427,11 +429,11 @@ export const Checklists: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4">
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Type:</span>{" "}
                       {checklist.checklist_type}
                     </div>
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Items:</span>{" "}
                       {checklist.items?.length || 0}
                     </div>
@@ -472,8 +474,8 @@ export const Checklists: React.FC = () => {
             ))}
           </div>
           {filteredChecklists.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page {page} of {totalPages} ({filteredChecklists.length} total)
               </span>
               <div className="flex gap-2">
@@ -655,7 +657,7 @@ export const Checklists: React.FC = () => {
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Category
                         </label>
                         <Input
@@ -668,7 +670,7 @@ export const Checklists: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Assignee Type
                         </label>
                         <Select
@@ -690,7 +692,7 @@ export const Checklists: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Due Days
                         </label>
                         <Input
@@ -711,7 +713,7 @@ export const Checklists: React.FC = () => {
                   </div>
                 ))}
                 {formData.items.length === 0 && (
-                  <p className="text-sm text-zinc-500 text-center py-4">
+                  <p className="text-sm text-neutral-500 text-center py-4">
                     No items added. Click "Add Item" to add one.
                   </p>
                 )}
@@ -889,7 +891,7 @@ export const Checklists: React.FC = () => {
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Category
                         </label>
                         <Input
@@ -902,7 +904,7 @@ export const Checklists: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Assignee Type
                         </label>
                         <Select
@@ -924,7 +926,7 @@ export const Checklists: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <label className="text-xs text-neutral-600 dark:text-neutral-400">
                           Due Days
                         </label>
                         <Input
@@ -975,7 +977,7 @@ export const Checklists: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium">Type:</span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {selectedChecklist.checklist_type}
                   </p>
                 </div>
@@ -996,7 +998,7 @@ export const Checklists: React.FC = () => {
                       key={item.id || index}
                       className="flex items-start gap-2 p-3 border rounded"
                     >
-                      <CheckSquare className="h-5 w-5 text-zinc-400 mt-0.5" />
+                      <CheckSquare className="h-5 w-5 text-neutral-400 mt-0.5" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">
@@ -1009,11 +1011,11 @@ export const Checklists: React.FC = () => {
                           )}
                         </div>
                         {item.description && (
-                          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                             {item.description}
                           </p>
                         )}
-                        <div className="flex gap-4 mt-2 text-xs text-zinc-500">
+                        <div className="flex gap-4 mt-2 text-xs text-neutral-500">
                           {item.category && (
                             <span>Category: {item.category}</span>
                           )}

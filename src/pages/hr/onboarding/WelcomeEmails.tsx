@@ -289,10 +289,12 @@ export const WelcomeEmails: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      draft:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
       active:
         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      archived: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+      archived:
+        "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     };
     return (
       <span
@@ -314,10 +316,10 @@ export const WelcomeEmails: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Welcome Emails
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Create and manage welcome emails for new employees
           </p>
         </div>
@@ -373,8 +375,10 @@ export const WelcomeEmails: React.FC = () => {
       ) : filteredEmails.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Mail className="h-12 w-12 mx-auto text-zinc-400 mb-4" />
-            <p className="text-zinc-600 dark:text-zinc-400">No emails found</p>
+            <Mail className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">
+              No emails found
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -394,12 +398,12 @@ export const WelcomeEmails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 mb-4">
-                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="text-sm text-neutral-600 dark:text-neutral-400">
                     <span className="font-medium">Type:</span>{" "}
                     {email.email_type}
                   </div>
                   {email.send_automatically && (
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400">
                       <span className="font-medium">Auto-send:</span>{" "}
                       {email.send_days_before_start} days before start
                     </div>
@@ -910,7 +914,7 @@ export const WelcomeEmails: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium">Type:</span>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {selectedEmail.email_type}
                   </p>
                 </div>
@@ -923,14 +927,14 @@ export const WelcomeEmails: React.FC = () => {
               </div>
               <div>
                 <span className="text-sm font-medium">Subject:</span>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                   {selectedEmail.subject}
                 </p>
               </div>
               <div>
                 <span className="text-sm font-medium">Email Body:</span>
                 <div
-                  className="mt-2 p-4 border rounded bg-zinc-50 dark:bg-zinc-800 whitespace-pre-wrap text-sm"
+                  className="mt-2 p-4 border rounded bg-neutral-50 dark:bg-neutral-800 whitespace-pre-wrap text-sm"
                   dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }}
                 />
               </div>
@@ -957,17 +961,17 @@ export const WelcomeEmails: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <span className="text-sm font-medium">To:</span>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   employee@example.com
                 </p>
               </div>
               <div>
                 <span className="text-sm font-medium">Subject:</span>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {selectedEmail.subject}
                 </p>
               </div>
-              <div className="border rounded p-4 bg-white dark:bg-zinc-800">
+              <div className="border rounded p-4 bg-white dark:bg-neutral-800">
                 <div
                   dangerouslySetInnerHTML={{ __html: selectedEmail.email_body }}
                 />

@@ -1240,7 +1240,7 @@ export default function LowVoltageSwitchReport() {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -1323,7 +1323,7 @@ export default function LowVoltageSwitchReport() {
           {/* Job Information */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden">
@@ -1522,7 +1522,7 @@ export default function LowVoltageSwitchReport() {
           {/* Enclosure Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Enclosure Data
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1693,30 +1693,30 @@ export default function LowVoltageSwitchReport() {
           {/* Switch Data Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Switch Data
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Position / Identifier
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Manufacturer
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Catalog No.
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Serial No.
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Type
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={2}
                     >
                       Rated
@@ -1724,13 +1724,13 @@ export default function LowVoltageSwitchReport() {
                   </tr>
                   <tr>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150"
                       colSpan={5}
                     ></th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Amperage
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Voltage
                     </th>
                   </tr>
@@ -1738,7 +1738,7 @@ export default function LowVoltageSwitchReport() {
                 <tbody>
                   {formData.switchData.map((item, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.position}
@@ -1757,7 +1757,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.manufacturer}
@@ -1776,7 +1776,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.catalogNo}
@@ -1795,7 +1795,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.serialNo}
@@ -1814,7 +1814,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.type}
@@ -1833,7 +1833,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.ratedAmperage}
@@ -1852,7 +1852,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.ratedVoltage}
@@ -1881,27 +1881,27 @@ export default function LowVoltageSwitchReport() {
           {/* Fuse Data Section */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Fuse Data
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Position / Identifier
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Manufacturer
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Catalog No.
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Class
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Rated
@@ -1909,16 +1909,16 @@ export default function LowVoltageSwitchReport() {
                   </tr>
                   <tr>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150"
                       colSpan={4}
                     ></th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Amperage
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       AIC
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       Voltage
                     </th>
                   </tr>
@@ -1926,7 +1926,7 @@ export default function LowVoltageSwitchReport() {
                 <tbody>
                   {formData.fuseData.map((item, index) => (
                     <tr key={index}>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.position}
@@ -1942,7 +1942,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.manufacturer}
@@ -1958,7 +1958,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.catalogNo}
@@ -1974,7 +1974,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.class}
@@ -1990,7 +1990,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.amperage}
@@ -2006,7 +2006,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.aic}
@@ -2022,7 +2022,7 @@ export default function LowVoltageSwitchReport() {
                           className="form-input w-full"
                         />
                       </td>
-                      <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2">
+                      <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
                         <input
                           type="text"
                           value={item.voltage}
@@ -2048,7 +2048,7 @@ export default function LowVoltageSwitchReport() {
           {/* Measured Insulation Resistance Values */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Measured Insulation Resistance Values
             </h2>
             <div className="mb-4 flex items-center gap-4">
@@ -2103,61 +2103,61 @@ export default function LowVoltageSwitchReport() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Pole
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Frame
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Line-to-Load
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1-P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2-P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3-P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2170,10 +2170,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2186,10 +2186,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2202,10 +2202,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2218,10 +2218,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2234,10 +2234,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2250,10 +2250,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2266,10 +2266,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2282,10 +2282,10 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={getMeasurementDisplayValue(
@@ -2298,7 +2298,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-zinc-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                   </tr>
@@ -2310,135 +2310,135 @@ export default function LowVoltageSwitchReport() {
           {/* Temperature Corrected Insulation Resistance Values */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Temperature Corrected Insulation Resistance Values
             </h2>
             <div className="mb-4">
-              <p className="text-zinc-700 dark:text-white">
+              <p className="text-neutral-700 dark:text-white">
                 Temperature Correction Factor (TCF): {tcf}
               </p>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Pole
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Frame
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Line-to-Load
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1-P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2-P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3-P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToPole["P1-P2"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToPole["P2-P3"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToPole["P3-P1"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToFrame["P1"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToFrame["P2"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.poleToFrame["P3"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.lineToLoad["P1"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.lineToLoad["P2"],
                           tcf,
                         )}
                       </div>
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
-                      <div className="text-center text-zinc-900 dark:text-white">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
+                      <div className="text-center text-neutral-900 dark:text-white">
                         {getTemperatureCorrectedValue(
                           formData.insulationResistance.lineToLoad["P3"],
                           tcf,
@@ -2454,7 +2454,7 @@ export default function LowVoltageSwitchReport() {
           {/* Contact Resistance */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Contact Resistance
             </h2>
             <div className="mb-4">
@@ -2478,61 +2478,61 @@ export default function LowVoltageSwitchReport() {
               </select>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Pole
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Pole-to-Frame
                     </th>
                     <th
-                      className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal text-center"
+                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
                       colSpan={3}
                     >
                       Line-to-Load
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1-P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2-P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3-P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P1
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P2
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-1 bg-zinc-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
                       P3
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToPole["P1-P2"]}
@@ -2546,7 +2546,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToPole["P2-P3"]}
@@ -2560,7 +2560,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToPole["P3-P1"]}
@@ -2574,7 +2574,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToFrame["P1"]}
@@ -2588,7 +2588,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToFrame["P2"]}
@@ -2602,7 +2602,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.poleToFrame["P3"]}
@@ -2616,7 +2616,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.lineToLoad["P1"]}
@@ -2630,7 +2630,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.lineToLoad["P2"]}
@@ -2644,7 +2644,7 @@ export default function LowVoltageSwitchReport() {
                         className="form-input w-full"
                       />
                     </td>
-                    <td className="border border-zinc-200 dark:border-zinc-700 p-1">
+                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"
                         value={formData.contactResistance.lineToLoad["P3"]}
@@ -2667,20 +2667,20 @@ export default function LowVoltageSwitchReport() {
           {/* Visual & Mechanical Inspection */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual & Mechanical Inspection
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-zinc-200 dark:border-zinc-700">
+              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-2 bg-zinc-50 dark:bg-dark-150 font-normal text-left">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-2 bg-neutral-50 dark:bg-dark-150 font-normal text-left">
                       Section
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-2 bg-zinc-50 dark:bg-dark-150 font-normal text-left">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-2 bg-neutral-50 dark:bg-dark-150 font-normal text-left">
                       Description
                     </th>
-                    <th className="border border-zinc-200 dark:border-zinc-700 p-2 bg-zinc-50 dark:bg-dark-150 font-normal text-left">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-2 bg-neutral-50 dark:bg-dark-150 font-normal text-left">
                       Results
                     </th>
                   </tr>
@@ -2689,13 +2689,13 @@ export default function LowVoltageSwitchReport() {
                   {Object.entries(formData.visualMechanicalInspection).map(
                     ([key, value], index) => (
                       <tr key={index}>
-                        <td className="border border-zinc-200 dark:border-zinc-700 p-2">
+                        <td className="border border-neutral-200 dark:border-neutral-700 p-2">
                           {key}
                         </td>
-                        <td className="border border-zinc-200 dark:border-zinc-700 p-2">
+                        <td className="border border-neutral-200 dark:border-neutral-700 p-2">
                           {getVisualInspectionDescription(key)}
                         </td>
-                        <td className="border border-zinc-200 dark:border-zinc-700 p-2">
+                        <td className="border border-neutral-200 dark:border-neutral-700 p-2">
                           <select
                             value={value}
                             onChange={(e) =>
@@ -2730,12 +2730,12 @@ export default function LowVoltageSwitchReport() {
           {/* Test Equipment */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-5 gap-4 items-center">
-                <div className="text-right font-medium text-zinc-700 dark:text-white">
+                <div className="text-right font-medium text-neutral-700 dark:text-white">
                   Megohmmeter:
                 </div>
                 <div>
@@ -2783,7 +2783,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     Serial Number:
                   </span>
                   <input
@@ -2804,7 +2804,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     AMP ID:
                   </span>
                   <input
@@ -2825,7 +2825,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     Cal Date:
                   </span>
                   <input
@@ -2847,7 +2847,7 @@ export default function LowVoltageSwitchReport() {
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-4 items-center">
-                <div className="text-right font-medium text-zinc-700 dark:text-white">
+                <div className="text-right font-medium text-neutral-700 dark:text-white">
                   Low Resistance:
                 </div>
                 <div>
@@ -2895,7 +2895,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     Serial Number:
                   </span>
                   <input
@@ -2916,7 +2916,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     AMP ID:
                   </span>
                   <input
@@ -2937,7 +2937,7 @@ export default function LowVoltageSwitchReport() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-zinc-700 dark:text-white">
+                  <span className="whitespace-nowrap text-neutral-700 dark:text-white">
                     Cal Date:
                   </span>
                   <input
@@ -2966,7 +2966,7 @@ export default function LowVoltageSwitchReport() {
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments.enclosure?.trim() ? "print:hidden" : ""}`}
           >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white border-b dark:border-zinc-700 pb-2 print:text-black print:border-black print:font-bold">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
             <div className="space-y-4">

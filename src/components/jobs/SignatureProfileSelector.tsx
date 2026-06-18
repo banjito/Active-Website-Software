@@ -143,7 +143,7 @@ export const SignatureProfileSelector: React.FC<
                   <LoadingSpinner size="md" />
                 </div>
               ) : profiles.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+                <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                   <p>No signature profiles yet.</p>
                   <Button
                     onClick={() => setIsManagerOpen(true)}
@@ -157,7 +157,7 @@ export const SignatureProfileSelector: React.FC<
               ) : (
                 sections.map((section) => (
                   <div key={section} className="space-y-2">
-                    <div className="font-medium text-sm text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700 pb-1">
+                    <div className="font-medium text-sm text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-700 pb-1">
                       {section}
                     </div>
                     {profilesBySection[section].map((profile) => {
@@ -165,25 +165,25 @@ export const SignatureProfileSelector: React.FC<
                       return (
                         <label
                           key={profile.id}
-                          className="flex items-center gap-2 p-2 hover:bg-zinc-100 dark:hover:bg-dark-100 rounded cursor-pointer"
+                          className="flex items-center gap-2 p-2 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded cursor-pointer"
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggle(profile.id)}
-                            className="rounded border-zinc-300 dark:border-zinc-600"
+                            className="rounded border-neutral-300 dark:border-neutral-600"
                           />
                           <div className="flex-1">
-                            <div className="text-zinc-900 dark:text-white font-medium">
+                            <div className="text-neutral-900 dark:text-white font-medium">
                               {profile.name}
                             </div>
                             {profile.title && (
-                              <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                              <div className="text-xs text-neutral-600 dark:text-neutral-400">
                                 {profile.title}
                               </div>
                             )}
                             {(profile.email || profile.phone) && (
-                              <div className="text-xs text-zinc-500 dark:text-zinc-500">
+                              <div className="text-xs text-neutral-500 dark:text-neutral-500">
                                 {profile.email}
                                 {profile.email && profile.phone && " • "}
                                 {profile.phone}

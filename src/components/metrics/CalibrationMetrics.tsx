@@ -130,7 +130,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {calibrationMetrics.equipmentCalibrated}
                       </p>
                     )}
@@ -150,7 +150,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {calibrationMetrics.calibrationAccuracy}
                       </p>
                     )}
@@ -170,7 +170,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {calibrationMetrics.pendingCalibrations}
                       </p>
                     )}
@@ -193,7 +193,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {vehiclesAvailable}
                       </p>
                     )}
@@ -213,7 +213,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {equipmentAvailable}
                       </p>
                     )}
@@ -233,7 +233,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {technicianCount}
                       </p>
                     )}
@@ -263,7 +263,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   </div>
                 ) : reportApprovalMetrics.total === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-zinc-500 dark:text-white">
+                    <p className="text-neutral-500 dark:text-white">
                       No reports found for this division
                     </p>
                   </div>
@@ -271,10 +271,10 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   <div className="space-y-4">
                     <div className="grid grid-cols-4 gap-4 text-center">
                       <div>
-                        <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                        <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                           {reportApprovalMetrics.total}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Total Reports
                         </p>
                       </div>
@@ -282,7 +282,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-2xl font-bold text-green-600">
                           {reportApprovalMetrics.approved}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Approved
                         </p>
                       </div>
@@ -290,7 +290,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-2xl font-bold text-yellow-600">
                           {reportApprovalMetrics.pending}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Pending
                         </p>
                       </div>
@@ -298,7 +298,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-2xl font-bold text-red-600">
                           {reportApprovalMetrics.rejected}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Rejected
                         </p>
                       </div>
@@ -337,10 +337,10 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   </div>
                 ) : reportApprovalMetrics.total === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-zinc-500 dark:text-white">
+                    <p className="text-neutral-500 dark:text-white">
                       No reports found for this division
                     </p>
-                    <p className="text-sm text-zinc-500 dark:text-white mt-2">
+                    <p className="text-sm text-neutral-500 dark:text-white mt-2">
                       Reports will appear here once they are submitted for
                       approval
                     </p>
@@ -348,11 +348,11 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                 ) : (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-zinc-50 dark:bg-dark-150 rounded-lg">
-                        <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+                      <div className="text-center p-4 bg-neutral-50 dark:bg-dark-150 rounded-lg">
+                        <p className="text-3xl font-bold text-neutral-900 dark:text-white">
                           {reportApprovalMetrics.total}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Total Reports
                         </p>
                       </div>
@@ -360,7 +360,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-3xl font-bold text-green-600">
                           {reportApprovalMetrics.approved}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Approved
                         </p>
                         <p className="text-xs text-green-600">
@@ -378,7 +378,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-3xl font-bold text-yellow-600">
                           {reportApprovalMetrics.pending}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Pending
                         </p>
                         <p className="text-xs text-yellow-600">
@@ -396,7 +396,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         <p className="text-3xl font-bold text-red-600">
                           {reportApprovalMetrics.rejected}
                         </p>
-                        <p className="text-sm text-zinc-500 dark:text-white">
+                        <p className="text-sm text-neutral-500 dark:text-white">
                           Rejected
                         </p>
                         <p className="text-xs text-red-600">

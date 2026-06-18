@@ -47,9 +47,9 @@ export const DatabaseStatsCard: React.FC = () => {
   }, []);
 
   return (
-    <Card className="border border-zinc-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-sm">
+    <Card className="border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium text-zinc-900 dark:text-white flex items-center">
+        <CardTitle className="text-lg font-medium text-neutral-900 dark:text-white flex items-center">
           <Database className="h-5 w-5 mr-2 text-purple-500" />
           Database Statistics
         </CardTitle>
@@ -67,44 +67,44 @@ export const DatabaseStatsCard: React.FC = () => {
         ) : stats ? (
           <div className="mt-2 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-600 dark:text-white flex items-center">
+              <span className="text-neutral-600 dark:text-white flex items-center">
                 <Sigma className="h-4 w-4 mr-2" />
                 Total Size:
               </span>
-              <span className="font-medium text-zinc-900 dark:text-white">
+              <span className="font-medium text-neutral-900 dark:text-white">
                 {formatBytes(stats.total_size_bytes)}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-600 dark:text-white flex items-center">
+              <span className="text-neutral-600 dark:text-white flex items-center">
                 <Hash className="h-4 w-4 mr-2" />
                 Est. Rows:
               </span>
-              <span className="font-medium text-zinc-900 dark:text-white">
+              <span className="font-medium text-neutral-900 dark:text-white">
                 {stats.total_rows_estimate.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-600 dark:text-white flex items-center">
+              <span className="text-neutral-600 dark:text-white flex items-center">
                 <FileText className="h-4 w-4 mr-2" />
                 Tables:
               </span>
-              <span className="font-medium text-zinc-900 dark:text-white">
+              <span className="font-medium text-neutral-900 dark:text-white">
                 {stats.table_count}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-600 dark:text-white flex items-center">
+              <span className="text-neutral-600 dark:text-white flex items-center">
                 <Sigma className="h-4 w-4 mr-2" />
                 Functions:
               </span>
-              <span className="font-medium text-zinc-900 dark:text-white">
+              <span className="font-medium text-neutral-900 dark:text-white">
                 {stats.function_count}
               </span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-zinc-500 dark:text-white mt-2">
+          <p className="text-sm text-neutral-500 dark:text-white mt-2">
             No statistics available.
           </p>
         )}

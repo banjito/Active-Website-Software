@@ -132,7 +132,7 @@ const VendorPOs: React.FC = () => {
       case "cancelled":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
       default:
-        return "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-400";
+        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-400";
     }
   };
 
@@ -369,8 +369,8 @@ const VendorPOs: React.FC = () => {
         ]}
       >
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-          <span className="ml-2 text-zinc-500">
+          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+          <span className="ml-2 text-neutral-500">
             <LoadingSpinner size="md" />
           </span>
         </div>
@@ -393,10 +393,10 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Total POs
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {pos.length}
                 </p>
               </div>
@@ -411,7 +411,7 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Pending Approval
                 </p>
                 <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
@@ -429,7 +429,7 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   In Transit
                 </p>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
@@ -447,7 +447,7 @@ const VendorPOs: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Total Value
                 </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -468,7 +468,7 @@ const VendorPOs: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-between">
             <div className="flex flex-1 gap-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   placeholder="Search POs..."
                   value={searchTerm}
@@ -513,26 +513,26 @@ const VendorPOs: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     PO Number
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Vendor
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Quote #
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Amount
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     Actions
                   </th>
                 </tr>
@@ -541,23 +541,23 @@ const VendorPOs: React.FC = () => {
                 {filteredPOs.map((po) => (
                   <tr
                     key={po.id}
-                    className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-dark-200 transition-colors"
+                    className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-dark-200 transition-colors"
                   >
                     <td className="px-4 py-4">
                       <span className="font-medium text-[#f26722]">
                         {po.po_number}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-zinc-900 dark:text-white">
+                    <td className="px-4 py-4 text-neutral-900 dark:text-white">
                       {po.vendor?.company_name || "Unknown Vendor"}
                     </td>
-                    <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
+                    <td className="px-4 py-4 text-neutral-600 dark:text-neutral-300">
                       {po.date}
                     </td>
-                    <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
+                    <td className="px-4 py-4 text-neutral-600 dark:text-neutral-300">
                       {po.quote_number || "-"}
                     </td>
-                    <td className="px-4 py-4 text-zinc-900 dark:text-white font-medium">
+                    <td className="px-4 py-4 text-neutral-900 dark:text-white font-medium">
                       {formatCurrency(po.amount || 0)}
                     </td>
                     <td className="px-4 py-4">
@@ -620,11 +620,11 @@ const VendorPOs: React.FC = () => {
 
             {filteredPOs.length === 0 && (
               <div className="text-center py-12">
-                <Package className="h-12 w-12 text-zinc-400 mx-auto mb-4" />
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <Package className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
+                <p className="text-neutral-500 dark:text-neutral-400">
                   No purchase orders found
                 </p>
-                <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
                   {pos.length === 0
                     ? "Create your first purchase order to get started"
                     : "Try adjusting your search or filter"}
@@ -654,18 +654,18 @@ const VendorPOs: React.FC = () => {
           </DialogHeader>
 
           {/* PO Form styled like a real PO */}
-          <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-8 bg-white dark:bg-dark-150 w-full">
+          <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-8 bg-white dark:bg-dark-150 w-full">
             {/* Header */}
             <div className="flex justify-between items-start border-b pb-4 mb-6">
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="text-sm text-neutral-600 dark:text-neutral-400">
                 256-513-8255
               </div>
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
                   PURCHASE ORDER
                 </h2>
               </div>
-              <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
                 P.O. Box 1725 Decatur, AL 35602
               </div>
             </div>
@@ -673,7 +673,7 @@ const VendorPOs: React.FC = () => {
             {/* Date, Amount, Terms, PO# Row */}
             <div className="grid grid-cols-4 gap-6 mb-8">
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Date:
                 </label>
                 <Input
@@ -686,17 +686,17 @@ const VendorPOs: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Amount:
                 </label>
                 <Input
                   value={formatCurrency(calculateTotal())}
                   readOnly
-                  className="w-full bg-zinc-100 dark:bg-dark-200 font-semibold"
+                  className="w-full bg-neutral-100 dark:bg-dark-200 font-semibold"
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Terms:
                 </label>
                 <Select
@@ -717,13 +717,13 @@ const VendorPOs: React.FC = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Purchase Order #
                 </label>
                 <Input
                   value={editPO?.po_number || "(Auto-generated)"}
                   readOnly
-                  className="w-full bg-zinc-100 dark:bg-dark-200"
+                  className="w-full bg-neutral-100 dark:bg-dark-200"
                 />
               </div>
             </div>
@@ -731,7 +731,7 @@ const VendorPOs: React.FC = () => {
             {/* Provider and Ship To */}
             <div className="grid grid-cols-2 gap-12 mb-8">
               <div>
-                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Provider (Vendor):
                 </label>
                 <Select
@@ -750,7 +750,7 @@ const VendorPOs: React.FC = () => {
                   </SelectContent>
                 </Select>
                 {selectedVendor && (
-                  <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 p-3 bg-zinc-50 dark:bg-dark-200 rounded">
+                  <div className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 p-3 bg-neutral-50 dark:bg-dark-200 rounded">
                     <p>{selectedVendor.address_street}</p>
                     <p>
                       {selectedVendor.address_city},{" "}
@@ -761,7 +761,7 @@ const VendorPOs: React.FC = () => {
                 )}
               </div>
               <div>
-                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Ship to:
                 </label>
                 <Input
@@ -809,7 +809,7 @@ const VendorPOs: React.FC = () => {
             {/* Quote Info */}
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Quote Number:
                 </label>
                 <Input
@@ -822,7 +822,7 @@ const VendorPOs: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Quote References:
                 </label>
                 <Input
@@ -839,7 +839,7 @@ const VendorPOs: React.FC = () => {
             {/* Line Items Table */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
                   Line Items
                 </label>
                 <Button size="sm" variant="outline" onClick={addLineItem}>
@@ -847,31 +847,31 @@ const VendorPOs: React.FC = () => {
                 </Button>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 min-w-[700px]">
+                <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 min-w-[700px]">
                   <thead>
-                    <tr className="bg-zinc-100 dark:bg-dark-200">
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[60px]">
+                    <tr className="bg-neutral-100 dark:bg-dark-200">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm font-semibold w-[60px]">
                         Item
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[100px]">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm font-semibold w-[100px]">
                         Quantity
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold text-left">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm font-semibold text-left">
                         Description
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[120px]">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm font-semibold w-[120px]">
                         Unit Price
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm font-semibold w-[120px]">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm font-semibold w-[120px]">
                         Extended
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-sm w-[60px]"></th>
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-sm w-[60px]"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {poForm.items.map((item, index) => (
                       <tr key={index}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                           <Input
                             value={item.item_number}
                             onChange={(e) =>
@@ -885,7 +885,7 @@ const VendorPOs: React.FC = () => {
                             placeholder=""
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                           <Input
                             type="text"
                             value={item.quantity}
@@ -896,7 +896,7 @@ const VendorPOs: React.FC = () => {
                             placeholder=""
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                           <Input
                             value={item.description}
                             onChange={(e) =>
@@ -910,7 +910,7 @@ const VendorPOs: React.FC = () => {
                             placeholder="Enter description..."
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                           <Input
                             type="text"
                             value={item.unit_price}
@@ -925,10 +925,10 @@ const VendorPOs: React.FC = () => {
                             placeholder="0.00 or PPA"
                           />
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-right bg-zinc-50 dark:bg-dark-200 font-medium">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-right bg-neutral-50 dark:bg-dark-200 font-medium">
                           {formatCurrency(item.extended_price || 0)}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -944,7 +944,7 @@ const VendorPOs: React.FC = () => {
                       <tr>
                         <td
                           colSpan={6}
-                          className="border border-zinc-300 dark:border-zinc-600 px-4 py-10 text-center text-zinc-500"
+                          className="border border-neutral-300 dark:border-neutral-600 px-4 py-10 text-center text-neutral-500"
                         >
                           No items added. Click "Add Item" to add line items.
                         </td>
@@ -952,17 +952,17 @@ const VendorPOs: React.FC = () => {
                     )}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-zinc-100 dark:bg-dark-200 font-bold">
+                    <tr className="bg-neutral-100 dark:bg-dark-200 font-bold">
                       <td
                         colSpan={4}
-                        className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-right text-sm"
+                        className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-right text-sm"
                       >
                         Total
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-3 text-right text-base">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-3 text-right text-base">
                         {formatCurrency(calculateTotal())}
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600"></td>
+                      <td className="border border-neutral-300 dark:border-neutral-600"></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -976,7 +976,7 @@ const VendorPOs: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Authorized Signature:
                 </label>
                 <Input
@@ -989,7 +989,7 @@ const VendorPOs: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block mb-2">
+                <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 block mb-2">
                   Notes:
                 </label>
                 <Textarea
@@ -1036,18 +1036,18 @@ const VendorPOs: React.FC = () => {
               </DialogHeader>
 
               {/* PO Preview styled like the image */}
-              <div className="border-2 border-zinc-300 dark:border-zinc-600 rounded-lg p-6 bg-white dark:bg-dark-150 print:border-black">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-6 bg-white dark:bg-dark-150 print:border-black">
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
-                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="text-sm text-neutral-600 dark:text-neutral-400">
                     256-513-8255
                   </div>
                   <div className="text-center">
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+                    <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
                       PURCHASE ORDER
                     </h2>
                   </div>
-                  <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
                     P.O. Box 1725 Decatur, AL 35602
                   </div>
                 </div>
@@ -1114,22 +1114,22 @@ const VendorPOs: React.FC = () => {
                 )}
 
                 {/* Line Items */}
-                <table className="w-full border-collapse border border-zinc-300 dark:border-zinc-600 mb-4 text-sm">
+                <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 mb-4 text-sm">
                   <thead>
-                    <tr className="bg-zinc-100 dark:bg-dark-200">
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                    <tr className="bg-neutral-100 dark:bg-dark-200">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                         Item
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                         Quantity
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                         Description
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                         Amount
                       </th>
-                      <th className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                      <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                         Extended
                       </th>
                     </tr>
@@ -1137,19 +1137,19 @@ const VendorPOs: React.FC = () => {
                   <tbody>
                     {(selectedPO.items || []).map((item, index) => (
                       <tr key={index}>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center">
                           {item.item_number}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-center">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center">
                           {item.quantity}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2">
                           {item.description}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-right">
                           {formatUnitPrice(item.unit_price)}
                         </td>
-                        <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                        <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-right">
                           {formatCurrency(item.extended_price)}
                         </td>
                       </tr>
@@ -1159,11 +1159,11 @@ const VendorPOs: React.FC = () => {
                     <tr className="font-bold">
                       <td
                         colSpan={4}
-                        className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right"
+                        className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-right"
                       >
                         Total
                       </td>
-                      <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-2 text-right">
+                      <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-right">
                         {formatCurrency(selectedPO.amount || 0)}
                       </td>
                     </tr>

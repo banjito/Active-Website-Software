@@ -188,7 +188,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400 print:hidden" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400 print:hidden" />
         <input
           ref={inputRef}
           type="text"
@@ -204,7 +204,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           readOnly={readOnly}
           autoComplete="off"
           spellCheck={false}
-          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? "bg-zinc-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button
@@ -215,7 +215,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
               setShowSuggestions(false);
               inputRef.current?.focus();
             }}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 print:hidden"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 print:hidden"
           >
             <X className="h-4 w-4" />
           </button>
@@ -236,10 +236,10 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
               width: dropdownPos.width,
               zIndex: 99999,
             }}
-            className="bg-white dark:bg-dark-150 border border-zinc-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
           >
             {loading && (
-              <div className="p-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="p-3 text-center text-sm text-neutral-500 dark:text-neutral-400">
                 Searching...
               </div>
             )}
@@ -248,14 +248,14 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
                 <div
                   key={equipment.id}
                   onClick={() => handleSelectEquipment(equipment)}
-                  className="px-3 py-2 hover:bg-zinc-100 dark:hover:bg-dark-100 cursor-pointer border-b border-zinc-100 dark:border-dark-200 last:border-b-0"
+                  className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-100 cursor-pointer border-b border-neutral-100 dark:border-dark-200 last:border-b-0"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="font-medium text-zinc-900 dark:text-white">
+                      <div className="font-medium text-neutral-900 dark:text-white">
                         {equipment.equipment_name}
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 space-y-0.5">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 space-y-0.5">
                         {equipment.amp_id && (
                           <div>AMP ID: {equipment.amp_id}</div>
                         )}

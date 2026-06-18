@@ -607,10 +607,10 @@ export const DocumentAcknowledgment: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Document Acknowledgment
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Signed handbook and policy acknowledgments. Track who has
             acknowledged which documents.
           </p>
@@ -669,18 +669,18 @@ export const DocumentAcknowledgment: React.FC = () => {
 
       {/* Active / Archived tabs — Archived restricted to Admin / HR */}
       {isManager && (
-        <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="flex gap-1 border-b border-neutral-200 dark:border-neutral-700">
           <button
             onClick={() => setActiveTab("active")}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "active"
                 ? "border-[#f26722] text-[#f26722]"
-                : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                : "border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
             Active
             {!loading && (
-              <span className="ml-1.5 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-full px-2 py-0.5">
+              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5">
                 {activeForms.length}
               </span>
             )}
@@ -690,13 +690,13 @@ export const DocumentAcknowledgment: React.FC = () => {
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "archived"
                 ? "border-[#f26722] text-[#f26722]"
-                : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                : "border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
             <Archive className="h-3.5 w-3.5 inline mr-1.5" />
             Archived
             {!loading && (
-              <span className="ml-1.5 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-full px-2 py-0.5">
+              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5">
                 {archivedForms.length}
               </span>
             )}
@@ -713,15 +713,15 @@ export const DocumentAcknowledgment: React.FC = () => {
           <CardContent className="py-12 text-center">
             {effectiveTab === "archived" ? (
               <>
-                <Archive className="h-12 w-12 mx-auto text-zinc-400 dark:text-zinc-500 mb-4" />
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <Archive className="h-12 w-12 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+                <p className="text-neutral-600 dark:text-neutral-400">
                   No archived documents. Documents you archive will appear here.
                 </p>
               </>
             ) : (
               <>
-                <FileCheck className="h-12 w-12 mx-auto text-zinc-400 dark:text-zinc-500 mb-4" />
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <FileCheck className="h-12 w-12 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+                <p className="text-neutral-600 dark:text-neutral-400">
                   No acknowledgment documents yet. Click &quot;Add
                   document&quot; to upload a handbook or policy for employees to
                   acknowledge.
@@ -796,7 +796,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                               onClick={() => handleArchiveDocument(form.id)}
                               title="Archive document"
                             >
-                              <Archive className="h-4 w-4 text-zinc-500" />
+                              <Archive className="h-4 w-4 text-neutral-500" />
                             </Button>
                           )}
                         </>
@@ -979,7 +979,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                     requiresSignature: e.target.checked,
                   }))
                 }
-                className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
+                className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
               />
               <label
                 htmlFor="requires-sig"
@@ -1003,7 +1003,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                     createAnnouncement
                       ? "bg-[#f26722]"
-                      : "bg-zinc-300 dark:bg-zinc-600"
+                      : "bg-neutral-300 dark:bg-neutral-600"
                   }`}
                 >
                   <span
@@ -1024,7 +1024,7 @@ export const DocumentAcknowledgment: React.FC = () => {
               {createAnnouncement && (
                 <div className="space-y-3 pl-1 border-l-2 border-[#f26722]/30 ml-4 pl-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                       Announcement message (optional)
                     </label>
                     <textarea
@@ -1042,7 +1042,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                         Category
                       </label>
                       <select
@@ -1063,7 +1063,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                         Schedule (optional)
                       </label>
                       <input
@@ -1090,11 +1090,11 @@ export const DocumentAcknowledgment: React.FC = () => {
                           is_published: e.target.checked,
                         }))
                       }
-                      className="h-3.5 w-3.5 text-[#f26722] focus:ring-[#f26722] border-zinc-300 rounded"
+                      className="h-3.5 w-3.5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
                     />
                     <label
                       htmlFor="ann-publish"
-                      className="text-xs text-zinc-600 dark:text-zinc-400"
+                      className="text-xs text-neutral-600 dark:text-neutral-400"
                     >
                       Publish immediately
                     </label>
@@ -1152,7 +1152,7 @@ export const DocumentAcknowledgment: React.FC = () => {
             </DialogHeader>
             <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
               {getAttachmentUrl(formToSign) && (
-                <div className="border rounded-lg overflow-hidden flex-1 min-h-[280px] bg-zinc-100 dark:bg-zinc-900">
+                <div className="border rounded-lg overflow-hidden flex-1 min-h-[280px] bg-neutral-100 dark:bg-neutral-900">
                   <iframe
                     title="Document"
                     src={getAttachmentUrl(formToSign)!}
@@ -1168,7 +1168,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                     ref={canvasRef}
                     width={500}
                     height={120}
-                    className="border border-zinc-300 dark:border-zinc-600 rounded w-full cursor-crosshair touch-none"
+                    className="border border-neutral-300 dark:border-neutral-600 rounded w-full cursor-crosshair touch-none"
                     style={{ maxWidth: "100%", height: "120px" }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}

@@ -288,10 +288,10 @@ export function GoalsDashboard() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Goals Dashboard
           </h1>
-          <p className="text-zinc-500 dark:text-white mt-1">
+          <p className="text-neutral-500 dark:text-white mt-1">
             Track and analyze your sales goals performance
           </p>
         </div>
@@ -328,7 +328,7 @@ export function GoalsDashboard() {
           <div className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-zinc-500 dark:text-white">
+                <p className="text-sm font-medium text-neutral-500 dark:text-white">
                   Total Goals
                 </p>
                 <h3 className="text-2xl font-bold mt-1">{goals.length}</h3>
@@ -349,7 +349,7 @@ export function GoalsDashboard() {
           <div className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-zinc-500 dark:text-white">
+                <p className="text-sm font-medium text-neutral-500 dark:text-white">
                   On Track
                 </p>
                 <h3 className="text-2xl font-bold mt-1">
@@ -381,7 +381,7 @@ export function GoalsDashboard() {
           <div className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-zinc-500 dark:text-white">
+                <p className="text-sm font-medium text-neutral-500 dark:text-white">
                   At Risk
                 </p>
                 <h3 className="text-2xl font-bold mt-1">
@@ -416,7 +416,7 @@ export function GoalsDashboard() {
           <div className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-zinc-500 dark:text-white">
+                <p className="text-sm font-medium text-neutral-500 dark:text-white">
                   Completed
                 </p>
                 <h3 className="text-2xl font-bold mt-1">

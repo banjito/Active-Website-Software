@@ -692,9 +692,9 @@ export const CustomFormFiller: React.FC = () => {
           field.cellBehavior === "calculate"));
 
     const commonClasses =
-      "w-full px-2 py-1.5 text-sm border border-zinc-200 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]";
+      "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]";
     const readOnlyClasses =
-      "w-full px-2 py-1.5 text-sm border border-zinc-200 dark:border-zinc-600 rounded bg-zinc-50 dark:bg-dark-200 text-zinc-700 dark:text-zinc-300";
+      "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-neutral-50 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300";
 
     switch (field.type) {
       case "textarea":
@@ -744,7 +744,7 @@ export const CustomFormFiller: React.FC = () => {
               handleFieldChange(sectionId, field.id, e.target.checked)
             }
             disabled={readOnly}
-            className="w-4 h-4 text-[#f26722] border-zinc-300 rounded focus:ring-[#f26722]"
+            className="w-4 h-4 text-[#f26722] border-neutral-300 rounded focus:ring-[#f26722]"
           />
         );
       case "date":
@@ -779,8 +779,8 @@ export const CustomFormFiller: React.FC = () => {
         const tcfVal = formData[sectionId]?.tcf ?? "";
         const hum = formData[sectionId]?.humidity ?? "";
         return (
-          <div className="temp-humidity-one-line flex flex-wrap items-center gap-x-2 gap-y-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded px-2 py-1.5 bg-white dark:bg-dark-100 w-full max-w-full min-w-0">
-            <span className="shrink-0 font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="temp-humidity-one-line flex flex-wrap items-center gap-x-2 gap-y-1 text-xs border border-neutral-200 dark:border-neutral-600 rounded px-2 py-1.5 bg-white dark:bg-dark-100 w-full max-w-full min-w-0">
+            <span className="shrink-0 font-medium text-neutral-600 dark:text-neutral-400">
               °F
             </span>
             <input
@@ -792,27 +792,27 @@ export const CustomFormFiller: React.FC = () => {
               }
               placeholder="68"
               title="Temperature (°F) — type here"
-              className="temp-humidity-f temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-zinc-300 dark:border-zinc-500 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
+              className="temp-humidity-f temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
             />
-            <span className="text-zinc-400 dark:text-zinc-500 shrink-0">
+            <span className="text-neutral-400 dark:text-neutral-500 shrink-0">
               °C
             </span>
             <span
-              className="temp-humidity-c min-w-[2.5rem] text-zinc-600 dark:text-zinc-400 shrink-0 tabular-nums"
+              className="temp-humidity-c min-w-[2.5rem] text-neutral-600 dark:text-neutral-400 shrink-0 tabular-nums"
               title="Calculated"
             >
               {tempC}
             </span>
-            <span className="text-zinc-400 dark:text-zinc-500 shrink-0">
+            <span className="text-neutral-400 dark:text-neutral-500 shrink-0">
               TCF
             </span>
             <span
-              className="temp-humidity-tcf min-w-[2rem] text-zinc-600 dark:text-zinc-400 shrink-0 tabular-nums"
+              className="temp-humidity-tcf min-w-[2rem] text-neutral-600 dark:text-neutral-400 shrink-0 tabular-nums"
               title="Calculated"
             >
               {tcfVal}
             </span>
-            <span className="shrink-0 text-zinc-600 dark:text-zinc-400">
+            <span className="shrink-0 text-neutral-600 dark:text-neutral-400">
               Humidity %
             </span>
             <input
@@ -824,7 +824,7 @@ export const CustomFormFiller: React.FC = () => {
               }
               placeholder="50"
               title="Humidity (%) — type here"
-              className="temp-humidity-hum temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-zinc-300 dark:border-zinc-500 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
+              className="temp-humidity-hum temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
             />
           </div>
         );
@@ -893,7 +893,7 @@ export const CustomFormFiller: React.FC = () => {
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
           <table
-            className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600 job-details-table"
+            className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 job-details-table"
             style={{ tableLayout: "fixed", width: "100%" }}
           >
             <colgroup>
@@ -907,12 +907,12 @@ export const CustomFormFiller: React.FC = () => {
                   {row.map((field) => (
                     <td
                       key={field.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 align-top"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 align-top"
                     >
-                      <div className="text-xs font-medium text-zinc-500 dark:text-white uppercase mb-1">
+                      <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
                         {field.label}
                         {field.unit && (
-                          <span className="text-zinc-400 ml-1 normal-case">
+                          <span className="text-neutral-400 ml-1 normal-case">
                             ({field.unit})
                           </span>
                         )}
@@ -927,7 +927,7 @@ export const CustomFormFiller: React.FC = () => {
                     Array.from({ length: columns - row.length }).map((_, i) => (
                       <td
                         key={`empty-${i}`}
-                        className="border border-zinc-300 dark:border-zinc-600 px-3 py-2"
+                        className="border border-neutral-300 dark:border-neutral-600 px-3 py-2"
                       ></td>
                     ))}
                 </tr>
@@ -975,10 +975,10 @@ export const CustomFormFiller: React.FC = () => {
       return (
         <div style={wrapperStyle}>
           {section.aboveTableFields && section.aboveTableFields.length > 0 && (
-            <div className="flex flex-wrap items-end gap-4 gap-y-2 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="flex flex-wrap items-end gap-4 gap-y-2 mb-3 pb-2 border-b border-neutral-200 dark:border-neutral-600">
               {section.aboveTableFields.map((f) => (
                 <div key={f.id} className="flex flex-col gap-1 min-w-[120px]">
-                  <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                     {f.label}
                   </label>
                   {renderField(section.id, f, undefined)}
@@ -987,7 +987,7 @@ export const CustomFormFiller: React.FC = () => {
             </div>
           )}
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300" />
             {canAdd && (
               <button
                 type="button"
@@ -999,7 +999,7 @@ export const CustomFormFiller: React.FC = () => {
             )}
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+            <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
               <colgroup>
                 {section.columns.map((col) => (
                   <col
@@ -1013,7 +1013,7 @@ export const CustomFormFiller: React.FC = () => {
                   {section.columns.map((col) => (
                     <th
                       key={col.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-xs font-medium text-zinc-900 dark:text-white uppercase tracking-wider"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-xs font-medium text-neutral-900 dark:text-white uppercase tracking-wider"
                       style={col.width ? { width: col.width } : undefined}
                     >
                       {col.label}
@@ -1032,7 +1032,7 @@ export const CustomFormFiller: React.FC = () => {
                         return (
                           <td
                             key={col.id}
-                            className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                            className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                             style={col.width ? { width: col.width } : undefined}
                           >
                             {isBusSection ? (
@@ -1079,16 +1079,16 @@ export const CustomFormFiller: React.FC = () => {
           {showDeviation && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               <div className="w-full">
-                <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+                <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                   <thead>
                     <tr>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-xs font-medium text-neutral-700 dark:text-white">
                         Value Deviation
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-center text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-center text-xs font-medium text-neutral-700 dark:text-white">
                         Criteria
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-center text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-center text-xs font-medium text-neutral-700 dark:text-white">
                         Results
                       </th>
                     </tr>
@@ -1102,9 +1102,9 @@ export const CustomFormFiller: React.FC = () => {
                       return (
                         <tr
                           key={idx}
-                          className="border-t border-zinc-200 dark:border-zinc-700"
+                          className="border-t border-neutral-200 dark:border-neutral-700"
                         >
-                          <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
+                          <td className="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
                             Phase: N/A
                           </td>
                           <td className="px-3 py-2">
@@ -1117,7 +1117,7 @@ export const CustomFormFiller: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                              className="w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                             >
                               {phaseCriteriaOptions.map((c) => (
                                 <option key={c} value={c}>
@@ -1136,7 +1136,7 @@ export const CustomFormFiller: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                              className="w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                             >
                               {phaseResultOptions.map((r) => (
                                 <option key={r} value={r}>
@@ -1152,16 +1152,16 @@ export const CustomFormFiller: React.FC = () => {
                 </table>
               </div>
               <div className="w-full">
-                <table className="w-full table-fixed border-collapse border border-zinc-200 dark:border-zinc-700">
+                <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
                   <thead>
                     <tr>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-xs font-medium text-neutral-700 dark:text-white">
                         Value Deviation
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-center text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-center text-xs font-medium text-neutral-700 dark:text-white">
                         Criteria
                       </th>
-                      <th className="px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-center text-xs font-medium text-zinc-700 dark:text-white">
+                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-center text-xs font-medium text-neutral-700 dark:text-white">
                         Results
                       </th>
                     </tr>
@@ -1180,9 +1180,9 @@ export const CustomFormFiller: React.FC = () => {
                       return (
                         <tr
                           key={label}
-                          className="border-t border-zinc-200 dark:border-zinc-700"
+                          className="border-t border-neutral-200 dark:border-neutral-700"
                         >
-                          <td className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300">
+                          <td className="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
                             {label}: N/A
                           </td>
                           <td className="px-3 py-2">
@@ -1195,7 +1195,7 @@ export const CustomFormFiller: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                              className="w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                             >
                               {neutralGroundCriteriaOptions.map((c) => (
                                 <option key={c} value={c}>
@@ -1214,7 +1214,7 @@ export const CustomFormFiller: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white"
+                              className="w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                             >
                               {neutralGroundResultOptions.map((r) => (
                                 <option key={r} value={r}>
@@ -1263,10 +1263,10 @@ export const CustomFormFiller: React.FC = () => {
 
       return (
         <div className="space-y-4 w-full min-w-0" style={wrapperStyle}>
-          <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-600">
+          <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-600">
             {section.settingFields.map((sf) => (
               <div key={sf.id} className="flex items-center gap-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
                   {sf.label}
                 </label>
                 <select
@@ -1274,7 +1274,7 @@ export const CustomFormFiller: React.FC = () => {
                   onChange={(e) =>
                     handleFieldChange(section.id, sf.id, e.target.value)
                   }
-                  className="px-3 py-1.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-150 text-zinc-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
+                  className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
                 >
                   {sf.options.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1286,7 +1286,7 @@ export const CustomFormFiller: React.FC = () => {
             ))}
           </div>
           <div className="overflow-x-auto w-full min-w-0">
-            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+            <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
               <colgroup>
                 {visibleColumns.map((col) => (
                   <col
@@ -1300,7 +1300,7 @@ export const CustomFormFiller: React.FC = () => {
                   {visibleColumns.map((col) => (
                     <th
                       key={col.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-sm font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-sm font-medium text-neutral-900 dark:text-white"
                       style={col.width ? { width: col.width } : undefined}
                     >
                       {col.label}
@@ -1317,11 +1317,11 @@ export const CustomFormFiller: React.FC = () => {
                       {visibleColumns.map((col, colIdx) => (
                         <td
                           key={col.id}
-                          className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                          className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {colIdx === 0 ? (
-                            <span className="block w-full px-2 py-1 text-sm text-zinc-900 dark:text-white font-medium">
+                            <span className="block w-full px-2 py-1 text-sm text-neutral-900 dark:text-white font-medium">
                               {row.label}
                             </span>
                           ) : (
@@ -1365,7 +1365,7 @@ export const CustomFormFiller: React.FC = () => {
                   <Minus className="w-3 h-3" /> Remove Row
                 </button>
               )}
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""}
               </span>
             </div>
@@ -1383,10 +1383,10 @@ export const CustomFormFiller: React.FC = () => {
       return (
         <div style={wrapperStyle}>
           {section.aboveTableFields && section.aboveTableFields.length > 0 && (
-            <div className="flex flex-wrap items-end gap-4 gap-y-2 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-600">
+            <div className="flex flex-wrap items-end gap-4 gap-y-2 mb-3 pb-2 border-b border-neutral-200 dark:border-neutral-600">
               {section.aboveTableFields.map((f) => (
                 <div key={f.id} className="flex flex-col gap-1 min-w-[120px]">
-                  <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                     {f.label}
                   </label>
                   {renderField(section.id, f, undefined)}
@@ -1395,7 +1395,7 @@ export const CustomFormFiller: React.FC = () => {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+            <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
               <colgroup>
                 {section.columns.map((col) => (
                   <col
@@ -1409,7 +1409,7 @@ export const CustomFormFiller: React.FC = () => {
                   {section.columns.map((col) => (
                     <th
                       key={col.id}
-                      className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-sm font-medium text-zinc-900 dark:text-white"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-sm font-medium text-neutral-900 dark:text-white"
                       style={col.width ? { width: col.width } : undefined}
                     >
                       {col.label}
@@ -1428,7 +1428,7 @@ export const CustomFormFiller: React.FC = () => {
                       return (
                         <td
                           key={col.id}
-                          className="border border-zinc-300 dark:border-zinc-600 px-2 py-1"
+                          className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {isEquipmentCell ? (
@@ -1459,7 +1459,7 @@ export const CustomFormFiller: React.FC = () => {
                                 }));
                               }}
                               placeholder="Search equipment..."
-                              className="w-full px-2 py-1.5 text-sm border border-zinc-200 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
+                              className="w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
                             />
                           ) : (
                             renderField(cellRowKey, col.field, {
@@ -1497,7 +1497,7 @@ export const CustomFormFiller: React.FC = () => {
                   <Minus className="w-3 h-3" /> Remove Row
                 </button>
               )}
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 {rowCount} row{rowCount !== 1 ? "s" : ""}
               </span>
             </div>
@@ -1509,14 +1509,14 @@ export const CustomFormFiller: React.FC = () => {
     if (section.field) {
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
-          <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+          <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
             <tbody>
               <tr style={rowStyle}>
-                <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2">
-                  <div className="text-xs font-medium text-zinc-500 dark:text-white uppercase mb-1">
+                <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
+                  <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
                     {section.field.label}
                     {section.field.unit && (
-                      <span className="text-zinc-400 ml-1 normal-case">
+                      <span className="text-neutral-400 ml-1 normal-case">
                         ({section.field.unit})
                       </span>
                     )}
@@ -1535,16 +1535,16 @@ export const CustomFormFiller: React.FC = () => {
     if (section.checklistItems && section.checklistItems.length > 0) {
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
-          <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-600">
+          <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600">
             <thead>
               <tr>
-                <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-sm font-medium">
+                <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-sm font-medium">
                   NETA Section
                 </th>
-                <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-sm font-medium">
+                <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-sm font-medium">
                   Description
                 </th>
-                <th className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 bg-zinc-50 dark:bg-dark-200 text-left text-sm font-medium">
+                <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-left text-sm font-medium">
                   Result
                 </th>
               </tr>
@@ -1552,19 +1552,19 @@ export const CustomFormFiller: React.FC = () => {
             <tbody>
               {section.checklistItems.map((item) => (
                 <tr key={item.id} style={rowStyle}>
-                  <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm">
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm">
                     {item.netaSection ?? "-"}
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm">
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm">
                     {item.description}
                   </td>
-                  <td className="border border-zinc-300 dark:border-zinc-600 px-2 py-1">
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                     <select
                       value={formData[section.id]?.[item.id] ?? ""}
                       onChange={(e) =>
                         handleFieldChange(section.id, item.id, e.target.value)
                       }
-                      className="w-full px-2 py-1 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-dark-100 text-sm"
+                      className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-sm"
                     >
                       <option value="">Select...</option>
                       {item.resultOptions?.map((opt: string) => (
@@ -1620,7 +1620,7 @@ export const CustomFormFiller: React.FC = () => {
   return (
     <ReportWrapper>
       {/* Print Header - matches standard reports: AMP logo left, title center, NETA + PASS/FAIL right */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-zinc-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <div
           style={{
             width: "120px",
@@ -1673,11 +1673,11 @@ export const CustomFormFiller: React.FC = () => {
         </div>
       </div>
 
-      <div className="min-h-screen bg-zinc-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0">
+      <div className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0">
         <div className="max-w-5xl mx-auto print:max-w-none">
-          <div className="custom-form-container bg-white dark:bg-dark-150 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
+          <div className="custom-form-container bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
             {/* Screen-only Header with controls */}
-            <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700">
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
@@ -1687,7 +1687,7 @@ export const CustomFormFiller: React.FC = () => {
                   Back to Job
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                     {template.name}
                   </h1>
                   {template.netaSection && (
@@ -1701,7 +1701,7 @@ export const CustomFormFiller: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-zinc-600 hover:bg-zinc-700 rounded-md flex items-center gap-2"
+                  className="px-4 py-2 text-sm text-white bg-neutral-600 hover:bg-neutral-700 rounded-md flex items-center gap-2"
                 >
                   <Printer className="w-4 h-4" />
                   Print Report
@@ -1737,7 +1737,7 @@ export const CustomFormFiller: React.FC = () => {
                 className={idx > 0 ? "mt-6 print:mt-4" : ""}
               >
                 <div className="w-full h-1 bg-[#f26722] mb-3 print:mb-1"></div>
-                <h2 className="text-lg font-semibold mb-3 print:mb-1 print:text-sm text-zinc-900 dark:text-white print:text-black">
+                <h2 className="text-lg font-semibold mb-3 print:mb-1 print:text-sm text-neutral-900 dark:text-white print:text-black">
                   {section.title}
                 </h2>
                 {renderSection(section)}
@@ -1746,7 +1746,7 @@ export const CustomFormFiller: React.FC = () => {
 
             {sortedSections.length === 0 && (
               <div className="py-12 text-center">
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <p className="text-neutral-500 dark:text-neutral-400">
                   This template has no sections yet.
                 </p>
               </div>

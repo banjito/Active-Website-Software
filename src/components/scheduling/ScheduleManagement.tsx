@@ -519,7 +519,7 @@ export function ScheduleManagement({
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Day of Week
                         </label>
                         <Select
@@ -534,7 +534,7 @@ export function ScheduleManagement({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Recurring
                         </label>
                         <Select
@@ -552,7 +552,7 @@ export function ScheduleManagement({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Start Time
                         </label>
                         <input
@@ -564,11 +564,11 @@ export function ScheduleManagement({
                               startTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           End Time
                         </label>
                         <input
@@ -580,7 +580,7 @@ export function ScheduleManagement({
                               endTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                     </div>
@@ -616,14 +616,14 @@ export function ScheduleManagement({
                   </p>
                 ) : (
                   availabilities.map((avail) => (
-                    <Card key={avail.id} className="border border-zinc-200">
+                    <Card key={avail.id} className="border border-neutral-200">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                           <div>
                             <h3 className="font-medium">
                               {getDayName(avail.day_of_week)}
                             </h3>
-                            <p className="text-sm text-zinc-600 dark:text-white">
+                            <p className="text-sm text-neutral-600 dark:text-white">
                               {avail.start_time.substring(0, 5)} -{" "}
                               {avail.end_time.substring(0, 5)}
                               {avail.recurring ? " (Weekly)" : " (One Time)"}
@@ -677,7 +677,7 @@ export function ScheduleManagement({
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Date
                         </label>
                         <input
@@ -689,11 +689,11 @@ export function ScheduleManagement({
                               exceptionDate: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Type
                         </label>
                         <Select
@@ -714,7 +714,7 @@ export function ScheduleManagement({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Start Time
                         </label>
                         <input
@@ -726,11 +726,11 @@ export function ScheduleManagement({
                               startTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           End Time
                         </label>
                         <input
@@ -742,11 +742,11 @@ export function ScheduleManagement({
                               endTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                           Reason
                         </label>
                         <input
@@ -759,7 +759,7 @@ export function ScheduleManagement({
                             })
                           }
                           placeholder="E.g., Vacation, Training, Sick Leave"
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-zinc-700"
+                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                     </div>
@@ -818,13 +818,13 @@ export function ScheduleManagement({
                                   : "Unavailable"}
                               </span>
                             </h3>
-                            <p className="text-sm text-zinc-600 dark:text-white">
+                            <p className="text-sm text-neutral-600 dark:text-white">
                               {exception.is_available
                                 ? `Special Hours: ${exception.start_time?.substring(0, 5) || ""} - ${exception.end_time?.substring(0, 5) || ""}`
                                 : `Time Off: All Day`}
                             </p>
                             {exception.reason && (
-                              <p className="text-sm text-zinc-600 dark:text-white mt-1">
+                              <p className="text-sm text-neutral-600 dark:text-white mt-1">
                                 {exception.reason}
                               </p>
                             )}

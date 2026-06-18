@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  MessageSquarePlus,
+  Feather,
   Search,
   X,
-  Feather,
   Phone,
   Mail,
   User as UserIcon,
@@ -222,7 +221,7 @@ export const QuickLogInteraction: React.FC = () => {
         onClick={() => setOpen((v) => !v)}
         className={cn(iconButtonClass, open && iconButtonActiveClass)}
       >
-        <MessageSquarePlus className="h-5 w-5" />
+        <Feather className="h-5 w-5" />
       </button>
 
       {open && (

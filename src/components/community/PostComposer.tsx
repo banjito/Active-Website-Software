@@ -158,7 +158,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
   return (
     <section
       ref={sectionRef}
-      className="w-full bg-white rounded-lg p-3 mb-3"
+      className="w-full bg-white dark:bg-dark-150 rounded-lg p-3 mb-3"
     >
       {!expanded ? (
         <button

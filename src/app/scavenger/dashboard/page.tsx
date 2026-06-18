@@ -16,7 +16,7 @@ export default function ScavengerDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold border-b pb-3">Scavenger Division Dashboard</h1>
+      <h1 className="text-2xl font-bold border-b border-gray-200 dark:border-gray-700 pb-3 text-gray-900 dark:text-white">Scavenger Division Dashboard</h1>
       
       {/* Add JobCreationForm for NETA Technician jobs */}
       <JobCreationForm division="scavenger" />

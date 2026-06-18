@@ -13099,7 +13099,7 @@ export default function EstimateSheet({
                             }}
                           >
                             {/* Left side - SUB TOTAL and FINAL */}
-                            <div style={{ width: "60%" }}>
+                            <div style={{ width: "60%", color: "var(--text-color)" }}>
                               <div style={{ marginBottom: "15px" }}>
                                 <div
                                   style={{
@@ -13158,7 +13158,7 @@ export default function EstimateSheet({
                             </div>
 
                             {/* Right side - CUSTOMER TOTAL COST table (includes mobilization as last step) */}
-                            <div style={{ width: "40%" }}>
+                            <div style={{ width: "40%", color: "var(--text-color)" }}>
                               <div
                                 style={{
                                   fontWeight: "bold",
@@ -13798,11 +13798,11 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-lg font-bold mb-4">Select a Quote</h2>
+          <div className="bg-white dark:bg-dark-150 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-bold mb-4 dark:text-white">Select a Quote</h2>
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <label className="text-sm text-gray-700">Scope Quantity</label>
+                <label className="text-sm text-gray-700 dark:text-gray-200">Scope Quantity</label>
                 <input
                   type="number"
                   min="1"
@@ -13814,7 +13814,7 @@ export default function EstimateSheet({
                     );
                     setSingleLetterScopeQuantity(qty);
                   }}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
                 />
               </div>
               <label className="flex items-center cursor-pointer mt-2">
@@ -13826,7 +13826,7 @@ export default function EstimateSheet({
                   }
                   className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-200">
                   Include mobilization in letter even when $0
                 </span>
               </label>
@@ -13837,12 +13837,12 @@ export default function EstimateSheet({
                   onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
                   className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-200">
                   Include SOV item notes
                 </span>
               </label>
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2">
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-dark-100 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Work Schedule Pricing in Letter
                 </p>
                 <div className="space-y-1.5">
@@ -13853,7 +13853,7 @@ export default function EstimateSheet({
                       onChange={(e) => setLetterIncludeMF(e.target.checked)}
                       className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
                       Monday - Friday
                     </span>
                   </label>
@@ -13869,7 +13869,7 @@ export default function EstimateSheet({
                       disabled={!showSaturdayHours}
                       className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
                       Saturday
                       {!showSaturdayHours
                         ? " (enable Saturday table first)"
@@ -13886,15 +13886,15 @@ export default function EstimateSheet({
                       disabled={!showSundayHours}
                       className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
                       Sunday / Holiday
                       {!showSundayHours ? " (enable Sunday table first)" : ""}
                     </span>
                   </label>
                 </div>
               </div>
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2">
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-dark-100 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Payment Terms in Letter
                 </p>
                 <label className="flex items-center cursor-pointer mb-2">
@@ -13904,7 +13904,7 @@ export default function EstimateSheet({
                     onChange={(e) => setLetterShowAllTerms(e.target.checked)}
                     className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-200">
                     Show all payment terms (NET 30, 60, 90)
                   </span>
                 </label>
@@ -13916,7 +13916,7 @@ export default function EstimateSheet({
                         e.target.value as "net30" | "net60" | "net90",
                       )
                     }
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-white"
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-dark-100 dark:text-white"
                   >
                     <option value="net30">NET 30</option>
                     <option value="net60">NET 60</option>
@@ -13996,12 +13996,12 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full">
-            <h2 className="text-lg font-bold mb-4">
+          <div className="bg-white dark:bg-dark-150 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg p-6 max-w-lg w-full">
+            <h2 className="text-lg font-bold mb-4 dark:text-white">
               Select Multiple Quotes for Combined Letter
             </h2>
             <div className="mb-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Select the quotes you want to include in the combined letter
                 proposal:
               </p>
@@ -14146,7 +14146,7 @@ export default function EstimateSheet({
               {quotes.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="mb-3 flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                  className="mb-3 flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
                 >
                   <div className="flex items-center flex-1">
                     <input
@@ -14198,7 +14198,7 @@ export default function EstimateSheet({
                     />
                     <label
                       htmlFor={`quote-${idx}`}
-                      className="text-sm font-medium text-gray-900 cursor-pointer"
+                      className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
                     >
                       {(function () {
                         try {
@@ -14216,7 +14216,7 @@ export default function EstimateSheet({
                   </div>
                   {selectedQuotesForCombined.includes(idx) && (
                     <div className="flex items-center gap-2 ml-4">
-                      <label className="text-sm text-gray-700">
+                      <label className="text-sm text-gray-700 dark:text-gray-200">
                         Scope Quantity
                       </label>
                       <input
@@ -14233,7 +14233,7 @@ export default function EstimateSheet({
                             [idx]: qty,
                           }));
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
                       />
                     </div>
                   )}
@@ -14291,12 +14291,12 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
-            <h2 className="text-lg font-bold mb-4">Saved Letter Proposals</h2>
+          <div className="bg-white dark:bg-dark-150 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg p-6 max-w-2xl w-full">
+            <h2 className="text-lg font-bold mb-4 dark:text-white">Saved Letter Proposals</h2>
             {letters.length === 0 ? (
-              <div className="text-sm text-gray-500">No saved letters yet.</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">No saved letters yet.</div>
             ) : (
-              <ul className="divide-y">
+              <ul className="divide-y dark:divide-gray-700">
                 {letters.map((l, idx) => (
                   <li
                     key={l.id}
@@ -14307,7 +14307,7 @@ export default function EstimateSheet({
                         {(l as any).title ||
                           `Letter # ${(opportunityData as any)?.quote_number || idx + 1}`}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {l.created_at?.slice(0, 10)}
                       </div>
                     </div>

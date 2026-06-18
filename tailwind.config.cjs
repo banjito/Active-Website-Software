@@ -65,9 +65,9 @@ module.exports = {
           }
         },
         dark: {
-          50: '#000000',        // Black backgrounds
+          50: '#2a2a2a',        // Elevated/hover surfaces
           100: '#262626',       // Darker gray buttons/inputs
-          150: '#000000',       // Black cards
+          150: '#1e1e1e',       // Soft black cards
           200: '#262626',       // Darker gray borders
           300: '#262626',       // Darker gray
           400: '#FFFFFF',       // White text
@@ -76,7 +76,7 @@ module.exports = {
           700: '#FF6400',       // Orange accent
           800: '#FFFFFF',       // White text
           900: '#FFFFFF',       // White text
-          background: '#000000', // Black background
+          background: '#1e1e1e', // Soft black background
           accent: '#FF6400'     // Orange accent
         },
         cozy: {

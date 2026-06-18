@@ -316,7 +316,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
+    <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background text-foreground">
       <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
         <HeaderBar />
       </div>

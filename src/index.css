@@ -40,11 +40,11 @@
     }
 
     .dark {
-        --background: 0 0% 0%; /* Black: #000000 */
+        --background: 0 0% 12%; /* Soft black: #1e1e1e */
         --foreground: 0 0% 100%; /* White text */
-        --card: 0 0% 0%; /* Black cards */
+        --card: 0 0% 12%; /* Soft black cards: #1e1e1e */
         --card-foreground: 0 0% 100%; /* White text */
-        --popover: 0 0% 0%; /* Black popovers */
+        --popover: 0 0% 12%; /* Soft black popovers: #1e1e1e */
         --popover-foreground: 0 0% 100%; /* White text */
         --primary: 0 0% 15%; /* Darker gray buttons */
         --primary-foreground: 0 0% 100%; /* White text */
@@ -62,7 +62,7 @@
 
         /* Dark mode specific colors for reports */
         --dark-100: #262626; /* Darker gray */
-        --dark-150: #000000; /* Black */
+        --dark-150: #1e1e1e; /* Soft black */
         --dark-200: #262626; /* Darker gray */
 
         /* Calendar – opportunity estimate status colors */

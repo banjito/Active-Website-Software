@@ -68,7 +68,7 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="animate-pulse p-6 bg-gray-50 dark:bg-black rounded-xl">
+      <div className="animate-pulse p-6 bg-gray-50 dark:bg-[#1e1e1e] rounded-xl">
         <div className="h-6 w-48 bg-gray-200 dark:bg-dark-150 rounded mb-4"></div>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {[...Array(6)].map((_, i) => (
@@ -84,7 +84,7 @@ export const ShortcutDisplay: React.FC = () => {
 
   if (shortcuts.length === 0) {
     return (
-      <div className="p-6 bg-gray-50 dark:bg-black rounded-xl">
+      <div className="p-6 bg-gray-50 dark:bg-[#1e1e1e] rounded-xl">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">My Shortcuts</h3>
           <div className="flex items-center space-x-2">
@@ -129,7 +129,7 @@ export const ShortcutDisplay: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-white dark:bg-black p-4 rounded-lg shadow-sm">
+    <div className="w-full bg-white dark:bg-[#1e1e1e] p-4 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium"></h3>
         <div className="flex items-center space-x-2">

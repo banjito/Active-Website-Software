@@ -14,8 +14,11 @@ import {
   ClipboardCheck,
   ChevronLeft,
   ShieldCogCorner,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { useTheme } from "@/components/theme/theme-provider";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { useDivision } from "@/App";
 import { SettingsSubmenu } from "@/components/ui/SettingsSubmenu";
@@ -101,6 +104,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const { user, signOut } = useAuth();
   const { isDemoMode, toggleDemoMode, maskJobTitle } = useDemoMode();
   const { setDivision } = useDivision();
+  const { theme, setTheme } = useTheme();
+
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const toggleDarkMode = () => setTheme(isDark ? "light" : "dark");
 
   const canSeeDemoMode = !!user;
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -1374,6 +1386,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             </span>
                           </button>
                         )}
+                        <button
+                          onClick={toggleDarkMode}
+                          className="flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                        >
+                          <span className="flex items-center">
+                            {isDark ? (
+                              <Sun className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                            ) : (
+                              <Moon className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                            )}
+                            {isDark ? "Light Mode" : "Dark Mode (In Testing)"}
+                          </span>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              isDark
+                                ? "bg-[#f26722] text-white"
+                                : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                            }`}
+                          >
+                            {isDark ? "On" : "Off"}
+                          </span>
+                        </button>
                         <div className="border-t border-gray-200 dark:border-dark-200" />
                         <button
                           onClick={handleSignOut}

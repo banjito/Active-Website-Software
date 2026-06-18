@@ -147,7 +147,7 @@ export function GoalList() {
                   <TableCell className="font-medium">
                     <div>
                       <div className="font-semibold">{goal.title}</div>
-                      <div className="text-sm text-gray-500">{goal.description}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{goal.description}</div>
                     </div>
                   </TableCell>
                   <TableCell>{goal.type}</TableCell>
@@ -179,7 +179,7 @@ export function GoalList() {
                         <Calendar size={14} className="mr-1" />
                         {formatDate(goal.startDate)} - {formatDate(goal.endDate)}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {daysRemaining > 0 
                           ? `${daysRemaining} days remaining` 
                           : 'Ended'}

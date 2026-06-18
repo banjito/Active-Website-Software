@@ -829,7 +829,7 @@ const FeaturesFixesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground dark:bg-black dark:text-white">
+    <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <div className="sticky top-0 z-30 w-full shrink-0 border-b border-gray-200 dark:border-dark-200">
         <HeaderBar />
       </div>

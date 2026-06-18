@@ -44,8 +44,8 @@ export default function EngineeringDashboard() {
                   <PencilRuler className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Design Approval</h3>
-                  <p className="text-sm text-gray-600">Review and approve engineering designs</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Design Approval</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Review and approve engineering designs</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -61,8 +61,8 @@ export default function EngineeringDashboard() {
                   <Book className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Technical Documentation</h3>
-                  <p className="text-sm text-gray-600">Access engineering documents and manuals</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Technical Documentation</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Access engineering documents and manuals</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -78,8 +78,8 @@ export default function EngineeringDashboard() {
                   <FileCode className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Standards & Compliance</h3>
-                  <p className="text-sm text-gray-600">Access engineering standards and updates</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Standards & Compliance</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Access engineering standards and updates</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -95,8 +95,8 @@ export default function EngineeringDashboard() {
                   <FileSymlink className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Drawing Repository</h3>
-                  <p className="text-sm text-gray-600">Access technical drawings and blueprints</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Drawing Repository</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Access technical drawings and blueprints</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -112,8 +112,8 @@ export default function EngineeringDashboard() {
                   <Building className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Customers</h3>
-                  <p className="text-sm text-gray-600">Manage engineering customers</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Customers</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Manage engineering customers</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -129,8 +129,8 @@ export default function EngineeringDashboard() {
                   <Briefcase className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Jobs & Projects</h3>
-                  <p className="text-sm text-gray-600">Manage engineering projects</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Jobs & Projects</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Manage engineering projects</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -209,7 +209,7 @@ export default function EngineeringDashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">Main Line Power Distribution Design approved</p>
-                  <p className="text-xs text-gray-500">Yesterday at 2:34 PM</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday at 2:34 PM</p>
                 </div>
               </li>
               <li className="flex items-start">
@@ -218,7 +218,7 @@ export default function EngineeringDashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">Technical Documentation updated for Transformer Specifications</p>
-                  <p className="text-xs text-gray-500">2 days ago</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
                 </div>
               </li>
               <li className="flex items-start">
@@ -227,7 +227,7 @@ export default function EngineeringDashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">IEEE 1547 Standard update notification</p>
-                  <p className="text-xs text-gray-500">Last week</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Last week</p>
                 </div>
               </li>
             </ul>

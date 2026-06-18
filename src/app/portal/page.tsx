@@ -1128,7 +1128,7 @@ export default function PortalLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground dark:bg-black dark:text-white">
+    <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <HeaderBar onEnterEditMode={handleEnterEditMode} />
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
@@ -1166,7 +1166,7 @@ export default function PortalLanding() {
 
       {/* Hero Section */}
       <section
-        className={`relative overflow-hidden border-none bg-white dark:bg-black ${!portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
+        className={`relative overflow-hidden border-none bg-white dark:bg-[#1e1e1e] ${!portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16">
@@ -1201,7 +1201,7 @@ export default function PortalLanding() {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="h-11 px-5 text-base rounded-md border-gray-200 text-gray-600 hover:text-gray-900 dark:border-dark-300 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
+                className="h-11 px-5 text-base rounded-md border-none text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
                 onClick={handleAbout}
               >
                 Learn More
@@ -1210,7 +1210,7 @@ export default function PortalLanding() {
                 onClick={() =>
                   window.open("/assets/offline-software.zip", "_blank")
                 }
-                className="inline-flex items-center justify-center h-11 px-5 !text-gray-600 rounded-md bg-transparent border border-gray-200 hover:bg-gray-100"
+                className="inline-flex items-center justify-center h-11 px-5 !text-gray-600 rounded-md bg-transparent hover:bg-gray-800/15"
                 leftIcon={<Download className="h-5 w-5 text-gray-600" />}
               >
                 Offline Software

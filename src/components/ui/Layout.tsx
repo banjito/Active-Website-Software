@@ -740,7 +740,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   ) : null;
 
   return (
-    <div className={`flex min-h-screen bg-background dark:bg-dark-background ${useHeaderBarLayout ? 'flex-col' : ''}`}>
+    <div className={`flex min-h-screen bg-background dark:bg-dark-background text-foreground ${useHeaderBarLayout ? 'flex-col' : ''}`}>
       {isMobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"

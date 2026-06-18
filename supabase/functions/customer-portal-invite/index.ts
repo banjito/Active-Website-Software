@@ -89,7 +89,8 @@ serve(async (req) => {
 
     if (inviteError) return json({ error: inviteError.message }, 400)
 
-    const redirectTo = `${portalUrl.replace(/\/$/, '')}/accept-invite?token=${inviteToken}`
+    const cleanPortalUrl = portalUrl.replace(/\/$/, '')
+    const redirectTo = `${cleanPortalUrl}/accept-invite?token=${inviteToken}`
     const { error: emailError } = await supabase.auth.admin.inviteUserByEmail(email, {
       data: {
         account_type: 'customer',
@@ -98,12 +99,76 @@ serve(async (req) => {
       redirectTo,
     })
 
-    if (emailError) {
+    // New user: invite email sent. The accept-invite flow finalizes the link.
+    if (!emailError) {
+      return json({ success: true, inviteId: invite.id, expiresAt })
+    }
+
+    // inviteUserByEmail fails when the email is already registered. Rather than
+    // erroring, grant portal access to the existing account directly.
+    const alreadyRegistered = /already|registered|exists/i.test(emailError.message || '')
+    if (!alreadyRegistered) {
       await supabase.schema('common').from('customer_invites').delete().eq('id', invite.id)
       return json({ error: emailError.message }, 400)
     }
 
-    return json({ success: true, inviteId: invite.id, expiresAt })
+    const cleanup = async () => {
+      await supabase.schema('common').from('customer_invites').delete().eq('id', invite.id)
+    }
+
+    // generateLink returns the existing user record, which gives us their id.
+    const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo: `${cleanPortalUrl}/jobs` },
+    })
+    if (linkErr || !linkData?.user) {
+      await cleanup()
+      return json({ error: linkErr?.message || 'Could not resolve existing user' }, 400)
+    }
+    const existingUserId = linkData.user.id
+
+    // Don't reassign a user that already belongs to a different customer.
+    const { data: existingLink } = await supabase
+      .schema('common')
+      .from('customer_users')
+      .select('customer_id')
+      .eq('auth_user_id', existingUserId)
+      .maybeSingle()
+
+    if (existingLink && existingLink.customer_id !== customerId) {
+      await cleanup()
+      return json({ error: 'This user is already linked to a different customer account.' }, 409)
+    }
+
+    if (!existingLink) {
+      const { error: linkInsertErr } = await supabase
+        .schema('common')
+        .from('customer_users')
+        .insert({ auth_user_id: existingUserId, customer_id: customerId, invited_by: caller.id })
+      if (linkInsertErr) {
+        await cleanup()
+        return json({ error: linkInsertErr.message }, 400)
+      }
+    }
+
+    const { error: metaErr } = await supabase.auth.admin.updateUserById(existingUserId, {
+      app_metadata: {
+        ...(linkData.user.app_metadata || {}),
+        account_type: 'customer',
+        customer_id: customerId,
+      },
+    })
+    if (metaErr) return json({ error: metaErr.message }, 400)
+
+    // Access is already granted, so mark the invite accepted.
+    await supabase
+      .schema('common')
+      .from('customer_invites')
+      .update({ accepted_at: new Date().toISOString(), accepted_by: existingUserId })
+      .eq('id', invite.id)
+
+    return json({ success: true, existingUser: true, inviteId: invite.id })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     return json({ error: message }, 500)

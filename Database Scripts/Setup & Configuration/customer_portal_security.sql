@@ -171,6 +171,14 @@ GRANT USAGE ON SCHEMA common TO authenticated;
 GRANT USAGE ON SCHEMA neta_ops TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON common.customer_users TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON common.customer_invites TO authenticated;
+
+-- Edge functions (customer-portal-invite / accept-invite / report-download) run as
+-- service_role. It bypasses RLS but still needs table privileges in these schemas.
+GRANT USAGE ON SCHEMA common TO service_role;
+GRANT USAGE ON SCHEMA neta_ops TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON common.customer_users TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON common.customer_invites TO service_role;
+GRANT SELECT ON neta_ops.technical_reports TO service_role;
 GRANT EXECUTE ON FUNCTION common.is_employee_user() TO authenticated;
 GRANT EXECUTE ON FUNCTION common.current_customer_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION common.customer_can_select_job(uuid) TO authenticated;

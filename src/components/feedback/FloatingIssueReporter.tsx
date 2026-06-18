@@ -208,10 +208,12 @@ export const FloatingIssueReporter: React.FC = () => {
         <button
           onClick={() => setOpen(true)}
           aria-label="Issue / Feature Report"
-          className="group inline-flex items-center bg-[#f26722] hover:bg-[#e55611] text-white shadow-lg border-2 border-white rounded-xl p-3.5 font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[max-width,background-color] duration-300 ease-out max-w-[56px] hover:max-w-[320px] focus-visible:max-w-[320px] overflow-hidden whitespace-nowrap"
+          className="group inline-flex items-center h-14 max-w-[56px] hover:max-w-[320px] focus-visible:max-w-[320px] bg-[#f26722] hover:bg-[#e55611] text-white shadow-lg border-2 border-white rounded-xl font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[max-width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
         >
-          <MessageSquareWarning className="h-6 w-6 shrink-0" aria-hidden />
-          <span className="ml-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 delay-75">
+          <span className="flex h-full w-[52px] shrink-0 items-center justify-center">
+            <MessageSquareWarning className="h-6 w-6" aria-hidden />
+          </span>
+          <span className="pr-5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 delay-75">
             Issue/Feature Report
           </span>
         </button>

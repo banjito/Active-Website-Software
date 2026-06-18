@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { supabase } from '@/lib/supabase';
 
 interface Asset {
   id: string;
@@ -11,6 +12,9 @@ interface Asset {
 interface ProgressCallback {
   (progress: number, status: string): void;
 }
+
+/** Private storage bucket that holds customer-downloadable report PDFs. */
+const CUSTOMER_REPORTS_BUCKET = 'customer-reports';
 
 export class PDFExportService {
   private static instance: PDFExportService;
@@ -486,6 +490,160 @@ export class PDFExportService {
       document.body.removeChild(iframe);
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Customer Portal publishing
+  //
+  // Renders a report route (?print=true) into a stored PDF in the private
+  // customer-reports bucket so the customer portal can serve it via a signed
+  // URL. Uses the same iframe + html2canvas capture as the in-app exports.
+  // ---------------------------------------------------------------------------
+
+  /** Render an internal report route to a PDF Blob. */
+  async generateReportPdfBlob(reportUrl: string): Promise<Blob> {
+    this.createLoadingContainer();
+    try {
+      const base = reportUrl.startsWith('http') ? reportUrl : `${window.location.origin}${reportUrl}`;
+      const urlWithPrint = base.includes('?') ? `${base}&print=true` : `${base}?print=true`;
+      const iframe = await this.loadReportInIframe(urlWithPrint);
+
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) throw new Error('Cannot access report content (cross-origin?)');
+
+      // Let charts and async content settle.
+      try { iframe.contentWindow?.dispatchEvent(new Event('resize')); } catch {}
+      await new Promise((r) => setTimeout(r, 3500));
+
+      const bodyHeight = Math.max(
+        doc.body.scrollHeight,
+        doc.body.offsetHeight,
+        doc.documentElement.scrollHeight,
+        doc.documentElement.offsetHeight,
+        800,
+      );
+
+      const canvas = await html2canvas(doc.body, {
+        width: 1200,
+        height: bodyHeight,
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        imageTimeout: 15000,
+      });
+
+      return this.canvasToPdfBlob(canvas);
+    } finally {
+      this.cleanup();
+    }
+  }
+
+  /** Slice a tall canvas into A4 pages and return a PDF Blob. */
+  private canvasToPdfBlob(canvas: HTMLCanvasElement): Blob {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+
+    let heightLeft = imgH;
+    let position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+    heightLeft -= pageH;
+    while (heightLeft > 0) {
+      position -= pageH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+    }
+    return pdf.output('blob');
+  }
+
+  /**
+   * Generate a report-asset's PDF and upload it to the private customer-reports
+   * bucket, then record the path on the asset. Returns the stored object path.
+   */
+  async publishReportPdf(params: {
+    assetId: string;
+    fileUrl: string;
+    jobId: string;
+    customerId: string;
+  }): Promise<string> {
+    if (!params.fileUrl?.startsWith('report:')) {
+      throw new Error('Asset has no internal report to render');
+    }
+    if (!params.customerId || !params.jobId) {
+      throw new Error('Missing job or customer for report publish');
+    }
+
+    const reportUrl = params.fileUrl.replace('report:', '');
+    const blob = await this.generateReportPdfBlob(reportUrl);
+    const path = `${params.customerId}/${params.jobId}/${params.assetId}.pdf`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(CUSTOMER_REPORTS_BUCKET)
+      .upload(path, blob, { contentType: 'application/pdf', upsert: true });
+    if (uploadError) throw uploadError;
+
+    const { error: dbError } = await supabase
+      .schema('neta_ops')
+      .from('assets')
+      .update({ published_pdf_path: path })
+      .eq('id', params.assetId);
+    if (dbError) throw dbError;
+
+    return path;
+  }
+
+  /**
+   * Backfill: publish every approved/sent report-asset for a job. The caller
+   * supplies the assets (the staff app already has them loaded). Returns counts.
+   */
+  async publishReportsForJob(
+    params: {
+      jobId: string;
+      customerId: string;
+      assets: { id: string; file_url?: string | null; status?: string | null }[];
+    },
+    onProgress?: ProgressCallback,
+  ): Promise<{ done: number; failed: number; errors: string[] }> {
+    const targets = params.assets.filter(
+      (a) =>
+        a.file_url?.startsWith('report:') &&
+        ['approved', 'sent'].includes(String(a.status || '').toLowerCase()),
+    );
+
+    let done = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    if (targets.length === 0) {
+      onProgress?.(100, 'No approved/sent reports to publish');
+      return { done, failed, errors };
+    }
+
+    for (let i = 0; i < targets.length; i++) {
+      const t = targets[i];
+      onProgress?.(Math.round((i / targets.length) * 100), `Publishing ${i + 1} of ${targets.length}…`);
+      try {
+        await this.publishReportPdf({
+          assetId: t.id,
+          fileUrl: t.file_url as string,
+          jobId: params.jobId,
+          customerId: params.customerId,
+        });
+        done++;
+      } catch (e) {
+        failed++;
+        errors.push(e instanceof Error ? e.message : String(e));
+      }
+    }
+
+    onProgress?.(100, `Published ${done} report(s)${failed ? `, ${failed} failed` : ''}`);
+    return { done, failed, errors };
+  }
 }
 
-export const pdfExportService = PDFExportService.getInstance(); 
+export const pdfExportService = PDFExportService.getInstance();

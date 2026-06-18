@@ -132,6 +132,9 @@ export default function CustomerDetail() {
   });
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
   const [isSavingDivisions, setIsSavingDivisions] = useState(false);
+  const [portalInviteOpen, setPortalInviteOpen] = useState(false);
+  const [portalInviteEmail, setPortalInviteEmail] = useState("");
+  const [portalInviteSending, setPortalInviteSending] = useState(false);
   const [contactPopupOpen, setContactPopupOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
@@ -535,6 +538,69 @@ export default function CustomerDetail() {
 
   const category = getCategoryById(customer.category_id);
 
+  function openPortalInvite() {
+    const prefill =
+      customer?.email ||
+      contacts.find((c) => c.is_primary)?.email ||
+      contacts[0]?.email ||
+      "";
+    setPortalInviteEmail(prefill);
+    setPortalInviteOpen(true);
+  }
+
+  async function handleSendPortalInvite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!customer) return;
+    const email = portalInviteEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      toast({
+        title: "Enter a valid email",
+        description: "A valid email address is required to send a portal invite.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setPortalInviteSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "customer-portal-invite",
+        { body: { email, customerId: customer.id } }
+      );
+      if (error) {
+        // supabase-js hides the function's response behind a generic message.
+        // The real { error } body lives on error.context (the raw Response).
+        let detail = error.message;
+        const ctx = (error as { context?: Response }).context;
+        if (ctx && typeof ctx.json === "function") {
+          try {
+            const body = await ctx.json();
+            if (body?.error) detail = body.error;
+          } catch {
+            /* response had no JSON body */
+          }
+        }
+        throw new Error(detail);
+      }
+      const result = data as { error?: string; existingUser?: boolean } | null;
+      if (result?.error) throw new Error(result.error);
+      toast({
+        title: result?.existingUser ? "Access granted" : "Invite sent",
+        description: result?.existingUser
+          ? `${email} already had an account and can now sign in to the portal.`
+          : `A customer portal invite was emailed to ${email}.`,
+      });
+      setPortalInviteOpen(false);
+    } catch (err) {
+      toast({
+        title: "Could not send invite",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalInviteSending(false);
+    }
+  }
+
   return (
     <>
       <div className="p-6">
@@ -554,21 +620,30 @@ export default function CustomerDetail() {
               </h1>
             </div>
           </div>
-          <span
-            className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
-              customer.status === "active"
-                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                : "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-200"
-            }`}
-          >
-            {customer.status}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openPortalInvite}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#f26722] px-3 py-1.5 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+            >
+              <Mail className="h-4 w-4" />
+              Invite to Customer Portal
+            </button>
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
+                customer.status === "active"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                  : "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-200"
+              }`}
+            >
+              {customer.status}
+            </span>
+          </div>
         </div>
 
         {/* Customer Information and Contacts in one row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Customer Information Card */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
+          <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
                 Customer Information
@@ -702,7 +777,7 @@ export default function CustomerDetail() {
           </div>
 
           {/* Contacts Card */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
+          <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
                 Contacts
@@ -843,7 +918,7 @@ export default function CustomerDetail() {
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Jobs section */}
-              <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+              <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -924,7 +999,7 @@ export default function CustomerDetail() {
               {/* Two-column layout for Contacts and Documents */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contacts section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1025,7 +1100,7 @@ export default function CustomerDetail() {
                 </div>
 
                 {/* Documents section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1119,7 +1194,7 @@ export default function CustomerDetail() {
               {/* Two-column layout for Interactions and Health */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Interactions section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1239,13 +1314,13 @@ export default function CustomerDetail() {
                 </div>
 
                 {/* Health metrics section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
                   <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-6">
                     Customer Health Dashboard
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
+                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
                       <div className="text-xs text-neutral-500 dark:text-white mb-2">
                         Overall Health
                       </div>
@@ -1259,7 +1334,7 @@ export default function CustomerDetail() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Engagement
                       </div>
@@ -1279,7 +1354,7 @@ export default function CustomerDetail() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Satisfaction
                       </div>
@@ -1299,7 +1374,7 @@ export default function CustomerDetail() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Response Time
                       </div>
@@ -1331,7 +1406,7 @@ export default function CustomerDetail() {
           )}
 
           {activeTab === "jobs" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1408,7 +1483,7 @@ export default function CustomerDetail() {
           )}
 
           {activeTab === "documents" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1463,7 +1538,7 @@ export default function CustomerDetail() {
                 return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
               };
               return (
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
                       Customer Interactions
@@ -1764,13 +1839,13 @@ export default function CustomerDetail() {
             })()}
 
           {activeTab === "health" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-6">
                 Customer Health Dashboard
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
                   <div className="text-xs text-neutral-500 dark:text-white mb-2">
                     Overall Health
                   </div>
@@ -1782,7 +1857,7 @@ export default function CustomerDetail() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Engagement
                   </div>
@@ -1802,7 +1877,7 @@ export default function CustomerDetail() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Satisfaction
                   </div>
@@ -1822,7 +1897,7 @@ export default function CustomerDetail() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Response Time
                   </div>
@@ -2053,6 +2128,76 @@ export default function CustomerDetail() {
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
+                </button>
+              </div>
+            </form>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Customer Portal Invite Dialog */}
+      <Dialog
+        open={portalInviteOpen}
+        onClose={() => !portalInviteSending && setPortalInviteOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-md rounded bg-white dark:bg-dark-150 p-6 w-full">
+            <div className="flex items-center justify-between mb-4">
+              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
+                Invite to Customer Portal
+              </Dialog.Title>
+              <button
+                onClick={() => setPortalInviteOpen(false)}
+                disabled={portalInviteSending}
+                className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-white disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-neutral-500 dark:text-neutral-300 mb-4">
+              Sends an email invite for{" "}
+              <span className="font-medium text-neutral-900 dark:text-white">
+                {customer.company_name || "this customer"}
+              </span>{" "}
+              to access the customer portal. They'll be linked to this customer
+              account and can view its approved reports.
+            </p>
+            <form onSubmit={handleSendPortalInvite} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="portal_invite_email"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white"
+                >
+                  Email address
+                </label>
+                <input
+                  id="portal_invite_email"
+                  type="email"
+                  value={portalInviteEmail}
+                  onChange={(e) => setPortalInviteEmail(e.target.value)}
+                  placeholder="customer@company.com"
+                  autoFocus
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPortalInviteOpen(false)}
+                  disabled={portalInviteSending}
+                  className="rounded-md border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={portalInviteSending}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
+                >
+                  <Mail className="h-4 w-4" />
+                  {portalInviteSending ? "Sending…" : "Send invite"}
                 </button>
               </div>
             </form>

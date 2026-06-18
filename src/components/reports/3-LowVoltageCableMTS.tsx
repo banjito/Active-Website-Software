@@ -516,6 +516,16 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           font-size: 9px !important;
           background: white !important;
           line-height: 1 !important;
+          min-height: 0 !important;
+          padding-bottom: 0 !important;
+        }
+
+        /* Size the report to its actual content for print - the on-screen
+           minHeight/padding (calc(100vh + 300px)) otherwise forces the
+           container past one page and pushes the Comments onto a 2nd page */
+        #report-container {
+          min-height: 0 !important;
+          padding-bottom: 0 !important;
         }
 
         /* Standard portrait page size with minimal margins */
@@ -926,6 +936,27 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           min-height: 20px !important;
         }
 
+        /* Let comments flow directly below the preceding section instead of
+           jumping to the next page. Also forbid a break right before the
+           Comments block so it stays attached to the Test Equipment section. */
+        .comments-section {
+          page-break-before: avoid !important;
+          break-before: avoid !important;
+        }
+        .comments-section,
+        .comments-section table,
+        .comments-section tr,
+        .comments-section td {
+          page-break-inside: auto !important;
+          break-inside: auto !important;
+        }
+        .comments-section h2 {
+          page-break-before: avoid !important;
+          break-before: avoid !important;
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+        }
+
         /* Footer text */
         .text-xs {
           font-size: 7px !important;
@@ -937,8 +968,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           margin-right: 10px !important;
         }
 
-        /* Page break control */
+        /* Page break control - keep entire report on a single page */
         section { page-break-inside: avoid !important; }
+        .page-break-before { page-break-before: auto !important; }
+        .page-break-after { page-break-after: auto !important; }
 
         /* Ensure everything fits on one page */
         .max-w-7xl { max-width: 100% !important; width: 100% !important; }
@@ -3108,7 +3141,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         </section>
 
         {/* Test Equipment Used */}
-        <div className="mb-6 page-break-before">
+        <div className="mb-6">
           <h2 className="section-test-equipment text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
@@ -3273,7 +3306,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
         {/* Comments Section */}
         <div
-          className={`mb-6 comments-section print:break-inside-avoid ${!formData.testEquipment.comments?.trim() ? "print:hidden" : ""}`}
+          className={`mb-6 comments-section ${!formData.testEquipment.comments?.trim() ? "print:hidden" : ""}`}
         >
           <h2 className="section-comments text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments

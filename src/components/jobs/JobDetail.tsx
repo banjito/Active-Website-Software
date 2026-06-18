@@ -2257,6 +2257,8 @@ export default function JobDetail() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
   const [printStatus, setPrintStatus] = useState("");
+  const [isPublishingPortal, setIsPublishingPortal] = useState(false);
+  const [portalPublishStatus, setPortalPublishStatus] = useState("");
 
   // Handle clicking outside the dropdown
   useEffect(() => {
@@ -4193,6 +4195,28 @@ export default function JobDetail() {
         throw new Error(`Failed to update status: ${error.message}`);
       }
 
+      // Publish the report to the customer portal: render + upload a PDF so
+      // customers can view it. Fire-and-forget so it doesn't block the status UI.
+      if (newStatus === "sent" && asset?.file_url?.startsWith("report:")) {
+        const customerId = customer?.id || job?.customers?.id;
+        if (customerId && id) {
+          pdfExportService
+            .publishReportPdf({
+              assetId,
+              fileUrl: asset.file_url,
+              jobId: id,
+              customerId,
+            })
+            .then(() => toast({ title: "Published to customer portal" }))
+            .catch((e) =>
+              console.warn(
+                "Portal PDF publish failed:",
+                e instanceof Error ? e.message : e,
+              ),
+            );
+        }
+      }
+
       // Update local state with new status and timestamps
       const updatedAsset = {
         ...asset,
@@ -5259,6 +5283,52 @@ export default function JobDetail() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isFireteamLeadSelectorOpen]);
+
+  // Backfill: render + upload PDFs for this job's approved/sent reports so the
+  // customer portal can display them. Covers reports that were marked Sent before
+  // the on-send auto-publish existed.
+  const handlePublishReportsToPortal = async () => {
+    if (isPublishingPortal) return;
+    const customerId = customer?.id || job?.customers?.id;
+    if (!customerId || !id) {
+      toast({
+        title: "Missing customer",
+        description: "This job has no linked customer to publish reports for.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsPublishingPortal(true);
+    setPortalPublishStatus("Starting…");
+    try {
+      const { done, failed, errors } = await pdfExportService.publishReportsForJob(
+        { jobId: id, customerId, assets: jobAssets },
+        (_progress, status) => setPortalPublishStatus(status),
+      );
+      if (failed > 0) {
+        console.warn("Portal publish errors:", errors);
+        toast({
+          title: `Published ${done}, ${failed} failed`,
+          description: errors[0] || "Some reports could not be published.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Reports published to portal",
+          description: `${done} report(s) are now viewable by the customer.`,
+        });
+      }
+    } catch (e) {
+      toast({
+        title: "Publish failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishingPortal(false);
+      setPortalPublishStatus("");
+    }
+  };
 
   const handlePrintAllApprovedReports = async () => {
     // Prevent multiple simultaneous print operations
@@ -7414,6 +7484,21 @@ ${newBodyHtml}
     return `/jobs/${jobId}`;
   };
 
+  const getCustomerPath = (customerId: string) => {
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    const jobsIndex = pathParts.indexOf("jobs");
+
+    if (jobsIndex > 0) {
+      return `/${pathParts.slice(0, jobsIndex).join("/")}/customers/${customerId}`;
+    }
+
+    if (job?.division) {
+      return `/${job.division}/customers/${customerId}`;
+    }
+
+    return `/sales-dashboard/customers/${customerId}`;
+  };
+
   return (
     <div className="p-8">
       {renderGeneratedDocDialog()}
@@ -9189,12 +9274,15 @@ ${newBodyHtml}
                             <label className="text-sm font-medium text-neutral-600 dark:text-white">
                               Company
                             </label>
-                            <p className="text-neutral-900 dark:text-white font-semibold">
+                            <Link
+                              to={getCustomerPath(job.customers.id)}
+                              className="text-neutral-900 dark:text-white font-semibold hover:text-[#f26722] hover:underline"
+                            >
                               {maskCustomerName(
                                 job.customers.company_name ||
                                   job.customers.name,
                               )}
-                            </p>
+                            </Link>
                           </div>
                           {job.customers.address && (
                             <div>
@@ -10125,7 +10213,31 @@ ${newBodyHtml}
                                   </Button>
                                 </>
                               )}
+                              {/* Publish to customer portal — shows for approved OR sent reports */}
+                              {jobAssets.filter(
+                                (asset) =>
+                                  asset.file_url?.startsWith("report:") &&
+                                  ["approved", "sent"].includes(
+                                    String(asset.status || "").toLowerCase(),
+                                  ),
+                              ).length > 0 && (
+                                <Button
+                                  onClick={handlePublishReportsToPortal}
+                                  disabled={isPublishingPortal || isPrinting}
+                                  variant="secondary"
+                                  title="Render and upload these reports so the customer can view them in the portal"
+                                >
+                                  {isPublishingPortal
+                                    ? "Publishing…"
+                                    : "Publish to Portal"}
+                                </Button>
+                              )}
                             </div>
+                            {isPublishingPortal && (
+                              <p className="text-sm text-neutral-600 dark:text-white">
+                                {portalPublishStatus || "Publishing…"}
+                              </p>
+                            )}
                             {isPrinting && (
                               <div className="text-sm text-neutral-600 dark:text-white">
                                 <div className="w-full bg-neutral-200 dark:bg-dark-150 rounded-full h-2 mb-1">
@@ -10141,6 +10253,32 @@ ${newBodyHtml}
                             )}
                           </div>
                         )}
+
+                        {/* Publish-to-portal control on the Sent tab (backfill already-sent reports) */}
+                        {assetStatusFilter === "sent" &&
+                          jobAssets.filter(
+                            (asset) =>
+                              asset.file_url?.startsWith("report:") &&
+                              String(asset.status || "").toLowerCase() === "sent",
+                          ).length > 0 && (
+                            <div className="mt-4 space-y-2">
+                              <Button
+                                onClick={handlePublishReportsToPortal}
+                                disabled={isPublishingPortal || isPrinting}
+                                variant="secondary"
+                                title="Render and upload these reports so the customer can view them in the portal"
+                              >
+                                {isPublishingPortal
+                                  ? "Publishing…"
+                                  : "Publish to Portal"}
+                              </Button>
+                              {isPublishingPortal && (
+                                <p className="text-sm text-neutral-600 dark:text-white">
+                                  {portalPublishStatus || "Publishing…"}
+                                </p>
+                              )}
+                            </div>
+                          )}
 
                         {/* Batch archive controls - appear once at least one report is selected */}
                         {selectedAssetIds.size > 0 && (

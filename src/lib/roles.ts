@@ -93,6 +93,24 @@ export const isSuperUser = (email: string | undefined | null): boolean => {
   return SUPERUSER_EMAILS.includes(email.toLowerCase());
 };
 
+// Roles allowed to log customer interactions (Log Interaction page + header button).
+export const INTERACTION_LOGGING_ROLES: Role[] = [
+  'Sales Representative',
+  'Scav',
+  'Admin',
+  'Operations Manager',
+  'Super Admin',
+];
+
+// Whether a user may log interactions. Superusers always qualify.
+export const canLogInteractions = (
+  role: string | undefined | null,
+  email?: string | null,
+): boolean => {
+  if (isSuperUser(email)) return true;
+  return !!role && INTERACTION_LOGGING_ROLES.includes(role);
+};
+
 export const ROLES: Record<Role, RolePermissions> = {
   'NETA Technician': {
     portals: ['neta', 'field_tech', 'hr'],

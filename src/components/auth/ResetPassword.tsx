@@ -66,25 +66,25 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-center mb-10">
+    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-center mb-8 sm:mb-10">
         <img
           src="/ampOS_full_logo.svg"
           alt="ampOS"
-          className="h-[5rem] w-auto"
+          className="h-20 sm:h-[5rem] w-auto"
         />
       </div>
 
       <div className="w-full flex flex-col justify-center">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="text-center mb-8">
+        <div className="mx-auto w-full max-w-md">
+          <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-3xl font-bold text-black mb-2">
               Set new password
             </h2>
           </div>
 
           <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
-            <CardContent className="p-12">
+            <CardContent className="p-6 sm:p-10 md:p-12">
               {checkingSession ? (
                 <p className="text-sm text-black">Checking reset link...</p>
               ) : isError &&
@@ -99,13 +99,13 @@ export default function ResetPassword() {
                     size="lg"
                     fullWidth
                     onClick={() => navigate("/login", { replace: true })}
-                    className="h-12 font-medium hover:bg-[#f26722]/75"
+                    className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
                   >
                     Back to sign in
                   </Button>
                 </div>
               ) : (
-                <form className="space-y-8" onSubmit={handleSubmit}>
+                <form className="space-y-6 sm:space-y-8" onSubmit={handleSubmit}>
                   <div className="space-y-6 pt-4">
                     <Input
                       label="New password"
@@ -120,7 +120,7 @@ export default function ResetPassword() {
                       minLength={6}
                       placeholder="Enter new password"
                       hint="Password must be at least 6 characters"
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
 
                     <Input
@@ -135,7 +135,7 @@ export default function ResetPassword() {
                       leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
                       minLength={6}
                       placeholder="Re-enter new password"
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   </div>
 
@@ -159,7 +159,7 @@ export default function ResetPassword() {
                       fullWidth
                       isLoading={loading}
                       leftIcon={<Lock className="h-5 w-5" />}
-                      className="h-12 font-medium hover:bg-[#f26722]/75"
+                      className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
                     >
                       Update password
                     </Button>

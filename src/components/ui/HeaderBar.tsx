@@ -36,6 +36,7 @@ import { fetchAmpContacts } from "@/services/ampContactsService";
 import type { AmpContact } from "@/services/ampContactsService";
 import { CommunityBoardPopover } from "@/components/community/CommunityBoardPopover";
 import { QuickLogInteraction } from "@/components/sales/QuickLogInteraction";
+import { canLogInteractions } from "@/lib/roles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
 import { cn } from "@/lib/utils";
@@ -872,7 +873,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 )}
               </div>
             )}
-            <QuickLogInteraction />
+            {canLogInteractions(
+              user?.user_metadata?.role,
+              user?.email,
+            ) && <QuickLogInteraction />}
             <div className="relative flex h-10 w-10 items-center justify-center">
               <CommunityBoardPopover />
             </div>

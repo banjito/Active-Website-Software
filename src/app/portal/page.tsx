@@ -1210,8 +1210,10 @@ export default function PortalLanding() {
                 onClick={() =>
                   window.open("/assets/offline-software.zip", "_blank")
                 }
-                className="inline-flex items-center justify-center h-11 px-5 !text-neutral-600 rounded-md bg-transparent hover:bg-neutral-800/15"
-                leftIcon={<Download className="h-5 w-5 text-neutral-600" />}
+                className="group inline-flex items-center rounded-md justify-center h-11 px-5 !text-neutral-600 bg-transparent hover:bg-neutral-700 hover:!text-white"
+                leftIcon={
+                  <Download className="h-5 w-5 text-neutral-600 group-hover:text-white" />
+                }
               >
                 Offline Software
               </Button>

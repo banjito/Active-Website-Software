@@ -16,6 +16,7 @@ import {
   interactionTypeLabel,
   type InteractionType,
 } from "../../../services/interactionsService";
+import { canLogInteractions } from "../../../lib/roles";
 
 type Customer = { id: string; company_name: string; name: string };
 type Contact = {
@@ -233,6 +234,21 @@ export default function MobileLogInteraction() {
 
   const canSave =
     !!selectedCustomer && !!contactId && !!context.trim() && !saving;
+
+  // Restrict the page to roles allowed to log interactions.
+  if (!canLogInteractions(user?.user_metadata?.role, user?.email)) {
+    return (
+      <div className="min-h-screen bg-neutral-50 dark:bg-dark-100 flex flex-col items-center justify-center px-4 text-center">
+        <Feather className="h-10 w-10 text-neutral-400 mb-4" />
+        <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">
+          Access restricted
+        </h1>
+        <p className="mt-2 text-neutral-600 dark:text-neutral-300">
+          You don&apos;t have permission to log interactions.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-100 flex flex-col">

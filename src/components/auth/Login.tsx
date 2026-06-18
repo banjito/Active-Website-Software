@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../lib/AuthContext";
 import { useTheme } from "../theme/theme-provider";
 import {
@@ -112,8 +112,16 @@ export default function Login() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, setUser } = useAuth();
   const { theme, setTheme } = useTheme();
+
+  // Where to send the user after a successful sign-in. RequireAuth redirects
+  // unauthenticated users here with state={{ from: location }}, so we honor that
+  // (e.g. /sales-dashboard/mobile-log) and fall back to /portal otherwise.
+  const redirectTo =
+    (location.state as { from?: { pathname?: string } } | null)?.from
+      ?.pathname || "/portal";
 
   // Store the current theme and force light mode
   useEffect(() => {
@@ -160,9 +168,9 @@ export default function Login() {
   // Redirect if already logged in
   React.useEffect(() => {
     if (user) {
-      navigate("/portal");
+      navigate(redirectTo, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectTo]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -177,7 +185,7 @@ export default function Login() {
 
       if (loginError) throw loginError;
 
-      navigate("/portal");
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -343,20 +351,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       {/* Logo - stacked on top */}
-      <div className="flex justify-center mb-10">
+      <div className="flex justify-center mb-8 sm:mb-10">
         <img
           src="/ampOS_full_logo.svg"
           alt="ampOS"
-          className="h-[5rem] w-auto"
+          className="h-20 sm:h-[5rem] w-auto"
         />
       </div>
 
       {/* Login Form */}
       <div className="w-full flex flex-col justify-center">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="text-center mb-8">
+        <div className="mx-auto w-full max-w-md">
+          <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-3xl font-bold text-black mb-2">
               {isForgotPasswordMode
                 ? "Reset password"
@@ -367,9 +375,9 @@ export default function Login() {
           </div>
 
           <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
-            <CardContent className="p-12">
+            <CardContent className="p-6 sm:p-10 md:p-12">
               <form
-                className="space-y-8"
+                className="space-y-6 sm:space-y-8"
                 onSubmit={
                   isForgotPasswordMode
                     ? handleForgotPassword
@@ -390,7 +398,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     leftIcon={<Mail className="h-5 w-5 text-neutral-800" />}
                     placeholder="you@email.com"
-                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                   />
 
                   {!isForgotPasswordMode && (
@@ -413,7 +421,7 @@ export default function Login() {
                           ? "Password must be at least 6 characters"
                           : undefined
                       }
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   )}
 
@@ -502,7 +510,7 @@ export default function Login() {
                         <LogIn className="h-5 w-5" />
                       )
                     }
-                    className="h-12 font-medium hover:bg-[#f26722]/75"
+                    className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
                   >
                     {isForgotPasswordMode
                       ? "Send reset link"
@@ -536,7 +544,7 @@ export default function Login() {
                       <UserPlus className="h-5 w-5" />
                     )
                   }
-                  className="mt-6 h-12 font-medium bg-transparent border-none hover:bg-neutral-800/10"
+                  className="mt-6 h-14 sm:h-12 text-base font-medium bg-transparent border-none hover:bg-neutral-800/10"
                 >
                   {isForgotPasswordMode
                     ? "Back to sign in"

@@ -731,7 +731,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <div className="flex items-center w-full min-w-0">
           <Link to="/portal" className="shrink-0" aria-label="Back to home">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+              src="/AMP-vector-filled.svg"
               alt="AMP Logo"
               className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
             />
@@ -873,10 +873,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 )}
               </div>
             )}
-            {canLogInteractions(
-              user?.user_metadata?.role,
-              user?.email,
-            ) && <QuickLogInteraction />}
+            {canLogInteractions(user?.user_metadata?.role, user?.email) && (
+              <QuickLogInteraction />
+            )}
             <div className="relative flex h-10 w-10 items-center justify-center">
               <CommunityBoardPopover />
             </div>

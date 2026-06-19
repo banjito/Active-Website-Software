@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MessageSquareWarning } from "lucide-react";
+import { OctagonAlert } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -208,13 +208,14 @@ export const FloatingIssueReporter: React.FC = () => {
         <button
           onClick={() => setOpen(true)}
           aria-label="Issue / Feature Report"
-          className="group inline-flex items-center h-14 max-w-[56px] hover:max-w-[320px] focus-visible:max-w-[320px] bg-[#f26722] hover:bg-[#e55611] text-white shadow-lg border-2 border-white rounded-xl font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[max-width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
+          className="group relative inline-flex h-14 w-14 items-center justify-center bg-[#f26722] hover:w-[240px] hover:bg-[#e55611] focus-visible:w-[240px] text-white shadow-lg rounded-xl font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
         >
-          <span className="flex h-full w-[52px] shrink-0 items-center justify-center">
-            <MessageSquareWarning className="h-6 w-6" aria-hidden />
+          <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
+            <OctagonAlert className="h-6 w-6" aria-hidden />
           </span>
-          <span className="pr-5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 delay-75">
-            Issue/Feature Report
+          <span className="absolute inset-0 inline-flex items-center justify-center gap-2 opacity-0 transition-opacity duration-200 delay-100 group-hover:opacity-100 group-focus-visible:opacity-100">
+            <OctagonAlert className="h-6 w-6 shrink-0" aria-hidden />
+            <span>Issue/Feature Report</span>
           </span>
         </button>
       )}

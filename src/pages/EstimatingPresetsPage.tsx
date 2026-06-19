@@ -380,7 +380,8 @@ export default function EstimatingPresetsPage() {
         )}
 
         <div className="mt-6 border-b border-neutral-200 dark:border-neutral-700">
-          <nav
+          <div
+            role="tablist"
             className="flex flex-wrap gap-2"
             aria-label="Estimating preset tabs"
           >
@@ -419,7 +420,7 @@ export default function EstimatingPresetsPage() {
                 </button>
               );
             })}
-          </nav>
+          </div>
         </div>
       </div>
 

@@ -1160,40 +1160,55 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
               Resistance vs Distance
             </h2>
             <div style={{ width: "100%", height: 320 }}>
-              <ResponsiveContainer>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="distance"
-                    label={{
-                      value: "Distance (feet)",
-                      position: "insideBottom",
-                      offset: -5,
-                    }}
-                  />
-                  <YAxis
-                    label={{
-                      value: "Resistance (Ω)",
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
-                    domain={[0, "auto"]}
-                  />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="resistance"
-                    name="Resistance"
-                    stroke="#1f77b4"
-                    dot={{ r: 5 }}
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {(() => {
+                // In print/PDF mode, render a fixed-size, non-animated chart.
+                // ResponsiveContainer's ResizeObserver re-measures during PDF
+                // pagination and the mount animation runs a requestAnimationFrame
+                // loop — together they peg the main thread and hang Chromium's
+                // printToPDF. A static <LineChart> avoids both. On screen we keep
+                // the responsive, animated chart.
+                const chart = (
+                  <LineChart
+                    {...(isPrintMode ? { width: 1000, height: 320 } : {})}
+                    data={chartData}
+                    margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="distance"
+                      label={{
+                        value: "Distance (feet)",
+                        position: "insideBottom",
+                        offset: -5,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "Resistance (Ω)",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                      domain={[0, "auto"]}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="resistance"
+                      name="Resistance"
+                      stroke="#1f77b4"
+                      dot={{ r: 5 }}
+                      strokeWidth={2}
+                      isAnimationActive={!isPrintMode}
+                    />
+                  </LineChart>
+                );
+                return isPrintMode ? (
+                  chart
+                ) : (
+                  <ResponsiveContainer>{chart}</ResponsiveContainer>
+                );
+              })()}
             </div>
           </section>
           {/* Print divider between chart and reading */}

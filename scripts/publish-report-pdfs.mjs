@@ -156,9 +156,14 @@ async function publishOne(browser, t) {
 
   const page = await browser.newPage();
   try {
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
-    // Wait for the report body, then let charts/async content settle.
-    await page.waitForSelector('#report-container', { timeout: 30000 }).catch(() => {});
+    // Don't gate navigation on network idle: this is a SPA on the vite dev
+    // server, which streams hundreds of modules on demand, so heavy reports
+    // (e.g. Grounding Fall of Potential) never go quiet enough for networkidle
+    // to fire before the timeout. Wait for the DOM, then for the report body to
+    // actually render — that selector is the real "ready" signal here.
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.waitForSelector('#report-container', { timeout: 90000 });
+    // Let charts/async content settle before printing.
     await sleep(4000);
 
     const pdf = await page.pdf({
@@ -166,6 +171,9 @@ async function publishOne(browser, t) {
       landscape: true,
       printBackground: true,
       margin: { top: '0.4in', bottom: '0.4in', left: '0.3in', right: '0.3in' },
+      // Chart-heavy reports (e.g. Grounding Fall of Potential) can exceed the
+      // default 30s printToPDF timeout.
+      timeout: 120000,
     });
 
     const path = `${t.customerId}/${t.jobId}/${t.assetId}.pdf`;
@@ -210,7 +218,7 @@ async function main() {
         console.log(`ok → ${path}`);
       } catch (e) {
         failed++;
-        console.log(`FAILED: ${e instanceof Error ? e.message : e}`);
+        console.log(`FAILED: ${describeError(e)}`);
       }
     }
   } finally {

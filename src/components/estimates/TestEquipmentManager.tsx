@@ -197,8 +197,8 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
             onClick={startCreate}
             size="sm"
             className="bg-[#f26722] text-white hover:bg-[#d4551a] shrink-0"
+            leftIcon={<Plus className="h-4 w-4 mr-1" />}
           >
-            <Plus className="h-4 w-4 mr-1" />
             New Equipment
           </Button>
         </div>
@@ -333,7 +333,10 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {filteredEquipment.map((item) => (
-                  <tr key={item.id} className="hover:bg-neutral-50 dark:hover:bg-dark-100">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  >
                     <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">
                       {item.name}
                     </td>

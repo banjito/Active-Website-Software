@@ -161,8 +161,8 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
       hours: String(item.hours ?? 0),
       estimate_notes: item.estimate_notes || "",
       library_notes: item.library_notes || "",
-      equipment_ids: (item.equipment || []).map((equipmentItem) =>
-        equipmentItem.id,
+      equipment_ids: (item.equipment || []).map(
+        (equipmentItem) => equipmentItem.id,
       ),
     });
     setIsFormOpen(true);
@@ -256,7 +256,11 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
   const handleRestore = async (item: EstimatingScopeLibraryItem) => {
     clearMessages();
     try {
-      await updateEstimatingScopeLibraryItem(item.id, { is_active: true }, userId);
+      await updateEstimatingScopeLibraryItem(
+        item.id,
+        { is_active: true },
+        userId,
+      );
       setSuccessMessage("Scope library item restored.");
       await loadLibrary();
       setTimeout(() => setSuccessMessage(null), 4000);
@@ -286,8 +290,8 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
             onClick={startCreate}
             size="sm"
             className="bg-[#f26722] text-white hover:bg-[#d4551a] shrink-0"
+            leftIcon={<Plus className="h-4 w-4 mr-1" />}
           >
-            <Plus className="h-4 w-4 mr-1" />
             New Library Item
           </Button>
         </div>
@@ -346,7 +350,9 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-              {editingItem ? "Edit Scope Library Item" : "New Scope Library Item"}
+              {editingItem
+                ? "Edit Scope Library Item"
+                : "New Scope Library Item"}
             </h3>
             <button
               onClick={cancelForm}
@@ -564,7 +570,10 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-neutral-50 dark:hover:bg-dark-100">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  >
                     <td className="px-4 py-3 align-top font-medium text-neutral-900 dark:text-white min-w-[220px]">
                       {item.item_name}
                     </td>

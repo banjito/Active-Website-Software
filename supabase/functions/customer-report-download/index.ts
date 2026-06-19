@@ -35,6 +35,8 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) return json({ error: 'Missing authorization header' }, 401)
 
+    const authToken = authHeader.replace('Bearer ', '')
+
     const body = await req.json().catch(() => ({}))
     const assetId = String(body?.asset_id || '').trim()
     if (!assetId) return json({ error: 'asset_id is required' }, 400)
@@ -44,7 +46,9 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     })
 
-    const { data: { user }, error: userError } = await userClient.auth.getUser()
+    // Pass the token explicitly — there's no stored session in an edge function,
+    // so getUser() with no argument can't resolve the user.
+    const { data: { user }, error: userError } = await userClient.auth.getUser(authToken)
     if (userError || !user) return json({ error: 'Invalid or expired token' }, 401)
 
     // Authorize + resolve the file path in one step: customer_report_assets() is

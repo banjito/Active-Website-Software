@@ -1,8 +1,10 @@
 # ampOS Customer Portal — Build Plan
 
-**Status:** Draft v1.0 (re-grounded on the real ampOS codebase)
+**Status:** v2.0 — living roadmap (phase progress tracked in §8)
 **Owner:** Jack Lyons
-**Last updated:** June 18, 2026
+**Last updated:** June 19, 2026
+
+> **Progress at a glance:** Phase 0 ✅ · Phase 1 ✅ (real-PDF pipeline live; a few follow-ups open) · Phase 2 ⬜ (oil reports, not started) · Phase 3 ⬜ (billing, deferred). Full checklist in §8.
 
 > **Re-grounding note (v1.0):** v0.1 of this plan was drafted from "MVA Diagnostics" oil-lab assumptions (DGA gases, oil quality, samples, syringes, Duval triangles). A full pass over this repo shows **ampOS is a NETA electrical field-testing CRM** — it manages `jobs → assets → technical_reports` and produces *electrical test reports*. There is **no** code for oil chemistry, samples, DGA, syringes, or a diagnostics status engine (`OilAnalysisReport.tsx` is a 40-line stub). This version replaces the unbuildable oil-lab framing with a plan that is **airtight and buildable on today's data**, and adds a forward-compatible framework for customer-viewable **oil test reports** as a future workflow. The original oil-diagnostics vision is preserved in §10.
 
@@ -133,12 +135,48 @@ Explicitly **out of MVP:** invoices, self-service ordering, write-back, the diag
 
 ---
 
-## 8. Phased delivery
+## 8. Phased delivery (progress tracker)
 
-- **Phase 0 — Stand up the app + prove isolation.** New Vite SPA, Supabase Auth wired, accept-invite flow working end-to-end, run `customer_portal_rls_verification.sql`, add automated tenant-isolation tests (customer A must never see customer B's job/report). Nothing ships until isolation is proven.
-- **Phase 1 — Read-only MVP.** My Jobs, Job detail, Reports list + download. Build **Gap 1** (published PDF artifact + `customer-report-download` signed-URL function). This alone replaces most "email AMP for my report" traffic.
-- **Phase 2 — Oil report framework.** Staff upload-MVA-PDF → generate AMP oil report (`report_type='oil_analysis'`); portal displays it automatically (Gap 2). Notification emails on report release (reuse existing notification edge functions).
-- **Phase 3+ (deferred).** Invoices/billing (QuickBooks), self-service requests/write-back, trends/analytics if structured oil data accumulates over time.
+Legend: `[x]` done · `[ ]` not done. Phase status: ✅ complete · 🟡 in progress · ⬜ not started.
+
+### Phase 0 — Foundations & tenant isolation ✅
+- [x] Tenancy tables, identity helpers, visibility gates, RLS (`customer_portal_security.sql`)
+- [x] Invite + accept edge functions deployed (`customer-portal-invite`, `customer-portal-accept-invite`)
+- [x] Standalone portal SPA (`customer-portal/`) with Supabase auth + `/accept-invite` page
+- [x] Tenant isolation working (RLS scopes every read to the customer's own `approved`/`sent` records)
+- [ ] Automated tenant-isolation test (A must never see B) — still verified manually
+
+### Phase 1 — Read-only MVP: view & download real reports ✅
+- [x] **My Jobs** list (RLS-scoped), with report counts and search
+- [x] **Job detail** — reports grouped by substation; **Reports** page with search + status filter
+- [x] `common.customer_report_assets()` RPC — asset-centric, approved/sent, customer-scoped
+- [x] `neta_ops.assets.published_pdf_path` + private `customer-reports` storage bucket
+- [x] `customer-report-download` signed-URL edge function (asset-aware; bucket stays private)
+- [x] Staff **"Invite to Customer Portal"** button (handles existing users); clickable customer link on jobs
+- [x] **Real-PDF pipeline** (see sub-tracker below)
+
+#### Phase 1 sub-track — Real-PDF generation
+- [x] Signed HMAC **print-token** scheme (shared by Node minter + Deno validator)
+- [x] `report-print-auth` edge function — validates token → returns renderer session
+- [x] `RequireAuth` print-token bootstrap (token → `setSession`; inert for normal staff)
+- [x] **Local-puppeteer backfill** `scripts/publish-report-pdfs.mjs` — resumable; `--customer`/`--job`/`--limit`/`--force`
+- [ ] Run the full backfill across existing sent/approved reports (~2000; resumable, in batches)
+- [ ] `html2canvas` on-send fallback — **interim**, in place; to be removed once on-send real-PDF ships
+- [ ] On-send **real** PDF via Browserless edge function (requires staff app deployed)
+- [ ] Admin "refresh sent-reports backfill" page/button (approach TBD)
+- [ ] Dial the `report-renderer@ampqes.com` account down from Super Admin to a plain employee user
+
+### Phase 2 — Oil Test Report framework ⬜
+- [ ] Staff page: upload third-party **MVA oil PDF** → parse values into `report_data` → generate AMP-branded oil report
+- [ ] Persist as `technical_reports` with `report_type='oil_analysis'` (+ asset link) + PDF in `customer-reports`
+- [ ] Flesh out the `src/components/reports/OilAnalysisReport.tsx` stub
+- [ ] Portal displays oil reports automatically (no new portal/RLS code — rides the same path)
+- [ ] Release-notification emails (reuse existing notification edge functions)
+
+### Phase 3 — Billing & self-service ⬜ (deferred)
+- [ ] Invoices / balances (QuickBooks integration)
+- [ ] Self-service requests / write-back into ampOS
+- [ ] Trends / analytics once structured oil `report_data` accumulates
 
 ---
 

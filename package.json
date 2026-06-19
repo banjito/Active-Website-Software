@@ -12,6 +12,7 @@
     "migrate": "node migrations/apply-migrations.js",
     "job-number-migration": "node migrations/run_job_number_migration.js",
     "import-apptivo": "node scripts/import-apptivo.mjs",
+    "publish-report-pdfs": "node scripts/publish-report-pdfs.mjs",
     "quoted-import-dry": "node scripts/update_quoted_amounts_from_csv.mjs --file imports/opportunities_export.csv",
     "quoted-import-apply": "node scripts/update_quoted_amounts_from_csv.mjs --file imports/opportunities_export.csv --apply",
     "list": "node scripts/dev.js list",
@@ -133,6 +134,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.3.3",
     "typescript-eslint": "^7.0.1",
+    "undici": "^8.5.0",
     "vite": "^8.0.16",
     "vite-plugin-eslint": "^1.8.1"
   },

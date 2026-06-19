@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -568,7 +568,52 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Print-token bootstrap: when there's no logged-in user but the URL carries a
+  // `token` query param, exchange it (via report-print-auth) for a renderer
+  // session so a headless browser can render the report's ?print=true page.
+  // This branch is inert for normal staff usage (they always have `user`).
+  const printToken = new URLSearchParams(location.search).get("token");
+  const [printAuthFailed, setPrintAuthFailed] = useState(false);
+  const printAttempted = useRef(false);
+
+  useEffect(() => {
+    if (loading || user || !printToken || printAttempted.current) return;
+    printAttempted.current = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("report-print-auth", {
+          body: { token: printToken },
+        });
+        const accessToken = (data as { access_token?: string } | null)?.access_token;
+        const refreshToken = (data as { refresh_token?: string } | null)?.refresh_token;
+        if (error || !accessToken || !refreshToken) {
+          throw error || new Error("Print token exchange failed");
+        }
+        // setSession populates `user` via onAuthStateChange and re-renders.
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+      } catch (e) {
+        console.warn("Print-token exchange failed:", e);
+        setPrintAuthFailed(true);
+      }
+    })();
+  }, [loading, user, printToken]);
+
   if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-neutral-600">
+          <LoadingSpinner size="md" />
+        </div>
+      </div>
+    );
+  }
+
+  // While exchanging a print token (no user yet, not yet failed), show the
+  // spinner instead of redirecting to /login.
+  if (!user && printToken && !printAuthFailed) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg text-neutral-600">
@@ -582,8 +627,10 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Skip the profile-setup redirect on print-token sessions (the renderer
+  // account has no display name and must render the report directly).
   const profileIncomplete = !user.user_metadata?.name;
-  if (profileIncomplete && location.pathname !== "/profile-setup") {
+  if (profileIncomplete && !printToken && location.pathname !== "/profile-setup") {
     console.log("User profile incomplete, redirecting to /profile-setup");
     return <Navigate to="/profile-setup" replace />;
   }

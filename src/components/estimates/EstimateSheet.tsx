@@ -14,6 +14,7 @@ import {
   LogOut,
   Trash,
   Edit,
+  BookOpen,
 } from "lucide-react";
 import {
   LetterImageHandler,
@@ -30,6 +31,8 @@ import {
 } from "../../services/estimatingPresetsService";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
+import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
+import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
 
 // Styles from the original code
 const styles = {
@@ -856,6 +859,11 @@ export default function EstimateSheet({
   const skipNextFocusRef = React.useRef<boolean>(false);
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [draftRestored, setDraftRestored] = useState<boolean>(false);
+  const [scopeLibraryPicker, setScopeLibraryPicker] = useState<{
+    open: boolean;
+    section: "sov" | "nonSov";
+    index: number;
+  } | null>(null);
 
   // Clear justSaved indicator when edits are made
   useEffect(() => {
@@ -2981,6 +2989,56 @@ export default function EstimateSheet({
       copy.delete(key);
       setBlankingKeys(copy);
     }
+  };
+
+  const applyScopeLibraryItemToRow = (
+    section: "sov" | "nonSov",
+    index: number,
+    libraryItem: EstimatingScopeLibraryItem,
+  ) => {
+    const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
+
+    setData((prev) => {
+      const newItems = [...prev[itemsKey]];
+      const existingItem = newItems[index] || createEmptyLineItem();
+      const existingQuantity = Number(existingItem.quantity);
+
+      newItems[index] = normalizeEstimateLineItem({
+        ...existingItem,
+        rowType: "item",
+        item: libraryItem.item_name,
+        quantity: existingQuantity > 0 ? existingItem.quantity : 1,
+        materialPrice: Number(libraryItem.material_cost) || 0,
+        laborMen: Number(libraryItem.tech_count) || 0,
+        laborHours: Number(libraryItem.hours) || 0,
+        notes: libraryItem.estimate_notes || "",
+      });
+
+      const newData = {
+        ...prev,
+        [itemsKey]: newItems,
+      };
+
+      setIsManualLaborHours(false);
+      const defaultHours = calculateDefaultLaborHours(newData);
+      newData.hoursSummary = {
+        ...newData.hoursSummary,
+        straightTimeHours: defaultHours.straightTime,
+        overtimeHours: defaultHours.overtime,
+        doubleTimeHours: defaultHours.doubleTime,
+      };
+
+      return newData;
+    });
+
+    setBlankingKeys((prev) => {
+      const next = new Set(prev);
+      ["quantity", "materialPrice", "laborMen", "laborHours"].forEach((field) =>
+        next.delete(makeKey(section, index, field)),
+      );
+      return next;
+    });
+    setIsDirty(true);
   };
 
   const handleGeneralChange = (field: string, value: string) => {
@@ -7802,6 +7860,33 @@ export default function EstimateSheet({
                                       data-estimate-col={0}
                                       readOnly={isViewMode}
                                     />
+                                    {!isViewMode && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setScopeLibraryPicker({
+                                            open: true,
+                                            section: "sov",
+                                            index,
+                                          })
+                                        }
+                                        title="Search scope item library"
+                                        aria-label="Search scope item library"
+                                        style={{
+                                          background: "none",
+                                          border: "none",
+                                          color: "#f26722",
+                                          cursor: "pointer",
+                                          padding: "3px",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          borderRadius: "4px",
+                                        }}
+                                      >
+                                        <BookOpen className="h-5 w-5" />
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                                 <td style={styles.tableCell}>
@@ -8522,6 +8607,33 @@ export default function EstimateSheet({
                                       data-estimate-col={0}
                                       readOnly={isViewMode}
                                     />
+                                    {!isViewMode && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setScopeLibraryPicker({
+                                            open: true,
+                                            section: "nonSov",
+                                            index,
+                                          })
+                                        }
+                                        title="Search scope item library"
+                                        aria-label="Search scope item library"
+                                        style={{
+                                          background: "none",
+                                          border: "none",
+                                          color: "#f26722",
+                                          cursor: "pointer",
+                                          padding: "3px",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          borderRadius: "4px",
+                                        }}
+                                      >
+                                        <BookOpen className="h-5 w-5" />
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                                 <td style={styles.tableCell}>
@@ -15252,6 +15364,20 @@ export default function EstimateSheet({
           />
         </div>
       </Dialog>
+
+      <ScopeLibraryPickerModal
+        open={Boolean(scopeLibraryPicker?.open)}
+        onClose={() => setScopeLibraryPicker(null)}
+        onSelect={(libraryItem) => {
+          if (!scopeLibraryPicker) return;
+          applyScopeLibraryItemToRow(
+            scopeLibraryPicker.section,
+            scopeLibraryPicker.index,
+            libraryItem,
+          );
+          setScopeLibraryPicker(null);
+        }}
+      />
     </div>
   );
 }

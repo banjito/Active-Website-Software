@@ -589,9 +589,14 @@ function sanitizeLetterHtmlNode(root: HTMLElement): void {
       return false;
     if (el.querySelector("img, table, ul, ol, li, hr, svg, input, iframe"))
       return false;
+    const text = el.textContent || "";
     return (
-      (el.textContent || "")
-        .replace(/[\u00a0\u200b\u200c\u200d\ufeff]/g, "")
+      text
+        .replace(/\u00a0/g, "")
+        .replace(/\u200b/g, "")
+        .replace(/\u200c/g, "")
+        .replace(/\u200d/g, "")
+        .replace(/\ufeff/g, "")
         .trim() === ""
     );
   };
@@ -4364,6 +4369,7 @@ export default function EstimateSheet({
   >(null);
   const [letterHtml, setLetterHtml] = useState<string>("");
   const [isLetterDirty, setIsLetterDirty] = useState<boolean>(false);
+  const [isSavingLetter, setIsSavingLetter] = useState<boolean>(false);
   const savedLetterHtmlRef = useRef<string>("");
   const [contactData, setContactData] = useState<{
     first_name: string;
@@ -4669,18 +4675,19 @@ export default function EstimateSheet({
     } catch {}
   }, [letterHtml]);
 
-  // Restore letter proposal state from Supabase preferences if needed (but not for fresh generation)
+  // Restore letter proposal state from Supabase preferences if needed (but not for fresh generation).
+  // Do not run this for the saved-letters list mode; that view should not also
+  // rehydrate the letter editor, which is expensive and can cause UI thrash.
   useEffect(() => {
+    if (mode) return;
+
     console.log("Restoration useEffect triggered:", {
       mode,
       isLetterProposalOpen,
       isQuoteSelectOpen,
     });
-    // Only restore if we're not in a fresh generation mode and there's persisted state
-    // Allow restoration when mode is undefined (normal state) or other modes except 'letter'
-    // IMPORTANT: Don't run this during active letter generation to prevent interference
+
     if (
-      mode !== "letter" &&
       !isLetterProposalOpen &&
       !isQuoteSelectOpen &&
       selectedLetterQuoteIndex === null
@@ -4717,6 +4724,7 @@ export default function EstimateSheet({
   }, [
     opportunityId,
     mode,
+    isLetterProposalOpen,
     isQuoteSelectOpen,
     selectedLetterQuoteIndex,
     getLetterProposalState,
@@ -6813,7 +6821,7 @@ export default function EstimateSheet({
     const newOption3 = formatCurrency(
       Math.ceil(finalValue * paymentTermFactors.net90) + newMobilizationRaw,
     );
-    let updated = html
+    const updated = html
       .replace(
         /(Mobilization costs of )(\$[\d,]+\.\d{2})/,
         (_m, g1) => `${g1}${newMobilization}`,
@@ -14500,19 +14508,18 @@ export default function EstimateSheet({
                 ) : null}
                 <Button
                   onClick={async () => {
-                    try {
-                      const sourceHtml = (
-                        letterEditorRef.current?.innerHTML ||
-                        letterHtml ||
-                        ""
-                      ).trim();
-                      if (!sourceHtml) {
-                        alert(
-                          "Nothing to save. Please generate a letter first.",
-                        );
-                        return;
-                      }
+                    const sourceHtml = (
+                      letterEditorRef.current?.innerHTML ||
+                      letterHtml ||
+                      ""
+                    ).trim();
+                    if (!sourceHtml) {
+                      alert("Nothing to save. Please generate a letter first.");
+                      return;
+                    }
 
+                    setIsSavingLetter(true);
+                    try {
                       // Use the letterProposalName from the input field (optional)
                       const customName = letterProposalName.trim();
 
@@ -14931,8 +14938,12 @@ export default function EstimateSheet({
                         "Failed to save letter: " +
                           (e?.message || "Unknown error"),
                       );
+                    } finally {
+                      setIsSavingLetter(false);
                     }
                   }}
+                  disabled={isSavingLetter}
+                  isLoading={isSavingLetter}
                   className="bg-[#f26722] text-white"
                 >
                   Save Letter
@@ -14966,105 +14977,110 @@ export default function EstimateSheet({
           {/* Inline control bar, confined to the same width as the letter content */}
           <div className="p-3 border-b bg-neutral-50">
             <div
-              className="flex flex-wrap items-center gap-2"
+              className="space-y-3"
               style={{ maxWidth: 900, margin: "0 auto" }}
             >
-              <span className="text-sm font-medium">NETA Standard:</span>
-              <select
-                value={netaStandard}
-                onChange={(e) => applyNetaTextByValue(e.target.value)}
-                className="border rounded px-2 py-1 flex-1 min-w-[220px]"
-              >
-                {NETA_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.text}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsScopeNotesModalOpen(true);
-                }}
-                variant="outline"
-                size="sm"
-                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white"
-              >
-                Scope Notes
-              </Button>
-              <Button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  runLetterEditorCommand("insertUnorderedList");
-                }}
-                variant="outline"
-                size="sm"
-                title="Bullet List"
-                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
-              >
-                <List className="w-4 h-4" />
-                Bullets
-              </Button>
-              <Button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  runLetterEditorCommand("insertOrderedList");
-                }}
-                variant="outline"
-                size="sm"
-                title="Numbered List"
-                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
-              >
-                <ListOrdered className="w-4 h-4" />
-                Numbered
-              </Button>
-              <Button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  imageHandlerRef.current?.insertImage();
-                }}
-                variant="outline"
-                size="sm"
-                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
-              >
-                <ImagePlus className="w-4 h-4" />
-                Insert Image
-              </Button>
-              <Button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const editor = letterEditorRef.current;
-                  if (!editor) return;
-                  editor.focus();
-                  const pageBreakHtml =
-                    '<div class="amp-page-break" contenteditable="false" style="page-break-before:always;break-before:page;border-top:2px dashed #9ca3af;margin:18px 0;position:relative;height:0;cursor:default;user-select:none;" title="Page Break"><span style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:white;padding:0 10px;color:#9ca3af;font-size:11px;font-weight:500;letter-spacing:0.5px;pointer-events:none;">PAGE BREAK</span></div>';
-                  document.execCommand("insertHTML", false, pageBreakHtml);
-                  letterUpdateSourceRef.current = "user";
-                  const newHtml = editor.innerHTML;
-                  if (newHtml !== letterHtml) {
-                    setLetterHtml(newHtml);
-                    setIsLetterDirty(true);
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
-              >
-                <SeparatorHorizontal className="w-4 h-4" />
-                Page Break
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium">NETA Standard:</span>
+                <select
+                  value={netaStandard}
+                  onChange={(e) => applyNetaTextByValue(e.target.value)}
+                  className="border rounded px-2 py-1 flex-1 min-w-[220px]"
+                >
+                  {NETA_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.text}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsScopeNotesModalOpen(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<FileText className="w-4 h-4" />}
+                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                >
+                  Scope Notes
+                </Button>
+                <Button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    runLetterEditorCommand("insertUnorderedList");
+                  }}
+                  variant="outline"
+                  size="sm"
+                  title="Bullet List"
+                  leftIcon={<List className="w-4 h-4" />}
+                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                >
+                  Bullets
+                </Button>
+                <Button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    runLetterEditorCommand("insertOrderedList");
+                  }}
+                  variant="outline"
+                  size="sm"
+                  title="Numbered List"
+                  leftIcon={<ListOrdered className="w-4 h-4" />}
+                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                >
+                  Numbered
+                </Button>
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    imageHandlerRef.current?.insertImage();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<ImagePlus className="w-4 h-4" />}
+                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                >
+                  Insert Image
+                </Button>
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const editor = letterEditorRef.current;
+                    if (!editor) return;
+                    editor.focus();
+                    const pageBreakHtml =
+                      '<div class="amp-page-break" contenteditable="false" style="page-break-before:always;break-before:page;border-top:2px dashed #9ca3af;margin:18px 0;position:relative;height:0;cursor:default;user-select:none;" title="Page Break"><span style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:white;padding:0 10px;color:#9ca3af;font-size:11px;font-weight:500;letter-spacing:0.5px;pointer-events:none;">PAGE BREAK</span></div>';
+                    document.execCommand("insertHTML", false, pageBreakHtml);
+                    letterUpdateSourceRef.current = "user";
+                    const newHtml = editor.innerHTML;
+                    if (newHtml !== letterHtml) {
+                      setLetterHtml(newHtml);
+                      setIsLetterDirty(true);
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<SeparatorHorizontal className="w-4 h-4" />}
+                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                >
+                  Page Break
+                </Button>
+              </div>
             </div>
           </div>
           <div

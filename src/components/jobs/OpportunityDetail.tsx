@@ -843,9 +843,35 @@ export default function OpportunityDetail() {
 
     const handleLetterProposalGenerated = (event: CustomEvent) => {
       const { opportunityId } = event.detail;
-      if (opportunityId === id) {
-        // Refresh the opportunity so UI shows the new letter_proposal_created_date immediately
-        fetchOpportunity();
+      if (opportunityId === id && id) {
+        // Quiet save: refresh only the fields affected by saving a letter
+        // proposal instead of calling fetchOpportunity(), which flips the
+        // full-page loading spinner and feels like a page reload.
+        (async () => {
+          try {
+            const { data, error } = await supabase
+              .schema("business")
+              .from("opportunities")
+              .select(
+                "letter_proposal_date, selected_letter_proposal, quoted_amount",
+              )
+              .eq("id", id)
+              .single();
+            if (!error && data) {
+              setOpportunity((prev) =>
+                prev ? ({ ...prev, ...data } as OpportunityWithCustomer) : prev,
+              );
+            }
+            // Refresh the letter proposals list only when the list UI is open.
+            // Saving a letter updates opportunity fields above; fetching the full
+            // letters/estimates set while the editor is open causes visible churn.
+            if (showEstimate === "letters") {
+              await fetchLetterProposals(id);
+            }
+          } catch (e) {
+            console.error("Error during quiet letter proposal refresh:", e);
+          }
+        })();
       }
     };
 
@@ -868,7 +894,10 @@ export default function OpportunityDetail() {
         handleLetterProposalGenerated as EventListener,
       );
     };
-  }, [id, showEstimate, fetchOpportunity]);
+    // fetchLetterProposals is intentionally omitted: it is a function declaration
+    // recreated each render, and the handler only needs current id/showEstimate.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, showEstimate]);
 
   // Clear any persisted estimate mode/draft when leaving the page
   useEffect(() => {
@@ -1014,7 +1043,7 @@ export default function OpportunityDetail() {
         }
       }
 
-      setEditFormData({
+      const nextEditFormData = {
         customer_id: opportunity.customer_id || "",
         title: opportunity.title || "",
         description: opportunity.description || "",
@@ -1050,9 +1079,13 @@ export default function OpportunityDetail() {
           (opportunity as any).total_man_hours?.toString() || "0",
         opportunity_type: opportunityType,
         documents_stage: (opportunity as any).documents_stage || "",
-      });
-      // Fetch letter proposals for this opportunity
-      fetchLetterProposals(opportunity.id);
+      };
+
+      setEditFormData((prev) =>
+        JSON.stringify(prev) === JSON.stringify(nextEditFormData)
+          ? prev
+          : nextEditFormData,
+      );
       // Fetch all documents for this opportunity
       (async () => {
         const { data: agreements, error } = await supabase
@@ -1062,11 +1095,27 @@ export default function OpportunityDetail() {
           .eq("opportunity_id", opportunity.id)
           .order("upload_date", { ascending: false });
         if (!error && agreements) {
-          setSubcontractorAgreements(agreements);
+          setSubcontractorAgreements((prev) =>
+            JSON.stringify(prev) === JSON.stringify(agreements)
+              ? prev
+              : agreements,
+          );
         }
       })();
     }
-  }, [opportunity]);
+    // Only resync the edit form and documents when the selected opportunity changes;
+    // live letter-save updates are handled directly to avoid full fetch churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opportunity?.id]);
+
+  useEffect(() => {
+    if (showEstimate === "letters" && opportunity?.id) {
+      fetchLetterProposals(opportunity.id);
+    }
+    // fetchLetterProposals is intentionally omitted to keep this effect keyed
+    // only to the UI open state and selected opportunity id.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showEstimate, opportunity?.id]);
 
   async function fetchLetterProposals(opportunityId: string) {
     try {
@@ -1081,7 +1130,12 @@ export default function OpportunityDetail() {
       if (error) throw error;
       console.log("Letter proposals fetched:", data);
       console.log("First letter proposal structure:", data?.[0]);
-      setLetterProposals(data || []);
+      const nextLetters = data || [];
+      setLetterProposals((prev) =>
+        JSON.stringify(prev) === JSON.stringify(nextLetters)
+          ? prev
+          : nextLetters,
+      );
 
       // Also fetch quotes for man hours calculation
       await fetchQuotesForManHours(opportunityId);
@@ -1135,7 +1189,7 @@ export default function OpportunityDetail() {
       if (error) throw error;
 
       const processedQuotes = (data || []).map((estimate: any) => {
-        let estimateData = null;
+        let estimateData: any = null;
         let title = `Estimate ${estimate.id?.slice(0, 6)}`;
 
         try {
@@ -1143,7 +1197,7 @@ export default function OpportunityDetail() {
             typeof estimate.data === "string"
               ? JSON.parse(estimate.data)
               : estimate.data;
-          const travelData =
+          const travelData: any =
             typeof estimate.travel_data === "string"
               ? JSON.parse(estimate.travel_data || "{}")
               : estimate.travel_data;
@@ -1168,11 +1222,15 @@ export default function OpportunityDetail() {
         };
       });
 
-      setAvailableQuotes(processedQuotes);
+      setAvailableQuotes((prev) =>
+        JSON.stringify(prev) === JSON.stringify(processedQuotes)
+          ? prev
+          : processedQuotes,
+      );
       console.log("Available estimates for man hours:", processedQuotes);
     } catch (error) {
       console.error("Error fetching estimates for man hours:", error);
-      setAvailableQuotes([]);
+      setAvailableQuotes((prev) => (prev.length === 0 ? prev : []));
     }
   }
 
@@ -1487,7 +1545,7 @@ export default function OpportunityDetail() {
             (list || []).map((o: any) => o.customer_id).filter(Boolean),
           ),
         ];
-        let customerMap: Record<string, CustomerInfo> = {};
+        const customerMap: Record<string, CustomerInfo> = {};
         if (customerIds.length > 0) {
           const { data: customersData } = await supabase
             .schema("common")
@@ -1591,7 +1649,7 @@ export default function OpportunityDetail() {
                   (peers || []).map((o: any) => o.customer_id).filter(Boolean),
                 ),
               ];
-              let peerCustomerMap: Record<string, CustomerInfo> = {};
+              const peerCustomerMap: Record<string, CustomerInfo> = {};
               if (peerCustomerIds.length > 0) {
                 const { data: peerCustomersData } = await supabase
                   .schema("common")
@@ -1637,7 +1695,7 @@ export default function OpportunityDetail() {
                 (peers || []).map((o: any) => o.customer_id).filter(Boolean),
               ),
             ];
-            let metaCustomerMap: Record<string, CustomerInfo> = {};
+            const metaCustomerMap: Record<string, CustomerInfo> = {};
             if (metaCustomerIds.length > 0) {
               const { data: metaCustomersData } = await supabase
                 .schema("common")
@@ -5239,7 +5297,9 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate("letters");
+                        setShowEstimate((current) =>
+                          current === "letters" ? current : "letters",
+                        );
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >

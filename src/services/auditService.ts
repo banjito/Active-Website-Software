@@ -1,14 +1,14 @@
-import { supabase } from '../lib/supabase';
-import { Permission, RolePermissions } from '../lib/roles';
-import { 
-  Resource, 
-  Action, 
-  Permission as PermissionType, 
-  Role, 
+import { supabase } from "../lib/supabase";
+import { Permission, RolePermissions } from "../lib/roles";
+import {
+  Resource,
+  Action,
+  Permission as PermissionType,
+  Role,
   PermissionContext,
-  PermissionAccessLog as PermissionAccessLogType
-} from '../types/permissions';
-import { v4 as uuidv4 } from 'uuid';
+  PermissionAccessLog as PermissionAccessLogType,
+} from "../types/permissions";
+import { v4 as uuidv4 } from "uuid";
 
 // Interface for permission access log entries - extending the base type with additional fields
 export interface PermissionAccessLog extends PermissionAccessLogType {
@@ -21,7 +21,7 @@ export interface PermissionAccessLog extends PermissionAccessLogType {
 export interface RoleAuditLog {
   id: string;
   role_name: string;
-  action: 'create' | 'update' | 'delete';
+  action: "create" | "update" | "delete";
   previous_config?: Partial<RolePermissions>;
   new_config?: Partial<RolePermissions>;
   user_id: string;
@@ -35,9 +35,9 @@ export interface RoleAuditLog {
  */
 export interface PermissionChangeLog {
   id?: string;
-  user_id: string;      // User whose permissions are being changed
-  subject_id: string;   // User making the change
-  action: 'grant' | 'revoke' | 'modify';
+  user_id: string; // User whose permissions are being changed
+  subject_id: string; // User making the change
+  action: "grant" | "revoke" | "modify";
   resource: Resource;
   permission_action: Action;
   details?: Record<string, any>;
@@ -53,8 +53,8 @@ export interface PermissionChangeLog {
  */
 export interface RoleChangeLog {
   id?: string;
-  user_id: string;      // User whose role is changing
-  subject_id: string;   // User making the change
+  user_id: string; // User whose role is changing
+  subject_id: string; // User making the change
   new_role?: Role;
   old_role?: Role;
   reason?: string;
@@ -69,9 +69,9 @@ export interface RoleChangeLog {
  */
 export interface SystemChangeLog {
   id?: string;
-  subject_id: string;   // User making the change
+  subject_id: string; // User making the change
   action: string;
-  component: string;    // Component being changed
+  component: string; // Component being changed
   details: Record<string, any>;
   timestamp: Date;
   ip_address?: string;
@@ -85,8 +85,8 @@ const getRequestHeaders = (): { ip: string; userAgent: string } => {
   // In a real implementation, this would get details from the request object
   // For this implementation, we'll return placeholder values
   return {
-    ip: '127.0.0.1',
-    userAgent: 'Mozilla/5.0 (compatible; AuditService)'
+    ip: "127.0.0.1",
+    userAgent: "Mozilla/5.0 (compatible; AuditService)",
   };
 };
 
@@ -108,10 +108,10 @@ export const logPermissionAccess = async (data: {
   try {
     // Get client information
     const headers = getRequestHeaders();
-    
+
     // Prepare the log entry
     const logEntry = {
-      user_id: data.userId || 'anonymous',
+      user_id: data.userId || "anonymous",
       role: data.role,
       resource: data.resource,
       action: data.action,
@@ -132,28 +132,28 @@ export const logPermissionAccess = async (data: {
           scope: undefined,
           granted: undefined,
           reason: undefined,
-          permission: undefined
-        }
+          permission: undefined,
+        },
       },
       ip_address: headers.ip,
-      user_agent: headers.userAgent
+      user_agent: headers.userAgent,
     };
-    
+
     // Insert the log entry into the database
     const { data: result, error } = await supabase
-      .from('common.permission_access_logs')
+      .from("common.permission_access_logs")
       .insert(logEntry)
-      .select('id')
+      .select("id")
       .single();
-    
+
     if (error) {
-      console.error('Error logging permission access:', error);
+      console.error("Error logging permission access:", error);
       return null;
     }
-    
+
     return result.id;
   } catch (error) {
-    console.error('Error in logPermissionAccess:', error);
+    console.error("Error in logPermissionAccess:", error);
     return null;
   }
 };
@@ -163,7 +163,7 @@ export const logPermissionAccess = async (data: {
  */
 export const logRoleChange = async (data: {
   roleName: string;
-  action: 'create' | 'update' | 'delete';
+  action: "create" | "update" | "delete";
   previousConfig?: Partial<RolePermissions>;
   newConfig?: Partial<RolePermissions>;
   userId?: string;
@@ -171,34 +171,34 @@ export const logRoleChange = async (data: {
   try {
     // Get client information
     const headers = getRequestHeaders();
-    
+
     // Prepare the log entry
     const logEntry = {
       role_name: data.roleName,
       action: data.action,
       previous_config: data.previousConfig,
       new_config: data.newConfig,
-      user_id: data.userId || 'system',
+      user_id: data.userId || null,
       ip_address: headers.ip,
-      user_agent: headers.userAgent
+      user_agent: headers.userAgent,
     };
-    
+
     // Insert the log entry into the database
     const { data: result, error } = await supabase
-      .schema('common')
-      .from('role_audit_logs')
+      .schema("common")
+      .from("role_audit_logs")
       .insert(logEntry)
-      .select('id')
+      .select("id")
       .single();
-    
+
     if (error) {
-      console.error('Error logging role change:', error);
+      console.error("Error logging role change:", error);
       return null;
     }
-    
+
     return result.id;
   } catch (error) {
-    console.error('Error in logRoleChange:', error);
+    console.error("Error in logRoleChange:", error);
     return null;
   }
 };
@@ -208,31 +208,31 @@ export const logRoleChange = async (data: {
  */
 export const getRoleAuditLogs = async (
   limit: number = 50,
-  roleName?: string
+  roleName?: string,
 ): Promise<RoleAuditLog[]> => {
   try {
     let query = supabase
-      .schema('common')
-      .from('role_audit_logs')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .schema("common")
+      .from("role_audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit);
-    
+
     // Filter by role name if provided
     if (roleName) {
-      query = query.eq('role_name', roleName);
+      query = query.eq("role_name", roleName);
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Error fetching role audit logs:', error);
+      console.error("Error fetching role audit logs:", error);
       return [];
     }
-    
+
     return data as RoleAuditLog[];
   } catch (error) {
-    console.error('Error in getRoleAuditLogs:', error);
+    console.error("Error in getRoleAuditLogs:", error);
     return [];
   }
 };
@@ -250,40 +250,32 @@ export const getPermissionAccessLogs = async (options: {
   limit?: number;
 }): Promise<PermissionAccessLog[]> => {
   try {
-    const {
-      userId,
-      resource,
-      action,
-      granted,
-      from,
-      to,
-      limit = 50
-    } = options;
-    
+    const { userId, resource, action, granted, from, to, limit = 50 } = options;
+
     let query = supabase
-      .from('common.permission_access_logs')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("common.permission_access_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit);
-    
+
     // Apply filters
-    if (userId) query = query.eq('user_id', userId);
-    if (resource) query = query.eq('resource', resource);
-    if (action) query = query.eq('action', action);
-    if (granted !== undefined) query = query.eq('granted', granted);
-    if (from) query = query.gte('created_at', from.toISOString());
-    if (to) query = query.lte('created_at', to.toISOString());
-    
+    if (userId) query = query.eq("user_id", userId);
+    if (resource) query = query.eq("resource", resource);
+    if (action) query = query.eq("action", action);
+    if (granted !== undefined) query = query.eq("granted", granted);
+    if (from) query = query.gte("created_at", from.toISOString());
+    if (to) query = query.lte("created_at", to.toISOString());
+
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Error fetching permission access logs:', error);
+      console.error("Error fetching permission access logs:", error);
       return [];
     }
-    
+
     return data as PermissionAccessLog[];
   } catch (error) {
-    console.error('Error in getPermissionAccessLogs:', error);
+    console.error("Error in getPermissionAccessLogs:", error);
     return [];
   }
 };
@@ -367,11 +359,13 @@ export class AuditService {
   private permissionChangeLogs: PermissionChangeLog[] = [];
   private roleChangeLogs: RoleChangeLog[] = [];
   private systemChangeLogs: SystemChangeLog[] = [];
-  
+
   /**
    * Log a permission access event
    */
-  async logPermissionAccess(log: Omit<PermissionAccessLog, 'id'>): Promise<void> {
+  async logPermissionAccess(
+    log: Omit<PermissionAccessLog, "id">,
+  ): Promise<void> {
     try {
       // Get client information if not provided
       const headers = getRequestHeaders();
@@ -380,26 +374,30 @@ export class AuditService {
         id: uuidv4(), // Use uuidv4 instead of crypto.randomUUID
         ip_address: log.ip_address || headers.ip,
         user_agent: log.user_agent || headers.userAgent,
-        timestamp: log.timestamp || new Date()
+        timestamp: log.timestamp || new Date(),
       };
 
       // Add to in-memory cache
       this.permissionAccessLogs.push(fullLog);
-      
+
       // Persist to database
       await this.persistPermissionAccessLog(fullLog);
-      
+
       // Debug output (can be removed in production)
-      console.debug(`Permission access logged: ${fullLog.user_id} | ${fullLog.resource} | ${fullLog.action} | ${fullLog.granted ? 'GRANTED' : 'DENIED'}`);
+      console.debug(
+        `Permission access logged: ${fullLog.user_id} | ${fullLog.resource} | ${fullLog.action} | ${fullLog.granted ? "GRANTED" : "DENIED"}`,
+      );
     } catch (error) {
-      console.error('Error logging permission access:', error);
+      console.error("Error logging permission access:", error);
     }
   }
-  
+
   /**
    * Log a permission change event
    */
-  async logPermissionChange(log: Omit<PermissionChangeLog, 'id'>): Promise<void> {
+  async logPermissionChange(
+    log: Omit<PermissionChangeLog, "id">,
+  ): Promise<void> {
     try {
       // Get client information if not provided
       const headers = getRequestHeaders();
@@ -408,26 +406,28 @@ export class AuditService {
         id: uuidv4(), // Use uuidv4 instead of crypto.randomUUID
         ip_address: log.ip_address || headers.ip,
         user_agent: log.user_agent || headers.userAgent,
-        timestamp: log.timestamp || new Date()
+        timestamp: log.timestamp || new Date(),
       };
 
       // Add to in-memory cache
       this.permissionChangeLogs.push(fullLog);
-      
+
       // Persist to database
       await this.persistPermissionChangeLog(fullLog);
-      
+
       // Debug output (can be removed in production)
-      console.debug(`Permission change logged: ${fullLog.user_id} | ${fullLog.action} | ${fullLog.resource} | ${fullLog.permission_action}`);
+      console.debug(
+        `Permission change logged: ${fullLog.user_id} | ${fullLog.action} | ${fullLog.resource} | ${fullLog.permission_action}`,
+      );
     } catch (error) {
-      console.error('Error logging permission change:', error);
+      console.error("Error logging permission change:", error);
     }
   }
-  
+
   /**
    * Log a role change event
    */
-  async logRoleChange(log: Omit<RoleChangeLog, 'id'>): Promise<void> {
+  async logRoleChange(log: Omit<RoleChangeLog, "id">): Promise<void> {
     try {
       // Get client information if not provided
       const headers = getRequestHeaders();
@@ -436,26 +436,28 @@ export class AuditService {
         id: uuidv4(), // Use uuidv4 instead of crypto.randomUUID
         ip_address: log.ip_address || headers.ip,
         user_agent: log.user_agent || headers.userAgent,
-        timestamp: log.timestamp || new Date()
+        timestamp: log.timestamp || new Date(),
       };
 
       // Add to in-memory cache
       this.roleChangeLogs.push(fullLog);
-      
+
       // Persist to database
       await this.persistRoleChangeLog(fullLog);
-      
+
       // Debug output (can be removed in production)
-      console.debug(`Role change logged: ${fullLog.user_id} | ${fullLog.old_role} → ${fullLog.new_role}`);
+      console.debug(
+        `Role change logged: ${fullLog.user_id} | ${fullLog.old_role} → ${fullLog.new_role}`,
+      );
     } catch (error) {
-      console.error('Error logging role change:', error);
+      console.error("Error logging role change:", error);
     }
   }
-  
+
   /**
    * Log a system change event
    */
-  async logSystemChange(log: Omit<SystemChangeLog, 'id'>): Promise<void> {
+  async logSystemChange(log: Omit<SystemChangeLog, "id">): Promise<void> {
     try {
       // Get client information if not provided
       const headers = getRequestHeaders();
@@ -464,29 +466,33 @@ export class AuditService {
         id: uuidv4(), // Use uuidv4 instead of crypto.randomUUID
         ip_address: log.ip_address || headers.ip,
         user_agent: log.user_agent || headers.userAgent,
-        timestamp: log.timestamp || new Date()
+        timestamp: log.timestamp || new Date(),
       };
 
       // Add to in-memory cache
       this.systemChangeLogs.push(fullLog);
-      
+
       // Persist to database
       await this.persistSystemChangeLog(fullLog);
-      
+
       // Debug output (can be removed in production)
-      console.debug(`System change logged: ${fullLog.subject_id} | ${fullLog.component} | ${fullLog.action}`);
+      console.debug(
+        `System change logged: ${fullLog.subject_id} | ${fullLog.component} | ${fullLog.action}`,
+      );
     } catch (error) {
-      console.error('Error logging system change:', error);
+      console.error("Error logging system change:", error);
     }
   }
-  
+
   /**
    * Persist a permission access log to the database
    */
-  private async persistPermissionAccessLog(log: PermissionAccessLog): Promise<void> {
+  private async persistPermissionAccessLog(
+    log: PermissionAccessLog,
+  ): Promise<void> {
     try {
       const { error } = await supabase
-        .from('common.permission_access_logs')
+        .from("common.permission_access_logs")
         .insert({
           user_id: log.user_id,
           resource: log.resource,
@@ -500,22 +506,26 @@ export class AuditService {
           component: log.component,
           timestamp: log.timestamp,
         });
-      
+
       if (error) {
-        throw new Error(`Error persisting permission access log: ${error.message}`);
+        throw new Error(
+          `Error persisting permission access log: ${error.message}`,
+        );
       }
     } catch (error) {
-      console.error('Failed to persist permission access log:', error);
+      console.error("Failed to persist permission access log:", error);
     }
   }
-  
+
   /**
    * Persist a permission change log to the database
    */
-  private async persistPermissionChangeLog(log: PermissionChangeLog): Promise<void> {
+  private async persistPermissionChangeLog(
+    log: PermissionChangeLog,
+  ): Promise<void> {
     try {
       const { error } = await supabase
-        .from('common.permission_change_logs')
+        .from("common.permission_change_logs")
         .insert({
           user_id: log.user_id,
           subject_id: log.subject_id,
@@ -529,49 +539,49 @@ export class AuditService {
           component: log.component,
           timestamp: log.timestamp,
         });
-      
+
       if (error) {
-        throw new Error(`Error persisting permission change log: ${error.message}`);
+        throw new Error(
+          `Error persisting permission change log: ${error.message}`,
+        );
       }
     } catch (error) {
-      console.error('Failed to persist permission change log:', error);
+      console.error("Failed to persist permission change log:", error);
     }
   }
-  
+
   /**
    * Persist a role change log to the database
    */
   private async persistRoleChangeLog(log: RoleChangeLog): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('common.role_change_logs')
-        .insert({
-          user_id: log.user_id,
-          subject_id: log.subject_id,
-          old_role: log.old_role,
-          new_role: log.new_role,
-          reason: log.reason,
-          ip_address: log.ip_address,
-          user_agent: log.user_agent,
-          component: log.component,
-          timestamp: log.timestamp,
-        });
-      
+      const { error } = await supabase.from("common.role_change_logs").insert({
+        user_id: log.user_id,
+        subject_id: log.subject_id,
+        old_role: log.old_role,
+        new_role: log.new_role,
+        reason: log.reason,
+        ip_address: log.ip_address,
+        user_agent: log.user_agent,
+        component: log.component,
+        timestamp: log.timestamp,
+      });
+
       if (error) {
         throw new Error(`Error persisting role change log: ${error.message}`);
       }
     } catch (error) {
-      console.error('Failed to persist role change log:', error);
+      console.error("Failed to persist role change log:", error);
     }
   }
-  
+
   /**
    * Persist a system change log to the database
    */
   private async persistSystemChangeLog(log: SystemChangeLog): Promise<void> {
     try {
       const { error } = await supabase
-        .from('common.system_change_logs')
+        .from("common.system_change_logs")
         .insert({
           subject_id: log.subject_id,
           action: log.action,
@@ -581,147 +591,162 @@ export class AuditService {
           user_agent: log.user_agent,
           timestamp: log.timestamp,
         });
-      
+
       if (error) {
         throw new Error(`Error persisting system change log: ${error.message}`);
       }
     } catch (error) {
-      console.error('Failed to persist system change log:', error);
+      console.error("Failed to persist system change log:", error);
     }
   }
-  
+
   /**
    * Get permission access logs for a specific user
    */
-  async getPermissionAccessLogs(userId: string, component?: string): Promise<PermissionAccessLog[]> {
+  async getPermissionAccessLogs(
+    userId: string,
+    component?: string,
+  ): Promise<PermissionAccessLog[]> {
     let query = supabase
-      .from('common.permission_access_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('timestamp', { ascending: false });
-    
+      .from("common.permission_access_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("timestamp", { ascending: false });
+
     if (component) {
-      query = query.eq('component', component);
+      query = query.eq("component", component);
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Error fetching permission access logs:', error);
+      console.error("Error fetching permission access logs:", error);
       return [];
     }
-    
+
     return data as PermissionAccessLog[];
   }
-  
+
   /**
    * Get permission change logs for a specific user
    */
-  async getPermissionChangeLogs(userId: string, component?: string): Promise<PermissionChangeLog[]> {
+  async getPermissionChangeLogs(
+    userId: string,
+    component?: string,
+  ): Promise<PermissionChangeLog[]> {
     let query = supabase
-      .from('common.permission_change_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('timestamp', { ascending: false });
-    
+      .from("common.permission_change_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("timestamp", { ascending: false });
+
     if (component) {
-      query = query.eq('component', component);
+      query = query.eq("component", component);
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Error fetching permission change logs:', error);
+      console.error("Error fetching permission change logs:", error);
       return [];
     }
-    
+
     return data as PermissionChangeLog[];
   }
-  
+
   /**
    * Get role change logs for a specific user
    */
-  async getRoleChangeLogs(userId: string, component?: string): Promise<RoleChangeLog[]> {
+  async getRoleChangeLogs(
+    userId: string,
+    component?: string,
+  ): Promise<RoleChangeLog[]> {
     let query = supabase
-      .from('common.role_change_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('timestamp', { ascending: false });
-    
+      .from("common.role_change_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("timestamp", { ascending: false });
+
     if (component) {
-      query = query.eq('component', component);
+      query = query.eq("component", component);
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Error fetching role change logs:', error);
+      console.error("Error fetching role change logs:", error);
       return [];
     }
-    
+
     return data as RoleChangeLog[];
   }
-  
+
   /**
    * Get all system change logs
    */
   async getSystemChangeLogs(limit: number = 100): Promise<SystemChangeLog[]> {
     const { data, error } = await supabase
-      .from('common.system_change_logs')
-      .select('*')
-      .order('timestamp', { ascending: false })
+      .from("common.system_change_logs")
+      .select("*")
+      .order("timestamp", { ascending: false })
       .limit(limit);
-    
+
     if (error) {
-      console.error('Error fetching system change logs:', error);
+      console.error("Error fetching system change logs:", error);
       return [];
     }
-    
+
     return data as SystemChangeLog[];
   }
-  
+
   /**
    * Get system change logs for a specific component
    */
-  async getSystemChangeLogsByComponent(component: string, limit: number = 100): Promise<SystemChangeLog[]> {
+  async getSystemChangeLogsByComponent(
+    component: string,
+    limit: number = 100,
+  ): Promise<SystemChangeLog[]> {
     const { data, error } = await supabase
-      .from('common.system_change_logs')
-      .select('*')
-      .eq('component', component)
-      .order('timestamp', { ascending: false })
+      .from("common.system_change_logs")
+      .select("*")
+      .eq("component", component)
+      .order("timestamp", { ascending: false })
       .limit(limit);
-    
+
     if (error) {
-      console.error('Error fetching system change logs by component:', error);
+      console.error("Error fetching system change logs by component:", error);
       return [];
     }
-    
+
     return data as SystemChangeLog[];
   }
-  
+
   /**
    * Get system change logs made by a specific user
    */
-  async getSystemChangeLogsByUser(subjectId: string, limit: number = 100): Promise<SystemChangeLog[]> {
+  async getSystemChangeLogsByUser(
+    subjectId: string,
+    limit: number = 100,
+  ): Promise<SystemChangeLog[]> {
     const { data, error } = await supabase
-      .from('common.system_change_logs')
-      .select('*')
-      .eq('subject_id', subjectId)
-      .order('timestamp', { ascending: false })
+      .from("common.system_change_logs")
+      .select("*")
+      .eq("subject_id", subjectId)
+      .order("timestamp", { ascending: false })
       .limit(limit);
-    
+
     if (error) {
-      console.error('Error fetching system change logs by user:', error);
+      console.error("Error fetching system change logs by user:", error);
       return [];
     }
-    
+
     return data as SystemChangeLog[];
   }
-  
+
   /**
    * Generate SQL for creating all audit tables
    */
   generateAuditTables(): string {
     return generatePermissionAuditTables();
   }
-} 
+}

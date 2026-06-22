@@ -1348,7 +1348,6 @@ export function ReportApprovalWorkflow({
           <div style="flex-shrink:0;padding:1rem;border-bottom:1px solid #e5e7eb;background:white;display:flex;justify-content:space-between;align-items:center;">
             <div>
               <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${report.title}</h2>
-              <p style="font-size:0.875rem;color:#6b7280;margin:0;">Read-only preview of the submitted report.</p>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
               <span style="padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">

@@ -461,7 +461,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isMeetingsPage =
     location.pathname === "/meetings" ||
     location.pathname.startsWith("/meetings/");
-  const useHeaderBarLayout = !isMeetingsPage && !isReportPage;
+  const useHeaderBarLayout = !isMeetingsPage;
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -879,15 +879,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex min-h-0 flex-1 min-w-0">
           {sidebar}
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center px-3 py-2 border-b border-neutral-200 dark:border-dark-200 lg:hidden print:hidden">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden ${
+                isReportPage ? "" : "lg:hidden"
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
+                className="lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
               </button>
+              {isReportPage && jobId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
+                  className="flex items-center gap-1 lg:gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
+                >
+                  <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />
+                  <span className="hidden sm:inline">Back to Job</span>
+                  <span className="sm:hidden">Back</span>
+                </Button>
+              )}
             </div>
             {mainContent}
           </div>

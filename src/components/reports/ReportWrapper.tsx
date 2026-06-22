@@ -5,8 +5,8 @@ interface ReportWrapperProps {
   children: React.ReactNode;
   isPrintMode?: boolean;
   /**
-   * When true, the side-by-side print preview iframe is hidden.
-   * Use for reports where the iframe preview is not useful or is misbehaving.
+   * @deprecated The side-by-side print preview was removed. This prop is now a
+   * no-op and is kept only so existing call sites continue to type-check.
    */
   disablePreview?: boolean;
   /**
@@ -973,6 +973,30 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
           color-adjust: exact !important;
+        }
+
+        /* A report preview is a paper document — always white, never dark mode.
+           Dark mode applies a dark page background that bleeds through the
+           (transparent) report sections; force the page surfaces white so the
+           report's dark text stays readable. */
+        html.force-print,
+        .force-print body,
+        .force-print #report-container,
+        .force-print #report-container > div,
+        .force-print #report-container section,
+        .force-print #report-container table,
+        .force-print #report-container thead,
+        .force-print #report-container tbody,
+        .force-print #report-container tr,
+        .force-print #report-container td {
+          background-color: #ffffff !important;
+        }
+        /* Form fields render as plain text on paper — clear any dark-mode fill so
+           the white cell shows through (text color is handled elsewhere). */
+        .force-print #report-container input,
+        .force-print #report-container select,
+        .force-print #report-container textarea {
+          background-color: transparent !important;
         }
 
         .force-print #report-container {
@@ -1980,52 +2004,6 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     };
   }, [isReportLocked]);
 
-  // Global live preview for all reports (except ones that implement their own)
-  const [showGlobalPreview, previewUrl] = React.useMemo(() => {
-    if (typeof window === "undefined") return [false, ""] as const;
-    const parts = (window.location?.pathname || "").split("/").filter(Boolean);
-    const jobsIdx = parts.indexOf("jobs");
-    const hasReportId = jobsIdx !== -1 && parts.length >= jobsIdx + 4; // /jobs/:jobId/:slug/:reportId
-    if (!hasReportId) return [false, ""] as const;
-    if (isPrintMode) return [false, ""] as const; // don't show during print render
-    const params = new URLSearchParams(window.location.search);
-    // Don't show preview button if embedded (for deliverable viewer)
-    if (params.get("embedded") === "true") return [false, ""] as const;
-    if (params.get("fromApproval") === "true") return [false, ""] as const;
-    params.set("print", "true"); // request print mode
-    params.set("preview", "true"); // mark as preview tab (forces no nested preview)
-    params.set("pv", String(Date.now())); // cache-buster
-    const url = `${window.location.pathname}?${params.toString()}`;
-    return [true, url] as const;
-  }, [isPrintMode]);
-
-  // Global toggle persistence
-  const [showPreviewEnabled, setShowPreviewEnabled] = React.useState<boolean>(
-    () => {
-      if (typeof window === "undefined") return true;
-      try {
-        const v = window.localStorage.getItem(
-          "amp_report_preview_enabled_global",
-        );
-        return v !== "false";
-      } catch {
-        return true;
-      }
-    },
-  );
-  const toggleGlobalPreview = () => {
-    setShowPreviewEnabled((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(
-          "amp_report_preview_enabled_global",
-          String(next),
-        );
-      } catch {}
-      return next;
-    });
-  };
-
   // If a page is opened directly with ?preview=true or ?embedded=true, render in print-look mode and disable nested preview
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2037,146 +2015,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     }
   }, []);
 
-  const [previewStatus, setPreviewStatus] = React.useState<string>("idle");
-  const [reloadNonce, setReloadNonce] = React.useState<number>(0);
-
-  const onPreviewLoad = React.useCallback(
-    (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-      try {
-        const iframe = e.currentTarget as HTMLIFrameElement;
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!doc) {
-          setPreviewStatus("error: no document");
-          return;
-        }
-
-        // Force the preview to render with print rules applied
-        doc.documentElement.classList.add("force-print");
-        // Also add Windows class if on Windows platform
-        if (
-          navigator.platform.includes("Win") ||
-          navigator.userAgent.includes("Windows")
-        ) {
-          doc.documentElement.classList.add("is-windows");
-        }
-
-        // 1) Copy key parent styles into the iframe to ensure parity with PDF
-        const parentStyles = Array.from(
-          document.querySelectorAll("style"),
-        ) as HTMLStyleElement[];
-        parentStyles.forEach((s, idx) => {
-          try {
-            const cloned = doc.createElement("style");
-            // Copy all rules (includes our @media print and .force-print mirrors)
-            cloned.textContent = s.textContent || "";
-            cloned.setAttribute("data-copied", "true");
-            cloned.setAttribute("data-source-index", String(idx));
-            doc.head.appendChild(cloned);
-          } catch {}
-        });
-
-        // 2) Baseline helpers (kept minimal) in case a report is missing mirrors
-        const style = doc.createElement("style");
-        style.textContent = `
-        .print\\:block { display: block !important; }
-        .print\\:flex { display: flex !important; }
-        .print\\:hidden { display: none !important; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        .print\\:font-bold { font-weight: 700 !important; }
-        .print\\:text-center { text-align: center !important; }
-        #report-container table { border-collapse: collapse !important; width: 100% !important; }
-        #report-container th, #report-container td { border: 1px solid black !important; padding: 4px !important; }
-        #report-container th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        /* Small debug marker inside preview */
-        #__preview_debug_marker { position: fixed; top: 6px; right: 8px; z-index: 9999; font: 10px/1 monospace; color: #111; background:#fffa; border:1px solid #999; padding:2px 4px; }
-      `;
-        doc.head.appendChild(style);
-
-        // 3) Add debug marker so we know the iframe rendered
-        const marker = doc.createElement("div");
-        marker.id = "__preview_debug_marker";
-        marker.textContent = "preview loaded";
-        doc.body.appendChild(marker);
-
-        setPreviewStatus(
-          `loaded: readyState=${doc.readyState}; title=${doc.title || ""}`,
-        );
-      } catch {}
-    },
-    [],
-  );
-
-  const onPreviewError = React.useCallback(() => {
-    setPreviewStatus("error: iframe failed to load");
-  }, []);
-
-  const actuallyShowPreview =
-    showGlobalPreview && showPreviewEnabled && !disablePreview;
-
   return (
     <div
-      className={
-        actuallyShowPreview ? "flex flex-col lg:flex-row gap-4 items-start" : ""
-      }
+      id="report-container"
+      data-report-locked={isReportLocked ? "true" : undefined}
+      className={`w-full max-w-4xl mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
     >
-      <div
-        id="report-container"
-        data-report-locked={isReportLocked ? "true" : undefined}
-        className={`w-full ${actuallyShowPreview ? "lg:flex-1" : "max-w-4xl"} mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
-      >
-        {/* Locked banner is shown once by Layout.tsx for all report pages */}
-        {/* Global preview toggle (hidden during actual print, or when disablePreview is set) */}
-        {!isPrintMode && !disablePreview && (
-          <div className="print:hidden flex justify-end mb-2">
-            <button
-              onClick={toggleGlobalPreview}
-              className="px-3 py-1 text-xs text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
-            >
-              {showPreviewEnabled ? "Hide Preview" : "Show Preview"}
-            </button>
-          </div>
-        )}
-        {children}
-      </div>
-      {actuallyShowPreview && (
-        <div className="w-full lg:w-[48%] max-w-[820px] lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] print:hidden">
-          <div className="mb-2 text-xs text-neutral-600 dark:text-neutral-300">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Preview URL:</span>
-              <code className="break-all">{previewUrl}</code>
-            </div>
-            <div className="mt-1 flex items-center gap-3">
-              <span>Status: {previewStatus}</span>
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                Open in new tab
-              </a>
-              <button
-                onClick={() => setReloadNonce((n) => n + 1)}
-                className="px-2 py-0.5 border rounded"
-              >
-                Reload preview
-              </button>
-            </div>
-          </div>
-          <div className="h-[60vh] lg:h-full border border-neutral-200 dark:border-neutral-700 rounded-md overflow-hidden bg-white dark:bg-dark-150 shadow-sm">
-            <iframe
-              key={String(reloadNonce) + previewUrl}
-              src={previewUrl}
-              title="Print Preview"
-              className="w-full h-full"
-              onLoad={onPreviewLoad}
-              onError={onPreviewError}
-            />
-          </div>
-        </div>
-      )}
+      {/* Locked banner is shown once by Layout.tsx for all report pages */}
+      {children}
     </div>
   );
 };

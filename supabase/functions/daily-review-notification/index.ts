@@ -251,9 +251,6 @@ ${job.company_name ? `Customer: ${job.company_name}${job.customer_name ? ` (${jo
 Reports Ready: ${job.reports_count}
 `).join('\n')
 }
-Reports Ready: \${job.reports_count}
-\`).join('\n')
-}
 
 This is an automated daily report generated at 12:00 PM Central Time.
 To review these reports, log in to the AMP system and check the Review Shortcuts on the portal page.
@@ -313,9 +310,25 @@ To review these reports, log in to the AMP system and check the Review Shortcuts
 
   } catch (error: unknown) {
     console.error('Error in daily review notification:', error)
-    const message = error instanceof Error ? error.message : String(error)
+    // Supabase/PostgREST errors are plain objects (not Error instances), so
+    // String(error) would yield "[object Object]". Extract readable details.
+    let message: string
+    let details: Record<string, unknown> | undefined
+    if (error instanceof Error) {
+      message = error.message
+    } else if (error && typeof error === 'object') {
+      const e = error as Record<string, unknown>
+      message = typeof e.message === 'string' ? e.message : JSON.stringify(error)
+      details = {
+        code: e.code,
+        details: e.details,
+        hint: e.hint,
+      }
+    } else {
+      message = String(error)
+    }
     return new Response(
-      JSON.stringify({ success: false, error: message }),
+      JSON.stringify({ success: false, error: message, ...(details ? { details } : {}) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

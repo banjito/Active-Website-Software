@@ -21,23 +21,29 @@ jobs:
         run: |
           echo "Sending daily review notification..."
           echo "Target time was: 17:30 UTC (11:30 AM CST)"
-          
-          response=$(curl -s -w "%{http_code}" -X POST \
+
+          # Write body to a file and capture status separately so a body that
+          # ends in digits can't corrupt the parsed status code.
+          http_code=$(curl -s -o response_body.json -w "%{http_code}" \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            -X POST \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{}' \
             "${{ secrets.SUPABASE_URL }}/functions/v1/daily-review-notification")
-          
-          http_code="${response: -3}"
-          response_body="${response%???}"
-          
+
           echo "HTTP Status Code: $http_code"
-          echo "Response: $response_body"
-          
+          echo "Response:"
+          cat response_body.json || true
+          echo ""
+
           if [ "$http_code" -eq 200 ]; then
             echo "✅ Daily review notification sent successfully"
+          elif [ "$http_code" -eq 401 ] || [ "$http_code" -eq 403 ]; then
+            echo "❌ Authentication failed ($http_code) — check SUPABASE_SERVICE_ROLE_KEY / SUPABASE_URL secrets"
+            exit 1
           else
-            echo "❌ Failed to send daily review notification"
+            echo "❌ Failed to send daily review notification (HTTP $http_code)"
             exit 1
           fi
 

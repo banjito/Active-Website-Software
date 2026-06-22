@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { isSuperUser } from "@/lib/roles";
@@ -10,6 +10,10 @@ import {
   BarChart3,
   EyeOff,
   Eye,
+  Download,
+  Filter,
+  ArrowDownWideNarrow,
+  Check,
 } from "lucide-react";
 import IssueNotes from "@/components/feedback/IssueNotes";
 import { HeaderBar } from "@/components/ui/HeaderBar";
@@ -67,6 +71,27 @@ type UserProfile = {
   };
 };
 
+type StatusFilter = "all" | "open" | "resolved";
+type TypeFilter = "all" | "issue" | "feature_request";
+type SortBy = "date" | "priority";
+
+const TYPE_FILTER_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "issue", label: "Issues" },
+  { value: "feature_request", label: "Feature Requests" },
+] as const;
+
+const STATUS_FILTER_OPTIONS = [
+  { value: "all", label: "All Statuses" },
+  { value: "open", label: "Open" },
+  { value: "resolved", label: "Resolved" },
+] as const;
+
+const SORT_BY_OPTIONS = [
+  { value: "date", label: "Date Added" },
+  { value: "priority", label: "Priority" },
+] as const;
+
 const formatDuration = (
   startIso?: string | null,
   endIso?: string | null,
@@ -113,13 +138,9 @@ const FeaturesFixesPage: React.FC = () => {
     {},
   );
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "resolved">(
-    "open",
-  );
-  const [typeFilter, setTypeFilter] = useState<
-    "all" | "issue" | "feature_request"
-  >("all");
-  const [sortBy, setSortBy] = useState<"date" | "priority">("priority");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [sortBy, setSortBy] = useState<SortBy>("priority");
   const [search, setSearch] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -143,6 +164,12 @@ const FeaturesFixesPage: React.FC = () => {
   const [resolveIssue, setResolveIssue] = useState<Issue | null>(null);
   const [resolveComment, setResolveComment] = useState("");
   const [isResolving, setIsResolving] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const activeFilterCount =
+    (typeFilter !== "all" ? 1 : 0) + (statusFilter !== "all" ? 1 : 0);
 
   const loadData = async (showLoadingIndicator: boolean = true) => {
     if (showLoadingIndicator) {
@@ -366,6 +393,74 @@ const FeaturesFixesPage: React.FC = () => {
     setCurrentPage(1);
   }, [statusFilter, typeFilter, search, sortBy]);
 
+  useEffect(() => {
+    if (!isSortMenuOpen) return;
+
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        sortMenuRef.current &&
+        !sortMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsSortMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isSortMenuOpen]);
+
+  useEffect(() => {
+    if (!isFilterMenuOpen) return;
+
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        filterMenuRef.current &&
+        !filterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isFilterMenuOpen]);
+
+  function renderSingleChoiceOptions<T extends string>(
+    options: ReadonlyArray<{ value: T; label: string }>,
+    selectedValue: T,
+    setValue: (nextValue: T) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setValue(option.value);
+                setCurrentPage(1);
+              }}
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   // Paginated slice for display
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginatedIssues = useMemo(() => {
@@ -566,6 +661,102 @@ const FeaturesFixesPage: React.FC = () => {
     const profile = userProfiles[reporterId];
     if (!profile) return "Unknown";
     return profile.full_name || profile.email || "Unknown";
+  };
+
+  const getUserDisplayName = (userId: string): string => {
+    const listUser = allUsers.find((u) => u.id === userId);
+    if (listUser?.name) return listUser.name;
+
+    const profile = userProfiles[userId];
+    return profile?.full_name || profile?.email || "User";
+  };
+
+  const formatDateTimeForCsv = (iso?: string | null) =>
+    iso ? new Date(iso).toLocaleString() : "";
+
+  const escapeCsvValue = (value: unknown) =>
+    `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  const handleDownloadCsv = () => {
+    if (filtered.length === 0) return;
+
+    const headers = [
+      "ID",
+      "Type",
+      "Title",
+      "Description",
+      "Status",
+      "Priority",
+      "Reporter",
+      "Interested Parties",
+      "Page URL",
+      "Date Added",
+      "Last Updated",
+      "Started",
+      "Paused At",
+      "Total Paused",
+      "Resolved",
+      "Duration",
+      "Attachments",
+      ...(hasIssueOpsAccess ? ["Excluded From Stats"] : []),
+    ];
+
+    const rows = filtered.map((issue) => {
+      const interestedParties = (interestedPartiesByIssue[issue.id] || [])
+        .map(getUserDisplayName)
+        .join("; ");
+      const attachments = (attachmentsByIssue[issue.id] || [])
+        .map((attachment) => attachment.file_url || attachment.file_path)
+        .join("; ");
+
+      return [
+        issue.id,
+        issue.type === "feature_request" ? "Feature Request" : "Issue",
+        issue.title,
+        issue.description || "",
+        issue.status,
+        PRIORITY_LABELS[issue.priority],
+        getReporterName(issue.reporter_id),
+        interestedParties,
+        issue.page_url || "",
+        formatDateTimeForCsv(issue.created_at),
+        formatDateTimeForCsv(issue.updated_at),
+        formatDateTimeForCsv(issue.started_at),
+        formatDateTimeForCsv(issue.paused_at),
+        formatPausedTime(issue.total_paused_ms),
+        formatDateTimeForCsv(issue.resolved_at),
+        formatDuration(
+          issue.started_at || issue.created_at,
+          issue.resolved_at,
+          issue.total_paused_ms,
+        ),
+        attachments,
+        ...(hasIssueOpsAccess
+          ? [issue.excluded_from_stats ? "Yes" : "No"]
+          : []),
+      ];
+    });
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCsvValue).join(","))
+      .join("\r\n");
+    const blob = new Blob(["\uFEFF", csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    const typePart =
+      typeFilter === "all" ? "all-types" : typeFilter.replace("_", "-");
+    const statusPart =
+      statusFilter === "all" ? "all-statuses" : `${statusFilter}-statuses`;
+
+    link.href = url;
+    link.download = `features-fixes-${typePart}-${statusPart}-${dateStamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // ── Stats calculations ──
@@ -1077,42 +1268,106 @@ const FeaturesFixesPage: React.FC = () => {
 
           {/* ── Filters ── */}
           <div className="flex justify-end items-center mb-2">
-            <div className="flex gap-2">
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as any)}
-                className="form-select w-48"
-              >
-                <option value="all">All Types</option>
-                <option value="issue">Issues</option>
-                <option value="feature_request">Feature Requests</option>
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="form-select w-40"
-              >
-                <option value="all">All statuses</option>
-                <option value="open">Open</option>
-                <option value="resolved">Resolved</option>
-              </select>
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  setSortBy(e.target.value as "date" | "priority")
-                }
-                className="form-select w-40"
-              >
-                <option value="date">Sort by Date</option>
-                <option value="priority">Sort by Priority</option>
-              </select>
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="form-input w-64"
+                className={`w-64 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  search
+                    ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
+                    : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-dark-150"
+                } text-neutral-900 dark:text-white`}
               />
+              <div className="relative" ref={filterMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                    activeFilterCount > 0
+                      ? "text-[#f26722]"
+                      : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  }`}
+                  aria-expanded={isFilterMenuOpen}
+                  aria-label="Filter features and fixes"
+                  title="Filter"
+                >
+                  <Filter className="h-5 w-5" />
+                </button>
+                {isFilterMenuOpen && (
+                  <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                    <div>
+                      <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                        Type
+                      </div>
+                      {renderSingleChoiceOptions(
+                        TYPE_FILTER_OPTIONS,
+                        typeFilter,
+                        setTypeFilter,
+                      )}
+                    </div>
+                    <div className="mt-2">
+                      <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                        Status
+                      </div>
+                      {renderSingleChoiceOptions(
+                        STATUS_FILTER_OPTIONS,
+                        statusFilter,
+                        setStatusFilter,
+                      )}
+                    </div>
+                    {activeFilterCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTypeFilter("all");
+                          setStatusFilter("all");
+                          setCurrentPage(1);
+                        }}
+                        className="mt-3 w-full rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:text-white dark:hover:bg-dark-100"
+                      >
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="relative" ref={sortMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsSortMenuOpen((prev) => !prev)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  aria-expanded={isSortMenuOpen}
+                  aria-label="Sort features and fixes"
+                  title="Sort"
+                >
+                  <ArrowDownWideNarrow className="h-5 w-5" />
+                </button>
+                {isSortMenuOpen && (
+                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150">
+                    <div>
+                      <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                        Sort by
+                      </div>
+                      {renderSingleChoiceOptions(
+                        SORT_BY_OPTIONS,
+                        sortBy,
+                        setSortBy,
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadCsv}
+                disabled={loading || filtered.length === 0}
+                title="Download the current filtered list as a CSV file"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              >
+                <Download className="h-5 w-5 hover:text-[#f26722]" />
+              </button>
             </div>
           </div>
 
@@ -1975,9 +2230,7 @@ const FeaturesFixesPage: React.FC = () => {
                     {hasIssueOpsAccess &&
                       (selectedIssue.status === "in_progress" ||
                         selectedIssue.status === "paused" ||
-                        selectedIssue.status === "open") &&
-                      selectedIssue.status !== "resolved" &&
-                      selectedIssue.status !== "closed" && (
+                        selectedIssue.status === "open") && (
                         <button
                           onClick={() => {
                             openResolveModal(selectedIssue);

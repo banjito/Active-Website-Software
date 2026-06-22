@@ -31,7 +31,11 @@ export function Reports() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return reports.filter((r) => {
-      if (statusFilter !== "all" && (r.status ?? "").toLowerCase() !== statusFilter) return false;
+      if (
+        statusFilter !== "all" &&
+        (r.status ?? "").toLowerCase() !== statusFilter
+      )
+        return false;
       if (!q) return true;
       return [r.asset_name, r.substation, r.job_number, r.job_title].some((v) =>
         v?.toLowerCase().includes(q),
@@ -41,12 +45,17 @@ export function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex animate-fade-up flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+            Reports
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Every report we've published for you.
+          </p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="group relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
           <Input
             className="pl-9"
             placeholder="Search reports…"
@@ -56,15 +65,15 @@ export function Reports() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5">
         {STATUS_FILTERS.map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
+            className={`px-3.5 py-1.5 text-xs font-medium capitalize transition-all duration-300 ease-spring active:scale-95 ${
               statusFilter === s
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent"
+                ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-soft"
+                : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
           >
             {s === "all" ? "All" : s}
@@ -88,8 +97,14 @@ export function Reports() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {filtered.map((r) => (
-            <ReportRow key={r.asset_id} report={r} showJob />
+          {filtered.map((r, i) => (
+            <div
+              key={r.asset_id}
+              className="enter"
+              style={{ animationDelay: `${Math.min(i, 12) * 45}ms` }}
+            >
+              <ReportRow report={r} showJob />
+            </div>
           ))}
         </div>
       )}

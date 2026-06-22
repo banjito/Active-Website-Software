@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, MapPin, Search } from "lucide-react";
+import { ChevronRight, FileText, MapPin, Search } from "lucide-react";
 import {
   countAssetsByJob,
   getJobs,
@@ -50,12 +50,13 @@ export function Jobs() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex animate-fade-up flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Jobs</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Jobs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Every site we're working on for you.</p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="group relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
           <Input
             className="pl-9"
             placeholder="Search job number or site…"
@@ -81,12 +82,13 @@ export function Jobs() {
         </Card>
       ) : (
         <div className="grid gap-3">
-          {filtered.map((job) => {
+          {filtered.map((job, i) => {
             const count = counts[job.id] ?? 0;
             return (
               <Card
                 key={job.id}
-                className="cursor-pointer transition-colors hover:border-primary/50"
+                style={{ animationDelay: `${Math.min(i, 12) * 55}ms` }}
+                className="enter lift group cursor-pointer hover:border-primary/50 hover:shadow-lift"
                 onClick={() => navigate(`/jobs/${job.id}`)}
               >
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -119,6 +121,7 @@ export function Jobs() {
                     <span className="hidden sm:inline">
                       {formatDate(job.created_at)}
                     </span>
+                    <ChevronRight className="h-4 w-4 -translate-x-1 text-muted-foreground/50 opacity-0 transition-all duration-300 ease-spring group-hover:translate-x-0 group-hover:text-primary group-hover:opacity-100" />
                   </div>
                 </CardContent>
               </Card>

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { MailCheck } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FullPageSpinner, Spinner } from '@/components/ui/spinner';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Login() {
   const { user, loading, signInWithPassword, signInWithMagicLink } = useAuth();
@@ -34,20 +36,34 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="mb-2 text-2xl font-bold">
-            amp<span className="text-primary">OS</span>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-sm animate-scale-in">
+        <div className="mb-6 text-center">
+          <div className="text-4xl font-extrabold tracking-tight">
+            amp<span className="text-gradient">OS</span>
           </div>
-          <CardTitle>Customer sign in</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sent ? (
-            <p className="text-sm text-muted-foreground">
-              Check <span className="font-medium text-foreground">{email}</span> for a sign-in link.
-            </p>
-          ) : (
+          <p className="mt-2 text-sm text-muted-foreground">Your reports, in one place.</p>
+        </div>
+        <Card className="shadow-lift">
+          <CardHeader>
+            <CardTitle>Customer sign in</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {sent ? (
+              <div className="flex flex-col items-center gap-3 py-4 text-center">
+                <div className="flex h-12 w-12 items-center justify-center bg-accent text-primary">
+                  <MailCheck className="h-6 w-6" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Check <span className="font-medium text-foreground">{email}</span> for a sign-in
+                  link.
+                </p>
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="email">
@@ -93,8 +109,9 @@ export function Login() {
               </button>
             </form>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

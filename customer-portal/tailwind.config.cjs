@@ -63,20 +63,45 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Helvetica Neue", "Helvetica", "ui-sans-serif", "system-ui", "-apple-system", "Arial", "sans-serif"],
+        sans: ["Inter", "Helvetica Neue", "Helvetica", "ui-sans-serif", "system-ui", "-apple-system", "Arial", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        soft: "0 1px 2px hsl(24 30% 10% / 0.04), 0 8px 24px -12px hsl(24 30% 10% / 0.12)",
+        lift: "0 1px 2px hsl(24 30% 10% / 0.05), 0 18px 40px -16px hsl(24 60% 30% / 0.25)",
+      },
+      transitionTimingFunction: {
+        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        smooth: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
       keyframes: {
         "accordion-down": { from: { height: 0 }, to: { height: "var(--radix-accordion-content-height)" } },
         "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: 0 } },
+        "fade-up": {
+          from: { opacity: 0, transform: "translateY(14px)" },
+          to: { opacity: 1, transform: "translateY(0)" },
+        },
+        "fade-in": { from: { opacity: 0 }, to: { opacity: 1 } },
+        "scale-in": {
+          from: { opacity: 0, transform: "scale(0.96)" },
+          to: { opacity: 1, transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-up": "fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "fade-in": "fade-in 0.5s ease-out both",
+        "scale-in": "scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        float: "float 6s ease-in-out infinite",
       },
     },
   },

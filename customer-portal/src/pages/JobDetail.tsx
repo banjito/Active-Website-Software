@@ -60,16 +60,22 @@ export function JobDetail() {
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" onClick={() => navigate('/jobs')} className="-ml-2">
-        <ArrowLeft className="h-4 w-4" /> All jobs
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate('/jobs')}
+        className="group -ml-2 text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4 transition-transform duration-300 ease-spring group-hover:-translate-x-0.5" />{' '}
+        All jobs
       </Button>
 
-      <div>
+      <div className="animate-fade-up">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-sm text-muted-foreground">{job.job_number ?? '—'}</span>
           {job.status && <Badge status={job.status}>{job.status.replace(/_/g, ' ')}</Badge>}
         </div>
-        <h1 className="mt-1 text-2xl font-bold">{job.title ?? 'Untitled job'}</h1>
+        <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{job.title ?? 'Untitled job'}</h1>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
           {job.site_address && (
             <span className="flex items-center gap-1">
@@ -87,8 +93,8 @@ export function JobDetail() {
           </CardContent>
         </Card>
       ) : (
-        groups.map(([substation, items]) => (
-          <Card key={substation}>
+        groups.map(([substation, items], i) => (
+          <Card key={substation} className="enter" style={{ animationDelay: `${i * 70}ms` }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 {substation}

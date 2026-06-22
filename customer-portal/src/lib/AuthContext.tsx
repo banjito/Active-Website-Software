@@ -12,6 +12,12 @@ interface AuthContextValue {
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  /** Update the user's own profile fields (stored in auth user_metadata). */
+  updateProfile: (data: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
+  /** Change the sign-in email. Supabase sends a confirmation link to the new address. */
+  updateEmail: (email: string) => Promise<{ error: string | null }>;
+  /** Set a new password for the signed-in user. */
+  updatePassword: (password: string) => Promise<{ error: string | null }>;
   /** Re-fetch the session so freshly-updated app_metadata lands in the JWT. */
   refresh: () => Promise<void>;
 }
@@ -65,6 +71,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         await supabase.auth.signOut();
+      },
+      async updateProfile(data) {
+        const { data: res, error } = await supabase.auth.updateUser({ data });
+        if (!error && res.user) {
+          setSession((s) => (s ? { ...s, user: res.user } : s));
+        }
+        return { error: error?.message ?? null };
+      },
+      async updateEmail(email) {
+        const { error } = await supabase.auth.updateUser({ email });
+        return { error: error?.message ?? null };
+      },
+      async updatePassword(password) {
+        const { error } = await supabase.auth.updateUser({ password });
+        return { error: error?.message ?? null };
       },
       async refresh() {
         const { data } = await supabase.auth.refreshSession();

@@ -53,8 +53,8 @@ export function AcceptInvite() {
   }, [loading, user, token, refresh, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      <Card className="w-full max-w-sm animate-scale-in shadow-lift">
         <CardHeader>
           <CardTitle>Accepting your invite</CardTitle>
         </CardHeader>

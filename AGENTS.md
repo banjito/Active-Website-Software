@@ -1,5 +1,6 @@
 ## Commands
 - **Do not run git commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
+- **Do not run git --no-paper diff commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
 - **Do NOT RUN npm commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
 - **Do not tell me that things have no cost.**
 

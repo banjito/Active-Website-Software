@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  useParams,
-  useNavigate,
-  useLocation,
-  useSearchParams,
-} from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -253,7 +248,6 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     reportId?: string;
   }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
@@ -275,6 +269,28 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   const reportIdRef = React.useRef<string | undefined>(initialReportId);
   const creatingRef = React.useRef(false);
   const pendingSaveRef = React.useRef(false);
+
+  // Keep state aligned when the route changes. If the route changed because we just
+  // created a copied report, preserve the local copied form state so the user can
+  // continue editing immediately.
+  useEffect(() => {
+    reportIdRef.current = initialReportId;
+    setCurrentReportId(initialReportId);
+
+    if (!initialReportId) {
+      setIsEditing(true);
+      isAutoSaveCreatedRef.current = false;
+      return;
+    }
+
+    if (isAutoSaveCreatedRef.current) {
+      return;
+    }
+
+    setIsEditing(false);
+    setLoading(true);
+  }, [initialReportId]);
+
   const [formData, setFormData] = useState<FormData>({
     customerName: "",
     customerLocation: "",
@@ -1048,6 +1064,317 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     }
     markEdited(); // Reset the "Saved" state since we're leaving edit mode
   };
+
+  // Save the current report and create a new panelboard report with only nameplate data copied.
+  const copyNameplateDataToNewReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) {
+      alert("Unable to create new report. Missing job or user information.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+
+      const currentPayload = buildReportPayload();
+      let savedCurrentReportId = reportIdRef.current || currentReportId;
+
+      if (creatingRef.current && !savedCurrentReportId) {
+        const deadline = Date.now() + 5000;
+        while (
+          creatingRef.current &&
+          !reportIdRef.current &&
+          Date.now() < deadline
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        savedCurrentReportId = reportIdRef.current;
+
+        if (!savedCurrentReportId) {
+          throw new Error(
+            "Current report is still saving. Please try again in a moment.",
+          );
+        }
+      }
+
+      if (savedCurrentReportId) {
+        const { error } = await supabase
+          .schema("neta_ops")
+          .from("panelboard_assemblies_ats25_reports")
+          .update(currentPayload)
+          .eq("id", savedCurrentReportId);
+        if (error) throw error;
+      } else {
+        creatingRef.current = true;
+        try {
+          const { data: currentReport, error: currentReportError } =
+            await supabase
+              .schema("neta_ops")
+              .from("panelboard_assemblies_ats25_reports")
+              .insert(currentPayload)
+              .select()
+              .single();
+
+          if (currentReportError) throw currentReportError;
+          if (!currentReport) throw new Error("Failed to save current report.");
+
+          savedCurrentReportId = currentReport.id;
+          reportIdRef.current = savedCurrentReportId;
+          setCurrentReportId(savedCurrentReportId);
+
+          const { data: assetResult, error: assetError } = await supabase
+            .schema("neta_ops")
+            .from("assets")
+            .insert({
+              name: getAssetName(
+                reportSlug,
+                formData.identifier || formData.eqptLocation || "",
+              ),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${savedCurrentReportId}`,
+              user_id: user.id,
+            })
+            .select()
+            .single();
+
+          if (!assetError && assetResult) {
+            const { error: linkError } = await supabase
+              .schema("neta_ops")
+              .from("job_assets")
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
+            if (linkError) {
+              console.warn(
+                "Job asset link failed for current report (report was saved):",
+                linkError,
+              );
+            }
+          }
+          if (assetError) {
+            console.warn(
+              "Asset creation failed for current report (report was saved):",
+              assetError,
+            );
+          }
+        } finally {
+          creatingRef.current = false;
+        }
+      }
+
+      const makeEmptyTestEquipment = () => ({
+        name: "",
+        serialNumber: "",
+        ampId: "",
+        calDate: "",
+      });
+      const defaultTemperature = {
+        fahrenheit: 68,
+        celsius: 20,
+        tcf: 1,
+        humidity: null,
+      };
+      const defaultInsulationMeasured: InsulationRowSimple[] = [
+        { section: "Phase to Phase", p1: "", p2: "", p3: "" },
+        { section: "Phase to Ground", p1: "", p2: "", p3: "" },
+        { section: "Phase to Neutral", p1: "", p2: "", p3: "" },
+      ];
+      const defaultInsulationUnit = "MΩ";
+      const copiedRatedVoltage = parseInt(
+        String(formData.nameplate.ratedVoltage || "").replace(/[^0-9]/g, ""),
+        10,
+      );
+      const computedCriteria = computeCriteriaFromVoltage(
+        copiedRatedVoltage,
+        defaultInsulationUnit,
+      );
+      const defaultCriteriaValue =
+        computedCriteria === null
+          ? "≥ 25"
+          : `≥ ${computedCriteria % 1 === 0 ? computedCriteria.toString() : computedCriteria}`;
+
+      const newFormData: FormData = {
+        ...formData,
+        userName: "",
+        date: new Date().toISOString().split("T")[0],
+        identifier: "",
+        technicians: "",
+        temperature: defaultTemperature,
+        substation: "",
+        eqptLocation: "",
+        status: "PASS",
+        nameplate: {
+          ...formData.nameplate,
+          serialNumber: "",
+        },
+        visualInspectionItems: formData.visualInspectionItems.map((item) => ({
+          id: item.id,
+          description: item.description,
+          result: "Select One",
+        })),
+        insulationMeasured: defaultInsulationMeasured,
+        insulationUnit: defaultInsulationUnit,
+        insulationTestVoltage: "1000V",
+        insulationDuration: "1 min",
+        tempCorrected: defaultInsulationMeasured.map((row) => ({ ...row })),
+        criteriaValue: defaultCriteriaValue,
+        criteriaUnits: defaultInsulationUnit,
+        contactResistance: [
+          {
+            busSection: "Panelboard",
+            aPhase: "",
+            bPhase: "",
+            cPhase: "",
+            neutral: "",
+            ground: "",
+          },
+        ],
+        contactUnit: "µΩ",
+        contactEvaluation: [
+          { deviation: "N/A", criteria: "<50%", result: "N/A" },
+        ],
+        contactNeutral: { criteria: "N/A", result: "N/A" },
+        contactGround: { criteria: "N/A", result: "N/A" },
+        dielectricWithstand: [
+          { busSection: "Panelboard", ag: "", bg: "", cg: "", result: "" },
+        ],
+        dielectricUnit: "µA",
+        dielectricTestVoltage: "2.3 kVDC",
+        dielectricTestDuration: "1 min.",
+        torqueVerificationUsingLROhm: "Yes",
+        testEquipment: {
+          megohmmeter: makeEmptyTestEquipment(),
+          lowResistanceOhmmeter: makeEmptyTestEquipment(),
+        },
+        comments: "",
+      };
+
+      const newReportPayload = {
+        job_id: jobId,
+        user_id: user.id,
+        report_info: {
+          customer: maskCustomerName(newFormData.customerName),
+          address: maskCustomerAddress(newFormData.customerLocation),
+          userName: newFormData.userName,
+          date: newFormData.date,
+          identifier: newFormData.identifier,
+          technicians: newFormData.technicians,
+          substation: newFormData.substation,
+          eqptLocation: newFormData.eqptLocation,
+          temperature: newFormData.temperature,
+          torqueVerificationUsingLROhm:
+            newFormData.torqueVerificationUsingLROhm,
+          manufacturer: newFormData.nameplate.manufacturer,
+          catalogNumber: newFormData.nameplate.catalogNumber,
+          serialNumber: newFormData.nameplate.serialNumber,
+          series: newFormData.nameplate.series,
+          type: newFormData.nameplate.type,
+          ratedVoltage: newFormData.nameplate.ratedVoltage,
+          systemVoltage: newFormData.nameplate.systemVoltage,
+          ratedCurrent: newFormData.nameplate.ratedCurrent,
+          aicRating: newFormData.nameplate.aicRating,
+          phaseConfiguration: newFormData.nameplate.phaseConfiguration,
+          testEquipment: newFormData.testEquipment,
+          status: newFormData.status,
+        },
+        visual_mechanical: { items: newFormData.visualInspectionItems },
+        insulation_resistance: {
+          tests: newFormData.insulationMeasured,
+          correctedTests: newFormData.tempCorrected,
+          unit: newFormData.insulationUnit,
+          units: newFormData.insulationUnit,
+          testVoltage: newFormData.insulationTestVoltage,
+          duration: newFormData.insulationDuration,
+          criteriaValue: newFormData.criteriaValue,
+          criteriaUnits: newFormData.criteriaUnits,
+        },
+        contact_resistance: {
+          tests: newFormData.contactResistance,
+          dielectricTests: newFormData.dielectricWithstand,
+          dielectricUnit: newFormData.dielectricUnit,
+          dielectricTestVoltage: newFormData.dielectricTestVoltage,
+          dielectricDuration: newFormData.dielectricTestDuration,
+        },
+        comments: newFormData.comments,
+      };
+
+      const { data: newReport, error: newReportError } = await supabase
+        .schema("neta_ops")
+        .from("panelboard_assemblies_ats25_reports")
+        .insert(newReportPayload)
+        .select()
+        .single();
+
+      if (newReportError) throw newReportError;
+      if (!newReport) throw new Error("Failed to create new report.");
+
+      const { data: newAsset, error: newAssetError } = await supabase
+        .schema("neta_ops")
+        .from("assets")
+        .insert({
+          name: getAssetName(reportSlug, ""),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (!newAssetError && newAsset) {
+        const { error: linkError } = await supabase
+          .schema("neta_ops")
+          .from("job_assets")
+          .insert({
+            job_id: jobId,
+            asset_id: newAsset.id,
+            user_id: user.id,
+          });
+        if (linkError) {
+          console.warn(
+            "Job asset link failed for new report (report was created):",
+            linkError,
+          );
+        }
+      }
+      if (newAssetError) {
+        console.warn(
+          "Asset creation failed for new report (report was created):",
+          newAssetError,
+        );
+      }
+
+      reportIdRef.current = newReport.id;
+      isAutoSaveCreatedRef.current = true;
+      setCurrentReportId(newReport.id);
+      setFormData(newFormData);
+      setIsEditing(true);
+      markSaved();
+      navigate(`/jobs/${jobId}/${reportSlug}/${newReport.id}`, {
+        replace: true,
+      });
+    } catch (error: any) {
+      console.error("Error creating new panelboard report:", error);
+      alert(
+        `Failed to create new report: ${error?.message || "Unknown error"}`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    buildReportPayload,
+    currentReportId,
+    formData,
+    jobId,
+    markSaved,
+    maskCustomerAddress,
+    maskCustomerName,
+    navigate,
+    reportSlug,
+    user?.id,
+  ]);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -2492,7 +2819,19 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
             )}
           </div>
         </div>
-      </div>{" "}
+      </div>
+      {/* Copy Nameplate Data Button */}
+      {!isPrintMode && isEditing && (
+        <div className="mb-4 print:hidden flex justify-center">
+          <button
+            onClick={copyNameplateDataToNewReport}
+            disabled={isSaving}
+            className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Copy Nameplate data to new report
+          </button>
+        </div>
+      )}
       {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">

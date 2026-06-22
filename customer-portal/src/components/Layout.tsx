@@ -1,68 +1,109 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, LogOut } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Briefcase, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/AuthContext";
+import { useBranding } from "@/lib/BrandingContext";
+import { getCompany } from "@/services/portalData";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Logo } from "@/components/Logo";
+import { CompanyMenu } from "@/components/CompanyMenu";
+import { AccountMenu } from "@/components/AccountMenu";
 
 const navItems = [
-  { to: '/jobs', label: 'My Jobs', icon: Briefcase },
-  { to: '/reports', label: 'Reports', icon: FileText },
+  { to: "/jobs", label: "My Jobs", icon: Briefcase },
+  { to: "/reports", label: "Reports", icon: FileText },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { signOut, user } = useAuth();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const { customerId } = useAuth();
+  const { logoUrl, setBranding } = useBranding();
 
-  async function handleSignOut() {
-    await signOut();
-    navigate('/login');
-  }
+  useEffect(() => {
+    if (!customerId) return;
+
+    let cancelled = false;
+    void getCompany()
+      .then((company) => {
+        if (cancelled) return;
+        setBranding({
+          logoUrl: company?.logo_url ?? null,
+          primaryColor: company?.brand_primary ?? null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setBranding({ logoUrl: null, primaryColor: null });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customerId, setBranding]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-card">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <span className="text-lg font-bold">
-              amp<span className="text-primary">OS</span>
-              <span className="ml-2 align-middle text-xs font-normal text-muted-foreground">Customer Portal</span>
-            </span>
-            <nav className="hidden items-center gap-1 sm:flex">
+    <div className="relative min-h-screen bg-background">
+      <header className="sticky top-0 z-20 border-b border-border/60 bg-card/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:h-20">
+          <NavLink
+            to="/jobs"
+            className="flex min-w-0 shrink items-center gap-2.5 sm:gap-3"
+            aria-label="ampOS ACCESS home"
+          >
+            <Logo className="h-7 shrink-0 translate-y-[5px] text-foreground transition-colors hover:text-primary sm:h-9" />
+            {logoUrl && (
+              <>
+                <span
+                  className="h-7 w-px shrink-0 bg-border sm:h-9"
+                  aria-hidden
+                />
+                <img
+                  src={logoUrl}
+                  alt="Company logo"
+                  className="h-7 max-w-[7rem] shrink object-contain sm:h-9 sm:max-w-[10rem]"
+                />
+              </>
+            )}
+          </NavLink>
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+            <nav className="hidden items-center gap-5 sm:flex">
               {navItems.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      isActive ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground',
+                      "group relative flex items-center gap-2 px-3.5 py-2 text-sm font-medium transition-all duration-300 ease-spring",
+                      isActive
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
                     )
                   }
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 transition-transform duration-300 ease-spring group-hover:scale-110" />
                   {label}
                 </NavLink>
               ))}
             </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground md:inline">{user?.email}</span>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign out</span>
-            </Button>
+            <div className="flex items-center gap-2 sm:pl-4">
+              <ThemeToggle />
+              <CompanyMenu />
+              <AccountMenu />
+            </div>
           </div>
         </div>
         {/* Mobile nav */}
-        <nav className="flex items-center gap-1 border-t px-4 py-2 sm:hidden">
+        <nav className="flex items-center gap-1 border-t border-border/60 px-4 py-2 sm:hidden">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-                  isActive ? 'bg-accent text-foreground' : 'text-muted-foreground',
+                  "flex flex-1 items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground",
                 )
               }
             >
@@ -72,7 +113,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <main
+        key={location.pathname}
+        className="mx-auto max-w-6xl animate-fade-in px-4 py-6 sm:py-8"
+      >
+        {children}
+      </main>
     </div>
   );
 }

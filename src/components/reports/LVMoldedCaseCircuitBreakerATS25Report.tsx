@@ -1411,12 +1411,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       };
 
       let savedReportId: string | undefined;
-      if (currentReportId) {
+      // Use the ref as the source of truth for the report's identity so a manual
+      // save and an in-flight autosave can't each insert a separate row. (state
+      // `currentReportId` updates a render late, which is what duplicated reports.)
+      const existingId = reportIdRef.current || currentReportId;
+      if (existingId) {
         const { error } = await supabase
           .schema("neta_ops")
           .from("lv_molded_case_circuit_breaker_ats25")
           .update(dataToSave)
-          .eq("id", currentReportId);
+          .eq("id", existingId);
 
         if (error) throw error;
 
@@ -1424,54 +1428,70 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           .schema("neta_ops")
           .from("assets")
           .update({ name: assetName })
-          .ilike("file_url", `%${reportSlug}/${currentReportId}%`);
+          .ilike("file_url", `%${reportSlug}/${existingId}%`);
+      } else if (creatingRef.current) {
+        // Autosave is already creating this report — let it finish (and pick up
+        // the latest data) instead of inserting a duplicate.
+        pendingSaveRef.current = true;
       } else {
-        const { data: newReport, error } = await supabase
-          .schema("neta_ops")
-          .from("lv_molded_case_circuit_breaker_ats25")
-          .insert({
-            ...dataToSave,
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        if (newReport) {
-          savedReportId = newReport.id;
-          setCurrentReportId(newReport.id);
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const { data: newReport, error } = await supabase
             .schema("neta_ops")
-            .from("assets")
+            .from("lv_molded_case_circuit_breaker_ats25")
             .insert({
-              name: assetName,
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-              template_type: "ATS",
-              status: "in_progress",
+              ...dataToSave,
+              created_at: new Date().toISOString(),
             })
             .select()
             .single();
 
-          // Link asset to job
-          if (assetResult) {
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user?.id,
-            });
+          if (error) {
+            creatingRef.current = false;
+            throw error;
           }
+
+          if (newReport) {
+            savedReportId = newReport.id;
+            // Set the ref immediately so a pending autosave routes to UPDATE.
+            reportIdRef.current = newReport.id;
+            setCurrentReportId(newReport.id);
+            const { data: assetResult } = await supabase
+              .schema("neta_ops")
+              .from("assets")
+              .insert({
+                name: assetName,
+                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+                template_type: "ATS",
+                status: "in_progress",
+              })
+              .select()
+              .single();
+
+            // Link asset to job
+            if (assetResult) {
+              await supabase.schema("neta_ops").from("job_assets").insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user?.id,
+              });
+            }
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
 
       setJustSaved(true);
-      if (!currentReportId) {
+      // Only a genuine new insert navigates / leaves edit mode.
+      if (savedReportId) {
         setIsEditing(false);
-        if (savedReportId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
-            replace: true,
-          });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
+          replace: true,
+        });
       }
     } catch (err) {
       console.error("Save error:", err);
@@ -2476,7 +2496,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       `}</style>
       {/* Print Header - Only visible when printing */}
       <div
-        className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6 relative"
+        className="print:flex hidden items-center justify-between pb-4 mb-6 relative"
         style={{
           overflow: "visible",
           paddingLeft: "0.5rem",

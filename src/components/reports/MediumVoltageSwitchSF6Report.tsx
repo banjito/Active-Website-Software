@@ -961,7 +961,6 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id) return;
-    const wasExistingReport = Boolean(currentReportId || reportIdRef.current);
     setIsSaving(true);
     try {
       const reportInfo = {
@@ -996,46 +995,67 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         comments: formData.comments,
       } as any;
 
-      let savedId = currentReportId;
-      if (currentReportId) {
+      // Use the ref as the source of truth so a manual save and an in-flight
+      // autosave can't each insert a row (state `currentReportId` updates a
+      // render late, which duplicated reports).
+      const existingId = reportIdRef.current || currentReportId;
+      let savedId = existingId;
+      let didCreate = false;
+      if (existingId) {
         const { data, error } = await supabase
           .schema("neta_ops")
           .from("medium_voltage_switch_sf6_reports")
           .update(payload)
-          .eq("id", currentReportId)
+          .eq("id", existingId)
           .select("id")
           .single();
         if (error) throw error;
-        savedId = data?.id || currentReportId;
+        savedId = data?.id || existingId;
+      } else if (creatingRef.current) {
+        // Autosave is already creating this report — let it finish instead of
+        // inserting a duplicate.
+        pendingSaveRef.current = true;
       } else {
-        const { data, error } = await supabase
-          .schema("neta_ops")
-          .from("medium_voltage_switch_sf6_reports")
-          .insert(payload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        savedId = data?.id;
-
-        // Create asset and link to job
-        if (savedId) {
-          const assetName = `Medium Voltage Switch SF6 Report - ${formData.identifier || formData.substation || "Unnamed"}`;
-          const fileUrl = `report:/jobs/${jobId}/medium-voltage-switch-sf6-report/${savedId}`;
-          const { data: asset, error: assetError } = await supabase
+        creatingRef.current = true;
+        try {
+          const { data, error } = await supabase
             .schema("neta_ops")
-            .from("assets")
-            .insert({ name: assetName, file_url: fileUrl, user_id: user.id })
+            .from("medium_voltage_switch_sf6_reports")
+            .insert(payload)
             .select("id")
             .single();
-          if (assetError) throw assetError;
-
-          if (asset?.id) {
-            const { error: linkError } = await supabase
-              .schema("neta_ops")
-              .from("job_assets")
-              .insert({ job_id: jobId, asset_id: asset.id, user_id: user.id });
-            if (linkError) throw linkError;
+          if (error) {
+            creatingRef.current = false;
+            throw error;
           }
+          savedId = data?.id;
+
+          // Create asset and link to job
+          if (savedId) {
+            // Set the ref immediately so a pending autosave routes to UPDATE.
+            reportIdRef.current = savedId;
+            didCreate = true;
+            const assetName = `Medium Voltage Switch SF6 Report - ${formData.identifier || formData.substation || "Unnamed"}`;
+            const fileUrl = `report:/jobs/${jobId}/medium-voltage-switch-sf6-report/${savedId}`;
+            const { data: asset, error: assetError } = await supabase
+              .schema("neta_ops")
+              .from("assets")
+              .insert({ name: assetName, file_url: fileUrl, user_id: user.id })
+              .select("id")
+              .single();
+            if (assetError) throw assetError;
+
+            if (asset?.id) {
+              const { error: linkError } = await supabase
+                .schema("neta_ops")
+                .from("job_assets")
+                .insert({ job_id: jobId, asset_id: asset.id, user_id: user.id });
+              if (linkError) throw linkError;
+            }
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
 
@@ -1043,7 +1063,8 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         setCurrentReportId(savedId);
       }
       setJustSaved(true);
-      if (!wasExistingReport) {
+      // Only a genuine new insert navigates / leaves edit mode.
+      if (didCreate) {
         setIsEditMode(false);
         navigate(`/jobs/${jobId}`);
       }

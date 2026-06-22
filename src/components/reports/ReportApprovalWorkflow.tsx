@@ -58,6 +58,10 @@ interface ReportApprovalWorkflowProps {
 
 const REPORT_APPROVAL_LOAD_LIMIT = 500;
 
+// Inline SVGs (lucide) for the vanilla-JS review modal toolbar buttons.
+const EYE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`;
+
 export function ReportApprovalWorkflow({
   division,
   jobId,
@@ -955,7 +959,7 @@ export function ReportApprovalWorkflow({
     }
   };
 
-  const handleViewReport = (report: TechnicalReport) => {
+  const handleViewReport = async (report: TechnicalReport) => {
     console.log("[ViewDialog] handleViewReport called for:", report.id);
 
     // Build the report URL
@@ -973,6 +977,26 @@ export function ReportApprovalWorkflow({
     // Check if this report can be reviewed (status is submitted)
     const canReview =
       report.status === "submitted" && userPermissions.canReview;
+
+    // Resolve the human-readable Job # (e.g. 26015) so it can be appended to
+    // the modal title: "LV Circuit Breaker ATS 25 - C/B#1 - #26015".
+    let jobNumber = "";
+    try {
+      if (report.job_id) {
+        const { data: jobRow } = await supabase
+          .schema("neta_ops")
+          .from("jobs")
+          .select("job_number")
+          .eq("id", report.job_id)
+          .maybeSingle();
+        jobNumber = jobRow?.job_number || "";
+      }
+    } catch {
+      /* job number is best-effort */
+    }
+    const displayTitle = jobNumber
+      ? `${report.title} - #${jobNumber}`
+      : report.title;
 
     // Create modal completely outside of React
     // This survives component unmounts
@@ -997,8 +1021,7 @@ export function ReportApprovalWorkflow({
             <!-- Header -->
             <div style="flex-shrink:0;padding:1rem;border-bottom:1px solid #e5e7eb;background:white;display:flex;justify-content:space-between;align-items:center;">
               <div>
-                <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${report.title}</h2>
-                <p style="font-size:0.875rem;color:#6b7280;margin:0;">PDF Report - Review and approve or reject</p>
+                <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
               </div>
               <div style="display:flex;align-items:center;gap:0.75rem;">
                 <span style="padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
@@ -1010,54 +1033,57 @@ export function ReportApprovalWorkflow({
               </div>
             </div>
 
-            <!-- PDF Content -->
-            <div style="flex:1;overflow:hidden;background:#f9fafb;">
-              <div style="padding:0.75rem;background:#eff6ff;border-bottom:1px solid #e5e7eb;font-size:0.875rem;color:#4b5563;">
-                <strong>PDF Report:</strong> View the PDF below.
-                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;margin-left:0.5rem;">Open in new tab</a>
+            <!-- Body: review sidebar + PDF preview -->
+            <div style="flex:1;display:flex;overflow:hidden;">
+              <!-- Left review sidebar -->
+              <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
+                <!-- Preview / Print toolbar -->
+                <div style="display:flex;gap:0.5rem;">
+                  <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
+                    ${EYE_ICON_SVG}
+                  </button>
+                  <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
+                    ${PRINTER_ICON_SVG}
+                  </button>
+                </div>
+                ${
+                  canReview
+                    ? `
+                <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+                  <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
+                  <textarea
+                    id="review-comments-input"
+                    placeholder="Add comments about this report (required for rejection)..."
+                    style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
+                  ></textarea>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                  <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
+                    ✓ Save & Approve
+                  </button>
+                  <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
+                    ✕ Reject / Mark as Issue
+                  </button>
+                  <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
+                    Archive
+                  </button>
+                </div>
+                `
+                    : `
+                <p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>
+                `
+                }
               </div>
-              <iframe
-                src="${fileUrl}"
-                style="width:100%;height:calc(100% - 45px);border:none;"
-                title="PDF Report Preview"
-              ></iframe>
-            </div>
 
-            <!-- Review Actions Panel -->
-            ${
-              canReview
-                ? `
-            <div id="review-panel" style="flex-shrink:0;border-top:1px solid #e5e7eb;background:white;padding:1rem;display:none;">
-              <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Comments</label>
-                <textarea
-                  id="review-comments-input"
-                  placeholder="Add comments about this report (required for rejection)..."
-                  style="width:100%;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
-                  rows="2"
-                ></textarea>
-              </div>
-              <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
-                <button id="review-archive-btn" style="padding:0.5rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;">
-                  Archive
-                </button>
-                <button id="review-reject-btn" style="padding:0.5rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;">
-                  ✕ Reject / Mark as Issue
-                </button>
-                <button id="review-approve-btn" style="padding:0.5rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
-                  ✓ Save & Approve
-                </button>
+              <!-- PDF Content -->
+              <div style="flex:1;overflow:hidden;background:#f9fafb;">
+                <iframe
+                  src="${fileUrl}"
+                  style="width:100%;height:100%;border:none;"
+                  title="PDF Report Preview"
+                ></iframe>
               </div>
             </div>
-            <div style="flex-shrink:0;border-top:1px solid #e5e7eb;background:white;padding:0.75rem;display:flex;justify-content:center;">
-              <button id="review-toggle-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;display:flex;align-items:center;gap:0.5rem;">
-                <span id="review-toggle-text">Show Review</span>
-                <span id="review-toggle-icon">▲</span>
-              </button>
-            </div>
-            `
-                : ""
-            }
           </div>
         </div>
       `;
@@ -1071,27 +1097,29 @@ export function ReportApprovalWorkflow({
         };
       }
 
-      // Add toggle handler for review panel
-      if (canReview) {
-        const toggleBtn = document.getElementById("review-toggle-btn");
-        const reviewPanel = document.getElementById("review-panel");
-        const toggleText = document.getElementById("review-toggle-text");
-        const toggleIcon = document.getElementById("review-toggle-icon");
-
-        if (toggleBtn && reviewPanel && toggleText && toggleIcon) {
-          toggleBtn.onclick = () => {
-            const isVisible = reviewPanel.style.display !== "none";
-            if (isVisible) {
-              reviewPanel.style.display = "none";
-              toggleText.textContent = "Show Review";
-              toggleIcon.textContent = "▲";
-            } else {
-              reviewPanel.style.display = "block";
-              toggleText.textContent = "Hide Review";
-              toggleIcon.textContent = "▼";
+      // Preview (open in new tab) + Print toolbar handlers
+      const previewBtn = document.getElementById("report-preview-btn");
+      if (previewBtn) {
+        previewBtn.onclick = () =>
+          window.open(fileUrl, "_blank", "noopener,noreferrer");
+      }
+      const printBtn = document.getElementById("report-print-btn");
+      if (printBtn) {
+        printBtn.onclick = () => {
+          const iframe = document.querySelector(
+            'iframe[title="PDF Report Preview"]',
+          ) as HTMLIFrameElement | null;
+          try {
+            if (iframe?.contentWindow) {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+              return;
             }
-          };
-        }
+          } catch {
+            /* fall back to opening the PDF in a new tab to print */
+          }
+          window.open(fileUrl, "_blank", "noopener,noreferrer");
+        };
       }
 
       // Add review action handlers if canReview
@@ -1347,7 +1375,7 @@ export function ReportApprovalWorkflow({
           <!-- Header -->
           <div style="flex-shrink:0;padding:1rem;border-bottom:1px solid #e5e7eb;background:white;display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${report.title}</h2>
+              <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
               <span style="padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
@@ -1359,54 +1387,57 @@ export function ReportApprovalWorkflow({
             </div>
           </div>
 
-          <!-- Report Content -->
-          <div style="flex:1;overflow:hidden;background:#f9fafb;">
-            <div style="padding:0.75rem;background:#eff6ff;border-bottom:1px solid #e5e7eb;font-size:0.875rem;color:#4b5563;">
-              <strong>Preview Mode:</strong> This is a read-only preview.
-              <a href="${openReportUrl}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;margin-left:0.5rem;">Open in new tab</a>
+          <!-- Body: review sidebar + report preview -->
+          <div style="flex:1;display:flex;overflow:hidden;">
+            <!-- Left review sidebar -->
+            <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
+              <!-- Preview / Print toolbar (same icon-button UI as the report header) -->
+              <div style="display:flex;gap:0.5rem;">
+                <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
+                  ${EYE_ICON_SVG}
+                </button>
+                <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
+                  ${PRINTER_ICON_SVG}
+                </button>
+              </div>
+              ${
+                canReview
+                  ? `
+              <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+                <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
+                <textarea
+                  id="review-comments-input"
+                  placeholder="Add comments about this report (required for rejection)..."
+                  style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
+                ></textarea>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
+                  ✓ Save & Approve
+                </button>
+                <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
+                  ✕ Reject / Mark as Issue
+                </button>
+                <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
+                  Archive
+                </button>
+              </div>
+              `
+                  : `
+              <p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>
+              `
+              }
             </div>
-            <iframe
-              src="${fullReportUrl}"
-              style="width:100%;height:calc(100% - 45px);border:none;"
-              title="Report Preview"
-            ></iframe>
-          </div>
 
-          <!-- Review Actions Panel -->
-          ${
-            canReview
-              ? `
-          <div id="review-panel" style="flex-shrink:0;border-top:1px solid #e5e7eb;background:white;padding:1rem;display:none;">
-            <div style="margin-bottom:0.75rem;">
-              <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Comments</label>
-              <textarea
-                id="review-comments-input"
-                placeholder="Add comments about this report (required for rejection)..."
-                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
-                rows="2"
-              ></textarea>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
-              <button id="review-archive-btn" style="padding:0.5rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;">
-                Archive
-              </button>
-              <button id="review-reject-btn" style="padding:0.5rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;">
-                ✕ Reject / Mark as Issue
-              </button>
-              <button id="review-approve-btn" style="padding:0.5rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
-                ✓ Save & Approve
-              </button>
+            <!-- Report Content -->
+            <div style="flex:1;overflow:hidden;background:#f9fafb;">
+              <iframe
+                src="${fullReportUrl}"
+                style="width:100%;height:100%;border:none;"
+                title="Report Preview"
+              ></iframe>
             </div>
           </div>
-          <div style="flex-shrink:0;border-top:1px solid #e5e7eb;background:white;padding:0.75rem;display:flex;justify-content:center;">
-            <button id="review-toggle-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;display:flex;align-items:center;gap:0.5rem;">
-              <span id="review-toggle-text">Show Review</span>
-              <span id="review-toggle-icon">▲</span>
-            </button>
-          </div>
-          `
-              : ""
-          }
         </div>
       </div>
     `;
@@ -1420,27 +1451,23 @@ export function ReportApprovalWorkflow({
       };
     }
 
-    // Add toggle handler for review panel
-    if (canReview) {
-      const toggleBtn = document.getElementById("review-toggle-btn");
-      const reviewPanel = document.getElementById("review-panel");
-      const toggleText = document.getElementById("review-toggle-text");
-      const toggleIcon = document.getElementById("review-toggle-icon");
-
-      if (toggleBtn && reviewPanel && toggleText && toggleIcon) {
-        toggleBtn.onclick = () => {
-          const isVisible = reviewPanel.style.display !== "none";
-          if (isVisible) {
-            reviewPanel.style.display = "none";
-            toggleText.textContent = "Show Review";
-            toggleIcon.textContent = "▲";
-          } else {
-            reviewPanel.style.display = "block";
-            toggleText.textContent = "Hide Review";
-            toggleIcon.textContent = "▼";
-          }
-        };
-      }
+    // Preview (open in new tab) + Print toolbar handlers
+    const previewBtn = document.getElementById("report-preview-btn");
+    if (previewBtn) {
+      previewBtn.onclick = () =>
+        window.open(openReportUrl, "_blank", "noopener,noreferrer");
+    }
+    const printBtn = document.getElementById("report-print-btn");
+    if (printBtn) {
+      printBtn.onclick = () => {
+        const iframe = document.querySelector(
+          'iframe[title="Report Preview"]',
+        ) as HTMLIFrameElement | null;
+        if (iframe?.contentWindow) {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        }
+      };
     }
 
     // Add review action handlers if canReview

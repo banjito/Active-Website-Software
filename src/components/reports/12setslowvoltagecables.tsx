@@ -2479,11 +2479,15 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
       // Log the payload for debugging
       console.log("Payload:", reportPayload);
 
-      let savedReportId = currentReportId;
+      // Use the ref as the source of truth so a manual save and an in-flight
+      // autosave can't each insert a row (state `currentReportId` updates a
+      // render late, which duplicated reports).
+      const existingId = reportIdRef.current || currentReportId;
+      let savedReportId = existingId;
 
-      if (currentReportId) {
+      if (existingId) {
         // Update existing report
-        console.log("Attempting to update report with ID:", currentReportId);
+        console.log("Attempting to update report with ID:", existingId);
         console.log("Update payload:", {
           data: reportPayload.data,
           updated_at: new Date(),
@@ -2494,19 +2498,19 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           .schema("neta_ops")
           .from("low_voltage_cable_test_12sets")
           .select("id")
-          .eq("id", currentReportId)
+          .eq("id", existingId)
           .single();
 
         if (checkError) {
           console.error("Error checking if report exists:", checkError);
           throw new Error(
-            `Report with ID ${currentReportId} not found: ${checkError.message}`,
+            `Report with ID ${existingId} not found: ${checkError.message}`,
           );
         }
 
         if (!existingReport) {
           throw new Error(
-            `Report with ID ${currentReportId} does not exist in the database.`,
+            `Report with ID ${existingId} does not exist in the database.`,
           );
         }
 
@@ -2519,7 +2523,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             data: reportPayload.data,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", currentReportId)
+          .eq("id", existingId)
           .select();
 
         if (updateError) {
@@ -2561,6 +2565,8 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             throw insertError;
           }
           savedReportId = insertData.id;
+          // Set the ref immediately so a pending autosave routes to UPDATE.
+          reportIdRef.current = savedReportId;
           setCurrentReportId(savedReportId);
           isAutoSaveCreatedRef.current = true;
           console.log("Report created successfully with ID:", savedReportId);

@@ -1710,39 +1710,55 @@ const OilInspectionReport: React.FC = () => {
 
       let result;
       let savedReport;
-      if (currentReportId) {
+      // Use the ref as the source of truth so a manual save and an in-flight
+      // autosave can't each insert a row (state `currentReportId` updates a
+      // render late, which duplicated reports).
+      const existingId = reportIdRef.current || currentReportId;
+      if (existingId) {
         // Update existing report
-        console.log(
-          `Updating ${OIL_INSPECTION_TABLE} with ID: ${currentReportId}`,
-        );
+        console.log(`Updating ${OIL_INSPECTION_TABLE} with ID: ${existingId}`);
         result = await supabase
           .schema("neta_ops")
           .from(OIL_INSPECTION_TABLE)
           .update(reportData)
-          .eq("id", parseInt(currentReportId)) // Convert string ID to number
+          .eq("id", parseInt(existingId)) // Convert string ID to number
           .select()
           .single();
 
         if (result.error) throw result.error;
         savedReport = result.data;
+      } else if (creatingRef.current) {
+        // Autosave is already creating this report — let it finish (and pick up
+        // the latest data) instead of inserting a duplicate.
+        pendingSaveRef.current = true;
       } else {
         // Create new report
-        console.log(
-          `Inserting into ${OIL_INSPECTION_TABLE} for job ID: ${jobId}`,
-        );
-        result = await supabase
-          .schema("neta_ops")
-          .from(OIL_INSPECTION_TABLE)
-          .insert(reportData)
-          .select()
-          .single();
+        creatingRef.current = true;
+        try {
+          console.log(
+            `Inserting into ${OIL_INSPECTION_TABLE} for job ID: ${jobId}`,
+          );
+          result = await supabase
+            .schema("neta_ops")
+            .from(OIL_INSPECTION_TABLE)
+            .insert(reportData)
+            .select()
+            .single();
 
-        if (result.error) throw result.error;
-        savedReport = result.data;
-        console.log(`Created new report with ID: ${savedReport.id}`);
+          if (result.error) {
+            creatingRef.current = false;
+            throw result.error;
+          }
+          savedReport = result.data;
+          // Set the ref immediately so a pending autosave routes to UPDATE.
+          reportIdRef.current = savedReport.id.toString();
+          setCurrentReportId(savedReport.id.toString());
+          console.log(`Created new report with ID: ${savedReport.id}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
+        }
       }
-
-      if (result.error) throw result.error;
 
       // Use the savedReport variable already declared above
       console.log(
@@ -1750,7 +1766,7 @@ const OilInspectionReport: React.FC = () => {
         savedReport,
       );
 
-      if (!currentReportId && savedReport) {
+      if (!existingId && savedReport) {
         // Create asset entry for new reports
         const assetName = getAssetName(
           reportSlug,

@@ -723,18 +723,22 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
       let savedReportId: string | undefined;
-      if (currentReportId) {
+      // Use the ref as the source of truth so a manual save and an in-flight
+      // autosave can't each insert a row (state `currentReportId` updates a
+      // render late, which duplicated reports).
+      const existingId = reportIdRef.current || currentReportId;
+      if (existingId) {
         const { error: updateErr } = await supabase
           .schema("neta_ops")
           .from("emergency_systems_engine_generator_ats25")
           .update(dataToSave)
-          .eq("id", currentReportId);
+          .eq("id", existingId);
         if (updateErr) throw updateErr;
         const { error: assetUpdErr } = await supabase
           .schema("neta_ops")
           .from("assets")
           .update({ name: assetName })
-          .ilike("file_url", `%${reportSlug}/${currentReportId}%`);
+          .ilike("file_url", `%${reportSlug}/${existingId}%`);
         if (assetUpdErr) console.warn("Asset name update failed:", assetUpdErr);
       } else {
         const { data: newReport, error: insertError } = await supabase
@@ -746,6 +750,8 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         if (insertError) throw insertError;
         if (!newReport) throw new Error("Report insert returned no data");
 
+        // Set the ref immediately so a pending autosave routes to UPDATE.
+        reportIdRef.current = newReport.id;
         setCurrentReportId(newReport.id);
         savedReportId = newReport.id;
         isAutoSaveCreatedRef.current = true;
@@ -775,13 +781,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         if (linkErr) throw linkErr;
       }
       setJustSaved(true);
-      if (!currentReportId) {
+      // Only a genuine new insert navigates / leaves edit mode.
+      if (savedReportId) {
         setIsEditing(false);
-        if (savedReportId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
-            replace: true,
-          });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
+          replace: true,
+        });
       }
     } catch (err: any) {
       console.error("Save error:", err);

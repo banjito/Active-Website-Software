@@ -2059,78 +2059,100 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
     try {
       let result;
-      if (currentReportId) {
+      let savedReportId: string | undefined;
+      // Use the ref as the source of truth so a manual save and an in-flight
+      // autosave can't each insert a row (state `currentReportId` updates a
+      // render late, which duplicated reports).
+      const existingId = reportIdRef.current || currentReportId;
+      if (existingId) {
         // Update existing report
         result = await supabase
           .schema("neta_ops")
           .from("low_voltage_circuit_breaker_electronic_trip_ats") // Use new table name
           .update(reportPayload)
-          .eq("id", currentReportId)
+          .eq("id", existingId)
           .select()
           .maybeSingle();
+        if (result.error) throw result.error;
+      } else if (creatingRef.current) {
+        // Autosave is already creating this report — let it finish (and pick up
+        // the latest data) instead of inserting a duplicate.
+        pendingSaveRef.current = true;
       } else {
         // Create new report
-        result = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_circuit_breaker_electronic_trip_ats") // Use new table name
-          .insert(reportPayload)
-          .select()
-          .maybeSingle();
-
-        // Create asset entry for the new report
-        let newReportId = result.data?.id;
-        if (!result.error && !newReportId) {
-          // Fallback fetch if RLS prevents returning row on insert
-          const { data: fetched } = await supabase
+        creatingRef.current = true;
+        try {
+          result = await supabase
             .schema("neta_ops")
-            .from("low_voltage_circuit_breaker_electronic_trip_ats")
-            .select("id")
-            .eq("job_id", jobId)
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          newReportId = fetched?.id;
-        }
-        if (newReportId) {
-          const assetData = {
-            name: getAssetName(
-              reportSlug,
-              formData.identifier || formData.eqptLocation || "",
-            ), // Updated name
-            file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`, // Updated path
-            user_id: user.id,
-          };
-
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
+            .from("low_voltage_circuit_breaker_electronic_trip_ats") // Use new table name
+            .insert(reportPayload)
             .select()
             .maybeSingle();
-
-          if (assetError) throw assetError;
-
-          // Link asset to job
-          if (assetResult?.id) {
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
+          if (result.error) {
+            creatingRef.current = false;
+            throw result.error;
           }
+
+          // Create asset entry for the new report
+          let newReportId = result.data?.id;
+          if (!newReportId) {
+            // Fallback fetch if RLS prevents returning row on insert
+            const { data: fetched } = await supabase
+              .schema("neta_ops")
+              .from("low_voltage_circuit_breaker_electronic_trip_ats")
+              .select("id")
+              .eq("job_id", jobId)
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            newReportId = fetched?.id;
+          }
+          if (newReportId) {
+            // Set the ref immediately so a pending autosave routes to UPDATE.
+            reportIdRef.current = newReportId;
+            setCurrentReportId(newReportId);
+            savedReportId = newReportId;
+            const assetData = {
+              name: getAssetName(
+                reportSlug,
+                formData.identifier || formData.eqptLocation || "",
+              ), // Updated name
+              file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`, // Updated path
+              user_id: user.id,
+            };
+
+            const { data: assetResult, error: assetError } = await supabase
+              .schema("neta_ops")
+              .from("assets")
+              .insert(assetData)
+              .select()
+              .maybeSingle();
+
+            if (assetError) throw assetError;
+
+            // Link asset to job
+            if (assetResult?.id) {
+              await supabase.schema("neta_ops").from("job_assets").insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
+            }
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
 
-      if (result.error) throw result.error;
-
       setJustSaved(true);
-      if (!currentReportId) {
+      // Only a genuine new insert navigates / leaves edit mode.
+      if (savedReportId) {
         setIsEditing(false);
-        const newId = result.data?.id;
-        if (newId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
+          replace: true,
+        });
       }
     } catch (error: any) {
       console.error("Error saving report:", error);

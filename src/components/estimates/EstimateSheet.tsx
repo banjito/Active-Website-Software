@@ -5763,10 +5763,12 @@ export default function EstimateSheet({
         <div class="amp-section" style="margin: 8px 0;">
           <span id="neta-standard-text">${NETA_OPTIONS.find((o) => o.value === netaStandard)?.text || "[Select NETA Standard]"}</span>
         </div>
-        <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <b style="font-size: 1.15em;">Scope</b>
+        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
+          <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
+            <b style="font-size: 1.15em;">Scope</b>
+          </div>
+          ${sovTableHtml}
         </div>
-        ${sovTableHtml}
         <div class="amp-section" style="margin-top: 12px;"><b style="font-size: 1.15em;">Pricing & Terms</b></div>
         ${
           (singleLetterScopeQuantity || 1) > 1

@@ -18,6 +18,7 @@ import {
 import IssueNotes from "@/components/feedback/IssueNotes";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Badge } from "@/components/ui/Badge";
 
 type Issue = {
   id: string;
@@ -91,6 +92,57 @@ const SORT_BY_OPTIONS = [
   { value: "date", label: "Date Added" },
   { value: "priority", label: "Priority" },
 ] as const;
+
+const STATUS_BADGE: Record<
+  Issue["status"],
+  { label: string; className: string }
+> = {
+  open: {
+    label: "Open",
+    className:
+      "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
+  },
+  in_progress: {
+    label: "Ongoing",
+    className:
+      "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300",
+  },
+  paused: {
+    label: "Paused",
+    className:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  },
+  resolved: {
+    label: "Resolved",
+    className:
+      "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300",
+  },
+  closed: {
+    label: "Closed",
+    className:
+      "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
+  },
+  duplicate: {
+    label: "Duplicate",
+    className:
+      "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
+  },
+  wontfix: {
+    label: "Won't Fix",
+    className:
+      "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+  },
+};
+
+const StatusBadge = ({ status }: { status: Issue["status"] }) => {
+  const config = STATUS_BADGE[status];
+  return (
+    <Badge variant="secondary" className={config.className}>
+      {status === "paused" && <span className="mr-1">⏸</span>}
+      {config.label}
+    </Badge>
+  );
+};
 
 const formatDuration = (
   startIso?: string | null,
@@ -1448,12 +1500,7 @@ const FeaturesFixesPage: React.FC = () => {
                             </button>
                           </td>
                           <td className="py-3 px-4">
-                            <span
-                              className={`text-sm ${issue.status === "paused" ? "text-amber-600 dark:text-amber-400 font-medium" : "text-neutral-700 dark:text-neutral-300"}`}
-                            >
-                              {issue.status === "paused" && "⏸ "}
-                              {issue.status}
-                            </span>
+                            <StatusBadge status={issue.status} />
                           </td>
                           <td className="py-3 px-4 min-w-[7.5rem]">
                             {isAdmin || user?.id === issue.reporter_id ? (
@@ -2250,12 +2297,6 @@ const FeaturesFixesPage: React.FC = () => {
                         Delete
                       </button>
                     )}
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-neutral-200 dark:bg-dark-200 text-neutral-900 dark:text-white rounded-md hover:bg-neutral-300 dark:hover:bg-dark-100"
-                    >
-                      Close
-                    </button>
                   </div>
                 </div>
               </div>

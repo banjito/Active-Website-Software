@@ -5288,7 +5288,11 @@ export default function JobDetail() {
   // same output as the in-app Print button. The function resolves the job +
   // customer itself, so we only pass asset ids. Renders sequentially.
   const publishReportAssetsViaEdge = async (
-    reportAssets: { id: string; file_url?: string | null; status?: string | null }[],
+    reportAssets: {
+      id: string;
+      file_url?: string | null;
+      status?: string | null;
+    }[],
     onStatus?: (status: string) => void,
   ): Promise<{ done: number; failed: number; errors: string[] }> => {
     const targets = reportAssets.filter(
@@ -5372,7 +5376,9 @@ export default function JobDetail() {
     assets: { id: string; file_url?: string | null; status?: string | null }[],
   ) => {
     const customerId = customer?.id || job?.customers?.id;
-    const reportAssets = assets.filter((a) => a.file_url?.startsWith("report:"));
+    const reportAssets = assets.filter((a) =>
+      a.file_url?.startsWith("report:"),
+    );
     if (!customerId || !id || reportAssets.length === 0) {
       if (!customerId && reportAssets.length > 0) {
         console.warn(
@@ -10299,12 +10305,22 @@ ${newBodyHtml}
                                 <Button
                                   onClick={handlePublishReportsToPortal}
                                   disabled={isPublishingPortal || isPrinting}
-                                  variant="secondary"
+                                  variant="ghost"
+                                  className="bg-transparent border border-neutral-400 dark:border-white hover:bg-neutral-500/10"
                                   title="Render and upload these reports so the customer can view them in the portal"
                                 >
-                                  {isPublishingPortal
-                                    ? "Publishing…"
-                                    : "Publish to Portal"}
+                                  {isPublishingPortal ? (
+                                    "Publishing…"
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5">
+                                      Publish on
+                                      <img
+                                        src="/ampOSACCESS-logo.svg"
+                                        alt="ampOS ACCESS"
+                                        className="h-6 translate-y-[2px] w-auto dark:invert"
+                                      />
+                                    </span>
+                                  )}
                                 </Button>
                               )}
                             </div>
@@ -10334,18 +10350,29 @@ ${newBodyHtml}
                           jobAssets.filter(
                             (asset) =>
                               asset.file_url?.startsWith("report:") &&
-                              String(asset.status || "").toLowerCase() === "sent",
+                              String(asset.status || "").toLowerCase() ===
+                                "sent",
                           ).length > 0 && (
                             <div className="mt-4 space-y-2">
                               <Button
                                 onClick={handlePublishReportsToPortal}
                                 disabled={isPublishingPortal || isPrinting}
-                                variant="secondary"
+                                variant="ghost"
                                 title="Render and upload these reports so the customer can view them in the portal"
+                                className="bg-transparent border border-neutral-400 dark:border-white hover:bg-neutral-500/10"
                               >
-                                {isPublishingPortal
-                                  ? "Publishing…"
-                                  : "Publish to Portal"}
+                                {isPublishingPortal ? (
+                                  "Publishing…"
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    Publish on
+                                    <img
+                                      src="/ampOSACCESS-logo.svg"
+                                      alt="ampOS ACCESS"
+                                      className="h-6 translate-y-[2px] w-auto dark:invert"
+                                    />
+                                  </span>
+                                )}
                               </Button>
                               {isPublishingPortal && (
                                 <p className="text-sm text-neutral-600 dark:text-white">

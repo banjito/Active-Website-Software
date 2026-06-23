@@ -137,6 +137,8 @@ export default function CustomerDetail() {
   const [portalInviteSending, setPortalInviteSending] = useState(false);
   const [contactPopupOpen, setContactPopupOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
+  const [isDeletingContact, setIsDeletingContact] = useState(false);
 
   // Interaction notes state
   const [notes, setNotes] = useState<
@@ -500,6 +502,82 @@ export default function CustomerDetail() {
     setContactPopupOpen(true);
   }
 
+  async function handleDeleteContact() {
+    if (!contactToDelete || isDeletingContact) return;
+
+    const contactEmail = contactToDelete.email?.trim().toLowerCase();
+
+    try {
+      setIsDeletingContact(true);
+
+      // Revoke any customer-portal (ampOS ACCESS) access tied to this contact's
+      // email before removing the contact record. Best-effort: if it fails we
+      // surface a warning but still delete the contact.
+      let portalRevokeFailed = false;
+      if (contactEmail && customer) {
+        try {
+          const { data, error } = await supabase.functions.invoke(
+            "customer-portal-revoke",
+            { body: { email: contactEmail, customerId: customer.id } },
+          );
+          if (error) {
+            let detail = error.message;
+            const ctx = (error as { context?: Response }).context;
+            if (ctx && typeof ctx.json === "function") {
+              try {
+                const body = await ctx.json();
+                if (body?.error) detail = body.error;
+              } catch {
+                /* response had no JSON body */
+              }
+            }
+            throw new Error(detail);
+          }
+          const result = data as { error?: string } | null;
+          if (result?.error) throw new Error(result.error);
+        } catch (revokeErr) {
+          portalRevokeFailed = true;
+          console.error("Error revoking portal access:", revokeErr);
+        }
+      }
+
+      const { error } = await supabase
+        .schema("common")
+        .from("contacts")
+        .delete()
+        .eq("id", contactToDelete.id);
+
+      if (error) throw error;
+
+      setContactToDelete(null);
+      fetchCustomerData();
+
+      if (portalRevokeFailed) {
+        toast({
+          title: "Contact removed",
+          description:
+            "The contact was removed, but their customer-portal access could not be revoked automatically. Please verify it manually.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Contact removed and portal access revoked",
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove contact",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingContact(false);
+    }
+  }
+
   async function handleCategoryChange(categoryId: string | null) {
     if (!id) return;
 
@@ -815,6 +893,17 @@ export default function CustomerDetail() {
                       {contact.email}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setContactToDelete(contact);
+                    }}
+                    className="ml-auto self-start text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+                    title="Remove contact"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               ))}
               {contacts.length === 0 && (
@@ -1039,6 +1128,17 @@ export default function CustomerDetail() {
                             {contact.email}
                           </p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setContactToDelete(contact);
+                          }}
+                          className="ml-auto self-start text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+                          title="Remove contact"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     ))}
                     {contacts.length === 0 && (
@@ -1089,6 +1189,17 @@ export default function CustomerDetail() {
                                 {contact.email}
                               </p>
                             </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setContactToDelete(contact);
+                              }}
+                              className="ml-auto self-start text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+                              title="Remove contact"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -2107,9 +2218,6 @@ export default function CustomerDetail() {
                     );
                   })}
                 </div>
-                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                  Leave empty to inherit from the customer's divisions.
-                </p>
               </div>
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
@@ -2367,6 +2475,49 @@ export default function CustomerDetail() {
                 </button>
               </div>
             </form>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Delete Contact Confirmation Dialog */}
+      <Dialog
+        open={!!contactToDelete}
+        onClose={() => !isDeletingContact && setContactToDelete(null)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-sm rounded bg-white dark:bg-dark-150 p-6">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
+              Remove Contact
+            </Dialog.Title>
+            <div className="mt-2">
+              <p className="text-sm text-neutral-500 dark:text-neutral-300">
+                Are you sure you want to remove{" "}
+                <span className="font-medium text-neutral-700 dark:text-white">
+                  {contactToDelete?.first_name} {contactToDelete?.last_name}
+                </span>
+                ? This action cannot be undone.
+              </p>
+            </div>
+            <div className="mt-4 flex space-x-3">
+              <button
+                type="button"
+                onClick={handleDeleteContact}
+                disabled={isDeletingContact}
+                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 dark:bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isDeletingContact ? "Removing..." : "Remove"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactToDelete(null)}
+                disabled={isDeletingContact}
+                className="inline-flex justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-60"
+              >
+                Cancel
+              </button>
+            </div>
           </Dialog.Panel>
         </div>
       </Dialog>

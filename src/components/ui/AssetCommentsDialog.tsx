@@ -166,6 +166,32 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
         }
       }
 
+      // Customer flags from the ampOS ACCESS portal (third source). These don't
+      // change the report's status — they surface here as their own entries.
+      const { data: flagData, error: flagError } = await supabase
+        .schema("common")
+        .from("report_flags")
+        .select("id, reason, flagged_by, created_at, status")
+        .eq("asset_id", assetId)
+        .order("created_at", { ascending: false });
+
+      if (!flagError && flagData) {
+        flagData.forEach((flag) => {
+          commentsList.push({
+            id: flag.id,
+            title:
+              flag.status === "resolved"
+                ? "Customer flag (resolved)"
+                : "Customer flag",
+            review_comments: flag.reason || "",
+            reviewed_by: flag.flagged_by,
+            reviewed_at: flag.created_at,
+            status: "flagged",
+            report_type: "ampOS ACCESS",
+          });
+        });
+      }
+
       // Sort by reviewed_at descending
       commentsList.sort((a, b) => {
         const dateA = a.reviewed_at ? new Date(a.reviewed_at).getTime() : 0;
@@ -198,6 +224,8 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
       case "in-review":
       case "ready_for_review":
         return "text-blue-600 dark:text-blue-400";
+      case "flagged":
+        return "text-yellow-600 dark:text-yellow-400";
       default:
         return "text-neutral-600 dark:text-white";
     }
@@ -213,6 +241,8 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
       case "in-review":
       case "ready_for_review":
         return "👀";
+      case "flagged":
+        return "🚩";
       default:
         return "📝";
     }

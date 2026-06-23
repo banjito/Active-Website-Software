@@ -40,6 +40,23 @@ export interface ReportAsset {
   job_title: string | null;
 }
 
+/**
+ * A "Report Packet" — the customer-facing view of a delivered neta_ops.deliverables
+ * row. `report_asset_ids` are the asset ids bundled into the packet; the portal
+ * resolves each one against the customer's own report-assets, so a packet never
+ * exposes a report the customer couldn't already open.
+ */
+export interface Deliverable {
+  id: string;
+  job_id: string;
+  name: string | null;
+  description: string | null;
+  status: string | null;
+  delivered_at: string | null;
+  created_at: string | null;
+  report_asset_ids: string[] | null;
+}
+
 export interface Company {
   id: string;
   name: string | null;
@@ -257,6 +274,26 @@ export async function getReportAssetsForJob(
   return all.filter((r) => r.job_id === jobId);
 }
 
+/**
+ * Delivered report packets for the customer, with their job + bundled asset ids.
+ * Backed by the common.customer_deliverables() SECURITY DEFINER function.
+ */
+export async function getDeliverables(): Promise<Deliverable[]> {
+  const { data, error } = await supabase
+    .schema("common")
+    .rpc("customer_deliverables");
+  if (error) throw error;
+  return (data ?? []) as Deliverable[];
+}
+
+/** Report packets for a single job. */
+export async function getDeliverablesForJob(
+  jobId: string,
+): Promise<Deliverable[]> {
+  const all = await getDeliverables();
+  return all.filter((d) => d.job_id === jobId);
+}
+
 /** Count report-assets per job id, for the jobs list. */
 export function countAssetsByJob(
   assets: ReportAsset[],
@@ -296,6 +333,40 @@ export async function getReportDownloadUrl(assetId: string): Promise<string> {
   const url = (data as { url?: string } | null)?.url;
   if (!url) throw new Error("No download URL returned.");
   return url;
+}
+
+/**
+ * Flag a report-asset for review. Backed by the common.flag_report() SECURITY
+ * DEFINER function, which re-checks (via customer_can_select_asset) that the
+ * report belongs to the signed-in customer before recording the flag. Flagging
+ * does NOT change the report's status — it stays visible in the portal. After
+ * the flag is recorded, fire a best-effort notification to AMP staff.
+ */
+export async function flagReport(
+  assetId: string,
+  reason: string,
+): Promise<void> {
+  const { error } = await supabase
+    .schema("common")
+    .rpc("flag_report", { p_asset_id: assetId, p_reason: reason });
+  if (error) throw error;
+
+  // Notify staff (fire-and-forget — never block or fail the flag on this).
+  const fnUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (fnUrl && anonKey) {
+    fetch(
+      `${fnUrl.replace(/\/rest\/v1.*$/, "")}/functions/v1/customer-report-flag-notification`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify({ assetId, reason }),
+      },
+    ).catch(() => {});
+  }
 }
 
 /**

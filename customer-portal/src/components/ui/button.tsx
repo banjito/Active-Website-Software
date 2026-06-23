@@ -8,7 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "sheen bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:brightness-110",
+          "bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:brightness-110",
         outline:
           "border border-input bg-background/60 hover:border-primary/40 hover:bg-accent hover:text-accent-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -23,6 +23,11 @@ const buttonVariants = cva(
         icon: "h-10 w-10",
       },
     },
+    // The sheen sweep only reads well on wider buttons; on a square icon button
+    // it looks like a flash, so limit it to the non-icon sizes.
+    compoundVariants: [
+      { variant: "default", size: ["default", "sm", "lg"], class: "sheen" },
+    ],
     defaultVariants: { variant: "default", size: "default" },
   },
 );

@@ -41,6 +41,7 @@ import {
   Clock1,
   History,
   UserCheck,
+  Flag,
 } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { compareLinkedAssetFolderLabels } from "@/utils/sortUtils";
@@ -123,6 +124,20 @@ export function ReportApprovalWorkflow({
     sent: 0,
   });
 
+  // Open customer flags (from the ampOS ACCESS portal), keyed by asset/report id.
+  // A flagged report keeps its approved/sent status but is surfaced in the
+  // Rejected/Issue tab with a yellow "Flagged" badge until staff resolve it.
+  interface OpenFlag {
+    id: string;
+    asset_id: string;
+    reason: string;
+    flagged_by: string;
+    created_at: string;
+  }
+  const [flagsByAsset, setFlagsByAsset] = useState<Record<string, OpenFlag[]>>(
+    {},
+  );
+
   // Role-based access control
   const [userRole, setUserRole] = useState<string>("");
   const [userPermissions, setUserPermissions] = useState<{
@@ -150,6 +165,7 @@ export function ReportApprovalWorkflow({
     setReportsOffset(0);
     fetchReports(0);
     fetchMetrics();
+    loadOpenFlags();
     if (user?.user_metadata?.role) {
       const role = user.user_metadata.role as string;
       setUserRole(role);
@@ -225,6 +241,150 @@ export function ReportApprovalWorkflow({
     });
     return list;
   })();
+
+  // Fetch open customer flags (optionally scoped to a set of asset ids) as a
+  // map keyed by asset/report id. Best-effort: a missing table just yields {}.
+  const fetchOpenFlagsMap = async (
+    restrictIds?: string[],
+  ): Promise<Record<string, OpenFlag[]>> => {
+    try {
+      let q = supabase
+        .schema("common")
+        .from("report_flags")
+        .select("id, asset_id, reason, flagged_by, created_at")
+        .eq("status", "open");
+      if (restrictIds && restrictIds.length > 0) {
+        q = q.in("asset_id", restrictIds);
+      }
+      const { data, error } = await q;
+      if (error) {
+        console.warn("[ReportApproval] Failed to load report flags:", error);
+        return {};
+      }
+      const map: Record<string, OpenFlag[]> = {};
+      (data || []).forEach((f: OpenFlag) => {
+        (map[f.asset_id] ||= []).push(f);
+      });
+      return map;
+    } catch (e) {
+      console.warn("[ReportApproval] report_flags query error:", e);
+      return {};
+    }
+  };
+
+  // Keep the badge map in sync so flagged reports show the yellow badge on any tab.
+  const loadOpenFlags = async () => {
+    setFlagsByAsset(await fetchOpenFlagsMap());
+  };
+
+  // Map a neta_ops.assets row to the TechnicalReport shape used by the list
+  // (mirrors the global-branch mapping below). Used to inject flagged-but-
+  // approved reports into the Rejected/Issue tab without changing their status.
+  const assetToReport = (asset: any): TechnicalReport => {
+    const urlParts = (asset.file_url || "")
+      .replace("report:/jobs/", "")
+      .split("/");
+    const assetJobId = urlParts.length >= 1 ? urlParts[0] : "";
+    const reportSlug = urlParts.length >= 2 ? urlParts[1] : "";
+    const reportType = reportSlug
+      .split("-")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    return {
+      id: asset.id,
+      title: asset.name || reportType || "Untitled Report",
+      report_type: reportSlug,
+      status:
+        asset.status === "ready_for_review" ? "submitted" : asset.status,
+      job_id: assetJobId,
+      submitted_at: asset.submitted_at || asset.created_at,
+      approved_at: asset.approved_at,
+      sent_at: asset.sent_at,
+      created_at: asset.created_at,
+      report_data: { file_url: asset.file_url, urgency: asset.urgency },
+    } as TechnicalReport;
+  };
+
+  // On the Rejected/Issue tab, also surface reports that are still approved/sent
+  // but have an open customer flag, so staff can triage them in one place. They
+  // keep their real status (and the customer keeps seeing them) — we just pull
+  // them into this view and badge them. `restrictIds` scopes to a job in job mode.
+  const augmentWithFlaggedReports = async (
+    base: TechnicalReport[],
+    restrictIds?: string[],
+  ): Promise<TechnicalReport[]> => {
+    if (activeTab !== "rejected") return base;
+    const flagMap = await fetchOpenFlagsMap(restrictIds);
+    const baseIds = new Set(base.map((r) => r.id));
+    const missingIds = Object.keys(flagMap).filter((id) => !baseIds.has(id));
+    if (missingIds.length === 0) return base;
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("assets")
+      .select(
+        "id, name, file_url, status, created_at, submitted_at, approved_at, sent_at, urgency, substation",
+      )
+      .in("id", missingIds);
+    if (error || !data) return base;
+    const flagged = data.map(assetToReport);
+    return [...flagged, ...base];
+  };
+
+  // Resolve every open flag on a report; once all are resolved it drops out of
+  // the Rejected/Issue view and the badge clears. The report's status is untouched.
+  const handleResolveFlags = async (reportId: string) => {
+    const flags = flagsByAsset[reportId] || [];
+    if (flags.length === 0) return;
+    try {
+      for (const f of flags) {
+        const { error } = await supabase
+          .schema("common")
+          .rpc("resolve_report_flag", { p_flag_id: f.id, p_comment: null });
+        if (error) throw error;
+      }
+      toast({
+        title: "Flag resolved",
+        description: "The customer flag has been cleared.",
+        variant: "success",
+      });
+      await loadOpenFlags();
+      fetchReports(0);
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: `Failed to resolve flag: ${e?.message || "Unknown error"}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Yellow "Flagged" badge (+ resolve control for reviewers) shown next to a
+  // report's status badge when it has open customer flags.
+  const renderFlaggedBadge = (reportId: string) => {
+    const flags = flagsByAsset[reportId] || [];
+    if (flags.length === 0) return null;
+    return (
+      <span className="inline-flex items-center gap-1">
+        <span
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
+          title="Flagged by a customer in ampOS ACCESS"
+        >
+          <Flag className="w-3 h-3" />
+          Flagged{flags.length > 1 ? ` (${flags.length})` : ""}
+        </span>
+        {userPermissions.canReview && (
+          <button
+            type="button"
+            onClick={() => handleResolveFlags(reportId)}
+            className="text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 underline"
+            title="Mark the customer flag(s) as resolved"
+          >
+            Resolve
+          </button>
+        )}
+      </span>
+    );
+  };
 
   const fetchReports = async (loadOffset: number = 0) => {
     const isLoadMore = loadOffset > 0;
@@ -485,7 +645,7 @@ export function ReportApprovalWorkflow({
         if (isLoadMore) {
           setReports((prev) => [...prev, ...merged]);
         } else {
-          setReports(merged);
+          setReports(await augmentWithFlaggedReports(merged, allLinkedIds));
         }
 
         // Resolve substation/location per report using underlying saved report rows, similar to Job Details
@@ -797,7 +957,7 @@ export function ReportApprovalWorkflow({
           if (isLoadMore) {
             setReports((prev) => [...prev, ...reports]);
           } else {
-            setReports(reports);
+            setReports(await augmentWithFlaggedReports(reports));
           }
           console.log(
             "[ReportApproval] Global mode - Reports count:",
@@ -2470,6 +2630,7 @@ export function ReportApprovalWorkflow({
                                       ) : null;
                                     })()}
                                     {getStatusBadge(report.status)}
+                                    {renderFlaggedBadge(report.id)}
                                   </div>
                                   <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
                                     <span>
@@ -2681,6 +2842,7 @@ export function ReportApprovalWorkflow({
                               ) : null;
                             })()}
                             {getStatusBadge(report.status)}
+                            {renderFlaggedBadge(report.id)}
                           </div>
                           <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
                             <span>

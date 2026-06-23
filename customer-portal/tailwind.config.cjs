@@ -71,8 +71,8 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        soft: "0 1px 2px hsl(24 30% 10% / 0.04), 0 8px 24px -12px hsl(24 30% 10% / 0.12)",
-        lift: "0 1px 2px hsl(24 30% 10% / 0.05), 0 18px 40px -16px hsl(24 60% 30% / 0.25)",
+        soft: "0 1px 1px hsl(var(--shadow-color) / 0.04), 0 4px 12px -8px hsl(var(--shadow-color) / 0.10)",
+        lift: "0 1px 1px hsl(var(--shadow-color) / 0.05), 0 8px 20px -14px hsl(var(--shadow-color) / 0.18)",
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",

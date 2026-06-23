@@ -44,9 +44,13 @@ export function ReportRow({
       setFlagOpen(false);
       setFlagReason("");
     } catch (e) {
-      setFlagError(
-        e instanceof Error ? e.message : "Could not submit your flag.",
-      );
+      const msg =
+        (e instanceof Error ? e.message : null) ??
+        (typeof e === "object" && e && "message" in e
+          ? String((e as { message: unknown }).message)
+          : null) ??
+        "Could not submit your flag.";
+      setFlagError(msg);
     } finally {
       setFlagging(false);
     }

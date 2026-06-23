@@ -46,8 +46,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON common.report_flags TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON common.report_flags TO service_role;
 
 -- ── RPC: customer flags a report ────────────────────────────────────────────────
--- Re-checks that the asset is one the signed-in customer may actually see
--- (approved/sent + belongs to their job) via common.customer_can_select_asset().
+-- Re-checks that the asset is visible to the signed-in customer by using the
+-- *same* join path as common.customer_report_assets() (via job_assets), rather
+-- than common.customer_can_select_asset() which requires an asset_reports →
+-- technical_reports link that most report-assets don't have.
 CREATE OR REPLACE FUNCTION common.flag_report(p_asset_id uuid, p_reason text)
 RETURNS uuid
 LANGUAGE plpgsql
@@ -62,7 +64,18 @@ BEGIN
     RAISE EXCEPTION 'A reason is required to flag a report.';
   END IF;
 
-  IF NOT common.customer_can_select_asset(p_asset_id) THEN
+  -- Match the visibility logic of common.customer_report_assets() so that
+  -- every report the portal lists can actually be flagged.
+  IF NOT EXISTS (
+    SELECT 1
+    FROM neta_ops.jobs j
+    JOIN neta_ops.job_assets ja ON ja.job_id = j.id
+    JOIN neta_ops.assets a ON a.id = ja.asset_id
+    WHERE a.id = p_asset_id
+      AND j.customer_id = common.current_customer_id()
+      AND j.deleted_at IS NULL
+      AND lower(coalesce(a.status, '')) IN ('approved', 'sent')
+  ) THEN
     RAISE EXCEPTION 'Not authorized to flag this report.';
   END IF;
 

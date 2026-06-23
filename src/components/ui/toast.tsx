@@ -35,13 +35,13 @@ const ToastContainer: React.FC<ToastProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case "success":
-        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+        return "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800";
       case "warning":
-        return "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800";
+        return "bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800";
       case "destructive":
-        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+        return "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800";
       case "info":
-        return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
+        return "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800";
       default:
         return "bg-white dark:bg-dark-150 border-neutral-200 dark:border-neutral-700";
     }

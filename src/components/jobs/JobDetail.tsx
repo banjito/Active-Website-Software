@@ -7978,7 +7978,7 @@ ${newBodyHtml}
               </div>
             </CardHeader>
 
-            <CardContent className="p-6">
+            <CardContent className="p-6 pt-8">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -8100,7 +8100,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-y text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter job description"
                       />
                     </div>
@@ -8126,7 +8126,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-y text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter physical site address"
                       />
                     </div>
@@ -8405,7 +8405,7 @@ ${newBodyHtml}
               </form>
             </CardContent>
 
-            <CardFooter className="border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 px-6 py-4">
+            <CardFooter className="border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 px-6 pt-6 pb-4">
               <div className="flex justify-between items-center w-full">
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   * Required fields

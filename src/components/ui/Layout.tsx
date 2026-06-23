@@ -454,6 +454,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const searchParams = new URLSearchParams(location.search);
+  // Report PDF export (Browserless ?print=true) renders with SCREEN media, so
+  // @media-print rules (print:hidden) never apply. Gate report chrome on this
+  // flag so the "Back to Job" button doesn't leak into the exported PDF.
+  const isPrintExport = searchParams.get("print") === "true";
   const isEmbed = searchParams.get("embed") === "true";
   const isEmbedded =
     searchParams.get("embedded") === "true" ||
@@ -732,7 +736,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
             )}
             {/* Back to Job button - only show on report pages */}
-            {isReportPage && jobId && (
+            {isReportPage && jobId && !isPrintExport && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -892,7 +896,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               >
                 <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
               </button>
-              {isReportPage && jobId && (
+              {isReportPage && jobId && !isPrintExport && (
                 <Button
                   variant="ghost"
                   size="sm"

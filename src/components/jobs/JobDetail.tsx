@@ -7974,9 +7974,6 @@ ${newBodyHtml}
                   <CardTitle className="text-xl text-neutral-900 dark:text-white">
                     Edit Job Details
                   </CardTitle>
-                  <CardDescription className="text-neutral-600 dark:text-white">
-                    Update job information and settings
-                  </CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -7991,14 +7988,7 @@ ${newBodyHtml}
               >
                 {/* Basic Information Section */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
-                    <div className="w-1 h-5 bg-[#f26722] rounded-full"></div>
-                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-                      Basic Information
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     <div>
                       <label
                         htmlFor="job_number"
@@ -8071,7 +8061,7 @@ ${newBodyHtml}
                         placeholder="Enter fireteam lead name"
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                       <label
                         htmlFor="title"
                         className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
@@ -8101,7 +8091,7 @@ ${newBodyHtml}
                       </label>
                       <textarea
                         id="description"
-                        rows={2}
+                        rows={3}
                         value={editFormData?.description || ""}
                         onChange={(e) =>
                           setEditFormData((prev) =>
@@ -8110,7 +8100,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
+                        className="w-full h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-y text-sm"
                         placeholder="Enter job description"
                       />
                     </div>
@@ -8127,7 +8117,7 @@ ${newBodyHtml}
                       </label>
                       <textarea
                         id="site_address"
-                        rows={2}
+                        rows={3}
                         value={editFormData?.site_address || ""}
                         onChange={(e) =>
                           setEditFormData((prev) =>
@@ -8136,7 +8126,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical text-sm"
+                        className="w-full h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-y text-sm"
                         placeholder="Enter physical site address"
                       />
                     </div>
@@ -8152,7 +8142,7 @@ ${newBodyHtml}
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <label
                         htmlFor="status"
@@ -8411,15 +8401,6 @@ ${newBodyHtml}
                       </p>
                     </div>
                   </div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                    <p className="text-xs text-blue-800 dark:text-blue-200">
-                      <strong>Note:</strong> Reports will be tracked against
-                      this timeline. If a report takes longer than the specified
-                      window to send after approval, it will be marked as late
-                      in the submittal tracking KPI.
-                    </p>
-                  </div>
                 </div>
               </form>
             </CardContent>
@@ -8436,8 +8417,8 @@ ${newBodyHtml}
                       variant="outline"
                       onClick={() => setShowDeleteJobConfirm(true)}
                       className="px-4 py-2 text-sm border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      leftIcon={<Trash2 className="h-4 w-4 mr-1.5" />}
                     >
-                      <Trash2 className="h-4 w-4 mr-1.5" />
                       Delete Job
                     </Button>
                   )}
@@ -8449,16 +8430,16 @@ ${newBodyHtml}
                       setEditFormData(null);
                     }}
                     className="px-4 py-2 text-sm border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    leftIcon={<X className="h-4 w-4 mr-1.5" />}
                   >
-                    <X className="h-4 w-4 mr-1.5" />
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     onClick={handleEditSubmit}
                     className="px-4 py-2 text-sm bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                    leftIcon={<Save className="h-4 w-4 mr-1.5" />}
                   >
-                    <Save className="h-4 w-4 mr-1.5" />
                     Save Changes
                   </Button>
                 </div>

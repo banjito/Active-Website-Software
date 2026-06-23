@@ -32,6 +32,40 @@ const corsHeaders = {
 const BUCKET = 'customer-reports'
 const TOKEN_TTL_SECONDS = 600
 
+// Staff gate — copied from customer-portal-invite so the two agree. This is a
+// POSITIVE check: a single auth account can be flagged account_type=customer
+// (e.g. staff who invited their own email to test the portal) yet still be an
+// employee, so we must not reject on "is a customer" alone.
+const EMPLOYEE_ROLES = new Set([
+  'admin',
+  'manager',
+  'supervisor',
+  'neta technician',
+  'technician',
+  'sales',
+  'estimator',
+  'engineering',
+  'office admin',
+  'hr_manager',
+  'hr_personnel',
+])
+
+// deno-lint-ignore no-explicit-any
+function isEmployee(user: any): boolean {
+  const email = String(user?.email || '').toLowerCase()
+  const app = user?.app_metadata || {}
+  const meta = user?.user_metadata || {}
+  const role = String(app.role || meta.role || '').toLowerCase()
+  const accountType = String(app.account_type || meta.account_type || '').toLowerCase()
+  const userType = String(app.user_type || meta.user_type || '').toLowerCase()
+  return (
+    email.endsWith('@ampqes.com') ||
+    accountType === 'employee' ||
+    userType === 'employee' ||
+    EMPLOYEE_ROLES.has(role)
+  )
+}
+
 function json(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -132,22 +166,8 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await userClient.auth.getUser(authToken)
     if (userError || !user) return json({ error: 'Invalid or expired token' }, 401)
 
-    // Block customer-portal accounts; staff (no/other account_type) are allowed.
-    // Match the sibling functions: check both app_metadata and user_metadata.
-    const accountType = String(
-      (user.app_metadata as Record<string, unknown>)?.account_type ||
-        (user.user_metadata as Record<string, unknown>)?.account_type ||
-        '',
-    ).toLowerCase()
-    console.log('publish-report-pdf caller:', {
-      id: user.id,
-      email: user.email,
-      accountType,
-      app_metadata: user.app_metadata,
-    })
-    if (accountType === 'customer') {
-      return json({ error: 'Not authorized (customer account)' }, 403)
-    }
+    // Staff-only (employees may also carry a customer flag — see isEmployee).
+    if (!isEmployee(user)) return json({ error: 'Employee access required' }, 403)
 
     const body = await req.json().catch(() => ({}))
     const assetId = String(body?.assetId || body?.asset_id || '').trim()

@@ -10305,15 +10305,15 @@ ${newBodyHtml}
                                 <Button
                                   onClick={handlePublishReportsToPortal}
                                   disabled={isPublishingPortal || isPrinting}
-                                  variant="ghost"
-                                  className="bg-transparent border border-neutral-400 dark:border-white hover:bg-neutral-500/10"
+                                  variant="secondary"
+                                  className="bg-transparent"
                                   title="Render and upload these reports so the customer can view them in the portal"
                                 >
                                   {isPublishingPortal ? (
                                     "Publishing…"
                                   ) : (
                                     <span className="inline-flex items-center gap-1.5">
-                                      Publish on
+                                      Republish on
                                       <img
                                         src="/ampOSACCESS-logo.svg"
                                         alt="ampOS ACCESS"
@@ -10357,15 +10357,15 @@ ${newBodyHtml}
                               <Button
                                 onClick={handlePublishReportsToPortal}
                                 disabled={isPublishingPortal || isPrinting}
-                                variant="ghost"
+                                variant="secondary"
                                 title="Render and upload these reports so the customer can view them in the portal"
-                                className="bg-transparent border border-neutral-400 dark:border-white hover:bg-neutral-500/10"
+                                className="bg-transparent"
                               >
                                 {isPublishingPortal ? (
                                   "Publishing…"
                                 ) : (
                                   <span className="inline-flex items-center gap-1.5">
-                                    Publish on
+                                    Republish on
                                     <img
                                       src="/ampOSACCESS-logo.svg"
                                       alt="ampOS ACCESS"

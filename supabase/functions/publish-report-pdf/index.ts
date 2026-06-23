@@ -131,8 +131,22 @@ serve(async (req) => {
     })
     const { data: { user }, error: userError } = await userClient.auth.getUser(authToken)
     if (userError || !user) return json({ error: 'Invalid or expired token' }, 401)
-    if (user.app_metadata?.account_type === 'customer') {
-      return json({ error: 'Not authorized' }, 403)
+
+    // Block customer-portal accounts; staff (no/other account_type) are allowed.
+    // Match the sibling functions: check both app_metadata and user_metadata.
+    const accountType = String(
+      (user.app_metadata as Record<string, unknown>)?.account_type ||
+        (user.user_metadata as Record<string, unknown>)?.account_type ||
+        '',
+    ).toLowerCase()
+    console.log('publish-report-pdf caller:', {
+      id: user.id,
+      email: user.email,
+      accountType,
+      app_metadata: user.app_metadata,
+    })
+    if (accountType === 'customer') {
+      return json({ error: 'Not authorized (customer account)' }, 403)
     }
 
     const body = await req.json().catch(() => ({}))

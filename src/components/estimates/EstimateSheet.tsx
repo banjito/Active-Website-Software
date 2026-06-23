@@ -32,6 +32,9 @@ import {
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
 import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
+import CopyEstimateToOpportunityModal, {
+  CopyTargetOpportunity,
+} from "./CopyEstimateToOpportunityModal";
 import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
 
 // Styles from the original code
@@ -717,6 +720,8 @@ export default function EstimateSheet({
     | null
   >(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCopyToOpportunityOpen, setIsCopyToOpportunityOpen] =
+    useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [showTravel, setShowTravel] = useState(false);
@@ -2205,6 +2210,126 @@ export default function EstimateSheet({
     } catch (e) {
       console.error("Error duplicating estimate:", e);
       alert("Failed to duplicate estimate");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Copy an existing quote into a DIFFERENT opportunity. The scope, pricing,
+  // and hours are copied unchanged; the client/location/description header
+  // fields are refreshed to match the destination opportunity so the copy is
+  // quote-ready for the new customer.
+  async function copyQuoteToOpportunity(
+    quoteId: string,
+    target: CopyTargetOpportunity,
+  ) {
+    if (!quoteId || !user) return;
+    if (target.id === opportunityId) {
+      alert("That estimate already belongs to this opportunity.");
+      return;
+    }
+
+    const quoteToCopy = quotes.find((q) => q.id === quoteId);
+    if (!quoteToCopy) {
+      alert("Could not find estimate to copy.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      // 1. Fetch the destination opportunity + its customer so we can refresh
+      //    the header fields on the copied estimate.
+      const { data: targetOpp, error: targetOppError } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .select("id, description, customer_id")
+        .eq("id", target.id)
+        .single();
+      if (targetOppError) throw targetOppError;
+
+      let targetCustomerName = "";
+      let targetCustomerAddress = "";
+      if (targetOpp?.customer_id) {
+        const { data: targetCustomer } = await supabase
+          .schema("common")
+          .from("customers")
+          .select("name, company_name, address")
+          .eq("id", targetOpp.customer_id)
+          .single();
+        if (targetCustomer) {
+          targetCustomerName =
+            targetCustomer.company_name || targetCustomer.name || "";
+          targetCustomerAddress = targetCustomer.address || "";
+        }
+      }
+
+      // 2. Clone the estimate data, refreshing the customer-specific fields.
+      let copiedData = quoteToCopy.data;
+      try {
+        const parsed =
+          typeof copiedData === "string"
+            ? JSON.parse(copiedData)
+            : { ...copiedData };
+        parsed.client = targetCustomerName;
+        parsed.location = targetCustomerAddress;
+        parsed.jobDescription = targetOpp?.description || "";
+        copiedData = JSON.stringify(parsed);
+      } catch (e) {
+        console.warn("Could not parse quote data for copy header update:", e);
+      }
+
+      // 3. Determine the next quote version number within the destination.
+      const { data: targetQuotes } = await supabase
+        .schema("business")
+        .from("estimates")
+        .select("quote_number")
+        .eq("opportunity_id", target.id);
+      const existingVersions = (targetQuotes || []).map((q: any) => {
+        const match = q.quote_number?.match(/v(\d+)$/);
+        return match ? parseInt(match[1]) : 0;
+      });
+      const nextVersion = Math.max(...existingVersions, 0) + 1;
+      const newQuoteNumber = `v${nextVersion}`;
+
+      // 4. Insert the copied estimate under the destination opportunity.
+      const copyRecord = {
+        opportunity_id: target.id,
+        data: copiedData,
+        travel_data: quoteToCopy.travel_data,
+        quote_number: newQuoteNumber,
+        user_id: user.id,
+        status: null,
+      };
+
+      const { data: newQuote, error } = await supabase
+        .schema("business")
+        .from("estimates")
+        .insert(copyRecord)
+        .select()
+        .single();
+      if (error) throw error;
+
+      setIsCopyToOpportunityOpen(false);
+
+      // Notify listeners (e.g. the destination opportunity) to refresh.
+      if (newQuote) {
+        window.dispatchEvent(
+          new CustomEvent("estimateSaved", {
+            detail: { opportunityId: target.id, estimateId: newQuote.id },
+          }),
+        );
+      }
+
+      const targetLabel =
+        target.quote_number ||
+        target.title ||
+        target.customer_name ||
+        "the selected opportunity";
+      alert(`Estimate copied to ${targetLabel} as ${newQuoteNumber}.`);
+    } catch (e) {
+      console.error("Error copying estimate to opportunity:", e);
+      alert("Failed to copy estimate to the selected opportunity.");
     } finally {
       setIsSaving(false);
     }
@@ -7002,6 +7127,14 @@ export default function EstimateSheet({
                         Duplicate
                       </Button>
                       <Button
+                        onClick={() => setIsCopyToOpportunityOpen(true)}
+                        disabled={isSaving}
+                        className="bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-1"
+                        leftIcon={<Copy className="h-5 w-5" />}
+                      >
+                        Copy to opportunity
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => {
                           if (
@@ -7056,6 +7189,14 @@ export default function EstimateSheet({
                         leftIcon={<Copy className="h-5 w-5" />}
                       >
                         Duplicate
+                      </Button>
+                      <Button
+                        onClick={() => setIsCopyToOpportunityOpen(true)}
+                        disabled={isSaving}
+                        className="bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-1"
+                        leftIcon={<Copy className="h-5 w-5" />}
+                      >
+                        Copy to opportunity
                       </Button>
                       <Button
                         onClick={() => {
@@ -15376,6 +15517,18 @@ export default function EstimateSheet({
             libraryItem,
           );
           setScopeLibraryPicker(null);
+        }}
+      />
+      <CopyEstimateToOpportunityModal
+        open={isCopyToOpportunityOpen}
+        onClose={() => setIsCopyToOpportunityOpen(false)}
+        currentOpportunityId={opportunityId}
+        isSaving={isSaving}
+        onSelect={(target) => {
+          const quote = quotes[selectedQuoteIndex];
+          if (quote) {
+            copyQuoteToOpportunity(quote.id, target);
+          }
         }}
       />
     </div>

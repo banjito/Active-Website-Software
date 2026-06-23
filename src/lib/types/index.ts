@@ -158,6 +158,7 @@ export interface Opportunity {
   opportunity_type?: OpportunityType;
   documents_stage?: string;
   in_pipeline_projection?: boolean;
+  exclude_from_quoted_total?: boolean;
   subcontractor_agreements?: SubcontractorAgreement[];
 }
 
@@ -195,4 +196,5 @@ export interface OpportunityFormData {
   total_man_hours: string;
   opportunity_type: OpportunityType;
   documents_stage?: string;
+  exclude_from_quoted_total?: boolean;
 }

@@ -15,6 +15,7 @@ interface WeeklyBidItem {
   title: string;
   expectedValue: number;
   created_at: string;
+  excludeFromTotal: boolean;
   opportunity_type:
     | "large_acceptance"
     | "small_acceptance"
@@ -235,6 +236,7 @@ const BidsOverview: React.FC = () => {
               title: o.title ?? "Untitled Opportunity",
               expectedValue: value,
               created_at: o.letter_proposal_date || o.created_at,
+              excludeFromTotal: !!o.exclude_from_quoted_total,
               opportunity_type: inferOpportunityType(o, value),
             };
           });
@@ -252,6 +254,7 @@ const BidsOverview: React.FC = () => {
               title: o.title ?? "Untitled Opportunity",
               expectedValue: value,
               created_at: o.letter_proposal_date || o.created_at,
+              excludeFromTotal: !!o.exclude_from_quoted_total,
               opportunity_type: inferOpportunityType(o, value),
             };
           });
@@ -307,10 +310,65 @@ const BidsOverview: React.FC = () => {
     }).format(amount);
   };
 
-  // Calculate category totals from bid items
+  // Sum of bid values, excluding any flagged as excluded from the quoted total
+  const sumValue = (bids: WeeklyBidItem[]): number =>
+    bids.reduce(
+      (sum, bid) => sum + (bid.excludeFromTotal ? 0 : bid.expectedValue),
+      0,
+    );
+
+  // Persist + optimistically toggle whether a bid counts toward quoted totals
+  const toggleExclude = async (id: string, exclude: boolean) => {
+    setData((prev) => ({
+      thisWeekBids: prev.thisWeekBids.map((b) =>
+        b.id === id ? { ...b, excludeFromTotal: exclude } : b,
+      ),
+      lastWeekBids: prev.lastWeekBids.map((b) =>
+        b.id === id ? { ...b, excludeFromTotal: exclude } : b,
+      ),
+    }));
+    setAllWeeks((prev) =>
+      prev.map((g) => {
+        const items = g.items.map((b) =>
+          b.id === id ? { ...b, excludeFromTotal: exclude } : b,
+        );
+        return { ...g, items, totalValue: sumValue(items) };
+      }),
+    );
+
+    const { error: updateError } = await supabase
+      .schema("business")
+      .from("opportunities")
+      .update({ exclude_from_quoted_total: exclude })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Failed to update exclude_from_quoted_total:", updateError);
+      // Revert optimistic change on failure
+      setData((prev) => ({
+        thisWeekBids: prev.thisWeekBids.map((b) =>
+          b.id === id ? { ...b, excludeFromTotal: !exclude } : b,
+        ),
+        lastWeekBids: prev.lastWeekBids.map((b) =>
+          b.id === id ? { ...b, excludeFromTotal: !exclude } : b,
+        ),
+      }));
+      setAllWeeks((prev) =>
+        prev.map((g) => {
+          const items = g.items.map((b) =>
+            b.id === id ? { ...b, excludeFromTotal: !exclude } : b,
+          );
+          return { ...g, items, totalValue: sumValue(items) };
+        }),
+      );
+    }
+  };
+
+  // Calculate category totals from bid items (excludes flagged bids)
   const getCategoryTotals = (bids: WeeklyBidItem[]): CategoryTotals => {
     return bids.reduce(
       (acc, bid) => {
+        if (bid.excludeFromTotal) return acc;
         const type = bid.opportunity_type || "other";
         acc[type] = (acc[type] || 0) + bid.expectedValue;
         return acc;
@@ -496,11 +554,12 @@ const BidsOverview: React.FC = () => {
           title: o.title ?? "Untitled Opportunity",
           expectedValue: value,
           created_at: dateToUse, // Store the date used for grouping as the reference date
+          excludeFromTotal: !!o.exclude_from_quoted_total,
           opportunity_type: inferType(o, value),
         };
         if (!map[key]) map[key] = { range: key, items: [], totalValue: 0 };
         map[key].items.push(item);
-        map[key].totalValue += item.expectedValue;
+        if (!item.excludeFromTotal) map[key].totalValue += item.expectedValue;
       });
 
       const groups = Object.values(map).sort((a, b) => {
@@ -578,7 +637,11 @@ const BidsOverview: React.FC = () => {
         <div className="text-sm text-neutral-600 dark:text-white">
           (Total all time:{" "}
           <span className="font-semibold text-neutral-900 dark:text-white">
-            {formatCurrency(allTimeTotal)}
+            {formatCurrency(
+              allWeeks.length
+                ? allWeeks.reduce((s, g) => s + g.totalValue, 0)
+                : allTimeTotal,
+            )}
           </span>
           )
         </div>
@@ -627,12 +690,7 @@ const BidsOverview: React.FC = () => {
                       Total Value
                     </p>
                     <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                      {formatCurrency(
-                        data.thisWeekBids.reduce(
-                          (sum, bid) => sum + bid.expectedValue,
-                          0,
-                        ),
-                      )}
+                      {formatCurrency(sumValue(data.thisWeekBids))}
                     </p>
                   </div>
                 </div>
@@ -691,8 +749,24 @@ const BidsOverview: React.FC = () => {
                         {new Date(b.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
-                      {formatCurrency(b.expectedValue)}
+                    <div className="flex items-center gap-2 ml-2">
+                      <div
+                        className={`text-sm font-semibold ${b.excludeFromTotal ? "text-neutral-400 line-through dark:text-neutral-500" : "text-neutral-900 dark:text-white"}`}
+                      >
+                        {formatCurrency(b.expectedValue)}
+                      </div>
+                      <label
+                        className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer"
+                        title="Exclude this quote from totals (e.g. revised or duplicate)"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={b.excludeFromTotal}
+                          onChange={(e) => toggleExclude(b.id, e.target.checked)}
+                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                        />
+                        Exclude
+                      </label>
                     </div>
                   </div>
                 ))}
@@ -747,12 +821,7 @@ const BidsOverview: React.FC = () => {
                       Total Value
                     </p>
                     <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                      {formatCurrency(
-                        data.lastWeekBids.reduce(
-                          (sum, bid) => sum + bid.expectedValue,
-                          0,
-                        ),
-                      )}
+                      {formatCurrency(sumValue(data.lastWeekBids))}
                     </p>
                   </div>
                 </div>
@@ -811,8 +880,24 @@ const BidsOverview: React.FC = () => {
                         {new Date(b.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
-                      {formatCurrency(b.expectedValue)}
+                    <div className="flex items-center gap-2 ml-2">
+                      <div
+                        className={`text-sm font-semibold ${b.excludeFromTotal ? "text-neutral-400 line-through dark:text-neutral-500" : "text-neutral-900 dark:text-white"}`}
+                      >
+                        {formatCurrency(b.expectedValue)}
+                      </div>
+                      <label
+                        className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer"
+                        title="Exclude this quote from totals (e.g. revised or duplicate)"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={b.excludeFromTotal}
+                          onChange={(e) => toggleExclude(b.id, e.target.checked)}
+                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                        />
+                        Exclude
+                      </label>
                     </div>
                   </div>
                 ))}
@@ -945,8 +1030,26 @@ const BidsOverview: React.FC = () => {
                               {new Date(b.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <div className="text-sm font-semibold text-neutral-900 dark:text-white ml-2">
-                            {formatCurrency(b.expectedValue)}
+                          <div className="flex items-center gap-2 ml-2">
+                            <div
+                              className={`text-sm font-semibold ${b.excludeFromTotal ? "text-neutral-400 line-through dark:text-neutral-500" : "text-neutral-900 dark:text-white"}`}
+                            >
+                              {formatCurrency(b.expectedValue)}
+                            </div>
+                            <label
+                              className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer"
+                              title="Exclude this quote from totals (e.g. revised or duplicate)"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={b.excludeFromTotal}
+                                onChange={(e) =>
+                                  toggleExclude(b.id, e.target.checked)
+                                }
+                                className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                              />
+                              Exclude
+                            </label>
                           </div>
                         </div>
                       ))}

@@ -168,6 +168,94 @@ export async function getContactsForCustomer(
 }
 
 /**
+ * Create a new customer inline from the quick-log flow. Only the company name is
+ * required; mirrors the create path used by the Customers list (name mirrors
+ * company_name, status defaults to active) with a fallback if user_id/status
+ * columns aren't present.
+ */
+export async function createQuickCustomer(input: {
+  company_name: string;
+  user_id?: string;
+}): Promise<{ id: string; company_name: string; name: string }> {
+  const company_name = input.company_name.trim();
+  if (!company_name) throw new Error('Company name is required');
+
+  const base = { company_name, name: company_name };
+  const full: Record<string, any> = { ...base, status: 'active' };
+  if (input.user_id) full.user_id = input.user_id;
+
+  let { data, error } = await supabase
+    .schema('common')
+    .from('customers')
+    .insert([full])
+    .select('id, company_name, name')
+    .single();
+
+  // Retry without optional columns (status/user_id) if the schema rejects them.
+  if (error && ((error as any).code === '42703' || /column/i.test(error.message || ''))) {
+    ({ data, error } = await supabase
+      .schema('common')
+      .from('customers')
+      .insert([base])
+      .select('id, company_name, name')
+      .single());
+  }
+
+  if (error) throw error;
+  return data as { id: string; company_name: string; name: string };
+}
+
+/**
+ * Create a new contact inline from the quick-log flow, attached to a customer.
+ */
+export async function createQuickContact(input: {
+  customer_id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  position?: string;
+  is_primary?: boolean;
+  user_id?: string;
+}): Promise<{ id: string; first_name: string; last_name: string; is_primary?: boolean }> {
+  const first_name = input.first_name.trim();
+  const last_name = input.last_name.trim();
+  if (!first_name && !last_name) throw new Error('Contact name is required');
+
+  const payload: Record<string, any> = {
+    customer_id: input.customer_id,
+    first_name,
+    last_name,
+    email: input.email?.trim() || '',
+    phone: input.phone?.trim() || '',
+    position: input.position?.trim() || '',
+    is_primary: input.is_primary ?? false,
+  };
+  if (input.user_id) payload.user_id = input.user_id;
+
+  let { data, error } = await supabase
+    .schema('common')
+    .from('contacts')
+    .insert([payload])
+    .select('id, first_name, last_name, is_primary')
+    .single();
+
+  // Retry without user_id if the schema rejects it.
+  if (error && ((error as any).code === '42703' || /user_id/i.test(error.message || ''))) {
+    const { user_id: _u, ...rest } = payload;
+    ({ data, error } = await supabase
+      .schema('common')
+      .from('contacts')
+      .insert([rest])
+      .select('id, first_name, last_name, is_primary')
+      .single());
+  }
+
+  if (error) throw error;
+  return data as { id: string; first_name: string; last_name: string; is_primary?: boolean };
+}
+
+/**
  * Lightweight customer search for the quick-log widget combobox.
  */
 export async function searchCustomers(

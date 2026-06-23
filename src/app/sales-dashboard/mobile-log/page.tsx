@@ -5,12 +5,15 @@ import {
   User as UserIcon,
   CheckCircle2,
   Feather,
+  Plus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "../../../lib/AuthContext";
 import { toast } from "../../../components/ui/toast";
 import {
   createInteraction,
+  createQuickContact,
+  createQuickCustomer,
   getContactsForCustomer,
   searchCustomers,
   interactionTypeLabel,
@@ -66,6 +69,14 @@ export default function MobileLogInteraction() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactId, setContactId] = useState("");
+
+  // Inline "new customer" / "new contact" creation
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const [showNewContact, setShowNewContact] = useState(false);
+  const [newContactFirst, setNewContactFirst] = useState("");
+  const [newContactLast, setNewContactLast] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
+  const [creatingContact, setCreatingContact] = useState(false);
 
   // Note
   const [noteType, setNoteType] = useState<InteractionType>("call");
@@ -126,6 +137,10 @@ export default function MobileLogInteraction() {
 
   // Load contacts when customer chosen
   useEffect(() => {
+    setShowNewContact(false);
+    setNewContactFirst("");
+    setNewContactLast("");
+    setNewContactPhone("");
     if (!selectedCustomer) {
       setContacts([]);
       setContactId("");
@@ -158,7 +173,76 @@ export default function MobileLogInteraction() {
     setCustomerResults([]);
     setContacts([]);
     setContactId("");
+    setShowNewContact(false);
+    setNewContactFirst("");
+    setNewContactLast("");
+    setNewContactPhone("");
     resetForKeepCustomer();
+  };
+
+  const handleCreateCustomer = async (rawName: string) => {
+    const name = rawName.trim();
+    if (!name) return;
+    setCreatingCustomer(true);
+    try {
+      const created = await createQuickCustomer({
+        company_name: name,
+        user_id: user?.id,
+      });
+      toast({
+        title: "Customer added",
+        description: name,
+        variant: "success",
+      });
+      setCustomerTerm("");
+      setCustomerResults([]);
+      setSelectedCustomer(created);
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to add customer",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingCustomer(false);
+    }
+  };
+
+  const handleCreateContact = async () => {
+    if (!selectedCustomer) return;
+    const first = newContactFirst.trim();
+    const last = newContactLast.trim();
+    if (!first && !last) return;
+    setCreatingContact(true);
+    try {
+      const created = await createQuickContact({
+        customer_id: selectedCustomer.id,
+        first_name: first,
+        last_name: last,
+        phone: newContactPhone,
+        is_primary: contacts.length === 0,
+        user_id: user?.id,
+      });
+      toast({
+        title: "Contact added",
+        description: `${first} ${last}`.trim(),
+        variant: "success",
+      });
+      setContacts((prev) => [...prev, created]);
+      setContactId(created.id);
+      setShowNewContact(false);
+      setNewContactFirst("");
+      setNewContactLast("");
+      setNewContactPhone("");
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to add contact",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingContact(false);
+    }
   };
 
   const handleSave = async () => {
@@ -304,20 +388,36 @@ export default function MobileLogInteraction() {
                     <div className="px-5 py-4 text-base text-neutral-500">
                       Searching…
                     </div>
-                  ) : customerResults.length === 0 ? (
-                    <div className="px-5 py-4 text-base text-neutral-500">
-                      No customers found
-                    </div>
                   ) : (
-                    customerResults.map((c) => (
+                    <>
+                      {customerResults.length === 0 ? (
+                        <div className="px-5 py-4 text-base text-neutral-500">
+                          No customers found
+                        </div>
+                      ) : (
+                        customerResults.map((c) => (
+                          <button
+                            key={c.id}
+                            onClick={() => setSelectedCustomer(c)}
+                            className="w-full text-left px-5 py-4 text-lg text-neutral-900 dark:text-white active:bg-neutral-100 dark:active:bg-dark-200 truncate"
+                          >
+                            {c.company_name || c.name}
+                          </button>
+                        ))
+                      )}
                       <button
-                        key={c.id}
-                        onClick={() => setSelectedCustomer(c)}
-                        className="w-full text-left px-5 py-4 text-lg text-neutral-900 dark:text-white active:bg-neutral-100 dark:active:bg-dark-200 truncate"
+                        onClick={() => handleCreateCustomer(customerTerm)}
+                        disabled={creatingCustomer}
+                        className="w-full flex items-center gap-2 px-5 py-4 text-lg font-medium text-[#f26722] active:bg-neutral-100 dark:active:bg-dark-200 disabled:opacity-50"
                       >
-                        {c.company_name || c.name}
+                        <Plus className="h-5 w-5 shrink-0" />
+                        <span className="truncate">
+                          {creatingCustomer
+                            ? "Adding…"
+                            : `Add "${customerTerm.trim()}"`}
+                        </span>
                       </button>
-                    ))
+                    </>
                   )}
                 </div>
               )}
@@ -351,6 +451,71 @@ export default function MobileLogInteraction() {
               ))
             )}
           </select>
+
+          {selectedCustomer && !contactsLoading && (
+            <div className="mt-2">
+              {showNewContact ? (
+                <div className="rounded-xl border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 p-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={newContactFirst}
+                      onChange={(e) => setNewContactFirst(e.target.value)}
+                      placeholder="First name"
+                      className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    />
+                    <input
+                      type="text"
+                      value={newContactLast}
+                      onChange={(e) => setNewContactLast(e.target.value)}
+                      placeholder="Last name"
+                      className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    />
+                  </div>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    value={newContactPhone}
+                    onChange={(e) => setNewContactPhone(e.target.value)}
+                    placeholder="Phone (optional)"
+                    className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setShowNewContact(false);
+                        setNewContactFirst("");
+                        setNewContactLast("");
+                        setNewContactPhone("");
+                      }}
+                      className="px-4 py-3 rounded-lg text-base font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-dark-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateContact}
+                      disabled={
+                        creatingContact ||
+                        (!newContactFirst.trim() && !newContactLast.trim())
+                      }
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[#f26722] px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
+                    >
+                      <Plus className="h-5 w-5" />
+                      {creatingContact ? "Adding…" : "Add contact"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowNewContact(true)}
+                  className="inline-flex items-center gap-1.5 text-base font-medium text-[#f26722] px-1 py-1"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add new contact
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Step 3: Type */}

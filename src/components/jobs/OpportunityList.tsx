@@ -942,6 +942,39 @@ export default function OpportunityList() {
     }
   }
 
+  async function handleToggleExcludeFromTotal(
+    opportunityId: string,
+    exclude: boolean,
+  ) {
+    setOpportunities((prev) =>
+      prev.map((o) =>
+        o.id === opportunityId
+          ? { ...o, exclude_from_quoted_total: exclude }
+          : o,
+      ),
+    );
+
+    try {
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ exclude_from_quoted_total: exclude })
+        .eq("id", opportunityId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Error updating exclude_from_quoted_total:", err);
+      setOpportunities((prev) =>
+        prev.map((o) =>
+          o.id === opportunityId
+            ? { ...o, exclude_from_quoted_total: !exclude }
+            : o,
+        ),
+      );
+      alert("Failed to update bid-total setting. Please try again.");
+    }
+  }
+
   useEffect(() => {
     console.log("[OpportunityList] Main effect:", {
       hasUser: !!user,
@@ -2961,8 +2994,13 @@ export default function OpportunityList() {
                           <option value="other">Other</option>
                         </select>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-neutral-900 dark:text-dark-900">
+                      <td
+                        className="px-6 py-4 whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div
+                          className={`text-sm ${(opportunity as any).exclude_from_quoted_total ? "text-neutral-400 line-through dark:text-neutral-500" : "text-neutral-900 dark:text-dark-900"}`}
+                        >
                           {(() => {
                             const amount = getQuotedAmountForList(opportunity);
                             return amount
@@ -2973,6 +3011,26 @@ export default function OpportunityList() {
                               : "-";
                           })()}
                         </div>
+                        <label
+                          className="mt-1 flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer"
+                          title="Exclude this quote from the Sales Dashboard weekly bid total (e.g. same project quoted to another customer)"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              !!(opportunity as any).exclude_from_quoted_total
+                            }
+                            onChange={(e) =>
+                              handleToggleExcludeFromTotal(
+                                opportunity.id,
+                                e.target.checked,
+                              )
+                            }
+                            className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                          />
+                          Exclude from total
+                        </label>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-neutral-900 dark:text-dark-900">

@@ -1269,6 +1269,36 @@ export default function OpportunityDetail() {
     }
   }
 
+  async function handleToggleExcludeFromTotal(exclude: boolean) {
+    if (!id) return;
+    // Optimistically update both the view and the edit form
+    setOpportunity((prev) =>
+      prev ? { ...prev, exclude_from_quoted_total: exclude } : prev,
+    );
+    setEditFormData((prev) => ({
+      ...prev,
+      exclude_from_quoted_total: exclude,
+    }));
+
+    const { error } = await supabase
+      .schema("business")
+      .from("opportunities")
+      .update({ exclude_from_quoted_total: exclude })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Failed to update exclude_from_quoted_total:", error);
+      // Revert on failure
+      setOpportunity((prev) =>
+        prev ? { ...prev, exclude_from_quoted_total: !exclude } : prev,
+      );
+      setEditFormData((prev) => ({
+        ...prev,
+        exclude_from_quoted_total: !exclude,
+      }));
+    }
+  }
+
   async function handleEstimateApprovalStatusChange(newStatus: string) {
     if (!id) return;
     const raw = newStatus === "" ? null : newStatus;
@@ -4977,6 +5007,41 @@ export default function OpportunityDetail() {
                           );
                         })()}
                       </p>
+                    </div>
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-neutral-500 dark:text-dark-400">
+                          Include in weekly bid total
+                        </p>
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                          Turn off to exclude this quote from the Sales
+                          Dashboard total (e.g. same project quoted to another
+                          customer).
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!opportunity.exclude_from_quoted_total}
+                        onClick={() =>
+                          handleToggleExcludeFromTotal(
+                            !opportunity.exclude_from_quoted_total,
+                          )
+                        }
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-dark-150 ${
+                          opportunity.exclude_from_quoted_total
+                            ? "bg-neutral-300 dark:bg-neutral-600"
+                            : "bg-[#f26722]"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            opportunity.exclude_from_quoted_total
+                              ? "translate-x-1"
+                              : "translate-x-6"
+                          }`}
+                        />
+                      </button>
                     </div>
                     <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>

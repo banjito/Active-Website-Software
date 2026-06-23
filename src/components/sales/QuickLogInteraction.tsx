@@ -5,6 +5,7 @@ import {
   X,
   Phone,
   Mail,
+  Plus,
   User as UserIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { toast } from "@/components/ui/toast";
 import {
   createInteraction,
+  createQuickContact,
+  createQuickCustomer,
   getContactsForCustomer,
   searchCustomers,
   type InteractionType,
@@ -66,6 +69,14 @@ export const QuickLogInteraction: React.FC = () => {
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactId, setContactId] = useState("");
 
+  // Inline "new customer" / "new contact" creation
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const [showNewContact, setShowNewContact] = useState(false);
+  const [newContactFirst, setNewContactFirst] = useState("");
+  const [newContactLast, setNewContactLast] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
+  const [creatingContact, setCreatingContact] = useState(false);
+
   // Note fields
   const [noteType, setNoteType] = useState<InteractionType>("call");
   const [context, setContext] = useState("");
@@ -113,6 +124,10 @@ export const QuickLogInteraction: React.FC = () => {
 
   // Load contacts when a customer is selected
   useEffect(() => {
+    setShowNewContact(false);
+    setNewContactFirst("");
+    setNewContactLast("");
+    setNewContactPhone("");
     if (!selectedCustomer) {
       setContacts([]);
       setContactId("");
@@ -140,8 +155,77 @@ export const QuickLogInteraction: React.FC = () => {
     setSelectedCustomer(null);
     setContacts([]);
     setContactId("");
+    setShowNewContact(false);
+    setNewContactFirst("");
+    setNewContactLast("");
+    setNewContactPhone("");
     setNoteType("call");
     setContext("");
+  };
+
+  const handleCreateCustomer = async (rawName: string) => {
+    const name = rawName.trim();
+    if (!name) return;
+    setCreatingCustomer(true);
+    try {
+      const created = await createQuickCustomer({
+        company_name: name,
+        user_id: user?.id,
+      });
+      toast({
+        title: "Customer added",
+        description: name,
+        variant: "success",
+      });
+      setCustomerTerm("");
+      setCustomerResults([]);
+      setSelectedCustomer(created);
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to add customer",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingCustomer(false);
+    }
+  };
+
+  const handleCreateContact = async () => {
+    if (!selectedCustomer) return;
+    const first = newContactFirst.trim();
+    const last = newContactLast.trim();
+    if (!first && !last) return;
+    setCreatingContact(true);
+    try {
+      const created = await createQuickContact({
+        customer_id: selectedCustomer.id,
+        first_name: first,
+        last_name: last,
+        phone: newContactPhone,
+        is_primary: contacts.length === 0,
+        user_id: user?.id,
+      });
+      toast({
+        title: "Contact added",
+        description: `${first} ${last}`.trim(),
+        variant: "success",
+      });
+      setContacts((prev) => [...prev, created]);
+      setContactId(created.id);
+      setShowNewContact(false);
+      setNewContactFirst("");
+      setNewContactLast("");
+      setNewContactPhone("");
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to add contact",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingContact(false);
+    }
   };
 
   const handleClose = () => {
@@ -287,20 +371,36 @@ export const QuickLogInteraction: React.FC = () => {
                         <div className="px-3 py-2 text-xs text-neutral-500">
                           Hmm...
                         </div>
-                      ) : customerResults.length === 0 ? (
-                        <div className="px-3 py-2 text-xs text-neutral-500">
-                          No customers found.
-                        </div>
                       ) : (
-                        customerResults.map((c) => (
+                        <>
+                          {customerResults.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-neutral-500">
+                              No customers found.
+                            </div>
+                          ) : (
+                            customerResults.map((c) => (
+                              <button
+                                key={c.id}
+                                onClick={() => setSelectedCustomer(c)}
+                                className="w-full text-left px-3 py-2 text-sm text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 truncate"
+                              >
+                                {c.company_name || c.name}
+                              </button>
+                            ))
+                          )}
                           <button
-                            key={c.id}
-                            onClick={() => setSelectedCustomer(c)}
-                            className="w-full text-left px-3 py-2 text-sm text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 truncate"
+                            onClick={() => handleCreateCustomer(customerTerm)}
+                            disabled={creatingCustomer}
+                            className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50 border-t border-neutral-100 dark:border-dark-200"
                           >
-                            {c.company_name || c.name}
+                            <Plus className="h-4 w-4 shrink-0" />
+                            <span className="truncate">
+                              {creatingCustomer
+                                ? "Adding…"
+                                : `Add "${customerTerm.trim()}"`}
+                            </span>
                           </button>
-                        ))
+                        </>
                       )}
                     </div>
                   )}
@@ -334,6 +434,71 @@ export const QuickLogInteraction: React.FC = () => {
                   ))
                 )}
               </select>
+
+              {selectedCustomer && !contactsLoading && (
+                <div className="mt-1.5">
+                  {showNewContact ? (
+                    <div className="rounded-md border border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-200 p-2 space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={newContactFirst}
+                          onChange={(e) => setNewContactFirst(e.target.value)}
+                          placeholder="First name"
+                          className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        />
+                        <input
+                          type="text"
+                          value={newContactLast}
+                          onChange={(e) => setNewContactLast(e.target.value)}
+                          placeholder="Last name"
+                          className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        />
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        value={newContactPhone}
+                        onChange={(e) => setNewContactPhone(e.target.value)}
+                        placeholder="Phone (optional)"
+                        className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      />
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setShowNewContact(false);
+                            setNewContactFirst("");
+                            setNewContactLast("");
+                            setNewContactPhone("");
+                          }}
+                          className="px-2.5 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-150 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleCreateContact}
+                          disabled={
+                            creatingContact ||
+                            (!newContactFirst.trim() && !newContactLast.trim())
+                          }
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 disabled:opacity-50"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          {creatingContact ? "Adding…" : "Add"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowNewContact(true)}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-[#f26722] hover:underline"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add new contact
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Step 3: Type */}

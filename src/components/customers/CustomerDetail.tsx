@@ -555,7 +555,8 @@ export default function CustomerDetail() {
     if (!email || !email.includes("@")) {
       toast({
         title: "Enter a valid email",
-        description: "A valid email address is required to send a portal invite.",
+        description:
+          "A valid email address is required to send a portal invite.",
         variant: "destructive",
       });
       return;
@@ -564,7 +565,7 @@ export default function CustomerDetail() {
     try {
       const { data, error } = await supabase.functions.invoke(
         "customer-portal-invite",
-        { body: { email, customerId: customer.id } }
+        { body: { email, customerId: customer.id } },
       );
       if (error) {
         // supabase-js hides the function's response behind a generic message.
@@ -714,11 +715,7 @@ export default function CustomerDetail() {
                     );
                   })}
                 </div>
-                {(!customer.divisions || customer.divisions.length === 0) && (
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                    Click to assign divisions
-                  </p>
-                )}
+                {!customer.divisions || customer.divisions.length === 0}
               </div>
               <div className="flex items-start">
                 <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />

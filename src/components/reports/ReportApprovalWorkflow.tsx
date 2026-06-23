@@ -2901,8 +2901,8 @@ export function ReportApprovalWorkflow({
                             variant="outline"
                             size="sm"
                             onClick={() => handleViewReport(report)}
+                            leftIcon={<Eye className="h-4 w-4" />}
                           >
-                            <Eye className="h-4 w-4 mr-2" />
                             View
                           </Button>
                           {/* Show download/print button for PDF reports on approved tab */}

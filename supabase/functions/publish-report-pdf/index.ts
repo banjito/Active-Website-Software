@@ -131,6 +131,13 @@ async function renderPdf(url: string): Promise<Uint8Array> {
       gotoOptions: { waitUntil: 'networkidle2', timeout: 90000 },
       waitForTimeout: 5000,
       bestAttempt: true,
+      // Force every Tailwind `print:hidden` element to actually hide. Some carry
+      // `flex` too (e.g. the "Back to Job" header bar), and in the built CSS
+      // `.flex { display:flex }` wins the tie over `.print:hidden`, so the chrome
+      // leaks into the PDF. `!important` here guarantees it's gone.
+      addStyleTag: [
+        { content: '@media print{.print\\:hidden{display:none !important}}' },
+      ],
     }),
   })
 

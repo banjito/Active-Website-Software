@@ -294,8 +294,7 @@ export function ReportApprovalWorkflow({
       id: asset.id,
       title: asset.name || reportType || "Untitled Report",
       report_type: reportSlug,
-      status:
-        asset.status === "ready_for_review" ? "submitted" : asset.status,
+      status: asset.status === "ready_for_review" ? "submitted" : asset.status,
       job_id: assetJobId,
       submitted_at: asset.submitted_at || asset.created_at,
       approved_at: asset.approved_at,
@@ -1946,6 +1945,43 @@ export function ReportApprovalWorkflow({
           description: "Report marked as sent successfully",
           variant: "success",
         });
+
+        // Publish the report to the customer portal (ampOS ACCESS) as a real,
+        // print-styled PDF via the publish-report-pdf edge function (headless
+        // Chromium / Browserless) — same output as the in-app Print button.
+        // Fire-and-forget so it doesn't block the status UI.
+        const fileUrl = report.report_data?.file_url as string | undefined;
+        if (fileUrl?.startsWith("report:")) {
+          void (async () => {
+            try {
+              const { data, error } = await supabase.functions.invoke(
+                "publish-report-pdf",
+                { body: { assetId: report.id } },
+              );
+              if (error) throw error;
+              if ((data as { error?: string })?.error) {
+                throw new Error((data as { error?: string }).error);
+              }
+              toast({
+                title: "Published to customer portal",
+                description: "The report PDF is now available in ampOS ACCESS.",
+                variant: "success",
+              });
+            } catch (e) {
+              console.warn(
+                "Portal PDF publish failed:",
+                e instanceof Error ? e.message : e,
+              );
+              toast({
+                title: "Portal publish failed",
+                description:
+                  "Report was marked as sent, but the downloadable PDF could not be generated. Try re-sending.",
+                variant: "destructive",
+              });
+            }
+          })();
+        }
+
         fetchReports();
         fetchMetrics();
         if (onUpdate) {
@@ -2749,8 +2785,10 @@ export function ReportApprovalWorkflow({
                                           ? "text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
                                           : "text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
                                       }`}
+                                      leftIcon={
+                                        <Download className="h-4 w-4 mr-2" />
+                                      }
                                     >
-                                      <Download className="h-4 w-4 mr-2" />
                                       {report.status === "approved"
                                         ? "Mark as Sent"
                                         : "Mark as Approved"}

@@ -4195,26 +4195,25 @@ export default function JobDetail() {
         throw new Error(`Failed to update status: ${error.message}`);
       }
 
-      // Publish the report to the customer portal: render + upload a PDF so
-      // customers can view it. Fire-and-forget so it doesn't block the status UI.
+      // Publish the report to the customer portal as a real, print-styled PDF
+      // via the publish-report-pdf edge function (headless Chromium / Browserless)
+      // — same output as the in-app Print button. Fire-and-forget.
       if (newStatus === "sent" && asset?.file_url?.startsWith("report:")) {
-        const customerId = customer?.id || job?.customers?.id;
-        if (customerId && id) {
-          pdfExportService
-            .publishReportPdf({
-              assetId,
-              fileUrl: asset.file_url,
-              jobId: id,
-              customerId,
-            })
-            .then(() => toast({ title: "Published to customer portal" }))
-            .catch((e) =>
-              console.warn(
-                "Portal PDF publish failed:",
-                e instanceof Error ? e.message : e,
-              ),
-            );
-        }
+        void publishReportAssetsViaEdge([
+          { id: assetId, file_url: asset.file_url, status: "sent" },
+        ])
+          .then(({ done, errors }) => {
+            if (done > 0) toast({ title: "Published to customer portal" });
+            else if (errors.length) {
+              console.warn("Portal PDF publish failed:", errors[0]);
+            }
+          })
+          .catch((e) =>
+            console.warn(
+              "Portal PDF publish failed:",
+              e instanceof Error ? e.message : e,
+            ),
+          );
       }
 
       // Update local state with new status and timestamps
@@ -5284,6 +5283,42 @@ export default function JobDetail() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isFireteamLeadSelectorOpen]);
 
+  // Publish report assets to the customer portal as real, print-styled PDFs via
+  // the publish-report-pdf edge function (headless Chromium / Browserless) —
+  // same output as the in-app Print button. The function resolves the job +
+  // customer itself, so we only pass asset ids. Renders sequentially.
+  const publishReportAssetsViaEdge = async (
+    reportAssets: { id: string; file_url?: string | null; status?: string | null }[],
+    onStatus?: (status: string) => void,
+  ): Promise<{ done: number; failed: number; errors: string[] }> => {
+    const targets = reportAssets.filter(
+      (a) =>
+        a.file_url?.startsWith("report:") &&
+        ["approved", "sent"].includes(String(a.status || "").toLowerCase()),
+    );
+    let done = 0;
+    let failed = 0;
+    const errors: string[] = [];
+    for (let i = 0; i < targets.length; i++) {
+      onStatus?.(`Publishing ${i + 1} of ${targets.length}…`);
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "publish-report-pdf",
+          { body: { assetId: targets[i].id } },
+        );
+        if (error) throw error;
+        if ((data as { error?: string })?.error) {
+          throw new Error((data as { error?: string }).error);
+        }
+        done++;
+      } catch (e) {
+        failed++;
+        errors.push(e instanceof Error ? e.message : String(e));
+      }
+    }
+    return { done, failed, errors };
+  };
+
   // Backfill: render + upload PDFs for this job's approved/sent reports so the
   // customer portal can display them. Covers reports that were marked Sent before
   // the on-send auto-publish existed.
@@ -5301,9 +5336,9 @@ export default function JobDetail() {
     setIsPublishingPortal(true);
     setPortalPublishStatus("Starting…");
     try {
-      const { done, failed, errors } = await pdfExportService.publishReportsForJob(
-        { jobId: id, customerId, assets: jobAssets },
-        (_progress, status) => setPortalPublishStatus(status),
+      const { done, failed, errors } = await publishReportAssetsViaEdge(
+        jobAssets,
+        (status) => setPortalPublishStatus(status),
       );
       if (failed > 0) {
         console.warn("Portal publish errors:", errors);
@@ -5328,6 +5363,40 @@ export default function JobDetail() {
       setIsPublishingPortal(false);
       setPortalPublishStatus("");
     }
+  };
+
+  // Fire-and-forget portal publish used by the bulk "mark as sent" actions so
+  // the customer portal (ampOS ACCESS) gets downloadable PDFs without blocking
+  // the status UI. Mirrors the on-send publish in handleStatusUpdate.
+  const publishSentReportsToPortal = (
+    assets: { id: string; file_url?: string | null; status?: string | null }[],
+  ) => {
+    const customerId = customer?.id || job?.customers?.id;
+    const reportAssets = assets.filter((a) => a.file_url?.startsWith("report:"));
+    if (!customerId || !id || reportAssets.length === 0) {
+      if (!customerId && reportAssets.length > 0) {
+        console.warn(
+          "Portal publish skipped: job has no linked customer for reports",
+        );
+      }
+      return;
+    }
+    void publishReportAssetsViaEdge(reportAssets)
+      .then(({ done, failed, errors }) => {
+        if (failed > 0) console.warn("Portal publish errors:", errors);
+        if (done > 0) {
+          toast({
+            title: "Published to customer portal",
+            description: `${done} report PDF(s) are now downloadable in ampOS ACCESS.`,
+          });
+        }
+      })
+      .catch((e) =>
+        console.warn(
+          "Portal PDF publish failed:",
+          e instanceof Error ? e.message : e,
+        ),
+      );
   };
 
   const handlePrintAllApprovedReports = async () => {
@@ -5473,6 +5542,9 @@ export default function JobDetail() {
         );
       }
 
+      // Publish the now-sent reports to the customer portal (ampOS ACCESS).
+      publishSentReportsToPortal(approvedAssets);
+
       // Dispatch event to refresh other components
       window.dispatchEvent(
         new CustomEvent("assetStatusChanged", {
@@ -5587,6 +5659,9 @@ export default function JobDetail() {
           }
         }),
       );
+
+      // Publish the now-sent reports to the customer portal (ampOS ACCESS).
+      publishSentReportsToPortal(selectedApprovedAssets);
 
       // Clear selections after successful operation
       setSelectedApprovedIds(new Set());

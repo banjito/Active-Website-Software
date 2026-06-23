@@ -499,6 +499,73 @@ export class PDFExportService {
   // URL. Uses the same iframe + html2canvas capture as the in-app exports.
   // ---------------------------------------------------------------------------
 
+  /**
+   * Wait until the report inside the iframe has actually rendered its data,
+   * rather than sleeping a fixed amount and capturing a half-loaded page.
+   *
+   * Most reports render their form immediately (through ReportWrapper, with no
+   * `#report-container`) and then populate <input>/<select>/<textarea> values
+   * asynchronously once the Supabase fetch resolves. Those values do NOT show
+   * up in innerText or scrollHeight, so the page looks "settled" while the
+   * fields are still empty. We therefore fingerprint the field values too, and:
+   *   - never accept readiness before `minWaitMs` (give the fetch time to land),
+   *   - require the fingerprint to hold steady for a short settle window,
+   *   - prefer a fingerprint that shows populated fields, but fall back to the
+   *     deadline so a genuinely empty report doesn't hang.
+   * Without this a slow report is captured blank — every field showing its
+   * placeholder ("Enter User Name", etc.).
+   */
+  private async waitForReportReady(
+    doc: Document,
+    win: Window | null,
+    maxWaitMs = 30000,
+  ): Promise<void> {
+    const start = Date.now();
+    const deadline = start + maxWaitMs;
+    const minWaitMs = 4000; // don't capture before the data fetch can resolve
+    const emptyFloorMs = 12000; // if no field values appear, accept after this
+    const settleChecks = 3; // ~1.2s of no change before we consider it done
+    const interval = 400;
+
+    const fingerprint = () => {
+      const fields = Array.from(
+        doc.querySelectorAll('input, textarea, select'),
+      ) as Array<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+      let valueLen = 0;
+      for (const f of fields) valueLen += String((f as HTMLInputElement).value || '').length;
+      const height = Math.max(
+        doc.body?.scrollHeight || 0,
+        doc.documentElement?.scrollHeight || 0,
+      );
+      return { sig: `${height}:${fields.length}:${valueLen}`, valueLen };
+    };
+
+    let lastSig = '';
+    let stableCount = 0;
+
+    while (Date.now() < deadline) {
+      const spinner = doc.querySelector('.animate-spin');
+      const { sig, valueLen } = fingerprint();
+      const elapsed = Date.now() - start;
+
+      const settled = !spinner && sig === lastSig;
+      stableCount = settled ? stableCount + 1 : 0;
+      lastSig = sig;
+
+      const settledLongEnough = stableCount >= settleChecks;
+      const pastMinWait = elapsed >= minWaitMs;
+      // Fields populated (data arrived) OR we've waited out the empty floor.
+      const dataPresentOrFloor = valueLen > 0 || elapsed >= emptyFloorMs;
+
+      if (settledLongEnough && pastMinWait && dataPresentOrFloor) return;
+
+      // Nudge chart libraries that only size themselves on resize.
+      try { win?.dispatchEvent(new Event('resize')); } catch {}
+      await new Promise((r) => setTimeout(r, interval));
+    }
+    // Fell through to the deadline — capture whatever we have rather than fail.
+  }
+
   /** Render an internal report route to a PDF Blob. */
   async generateReportPdfBlob(reportUrl: string): Promise<Blob> {
     this.createLoadingContainer();
@@ -510,9 +577,10 @@ export class PDFExportService {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!doc) throw new Error('Cannot access report content (cross-origin?)');
 
-      // Let charts and async content settle.
-      try { iframe.contentWindow?.dispatchEvent(new Event('resize')); } catch {}
-      await new Promise((r) => setTimeout(r, 3500));
+      // Wait for the report to actually render its data (not a fixed sleep),
+      // then a brief final settle for chart paint.
+      await this.waitForReportReady(doc, iframe.contentWindow);
+      await new Promise((r) => setTimeout(r, 750));
 
       const bodyHeight = Math.max(
         doc.body.scrollHeight,

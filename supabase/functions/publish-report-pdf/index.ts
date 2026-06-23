@@ -225,6 +225,9 @@ serve(async (req) => {
       .upload(path, new Blob([pdf], { type: 'application/pdf' }), {
         contentType: 'application/pdf',
         upsert: true,
+        // Short cache so a re-published (corrected) report propagates promptly
+        // instead of serving stale bytes from the storage CDN for up to an hour.
+        cacheControl: '60',
       })
     if (upErr) throw new Error(`upload failed: ${upErr.message}`)
 

@@ -179,7 +179,7 @@ async function publishOne(browser, t) {
     const path = `${t.customerId}/${t.jobId}/${t.assetId}.pdf`;
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
-      .upload(path, pdf, { contentType: 'application/pdf', upsert: true });
+      .upload(path, pdf, { contentType: 'application/pdf', upsert: true, cacheControl: '60' });
     if (upErr) throw upErr;
 
     const { error: dbErr } = await supabase

@@ -105,6 +105,7 @@ AS $$
     FROM neta_ops.jobs j
     WHERE j.id = p_job_id
       AND j.customer_id = common.current_customer_id()
+      AND j.deleted_at IS NULL
   );
 $$;
 
@@ -216,6 +217,7 @@ FOR SELECT
 USING (
   auth.role() = 'authenticated'
   AND customer_id = common.current_customer_id()
+  AND deleted_at IS NULL
 );
 
 CREATE POLICY "Employees can manage assets"

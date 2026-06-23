@@ -52,6 +52,7 @@ AS $$
   JOIN neta_ops.job_assets ja ON ja.job_id = j.id
   JOIN neta_ops.assets a ON a.id = ja.asset_id
   WHERE j.customer_id = common.current_customer_id()
+    AND j.deleted_at IS NULL
     AND lower(coalesce(a.status, '')) IN ('approved', 'sent')
   ORDER BY coalesce(a.sent_at, a.approved_at, a.created_at) DESC;
 $$;

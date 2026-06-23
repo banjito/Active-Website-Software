@@ -236,6 +236,7 @@ export async function getJobs(): Promise<Job[]> {
     .select(
       "id, job_number, title, status, site_address, division, created_at, due_date",
     )
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Job[];
@@ -249,6 +250,7 @@ export async function getJob(jobId: string): Promise<Job | null> {
       "id, job_number, title, status, site_address, division, created_at, due_date",
     )
     .eq("id", jobId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) throw error;
   return (data as Job) ?? null;

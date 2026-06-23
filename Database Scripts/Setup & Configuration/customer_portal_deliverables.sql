@@ -45,6 +45,7 @@ AS $$
   JOIN neta_ops.jobs j ON j.id = d.job_id
   LEFT JOIN neta_ops.generated_documents gd ON gd.id = d.cover_letter_id
   WHERE j.customer_id = common.current_customer_id()
+    AND j.deleted_at IS NULL
     AND lower(coalesce(d.status, '')) = 'delivered'
   ORDER BY coalesce(d.delivered_at, d.created_at) DESC;
 $$;

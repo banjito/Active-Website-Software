@@ -515,8 +515,8 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               isLoading={saving}
               size="sm"
               className="bg-[#f26722] text-white hover:bg-[#d4551a]"
+              leftIcon={<Save className="h-4 w-4 mr-1" />}
             >
-              <Save className="h-4 w-4 mr-1" />
               {editingItem ? "Save Changes" : "Add Library Item"}
             </Button>
           </div>

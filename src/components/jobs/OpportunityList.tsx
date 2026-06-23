@@ -1388,9 +1388,7 @@ export default function OpportunityList() {
             await supabase
               .schema("business")
               .from("letter_proposals")
-              .select(
-                "id, opportunity_id, html, net_30_price, title, letter_number, created_at",
-              )
+              .select("id, opportunity_id, html, title, created_at")
               .in("opportunity_id", opportunityIds)
               .order("created_at", { ascending: false });
 

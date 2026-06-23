@@ -92,6 +92,12 @@ const headerIconButtonClass =
 const headerIconButtonActiveClass =
   "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
 
+type HeaderTooltip = {
+  text: string;
+  x: number;
+  y: number;
+} | null;
+
 export interface HeaderBarProps {
   onEnterEditMode?: () => void;
   className?: string;
@@ -118,6 +124,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const canSeeDemoMode = !!user;
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [headerTooltip, setHeaderTooltip] = useState<HeaderTooltip>(null);
+
+  const showTooltip = (e: React.MouseEvent, text: string) => {
+    setHeaderTooltip({ text, x: e.clientX - 12, y: e.clientY + 14 });
+  };
+  const hideTooltip = () => setHeaderTooltip(null);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifications, setNotifications] = useState<ReviewNotification[]>([]);
   const [notificationSummary, setNotificationSummary] = useState<
@@ -723,8 +735,26 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   };
 
+  const tooltipHandlers = (text: string) => ({
+    onMouseEnter: (e: React.MouseEvent) => showTooltip(e, text),
+    onMouseMove: (e: React.MouseEvent) => showTooltip(e, text),
+    onMouseLeave: hideTooltip,
+  });
+
   return (
     <>
+      {headerTooltip && (
+        <div
+          className="pointer-events-none fixed z-[100] rounded-full border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
+          style={{
+            left: headerTooltip.x,
+            top: headerTooltip.y,
+            transform: "translateX(-100%)",
+          }}
+        >
+          {headerTooltip.text}
+        </div>
+      )}
       <div
         className={`bg-white dark:bg-dark-150 p-4 border-none ${className ?? ""}`}
       >
@@ -772,6 +802,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <button
                   type="button"
                   aria-label="Admin Portal"
+                  {...tooltipHandlers("Admin Portal")}
                   onClick={() => {
                     setIsShortcutMenuOpen(false);
                     setIsReviewMenuOpen(false);
@@ -781,7 +812,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     navigate("/admin-dashboard");
                   }}
                   className={headerIconButtonClass}
-                  title="Admin Portal"
                 >
                   <ShieldCogCorner className="h-5 w-5" />
                 </button>
@@ -796,6 +826,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 aria-label="Shortcuts menu"
                 aria-haspopup="true"
                 aria-expanded={isShortcutMenuOpen}
+                {...tooltipHandlers("Shortcuts")}
                 onClick={() => {
                   const next = !isShortcutMenuOpen;
                   setIsShortcutMenuOpen(next);
@@ -810,7 +841,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   headerIconButtonClass,
                   isShortcutMenuOpen && headerIconButtonActiveClass,
                 )}
-                title="Shortcuts"
               >
                 <Bookmark className="h-5 w-5" />
               </button>
@@ -836,7 +866,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   aria-label="Reports ready for review"
                   aria-haspopup="true"
                   aria-expanded={isReviewMenuOpen}
-                  title="Reports ready for review"
+                  {...tooltipHandlers("Report Review")}
                   onClick={() => {
                     const next = !isReviewMenuOpen;
                     setIsReviewMenuOpen(next);
@@ -874,9 +904,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             {canLogInteractions(user?.user_metadata?.role, user?.email) && (
-              <QuickLogInteraction />
+              <div
+                className="relative flex h-10 w-10 items-center justify-center"
+                {...tooltipHandlers("Log Interaction")}
+              >
+                <QuickLogInteraction />
+              </div>
             )}
-            <div className="relative flex h-10 w-10 items-center justify-center">
+            <div
+              className="relative flex h-10 w-10 items-center justify-center"
+              {...tooltipHandlers("Community Board")}
+            >
               <CommunityBoardPopover />
             </div>
             <div
@@ -885,6 +923,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <button
                 aria-label="AMP contacts"
+                {...tooltipHandlers("Contacts")}
                 className={cn(
                   headerIconButtonClass,
                   isContactsOpen && headerIconButtonActiveClass,
@@ -985,6 +1024,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               >
                 <button
                   aria-label="Notifications"
+                  {...tooltipHandlers("Notifications")}
                   className={cn(
                     headerIconButtonClass,
                     "relative",
@@ -1300,6 +1340,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <button
                 className="rounded-full w-10 h-10 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-600 p-0 overflow-hidden flex items-center justify-center border border-neutral-300 dark:border-neutral-600"
+                {...tooltipHandlers("Profile")}
                 onClick={() => {
                   const next = !isProfileMenuOpen;
                   setIsProfileMenuOpen(next);

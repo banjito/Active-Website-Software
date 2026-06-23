@@ -38,6 +38,8 @@ export interface ReportAsset {
   job_id: string;
   job_number: string | null;
   job_title: string | null;
+  flagged_by_user: boolean;
+  flag_count: number;
 }
 
 /**
@@ -369,6 +371,27 @@ export async function flagReport(
       },
     ).catch(() => {});
   }
+}
+
+export interface ReportFlag {
+  id: string;
+  reason: string;
+  created_at: string;
+}
+
+export async function fetchReportFlags(assetId: string): Promise<ReportFlag[]> {
+  const { data, error } = await supabase
+    .schema("common")
+    .rpc("customer_report_flags", { p_asset_id: assetId });
+  if (error) throw error;
+  return (data ?? []) as ReportFlag[];
+}
+
+export async function revokeReportFlag(flagId: string): Promise<void> {
+  const { error } = await supabase
+    .schema("common")
+    .rpc("customer_revoke_report_flag", { p_flag_id: flagId });
+  if (error) throw error;
 }
 
 /**

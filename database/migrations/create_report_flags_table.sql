@@ -113,4 +113,51 @@ $$;
 GRANT EXECUTE ON FUNCTION common.flag_report(uuid, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION common.resolve_report_flag(uuid, text) TO authenticated;
 
+-- RPC: customer fetches their own open flags for a specific report-asset.
+CREATE OR REPLACE FUNCTION common.customer_report_flags(p_asset_id uuid)
+RETURNS TABLE (
+  id uuid,
+  reason text,
+  created_at timestamptz
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = common, public
+AS $$
+  SELECT rf.id, rf.reason, rf.created_at
+  FROM common.report_flags rf
+  WHERE rf.asset_id = p_asset_id
+    AND rf.flagged_by = auth.uid()
+    AND rf.status = 'open'
+  ORDER BY rf.created_at DESC;
+$$;
+
+GRANT EXECUTE ON FUNCTION common.customer_report_flags(uuid) TO authenticated;
+
+-- RPC: customer revokes one of their own open flags.
+CREATE OR REPLACE FUNCTION common.customer_revoke_report_flag(p_flag_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = common, public
+AS $$
+BEGIN
+  UPDATE common.report_flags
+  SET status = 'resolved',
+      resolved_by = auth.uid(),
+      resolved_at = NOW(),
+      resolution_comment = 'Revoked by customer'
+  WHERE id = p_flag_id
+    AND flagged_by = auth.uid()
+    AND status = 'open';
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Flag not found or not yours to revoke.';
+  END IF;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION common.customer_revoke_report_flag(uuid) TO authenticated;
+
 COMMENT ON TABLE common.report_flags IS 'Customer-raised flags on delivered report-assets from the ampOS ACCESS portal; open/resolved lifecycle, multiple per report.';

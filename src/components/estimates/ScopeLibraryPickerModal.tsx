@@ -102,7 +102,7 @@ export const ScopeLibraryPickerModal: React.FC<
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-[70] bg-white dark:bg-dark-150 rounded-lg shadow-xl w-full max-w-6xl mx-4 max-h-[85vh] flex flex-col border border-neutral-200 dark:border-neutral-700"
+        className="relative z-[70] bg-white dark:bg-dark-150 rounded-lg shadow-xl w-full max-w-[90vw] mx-4 max-h-[85vh] flex flex-col border border-neutral-200 dark:border-neutral-700"
       >
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
           <div>
@@ -171,6 +171,9 @@ export const ScopeLibraryPickerModal: React.FC<
                 <thead className="bg-neutral-50 dark:bg-dark-200">
                   <tr>
                     <th className="px-3 py-2 text-left font-semibold text-neutral-700 dark:text-neutral-200">
+                      Action
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-neutral-700 dark:text-neutral-200">
                       Item
                     </th>
                     <th className="px-3 py-2 text-left font-semibold text-neutral-700 dark:text-neutral-200">
@@ -194,9 +197,6 @@ export const ScopeLibraryPickerModal: React.FC<
                     <th className="px-3 py-2 text-left font-semibold text-neutral-700 dark:text-neutral-200">
                       Test Equipment
                     </th>
-                    <th className="px-3 py-2 text-right font-semibold text-neutral-700 dark:text-neutral-200">
-                      Action
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700 bg-white dark:bg-dark-150">
@@ -206,6 +206,18 @@ export const ScopeLibraryPickerModal: React.FC<
                       className="hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors cursor-pointer"
                       onDoubleClick={() => onSelect(item)}
                     >
+                      <td className="px-3 py-3 align-top text-left whitespace-nowrap">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect(item);
+                          }}
+                          size="sm"
+                          className="bg-[#f26722] text-white hover:bg-[#d4551a]"
+                        >
+                          Use
+                        </Button>
+                      </td>
                       <td className="px-3 py-3 align-top font-medium text-neutral-900 dark:text-white min-w-[220px]">
                         {item.item_name}
                       </td>
@@ -233,18 +245,6 @@ export const ScopeLibraryPickerModal: React.FC<
                               .map((equipment) => equipment.name)
                               .join(", ")
                           : "—"}
-                      </td>
-                      <td className="px-3 py-3 align-top text-right whitespace-nowrap">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelect(item);
-                          }}
-                          size="sm"
-                          className="bg-[#f26722] text-white hover:bg-[#d4551a]"
-                        >
-                          Use Item
-                        </Button>
                       </td>
                     </tr>
                   ))}

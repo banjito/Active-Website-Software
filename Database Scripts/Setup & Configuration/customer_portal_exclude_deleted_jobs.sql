@@ -35,8 +35,10 @@ USING (
   AND deleted_at IS NULL
 );
 
--- 3) Report-assets listing.
-CREATE OR REPLACE FUNCTION common.customer_report_assets()
+-- 3) Report-assets listing (with flag status so the badge persists across reloads).
+DROP FUNCTION IF EXISTS common.customer_report_assets();
+
+CREATE FUNCTION common.customer_report_assets()
 RETURNS TABLE (
   asset_id uuid,
   asset_name text,
@@ -50,7 +52,8 @@ RETURNS TABLE (
   published_pdf_path text,
   job_id uuid,
   job_number text,
-  job_title text
+  job_title text,
+  flag_count bigint
 )
 LANGUAGE sql
 STABLE
@@ -70,7 +73,11 @@ AS $$
     a.published_pdf_path,
     j.id,
     j.job_number,
-    j.title
+    j.title,
+    (SELECT count(*) FROM common.report_flags rf
+      WHERE rf.asset_id = a.id
+        AND rf.flagged_by = auth.uid()
+        AND rf.status = 'open')
   FROM neta_ops.jobs j
   JOIN neta_ops.job_assets ja ON ja.job_id = j.id
   JOIN neta_ops.assets a ON a.id = ja.asset_id

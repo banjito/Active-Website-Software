@@ -22,6 +22,7 @@ import {
 } from "./LetterImageHandler";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
+import { Switch } from "../ui/Switch";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { useAuth } from "../../lib/AuthContext";
 import {
@@ -218,6 +219,16 @@ interface EstimateData {
 
   // SOV items (the main items)
   sovItems: EstimateLineItem[];
+
+  // Proposal display toggles. These only affect what the generated proposal
+  // shows under "Scope"; the SOV items above always drive pricing regardless.
+  // When true (default), the proposal includes the SOV Item & Quantity table.
+  useSovItems?: boolean;
+  // When true, the proposal includes `scopeNarrative` as free text. Can be used
+  // alongside or instead of the SOV table (e.g. for abstract scopes).
+  useScopeNarrative?: boolean;
+  // Free-text scope description used for abstract scopes (proposal display only).
+  scopeNarrative?: string;
 
   // Non-SOV items (reports, shipping, etc.)
   nonSovItems: EstimateLineItem[];
@@ -1579,6 +1590,9 @@ export default function EstimateSheet({
           parsedData.sovItems,
           createDefaultLineItems(),
         ),
+        useSovItems: parsedData.useSovItems ?? true,
+        useScopeNarrative: parsedData.useScopeNarrative ?? false,
+        scopeNarrative: parsedData.scopeNarrative || "",
         nonSovItems: normalizeEstimateLineItems(
           parsedData.nonSovItems,
           createDefaultNonSovItems(),
@@ -3174,6 +3188,55 @@ export default function EstimateSheet({
     setIsDirty(true);
   };
 
+  const SCOPE_LIBRARY_TRIGGER = "/library";
+
+  // Handles edits to the abstract-scope narrative textarea. Typing "/library"
+  // removes the trigger token and opens the Scope Notes library at that caret
+  // position so the selected note(s) are inserted in-place.
+  const handleScopeNarrativeChange = (value: string) => {
+    const triggerIdx = value.lastIndexOf(SCOPE_LIBRARY_TRIGGER);
+    if (triggerIdx !== -1) {
+      const before = value.slice(0, triggerIdx);
+      const after = value.slice(triggerIdx + SCOPE_LIBRARY_TRIGGER.length);
+      scopeNarrativeInsertPosRef.current = before.length;
+      handleGeneralChange("scopeNarrative", before + after);
+      setIsScopeNarrativeLibraryOpen(true);
+      return;
+    }
+    handleGeneralChange("scopeNarrative", value);
+  };
+
+  // Converts the scope-note HTML emitted by ProposalScopeNotesModal into plain
+  // text suitable for the narrative textarea (one bullet per list item).
+  const scopeNotesHtmlToText = (html: string): string => {
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    const items = Array.from(container.querySelectorAll("li"));
+    if (items.length > 0) {
+      return items
+        .map((li) => `• ${(li.textContent || "").trim()}`)
+        .filter((line) => line !== "• ")
+        .join("\n");
+    }
+    return (container.textContent || "").trim();
+  };
+
+  // Inserts library-selected scope notes into the narrative at the stored caret.
+  const insertScopeNotesIntoNarrative = (notesHtml: string) => {
+    const text = scopeNotesHtmlToText(notesHtml);
+    if (!text) return;
+    setData((prev) => {
+      const current = prev.scopeNarrative || "";
+      const pos = scopeNarrativeInsertPosRef.current ?? current.length;
+      const needsLeadingBreak = pos > 0 && !current.slice(0, pos).endsWith("\n");
+      const insertion = (needsLeadingBreak ? "\n" : "") + text;
+      const next = current.slice(0, pos) + insertion + current.slice(pos);
+      scopeNarrativeInsertPosRef.current = pos + insertion.length;
+      return { ...prev, scopeNarrative: next };
+    });
+    setIsDirty(true);
+  };
+
   // Drag and drop handlers
   const handleDragStart = (
     e: React.DragEvent,
@@ -4407,6 +4470,12 @@ export default function EstimateSheet({
   const [includeMobilizationWhenZero, setIncludeMobilizationWhenZero] =
     useState<boolean>(false);
   const [isScopeNotesModalOpen, setIsScopeNotesModalOpen] = useState(false);
+  // Scope Notes library opened from the abstract-scope narrative textarea
+  // (separate from the letter-editor instance above). Tracks the caret offset
+  // where the selected note(s) should be inserted.
+  const [isScopeNarrativeLibraryOpen, setIsScopeNarrativeLibraryOpen] =
+    useState(false);
+  const scopeNarrativeInsertPosRef = useRef<number | null>(null);
   const [hourlyRates, setHourlyRates] = useState({
     straightTime: DEFAULT_ESTIMATING_PRESETS.default_hourly_rate,
     overtime: DEFAULT_ESTIMATING_PRESETS.overtime_rate,
@@ -4795,6 +4864,43 @@ export default function EstimateSheet({
         <tbody>${bodyRows}</tbody>
       </table>
     `;
+  }
+
+  // Renders the proposal "Scope" section. For abstract scopes the estimate can
+  // opt into a free-text narrative (useScopeNarrative); otherwise it falls back
+  // to the standard SOV Item & Quantity table.
+  function buildScopeProposalHtml(
+    source: any,
+    sovItems: any[],
+    includeNotes: boolean,
+  ): string {
+    // Default to the SOV table when the flag is absent (legacy estimates).
+    const showSovItems = source?.useSovItems !== false;
+    const narrative = (source?.scopeNarrative ?? "").toString().trim();
+    const showNarrative = !!source?.useScopeNarrative && narrative.length > 0;
+
+    let narrativeHtml = "";
+    if (showNarrative) {
+      const paragraphs = narrative
+        .split(/\n{2,}/)
+        .map(
+          (block: string) =>
+            `<p style="margin:0 0 8px;">${escapeLetterHtml(block).replace(/\n/g, "<br/>")}</p>`,
+        )
+        .join("");
+      narrativeHtml = `<div class="amp-section amp-scope-narrative" style="margin-bottom:16px;">${paragraphs}</div>`;
+    }
+
+    const tableHtml = showSovItems
+      ? buildSovProposalTableHtml(sovItems, includeNotes)
+      : "";
+
+    // Narrative first (descriptive intro), then the itemized table when both on.
+    // If neither is selected, fall back to the table so the proposal isn't empty.
+    if (!narrativeHtml && !tableHtml) {
+      return buildSovProposalTableHtml(sovItems, includeNotes);
+    }
+    return `${narrativeHtml}${tableHtml}`;
   }
 
   function applyNetaTextByValue(value: string) {
@@ -5621,7 +5727,8 @@ export default function EstimateSheet({
       parsedData?.title && String(parsedData.title).trim()
         ? String(parsedData.title).trim()
         : "Scope";
-    const sovTableHtml = buildSovProposalTableHtml(
+    const sovTableHtml = buildScopeProposalHtml(
+      parsedData,
       sovItems,
       letterIncludeSovNotes,
     );
@@ -6007,7 +6114,8 @@ export default function EstimateSheet({
         const scopeNumber = index + 1;
         const headingText =
           processedQuote.displayTitle || `Scope ${scopeNumber}`;
-        const sovTableHtml = buildSovProposalTableHtml(
+        const sovTableHtml = buildScopeProposalHtml(
+          processedQuote.parsedData,
           processedQuote.sovItems,
           letterIncludeSovNotes,
         );
@@ -7606,7 +7714,109 @@ export default function EstimateSheet({
                       >
                         Default column width
                       </Button>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "16px",
+                          flexWrap: "wrap",
+                          marginLeft: "auto",
+                        }}
+                      >
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontSize: "13px",
+                            cursor: isViewMode ? "default" : "pointer",
+                          }}
+                          title="Include the SOV Item & Quantity table in the generated proposal. Pricing always uses the items below regardless of this toggle."
+                        >
+                          <Switch
+                            checked={data.useSovItems !== false}
+                            disabled={isViewMode}
+                            checkedClassName="bg-[#f26722]"
+                            onCheckedChange={(checked) => {
+                              setData((prev) => ({
+                                ...prev,
+                                useSovItems: checked,
+                              }));
+                              setIsDirty(true);
+                            }}
+                          />
+                          Show items in proposal
+                        </label>
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontSize: "13px",
+                            cursor: isViewMode ? "default" : "pointer",
+                          }}
+                          title="Include a free-text scope description in the proposal. Can be used alongside or instead of the items table (e.g. for abstract scopes)."
+                        >
+                          <Switch
+                            checked={!!data.useScopeNarrative}
+                            disabled={isViewMode}
+                            checkedClassName="bg-[#f26722]"
+                            onCheckedChange={(checked) => {
+                              setData((prev) => ({
+                                ...prev,
+                                useScopeNarrative: checked,
+                              }));
+                              setIsDirty(true);
+                            }}
+                          />
+                          Use scope narrative in proposal
+                        </label>
+                      </div>
                     </div>
+                    {data.useScopeNarrative && (
+                      <div style={{ ...styles.formGroup, marginTop: "8px" }}>
+                        <label style={styles.formLabel}>
+                          Scope Narrative (shown in the proposal
+                          {data.useSovItems !== false
+                            ? " above the Item & Quantity table"
+                            : " instead of the Item & Quantity table"}
+                          ):
+                        </label>
+                        <textarea
+                          style={{
+                            ...styles.formInput,
+                            minHeight: "140px",
+                            resize: "vertical",
+                          }}
+                          value={data.scopeNarrative || ""}
+                          disabled={isViewMode}
+                          onChange={(e) =>
+                            handleScopeNarrativeChange(e.target.value)
+                          }
+                          placeholder="Describe the scope of work. Type /library to insert a saved scope note from the library."
+                        />
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--muted-fg, #6b7280)",
+                            marginTop: "4px",
+                          }}
+                        >
+                          Tip: type <strong>/library</strong> to pick from saved
+                          scope notes. The SOV items still drive pricing even
+                          when hidden.
+                        </div>
+                      </div>
+                    )}
+                    <ProposalScopeNotesModal
+                      isOpen={isScopeNarrativeLibraryOpen}
+                      onClose={() => setIsScopeNarrativeLibraryOpen(false)}
+                      onInsert={(notesHtml: string) => {
+                        insertScopeNotesIntoNarrative(notesHtml);
+                        setIsScopeNarrativeLibraryOpen(false);
+                      }}
+                    />
+                    {data.useSovItems !== false && (
                     <div
                       style={styles.tableContainer}
                       onMouseMove={onMouseMove}
@@ -8562,6 +8772,7 @@ export default function EstimateSheet({
                         </Button>
                       </div>
                     </div>
+                    )}
 
                     {/* Non-SOV Quote Items */}
                     <div style={styles.sectionHeader}>NON-SOV QUOTE ITEMS</div>

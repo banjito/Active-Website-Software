@@ -51,6 +51,7 @@ import { getReportName, getAssetName } from "./reportMappings";
 enum TestStatus {
   PASS = "PASS",
   FAIL = "FAIL",
+  LIMITED_SERVICE = "LIMITED SERVICE",
 }
 
 enum CablePhase {
@@ -1065,7 +1066,9 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
             status:
               prev.status === TestStatus.PASS
                 ? TestStatus.FAIL
-                : TestStatus.PASS,
+                : prev.status === TestStatus.FAIL
+                  ? TestStatus.LIMITED_SERVICE
+                  : TestStatus.PASS,
           }));
         }
       }}
@@ -1130,10 +1133,19 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                 border:
                   formData.status === TestStatus.PASS
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "2px solid #ca8a04"
+                      : "2px solid #dc2626",
                 backgroundColor:
-                  formData.status === TestStatus.PASS ? "#22c55e" : "#ef4444",
-                color: "white",
+                  formData.status === TestStatus.PASS
+                    ? "#22c55e"
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "#eab308"
+                      : "#ef4444",
+                color:
+                  formData.status === TestStatus.LIMITED_SERVICE
+                    ? "#111827"
+                    : "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
                 boxSizing: "border-box",
@@ -2718,6 +2730,11 @@ if (typeof document !== "undefined") {
         background-color: #ef4444 !important;
         border: 2px solid #dc2626 !important;
         color: white !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border: 2px solid #ca8a04 !important;
+        color: #111827 !important;
       }
 
       /* Force printed layout to match on-screen for Job Information */

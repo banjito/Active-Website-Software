@@ -103,7 +103,9 @@ const TanDeltaTestMTSForm: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [justSaved, setJustSaved] = useState(false);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
-  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+  const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">(
+    "PASS",
+  );
 
   // Define the report slug and name
   const reportSlug = "electrical-tan-delta-test-mts-form";
@@ -386,7 +388,13 @@ const TanDeltaTestMTSForm: React.FC = () => {
       hasReport={!!currentReportId}
       onStatusToggle={() => {
         if (isEditing) {
-          setStatus(status === "PASS" ? "FAIL" : "PASS");
+          setStatus(
+            status === "PASS"
+              ? "FAIL"
+              : status === "FAIL"
+                ? "LIMITED SERVICE"
+                : "PASS",
+          );
         }
       }}
       onSave={handleSave}
@@ -436,9 +444,18 @@ const TanDeltaTestMTSForm: React.FC = () => {
                 width: "fit-content",
                 borderRadius: "6px",
                 border:
-                  status === "PASS" ? "2px solid #16a34a" : "2px solid #dc2626",
-                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
-                color: "white",
+                  status === "PASS"
+                    ? "2px solid #16a34a"
+                    : status === "LIMITED SERVICE"
+                      ? "2px solid #ca8a04"
+                      : "2px solid #dc2626",
+                backgroundColor:
+                  status === "PASS"
+                    ? "#22c55e"
+                    : status === "LIMITED SERVICE"
+                      ? "#eab308"
+                      : "#ef4444",
+                color: status === "LIMITED SERVICE" ? "#111827" : "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
                 boxSizing: "border-box",
@@ -1089,6 +1106,11 @@ if (typeof document !== "undefined") {
       /* Global resets */
       * { color: black !important; background: white !important; box-sizing: border-box !important; }
       body { margin: 0 !important; padding: 20px !important; font-family: Arial, sans-serif !important; font-size: 12px !important; }
+
+      /* PASS/FAIL/LIMITED badge — keep colors after global override */
+      .pass-fail-status-box.pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .pass-fail-status-box.fail { background-color: #ef4444 !important; border: 2px solid #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .pass-fail-status-box.limited { background-color: #eab308 !important; border: 2px solid #ca8a04 !important; color: #111827 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
       /* Hide navigation and non-print elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], .sticky, [class*="sticky"], .print\\:hidden { display: none !important; }

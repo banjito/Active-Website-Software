@@ -50,6 +50,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
+import { canApproveReports, canExportReports } from "@/lib/roles";
 
 interface ReportApprovalWorkflowProps {
   division?: string;
@@ -168,14 +169,16 @@ export function ReportApprovalWorkflow({
     loadOpenFlags();
     if (user?.user_metadata?.role) {
       const role = user.user_metadata.role as string;
+      const email = user.email;
       setUserRole(role);
 
-      // Set permissions based on role
+      // Permissions derive from the single source of truth in roles.ts
+      const approver = canApproveReports(role, email);
       setUserPermissions({
         canView: true, // All authenticated users can view
-        canReview: ["Manager", "Admin", "Supervisor"].includes(role),
-        canApprove: ["Manager", "Admin"].includes(role),
-        canExport: ["Manager", "Admin", "Supervisor", "User"].includes(role),
+        canReview: approver,
+        canApprove: approver,
+        canExport: canExportReports(role, email),
       });
     }
   }, [activeTab, filters, jobId, user]);

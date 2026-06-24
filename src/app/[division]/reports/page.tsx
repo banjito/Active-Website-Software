@@ -9,6 +9,7 @@ import { QualityMetrics } from '@/components/lab/QualityMetrics';
 import { PortalType } from '@/lib/types/scheduling';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ReportApprovalWorkflow } from '@/components/reports/ReportApprovalWorkflow';
+import { canAccessReportApproval } from '@/lib/roles';
 
 export default function ReportsPage() {
   const params = useParams();
@@ -45,9 +46,11 @@ export default function ReportsPage() {
     }
   }, [division]);
 
-  // Check access permissions
-  const canAccessReports = user?.user_metadata?.role === 'Admin' || 
-                          user?.user_metadata?.role?.includes('Manager');
+  // Check access permissions (single source of truth in roles.ts)
+  const canAccessReports = canAccessReportApproval(
+    user?.user_metadata?.role,
+    user?.email,
+  );
 
   useEffect(() => {
     if (!user || !canAccessReports) {

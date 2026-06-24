@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Role, ROLES, isSuperUser } from "@/lib/roles";
+import { Role, ROLES, isSuperUser, getRoleBadgeClasses } from "@/lib/roles";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "../ui/Button";
 import {
@@ -10,6 +10,7 @@ import {
   AlertCircle,
   RefreshCw,
   KeyRound,
+  Camera,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -53,6 +54,18 @@ export default function AdminUserManagement() {
   );
 
   const canChangePasswords = isSuperUser(currentUser?.email);
+  // Admin and up may change other users' profile images. The server RPC
+  // (admin_update_user_metadata) enforces this independently.
+  const currentRole = currentUser?.user_metadata?.role as string | undefined;
+  const canEditProfileImages =
+    ["Admin", "Super Admin"].includes(currentRole ?? "") ||
+    isSuperUser(currentUser?.email);
+
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const avatarTargetUserIdRef = useRef<string | null>(null);
+  const [avatarUploadingUserId, setAvatarUploadingUserId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     fetchUsers();
@@ -312,6 +325,124 @@ export default function AdminUserManagement() {
     }
   };
 
+  const handleStartAvatarChange = (userId: string) => {
+    avatarTargetUserIdRef.current = userId;
+    if (avatarFileInputRef.current) {
+      avatarFileInputRef.current.value = ""; // allow re-selecting the same file
+      avatarFileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarFileSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    const userId = avatarTargetUserIdRef.current;
+    if (!file || !userId) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      setUpdateErrorUserId(userId);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be less than 5MB.");
+      setUpdateErrorUserId(userId);
+      return;
+    }
+
+    setError(null);
+    setUpdateErrorUserId(null);
+    setUpdateSuccessUserId(null);
+    setAvatarUploadingUserId(userId);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error("Could not get session for upload.");
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) throw new Error("VITE_SUPABASE_URL is not defined");
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const storagePath = `user-uploads/profile-images/${fileName}`;
+
+      const response = await fetch(
+        `${supabaseUrl}/storage/v1/object/${storagePath}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": file.type,
+            "x-upsert": "true",
+          },
+          body: file,
+        },
+      );
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Upload failed (${response.status}): ${body}`);
+      }
+
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${storagePath}`;
+
+      // Update auth metadata (server enforces Admin/HR/superuser, strips role)
+      const { error: rpcError } = await supabase
+        .schema("common")
+        .rpc("admin_update_user_metadata", {
+          target_user_id: userId,
+          new_metadata: { profileImage: publicUrl },
+        });
+      if (rpcError) {
+        if (rpcError.message.toLowerCase().includes("access denied")) {
+          throw new Error(
+            "Only admins can change other users' profile images.",
+          );
+        }
+        throw new Error(rpcError.message);
+      }
+
+      // Mirror to common.profiles so others see the new avatar.
+      await supabase
+        .schema("common")
+        .from("profiles")
+        .upsert(
+          { id: userId, avatar_url: publicUrl, profile_image: publicUrl },
+          { onConflict: "id" },
+        );
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? {
+                ...u,
+                user_metadata: {
+                  ...u.user_metadata,
+                  profileImage: publicUrl,
+                },
+              }
+            : u,
+        ),
+      );
+
+      setUpdateSuccessUserId(userId);
+      setTimeout(() => setUpdateSuccessUserId(null), 3000);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not change profile image";
+      setError(message);
+      setUpdateErrorUserId(userId);
+    } finally {
+      setAvatarUploadingUserId(null);
+      avatarTargetUserIdRef.current = null;
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const searchLower = searchQuery.toLowerCase();
     const email = user.email?.toLowerCase() || "";
@@ -327,6 +458,15 @@ export default function AdminUserManagement() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
+      {canEditProfileImages && (
+        <input
+          ref={avatarFileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleAvatarFileSelected}
+          className="hidden"
+        />
+      )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
@@ -401,7 +541,20 @@ export default function AdminUserManagement() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
                     {/* Profile Image/Initial */}
-                    <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div
+                      className={`relative h-10 w-10 rounded-full bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0 group ${
+                        canEditProfileImages ? "cursor-pointer" : ""
+                      }`}
+                      onClick={
+                        canEditProfileImages &&
+                        avatarUploadingUserId !== user.id
+                          ? () => handleStartAvatarChange(user.id)
+                          : undefined
+                      }
+                      title={
+                        canEditProfileImages ? "Change profile photo" : undefined
+                      }
+                    >
                       {user.user_metadata?.profileImage ? (
                         <img
                           src={user.user_metadata.profileImage}
@@ -414,6 +567,17 @@ export default function AdminUserManagement() {
                             user.email?.[0]?.toUpperCase() ||
                             "?"}
                         </span>
+                      )}
+                      {canEditProfileImages &&
+                        avatarUploadingUserId !== user.id && (
+                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+                      {avatarUploadingUserId === user.id && (
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                          <RefreshCw className="h-4 w-4 text-white animate-spin" />
+                        </div>
                       )}
                     </div>
                     {/* Name, Email, Status Icons */}
@@ -483,18 +647,11 @@ export default function AdminUserManagement() {
                   ) : (
                     <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
                       <div className="mr-2">
-                        {/* Role Display Span */}
+                        {/* Role Display Badge — colors per role from roles.ts */}
                         <span
-                          className={`
-                        inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
-                        ${
-                          user.user_metadata?.role === "Admin"
-                            ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
-                            : user.user_metadata?.role?.includes("Technician")
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "bg-neutral-100 text-neutral-800 dark:bg-dark-300 dark:text-white"
-                        }
-                      `}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getRoleBadgeClasses(
+                            user.user_metadata?.role,
+                          )}`}
                         >
                           {user.user_metadata?.role || "No Role"}
                         </span>

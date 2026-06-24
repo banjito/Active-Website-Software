@@ -36,6 +36,18 @@ import {
   normalizeTravelData,
   computeTravelTotals,
 } from "../../lib/travelExpenses";
+import {
+  fmtMoney,
+  fmtMoney0,
+  fmtNum,
+  numField,
+  calcField,
+  totalField,
+  sectionTitle,
+  subLabel,
+  SectionNav,
+  type SectionNavItem,
+} from "./estimateFieldKit";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
 import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
@@ -124,6 +136,20 @@ const styles = {
     fontWeight: "bold",
     color: "var(--text-color)",
   },
+  // Blue "auto-calculated" cell — mirrors the field kit's CALC_CLS for inline-style tables.
+  calcCell: {
+    backgroundColor: "var(--calc-cell-bg)",
+    border: "1px solid var(--calc-cell-border)",
+    color: "var(--calc-cell-text)",
+    fontWeight: 500,
+  },
+  // Orange "total" cell — mirrors the field kit's TOTAL_CLS for inline-style tables.
+  totalCell: {
+    backgroundColor: "var(--total-cell-bg)",
+    border: "1px solid var(--total-cell-border)",
+    color: "var(--total-cell-text)",
+    fontWeight: "bold",
+  },
   summarySection: {
     marginTop: "20px",
     width: "400px",
@@ -131,6 +157,22 @@ const styles = {
     backgroundColor: "var(--summary-bg)",
     padding: "15px",
     borderRadius: "4px",
+  },
+  // Flat, full-width block for sections rendered inside a SectionNav panel
+  // (the panel already provides the card frame + padding).
+  panelBlock: {
+    width: "100%",
+    marginTop: 0,
+    marginBottom: "16px",
+  },
+  // Slim section heading matching the field kit's sectionTitle().
+  panelTitle: {
+    fontSize: "14px",
+    fontWeight: 500,
+    color: "var(--text-color)",
+    borderBottom: "0.5px solid var(--border-color)",
+    paddingBottom: "8px",
+    marginBottom: "12px",
   },
   summaryRow: {
     display: "flex",
@@ -614,6 +656,12 @@ export default function EstimateSheet({
   const [activeTravelSection, setActiveTravelSection] = useState<
     "travel" | "perDiem" | "lodging" | "localMiles" | "airTravel" | "rentalCar"
   >("travel");
+  // Active panel in the calc/summary nav (Hours & Labor / Payment+Mobilization / Financial).
+  const [activeSummarySection, setActiveSummarySection] = useState<
+    "hoursLabor" | "terms" | "financial"
+  >("hoursLabor");
+  // Transient "Copied!" feedback for the quote-terms copy button.
+  const [quoteTextCopied, setQuoteTextCopied] = useState(false);
   const { user } = useAuth(); // Get user at component level
   const { preferences, updatePreference, deletePreference } =
     useUserPreferences();
@@ -2776,6 +2824,49 @@ export default function EstimateSheet({
     );
   };
 
+  // Plain-text version of the quote terms block, for pasting straight into a quote.
+  const buildQuoteText = () => {
+    const f = getFinalValue();
+    const mob = (v: number) => Math.ceil(v * getMobilizationFactor(v));
+    const termAmt = (v: number, factor: number) =>
+      Math.ceil(v * factor) + mob(v);
+    const lines: string[] = [];
+    const block = (label: string, factor: number) => {
+      lines.push(`${label}:`);
+      lines.push(`  Monday - Friday: ${formatCurrency(termAmt(f, factor))}`);
+      if (showSaturdayHours)
+        lines.push(
+          `  Saturday: ${formatCurrency(termAmt(getSaturdayFinalValue(), factor))}`,
+        );
+      if (showSundayHours)
+        lines.push(
+          `  Sunday / Holiday: ${formatCurrency(termAmt(getSundayFinalValue(), factor))}`,
+        );
+      lines.push("");
+    };
+    block("NET 30", paymentTermFactors.net30);
+    block("NET 60", paymentTermFactors.net60);
+    block("NET 90", paymentTermFactors.net90);
+    lines.push(
+      `Mobilization costs of ${formatCurrency(mob(f))} shall be paid out of the above agreed upon price before the first day of work.`,
+    );
+    if (showTravel) {
+      lines.push("");
+      lines.push(`Total Travel Cost: ${formatCurrency(getTotalTravelCost())}`);
+    }
+    return lines.join("\n");
+  };
+
+  const handleCopyQuoteText = async () => {
+    try {
+      await navigator.clipboard.writeText(buildQuoteText());
+      setQuoteTextCopied(true);
+      setTimeout(() => setQuoteTextCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy quote text:", err);
+    }
+  };
+
   // Function to calculate SOV item price
   // Formula: =($G$54/$K$44*I10)
   // G54 = Final (G54), K44 = Work/SOV hrs (from Hours Summary), I10 = Labor Unit (for this row)
@@ -3660,6 +3751,13 @@ export default function EstimateSheet({
       root.style.setProperty("--input-text", "#E4E6EB");
       root.style.setProperty("--input-placeholder", "#6B7280");
       root.style.setProperty("--input-border-focus", "#f26722");
+      // Calculated (blue) / total (orange) cells — mirror the field kit palette (dark).
+      root.style.setProperty("--calc-cell-bg", "rgba(23,37,84,0.40)");
+      root.style.setProperty("--calc-cell-text", "#bfdbfe");
+      root.style.setProperty("--calc-cell-border", "#1e3a8a");
+      root.style.setProperty("--total-cell-bg", "rgba(67,20,7,0.40)");
+      root.style.setProperty("--total-cell-text", "#fed7aa");
+      root.style.setProperty("--total-cell-border", "#9a3412");
     } else {
       root.style.setProperty("--text-color", "#333333");
       root.style.setProperty("--border-color", "#E5E7EB");
@@ -3673,6 +3771,13 @@ export default function EstimateSheet({
       root.style.setProperty("--input-text", "#111827");
       root.style.setProperty("--input-placeholder", "#9CA3AF");
       root.style.setProperty("--input-border-focus", "#f26722");
+      // Calculated (blue) / total (orange) cells — mirror the field kit palette (light).
+      root.style.setProperty("--calc-cell-bg", "#eff6ff");
+      root.style.setProperty("--calc-cell-text", "#1e40af");
+      root.style.setProperty("--calc-cell-border", "#bfdbfe");
+      root.style.setProperty("--total-cell-bg", "#fff7ed");
+      root.style.setProperty("--total-cell-text", "#9a3412");
+      root.style.setProperty("--total-cell-border", "#fed7aa");
     }
   };
 
@@ -3937,6 +4042,24 @@ export default function EstimateSheet({
   const [isViewMode, setIsViewMode] = useState<boolean>(false);
   const [netaStandard, setNetaStandard] = useState<string>("");
   const [letterProposalName, setLetterProposalName] = useState<string>("");
+
+  // Cmd/Ctrl+S saves the estimate (when editable). Kept in a ref so the single
+  // window listener always runs against the latest state/handler.
+  const keyboardSaveRef = useRef<() => void>(() => {});
+  keyboardSaveRef.current = () => {
+    if (isViewMode || isSaving) return;
+    void saveQuote();
+  };
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        keyboardSaveRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const syncLetterEditorHtmlFromDom = () => {
     const editor = letterEditorRef.current;
@@ -6508,6 +6631,21 @@ export default function EstimateSheet({
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
                       <Button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              "Delete this estimate? This cannot be undone.",
+                            )
+                          ) {
+                            deleteQuoteById(quotes[selectedQuoteIndex].id);
+                          }
+                        }}
+                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                      >
+                        <Trash className="h-6 w-6" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           duplicateQuote(quotes[selectedQuoteIndex].id)
                         }
@@ -6524,21 +6662,6 @@ export default function EstimateSheet({
                         leftIcon={<Copy className="h-5 w-5" />}
                       >
                         Copy to opportunity
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              "Delete this estimate? This cannot be undone.",
-                            )
-                          ) {
-                            deleteQuoteById(quotes[selectedQuoteIndex].id);
-                          }
-                        }}
-                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
-                      >
-                        <Trash className="h-6 w-6" />
                       </Button>
                     </>
                   )}
@@ -6572,6 +6695,20 @@ export default function EstimateSheet({
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
                       <Button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              "Delete this estimate? This cannot be undone.",
+                            )
+                          ) {
+                            deleteQuoteById(quotes[selectedQuoteIndex].id);
+                          }
+                        }}
+                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                      >
+                        <Trash className="h-6 w-6" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           duplicateQuote(quotes[selectedQuoteIndex].id)
                         }
@@ -6588,20 +6725,6 @@ export default function EstimateSheet({
                         leftIcon={<Copy className="h-5 w-5" />}
                       >
                         Copy to opportunity
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              "Delete this estimate? This cannot be undone.",
-                            )
-                          ) {
-                            deleteQuoteById(quotes[selectedQuoteIndex].id);
-                          }
-                        }}
-                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
-                      >
-                        <Trash className="h-6 w-6" />
                       </Button>
                     </>
                   )}
@@ -8567,76 +8690,6 @@ export default function EstimateSheet({
                         const td = travelData as any;
                         const speed =
                           DEFAULT_ESTIMATING_PRESETS.default_average_speed || 50;
-                        const fmtMoney = (n: number) =>
-                          "$" +
-                          (Number(n) || 0).toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          });
-                        const fmtMoney0 = (n: number) =>
-                          "$" +
-                          Math.round(Number(n) || 0).toLocaleString("en-US");
-                        const fmtNum = (n: number) =>
-                          Math.round(Number(n) || 0).toLocaleString("en-US");
-
-                        const inputCls =
-                          "w-full text-sm rounded border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#f26722]";
-                        const calcCls =
-                          "text-sm rounded border px-2 py-1 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-200 font-medium";
-                        const totalCls =
-                          "text-sm rounded border px-2 py-1 bg-orange-50 dark:bg-orange-950/40 border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-200 font-semibold";
-                        const fieldLabelCls =
-                          "text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1";
-
-                        const numField = (
-                          label: string,
-                          value: number,
-                          onChange: (v: string) => void,
-                          step?: number,
-                        ) => (
-                          <label className="flex flex-col min-w-0">
-                            <span className={fieldLabelCls}>{label}</span>
-                            <input
-                              type="number"
-                              min={0}
-                              step={step}
-                              value={value}
-                              onChange={(e) => onChange(e.target.value)}
-                              className={inputCls}
-                            />
-                          </label>
-                        );
-                        const calcField = (label: string, text: string) => (
-                          <div className="flex flex-col min-w-0">
-                            <span className={fieldLabelCls}>{label}</span>
-                            <span className={calcCls}>{text}</span>
-                          </div>
-                        );
-                        const totalField = (label: string, text: string) => (
-                          <div className="flex flex-col min-w-0">
-                            <span className={fieldLabelCls}>{label}</span>
-                            <span className={totalCls}>{text}</span>
-                          </div>
-                        );
-                        const sectionTitle = (
-                          title: string,
-                          sub?: string,
-                        ) => (
-                          <div className="text-sm font-medium mb-3 pb-2 border-b border-neutral-200 dark:border-dark-200 text-neutral-800 dark:text-neutral-100">
-                            {title}
-                            {sub && (
-                              <span className="ml-2 text-xs font-normal text-neutral-500 dark:text-neutral-400">
-                                {sub}
-                              </span>
-                            )}
-                          </div>
-                        );
-                        const subLabel = (text: string) => (
-                          <div className="text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mt-3 mb-1">
-                            {text}
-                          </div>
-                        );
-
                         const navItems: {
                           key: typeof activeTravelSection;
                           label: string;
@@ -8680,42 +8733,11 @@ export default function EstimateSheet({
                               Travel Expenses
                             </h3>
 
-                            <div className="flex border border-neutral-200 dark:border-dark-200 rounded-lg overflow-hidden">
-                              {/* Nav */}
-                              <div className="w-44 shrink-0 bg-neutral-50 dark:bg-dark-100 border-r border-neutral-200 dark:border-dark-200 py-2">
-                                {navItems.map((n) => {
-                                  const active =
-                                    activeTravelSection === n.key;
-                                  return (
-                                    <button
-                                      key={n.key}
-                                      type="button"
-                                      onClick={() =>
-                                        setActiveTravelSection(n.key)
-                                      }
-                                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between gap-1 ${
-                                        active
-                                          ? "bg-white dark:bg-dark-200 text-neutral-900 dark:text-white font-medium border-r-2 border-[#f26722]"
-                                          : "text-neutral-600 dark:text-neutral-300 hover:bg-white/60 dark:hover:bg-dark-200/60"
-                                      }`}
-                                    >
-                                      <span>{n.label}</span>
-                                      <span
-                                        className={`text-[11px] whitespace-nowrap ${
-                                          active
-                                            ? "text-[#854F0B] dark:text-orange-300"
-                                            : "text-neutral-400 dark:text-neutral-500"
-                                        }`}
-                                      >
-                                        {n.badge}
-                                      </span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Panel */}
-                              <div className="flex-1 p-4 min-w-0">
+                            <SectionNav
+                              items={navItems}
+                              active={activeTravelSection}
+                              onChange={setActiveTravelSection}
+                            >
                                 {/* TRAVEL (vehicle + time merged) */}
                                 {activeTravelSection === "travel" && (
                                   <div>
@@ -9137,8 +9159,7 @@ export default function EstimateSheet({
                                     </div>
                                   </div>
                                 )}
-                              </div>
-                            </div>
+                            </SectionNav>
 
                             {/* Travel grand totals */}
                             <div className="mt-4 flex flex-wrap items-center justify-end gap-6 rounded-md bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-dark-200 px-4 py-3">
@@ -9159,29 +9180,29 @@ export default function EstimateSheet({
                         );
                       })()}
 
-                    {/* Summary Sections Container - Side by Side (wraps on narrow viewports) */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        justifyContent: "space-between",
-                        gap: "20px",
-                        marginTop: "20px",
-                        minWidth: 0,
-                      }}
-                    >
+                    {(() => {
+                      const summaryNavItems: SectionNavItem<typeof activeSummarySection>[] = [
+                        { key: "hoursLabor", label: "Hours & Labor", badge: `${formatNumber(data.hoursSummary.totalHours)} hrs` },
+                        { key: "terms", label: "Payment + mob", badge: formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30) + Math.ceil(getFinalValue() * getMobilizationFactor(getFinalValue()))) },
+                        { key: "financial", label: "Financial", badge: formatCurrency(getFinalValue()) },
+                      ];
+                      return (
+                        <div className="mt-8">
+                          <h3 className="text-xl font-semibold mb-4">Estimate Summary</h3>
+                          <SectionNav
+                            items={summaryNavItems}
+                            active={activeSummarySection}
+                            onChange={setActiveSummarySection}
+                          >
+                        {activeSummarySection === "financial" && (
+                          <div>
                       {/* Financial Summary Table - Left Side */}
                       <div
-                        style={{
-                          ...styles.summarySection,
-                          flex: "1 1 400px",
-                          minWidth: 0,
-                          maxWidth: "700px",
-                        }}
+                        style={styles.panelBlock}
                       >
                         <h3
                           style={{
-                            ...styles.sectionHeader,
+                            ...styles.panelTitle,
                             marginBottom: "15px",
                           }}
                         >
@@ -9259,7 +9280,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9278,7 +9299,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9314,7 +9335,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9339,7 +9360,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9358,7 +9379,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9377,7 +9398,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.calcCell,
                                   padding: "12px 8px",
                                 }}
                               >
@@ -9401,7 +9422,7 @@ export default function EstimateSheet({
                               <td
                                 style={{
                                   ...styles.tableCell,
-                                  ...styles.calculated,
+                                  ...styles.totalCell,
                                   fontWeight: "bold",
                                   padding: "12px 8px",
                                 }}
@@ -9418,16 +9439,208 @@ export default function EstimateSheet({
                           </tbody>
                         </table>
                       </div>
-
+                          </div>
+                        )}
+                        {activeSummarySection === "hoursLabor" && (
+                          <div>
+                      {/* Hours Summary Section - Right Side - fixed width so it doesn't stretch the page */}
+                      <div
+                        style={styles.panelBlock}
+                      >
+                        <h3
+                          style={{
+                            ...styles.panelTitle,
+                            marginBottom: "15px",
+                          }}
+                        >
+                          Hours Summary
+                        </h3>
+                        <table
+                          style={{
+                            ...styles.table,
+                            width: "100%",
+                            minWidth: 0,
+                            fontSize: "14px",
+                            tableLayout: "fixed",
+                          }}
+                        >
+                          <tbody>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  width: "60%",
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Men:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  width: "40%",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  style={{
+                                    ...styles.tableInput,
+                                    width: "100%",
+                                  }}
+                                  value={data.hoursSummary.men}
+                                  onChange={(e) =>
+                                    handleHoursSummaryChange(
+                                      "men",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Hrs/Day:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  style={{
+                                    ...styles.tableInput,
+                                    width: "100%",
+                                  }}
+                                  value={data.hoursSummary.hoursPerDay}
+                                  onChange={(e) =>
+                                    handleHoursSummaryChange(
+                                      "hoursPerDay",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Days Onsite:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  ...styles.calcCell,
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                {formatNumber(data.hoursSummary.daysOnsite)}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Work / SOV Hrs:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  ...styles.calcCell,
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                {formatNumber(data.hoursSummary.workHours)}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Non-SOV Hrs:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  ...styles.calcCell,
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                {formatNumber(data.hoursSummary.nonSovHours)}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                Travel Hours:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  ...styles.calcCell,
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                {formatNumber(data.hoursSummary.travelHours)}
+                              </td>
+                            </tr>
+                            <tr style={{ ...styles.tfoot }}>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  textAlign: "left",
+                                  fontWeight: "bold",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                TOTAL HOURS:
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  ...styles.totalCell,
+                                  fontWeight: "bold",
+                                  padding: "12px 8px",
+                                }}
+                              >
+                                {formatNumber(data.hoursSummary.totalHours)}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       {/* Labor Calculation Table - Under Financial Summary */}
                       <div
-                        style={{
-                          ...styles.summarySection,
-                          flex: "1 1 400px",
-                          minWidth: 0,
-                          maxWidth: "700px",
-                          marginTop: "20px",
-                        }}
+                        style={styles.panelBlock}
                       >
                         <div
                           style={{
@@ -9438,7 +9651,7 @@ export default function EstimateSheet({
                           }}
                         >
                           <h3
-                            style={{ ...styles.sectionHeader, marginBottom: 0 }}
+                            style={{ ...styles.panelTitle, marginBottom: 0 }}
                           >
                             Labor Hours Tracking — Monday-Friday
                           </h3>
@@ -9455,9 +9668,9 @@ export default function EstimateSheet({
                                 cursor: "pointer",
                                 backgroundColor: showSaturdayHours
                                   ? "#f26722"
-                                  : "#6c757d",
-                                color: "white",
-                                border: "none",
+                                  : "transparent",
+                                color: showSaturdayHours ? "white" : "#f26722",
+                                border: "0.5px solid #f26722",
                               }}
                             >
                               {showSaturdayHours
@@ -9476,9 +9689,9 @@ export default function EstimateSheet({
                                 cursor: "pointer",
                                 backgroundColor: showSundayHours
                                   ? "#f26722"
-                                  : "#6c757d",
-                                color: "white",
-                                border: "none",
+                                  : "transparent",
+                                color: showSundayHours ? "white" : "#f26722",
+                                border: "0.5px solid #f26722",
                               }}
                             >
                               {showSundayHours
@@ -9566,9 +9779,9 @@ export default function EstimateSheet({
                               style={{
                                 padding: "4px 8px",
                                 fontSize: "12px",
-                                backgroundColor: "#6c757d",
-                                color: "white",
-                                border: "none",
+                                backgroundColor: "transparent",
+                                color: "#f26722",
+                                border: "0.5px solid #f26722",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -10024,9 +10237,9 @@ export default function EstimateSheet({
                                             style={{
                                               padding: "2px 6px",
                                               fontSize: "11px",
-                                              backgroundColor: "#6c757d",
-                                              color: "white",
-                                              border: "none",
+                                              backgroundColor: "transparent",
+                                              color: "#f26722",
+                                              border: "0.5px solid #f26722",
                                               borderRadius: "4px",
                                               cursor: "pointer",
                                             }}
@@ -10255,17 +10468,10 @@ export default function EstimateSheet({
                           </tbody>
                         </table>
                       </div>
-
                       {/* Saturday Labor Hours Tracking */}
                       {showSaturdayHours && (
                         <div
-                          style={{
-                            ...styles.summarySection,
-                            flex: "1 1 400px",
-                            minWidth: 0,
-                            maxWidth: "700px",
-                            marginTop: "20px",
-                          }}
+                          style={styles.panelBlock}
                         >
                           <div
                             style={{
@@ -10277,7 +10483,7 @@ export default function EstimateSheet({
                           >
                             <h3
                               style={{
-                                ...styles.sectionHeader,
+                                ...styles.panelTitle,
                                 marginBottom: 0,
                                 color: "#f26722",
                               }}
@@ -10315,9 +10521,9 @@ export default function EstimateSheet({
                               style={{
                                 padding: "4px 8px",
                                 fontSize: "12px",
-                                backgroundColor: "#6c757d",
-                                color: "white",
-                                border: "none",
+                                backgroundColor: "transparent",
+                                color: "#f26722",
+                                border: "0.5px solid #f26722",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -11004,17 +11210,10 @@ export default function EstimateSheet({
                           </table>
                         </div>
                       )}
-
                       {/* Sunday/Holiday Labor Hours Tracking */}
                       {showSundayHours && (
                         <div
-                          style={{
-                            ...styles.summarySection,
-                            flex: "1 1 400px",
-                            minWidth: 0,
-                            maxWidth: "700px",
-                            marginTop: "20px",
-                          }}
+                          style={styles.panelBlock}
                         >
                           <div
                             style={{
@@ -11026,7 +11225,7 @@ export default function EstimateSheet({
                           >
                             <h3
                               style={{
-                                ...styles.sectionHeader,
+                                ...styles.panelTitle,
                                 marginBottom: 0,
                                 color: "#dc3545",
                               }}
@@ -11064,9 +11263,9 @@ export default function EstimateSheet({
                               style={{
                                 padding: "4px 8px",
                                 fontSize: "12px",
-                                backgroundColor: "#6c757d",
-                                color: "white",
-                                border: "none",
+                                backgroundColor: "transparent",
+                                color: "#f26722",
+                                border: "0.5px solid #f26722",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -11752,235 +11951,17 @@ export default function EstimateSheet({
                           </table>
                         </div>
                       )}
-
-                      {/* Hours Summary Section - Right Side - fixed width so it doesn't stretch the page */}
-                      <div
-                        style={{
-                          ...styles.summarySection,
-                          width: "300px",
-                          maxWidth: "100%",
-                          minWidth: 0,
-                          marginLeft: 0,
-                          flex: "0 0 300px",
-                          overflow: "hidden",
-                          boxSizing: "border-box",
-                        }}
-                      >
-                        <h3
-                          style={{
-                            ...styles.sectionHeader,
-                            marginBottom: "15px",
-                          }}
-                        >
-                          Hours Summary
-                        </h3>
-                        <table
-                          style={{
-                            ...styles.table,
-                            width: "100%",
-                            minWidth: 0,
-                            fontSize: "14px",
-                            tableLayout: "fixed",
-                          }}
-                        >
-                          <tbody>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  width: "60%",
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Men:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  width: "40%",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  style={{
-                                    ...styles.tableInput,
-                                    width: "100%",
-                                  }}
-                                  value={data.hoursSummary.men}
-                                  onChange={(e) =>
-                                    handleHoursSummaryChange(
-                                      "men",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Hrs/Day:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  style={{
-                                    ...styles.tableInput,
-                                    width: "100%",
-                                  }}
-                                  value={data.hoursSummary.hoursPerDay}
-                                  onChange={(e) =>
-                                    handleHoursSummaryChange(
-                                      "hoursPerDay",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Days Onsite:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calculated,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatNumber(data.hoursSummary.daysOnsite)}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Work / SOV Hrs:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calculated,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatNumber(data.hoursSummary.workHours)}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Non-SOV Hrs:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calculated,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatNumber(data.hoursSummary.nonSovHours)}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                Travel Hours:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calculated,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatNumber(data.hoursSummary.travelHours)}
-                              </td>
-                            </tr>
-                            <tr style={{ ...styles.tfoot }}>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  textAlign: "left",
-                                  fontWeight: "bold",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                TOTAL HOURS:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calculated,
-                                  fontWeight: "bold",
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatNumber(data.hoursSummary.totalHours)}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Calculation Tables and Financial Summary - Side by Side */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "20px",
-                        marginTop: "20px",
-                      }}
-                    >
-                      {/* Left Side - Calculation Tables */}
-                      <div style={{ width: "50%" }}>
+                          </div>
+                        )}
+                        {activeSummarySection === "terms" && (
+                          <div>
                         {/* Payment Term Calculations Table */}
                         <div
-                          style={{
-                            ...styles.summarySection,
-                            width: "100%",
-                            marginBottom: "20px",
-                          }}
+                          style={styles.panelBlock}
                         >
                           <h3
                             style={{
-                              ...styles.sectionHeader,
+                              ...styles.panelTitle,
                               marginBottom: "15px",
                             }}
                           >
@@ -12064,6 +12045,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12123,6 +12105,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12182,6 +12165,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12202,14 +12186,13 @@ export default function EstimateSheet({
                             </tbody>
                           </table>
                         </div>
-
                         {/* Mobilization Calculations Table */}
                         <div
-                          style={{ ...styles.summarySection, width: "100%" }}
+                          style={styles.panelBlock}
                         >
                           <h3
                             style={{
-                              ...styles.sectionHeader,
+                              ...styles.panelTitle,
                               marginBottom: "15px",
                             }}
                           >
@@ -12293,6 +12276,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12346,6 +12330,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12403,6 +12388,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12462,6 +12448,7 @@ export default function EstimateSheet({
                                 <td
                                   style={{
                                     ...styles.tableCell,
+                                    ...styles.totalCell,
                                     padding: "12px 8px",
                                   }}
                                 >
@@ -12484,10 +12471,15 @@ export default function EstimateSheet({
                             </tbody>
                           </table>
                         </div>
-                      </div>
+                          </div>
+                        )}
+                          </SectionNav>
+                        </div>
+                      );
+                    })()}
 
-                      {/* Right Side - Financial Summary and Quote Text */}
-                      <div style={{ width: "50%" }}>
+                    {/* Proposal — Financial Summary & Quote Text */}
+                    <div className="mt-6">
                         {/* Financial Summary */}
                         <div
                           style={{
@@ -12913,278 +12905,25 @@ export default function EstimateSheet({
                         <div
                           style={{ ...styles.summarySection, width: "100%" }}
                         >
-                          <div
-                            style={{ fontWeight: "bold", marginBottom: "10px" }}
+                          <button
+                            type="button"
+                            onClick={handleCopyQuoteText}
+                            style={{
+                              padding: "8px 16px",
+                              fontSize: "13px",
+                              fontWeight: 500,
+                              backgroundColor: quoteTextCopied
+                                ? "transparent"
+                                : "#f26722",
+                              color: quoteTextCopied ? "#f26722" : "white",
+                              border: "0.5px solid #f26722",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                            }}
                           >
-                            (Copy paste below into quote)
-                          </div>
-                          <div style={{ fontSize: "14px", lineHeight: "1.5" }}>
-                            <div
-                              style={{
-                                fontWeight: "bold",
-                                marginBottom: "8px",
-                              }}
-                            >
-                              NET 30:
-                            </div>
-                            <div
-                              style={{
-                                marginBottom: "5px",
-                                paddingLeft: "10px",
-                              }}
-                            >
-                              Monday - Friday:{" "}
-                              {formatCurrency(
-                                Math.ceil(
-                                  getFinalValue() * paymentTermFactors.net30,
-                                ) +
-                                  Math.ceil(
-                                    getFinalValue() *
-                                      getMobilizationFactor(getFinalValue()),
-                                  ),
-                              )}
-                            </div>
-                            {showSaturdayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Saturday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSaturdayFinalValue() *
-                                      paymentTermFactors.net30,
-                                  ) +
-                                    Math.ceil(
-                                      getSaturdayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSaturdayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            {showSundayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Sunday / Holiday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSundayFinalValue() *
-                                      paymentTermFactors.net30,
-                                  ) +
-                                    Math.ceil(
-                                      getSundayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSundayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            <div
-                              style={{
-                                fontWeight: "bold",
-                                marginBottom: "8px",
-                                marginTop: "8px",
-                              }}
-                            >
-                              NET 60:
-                            </div>
-                            <div
-                              style={{
-                                marginBottom: "5px",
-                                paddingLeft: "10px",
-                              }}
-                            >
-                              Monday - Friday:{" "}
-                              {formatCurrency(
-                                Math.ceil(
-                                  getFinalValue() * paymentTermFactors.net60,
-                                ) +
-                                  Math.ceil(
-                                    getFinalValue() *
-                                      getMobilizationFactor(getFinalValue()),
-                                  ),
-                              )}
-                            </div>
-                            {showSaturdayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Saturday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSaturdayFinalValue() *
-                                      paymentTermFactors.net60,
-                                  ) +
-                                    Math.ceil(
-                                      getSaturdayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSaturdayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            {showSundayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Sunday / Holiday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSundayFinalValue() *
-                                      paymentTermFactors.net60,
-                                  ) +
-                                    Math.ceil(
-                                      getSundayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSundayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            <div
-                              style={{
-                                fontWeight: "bold",
-                                marginBottom: "8px",
-                                marginTop: "8px",
-                              }}
-                            >
-                              NET 90:
-                            </div>
-                            <div
-                              style={{
-                                marginBottom: "5px",
-                                paddingLeft: "10px",
-                              }}
-                            >
-                              Monday - Friday:{" "}
-                              {formatCurrency(
-                                Math.ceil(
-                                  getFinalValue() * paymentTermFactors.net90,
-                                ) +
-                                  Math.ceil(
-                                    getFinalValue() *
-                                      getMobilizationFactor(getFinalValue()),
-                                  ),
-                              )}
-                            </div>
-                            {showSaturdayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Saturday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSaturdayFinalValue() *
-                                      paymentTermFactors.net90,
-                                  ) +
-                                    Math.ceil(
-                                      getSaturdayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSaturdayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            {showSundayHours && (
-                              <div
-                                style={{
-                                  marginBottom: "5px",
-                                  paddingLeft: "10px",
-                                }}
-                              >
-                                Sunday / Holiday:{" "}
-                                {formatCurrency(
-                                  Math.ceil(
-                                    getSundayFinalValue() *
-                                      paymentTermFactors.net90,
-                                  ) +
-                                    Math.ceil(
-                                      getSundayFinalValue() *
-                                        getMobilizationFactor(
-                                          getSundayFinalValue(),
-                                        ),
-                                    ),
-                                )}
-                              </div>
-                            )}
-                            <div
-                              style={{ marginBottom: "10px", marginTop: "8px" }}
-                            >
-                              Mobilization costs of{" "}
-                              <b>
-                                $
-                                {(() => {
-                                  const f = getFinalValue();
-                                  const factor = getMobilizationFactor(f);
-                                  return formatCurrency(Math.ceil(f * factor));
-                                })()}
-                              </b>{" "}
-                              shall be paid out of the above agreed upon price
-                              before the first day of work.
-                            </div>
-                            {showTravel && (
-                              <div
-                                style={{
-                                  marginTop: "10px",
-                                  paddingTop: "10px",
-                                  borderTop: "1px solid var(--border-color)",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    fontWeight: "bold",
-                                    marginBottom: "5px",
-                                  }}
-                                >
-                                  Total Travel Cost:
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: "16px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  {formatCurrency(getTotalTravelCost())}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "var(--text-color)",
-                                    opacity: 0.7,
-                                    marginTop: "4px",
-                                  }}
-                                >
-                                  Travel Labor:{" "}
-                                  {formatCurrency(getTravelLaborCost())}{" "}
-                                  &nbsp;|&nbsp; Non-Labor:{" "}
-                                  {formatCurrency(getTravelNonLaborCost())}
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                            {quoteTextCopied ? "Copied!" : "Copy"}
+                          </button>
                         </div>
-                      </div>
                     </div>
                   </div>
                 </div>

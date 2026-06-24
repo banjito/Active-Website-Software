@@ -1408,18 +1408,28 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                   reportId || window.location.pathname.split("/").pop();
                 if (!savedReportId) throw new Error("Failed to save report");
 
-                // Update asset status to ready_for_review
-                const fileUrl = `report:/jobs/${jobId}/${REPORT_SLUG}/${savedReportId}`;
-                const { error } = await supabase
+                // Update asset status to ready_for_review.
+                // The asset's file_url includes a substation folder
+                // (report:/jobs/<jobId>/<slug>/<substation>/<reportId>), so
+                // match on the unique reportId suffix rather than an exactly
+                // reconstructed URL — otherwise the update silently affects
+                // zero rows and the report never enters the approval queue.
+                const { data: updatedAssets, error } = await supabase
                   .schema("neta_ops")
                   .from("assets")
                   .update({
                     status: "ready_for_review",
                     submitted_at: new Date().toISOString(),
                   })
-                  .eq("file_url", fileUrl);
+                  .like("file_url", `%/${savedReportId}`)
+                  .select("id");
 
                 if (error) throw error;
+                if (!updatedAssets || updatedAssets.length === 0) {
+                  throw new Error(
+                    "Could not find the saved report's asset to submit for review. Please save the report and try again.",
+                  );
+                }
 
                 alert("Report marked as ready for review!");
               } catch (error: any) {

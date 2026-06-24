@@ -135,6 +135,7 @@ export default function CustomerDetail() {
   const [portalInviteOpen, setPortalInviteOpen] = useState(false);
   const [portalInviteEmail, setPortalInviteEmail] = useState("");
   const [portalInviteSending, setPortalInviteSending] = useState(false);
+  const [portalInviteAll, setPortalInviteAll] = useState(false);
   const [contactPopupOpen, setContactPopupOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
@@ -616,6 +617,20 @@ export default function CustomerDetail() {
 
   const category = getCategoryById(customer.category_id);
 
+  // Every unique, valid email tied to this customer (its own address plus all
+  // contacts), so we can offer a one-click "invite everyone" option.
+  function getAllInviteEmails(): string[] {
+    const seen = new Set<string>();
+    const emails: string[] = [];
+    [customer?.email, ...contacts.map((c) => c.email)].forEach((raw) => {
+      const email = raw?.trim().toLowerCase();
+      if (!email || !email.includes("@") || seen.has(email)) return;
+      seen.add(email);
+      emails.push(email);
+    });
+    return emails;
+  }
+
   function openPortalInvite() {
     const prefill =
       customer?.email ||
@@ -623,12 +638,89 @@ export default function CustomerDetail() {
       contacts[0]?.email ||
       "";
     setPortalInviteEmail(prefill);
+    setPortalInviteAll(false);
     setPortalInviteOpen(true);
+  }
+
+  // Send a single portal invite; returns the parsed result or throws with the
+  // function's real error message.
+  async function sendPortalInvite(
+    email: string,
+  ): Promise<{ existingUser?: boolean }> {
+    const { data, error } = await supabase.functions.invoke(
+      "customer-portal-invite",
+      { body: { email, customerId: customer!.id } },
+    );
+    if (error) {
+      // supabase-js hides the function's response behind a generic message.
+      // The real { error } body lives on error.context (the raw Response).
+      let detail = error.message;
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") {
+        try {
+          const body = await ctx.json();
+          if (body?.error) detail = body.error;
+        } catch {
+          /* response had no JSON body */
+        }
+      }
+      throw new Error(detail);
+    }
+    const result = data as { error?: string; existingUser?: boolean } | null;
+    if (result?.error) throw new Error(result.error);
+    return result ?? {};
   }
 
   async function handleSendPortalInvite(e: React.FormEvent) {
     e.preventDefault();
     if (!customer) return;
+
+    if (portalInviteAll) {
+      const emails = getAllInviteEmails();
+      if (emails.length === 0) {
+        toast({
+          title: "No valid emails",
+          description:
+            "This customer has no contacts with a valid email address.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setPortalInviteSending(true);
+      const failures: string[] = [];
+      let sent = 0;
+      for (const email of emails) {
+        try {
+          await sendPortalInvite(email);
+          sent += 1;
+        } catch (err) {
+          failures.push(
+            `${email}: ${err instanceof Error ? err.message : "Unknown error"}`,
+          );
+        }
+      }
+      setPortalInviteSending(false);
+      if (failures.length === 0) {
+        toast({
+          title: "Invites sent",
+          description: `Portal access was sent to all ${sent} contact${
+            sent === 1 ? "" : "s"
+          }.`,
+        });
+        setPortalInviteOpen(false);
+      } else {
+        toast({
+          title:
+            sent > 0 ? "Some invites failed" : "Could not send invites",
+          description: `${sent} sent, ${failures.length} failed:\n${failures.join(
+            "\n",
+          )}`,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
     const email = portalInviteEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) {
       toast({
@@ -641,27 +733,7 @@ export default function CustomerDetail() {
     }
     setPortalInviteSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "customer-portal-invite",
-        { body: { email, customerId: customer.id } },
-      );
-      if (error) {
-        // supabase-js hides the function's response behind a generic message.
-        // The real { error } body lives on error.context (the raw Response).
-        let detail = error.message;
-        const ctx = (error as { context?: Response }).context;
-        if (ctx && typeof ctx.json === "function") {
-          try {
-            const body = await ctx.json();
-            if (body?.error) detail = body.error;
-          } catch {
-            /* response had no JSON body */
-          }
-        }
-        throw new Error(detail);
-      }
-      const result = data as { error?: string; existingUser?: boolean } | null;
-      if (result?.error) throw new Error(result.error);
+      const result = await sendPortalInvite(email);
       toast({
         title: result?.existingUser ? "Access granted" : "Invite sent",
         description: result?.existingUser
@@ -2284,9 +2356,31 @@ export default function CustomerDetail() {
                   onChange={(e) => setPortalInviteEmail(e.target.value)}
                   placeholder="customer@company.com"
                   autoFocus
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  disabled={portalInviteAll}
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-dark-100"
                 />
               </div>
+              {(() => {
+                const allEmails = getAllInviteEmails();
+                if (allEmails.length < 2) return null;
+                return (
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={portalInviteAll}
+                      onChange={(e) => setPortalInviteAll(e.target.checked)}
+                      disabled={portalInviteSending}
+                      className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    />
+                    <span className="text-sm text-neutral-700 dark:text-white">
+                      Invite all {allEmails.length} contacts at this company
+                      <span className="block text-xs text-neutral-500 dark:text-neutral-300">
+                        {allEmails.join(", ")}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })()}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -2302,7 +2396,11 @@ export default function CustomerDetail() {
                   className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
                 >
                   <Mail className="h-4 w-4" />
-                  {portalInviteSending ? "Sending…" : "Send invite"}
+                  {portalInviteSending
+                    ? "Sending…"
+                    : portalInviteAll
+                      ? "Send all invites"
+                      : "Send invite"}
                 </button>
               </div>
             </form>

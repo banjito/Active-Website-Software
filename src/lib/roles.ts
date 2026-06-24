@@ -207,6 +207,9 @@ export const ROLES: Record<Role, RolePermissions> = {
     canViewAllData: true,
     isSystemRole: true,
     permissions: [
+      // Report oversight
+      { resource: 'reports', action: 'view', scope: 'all' },
+      { resource: 'reports', action: 'approve', scope: 'all' },
       // Full meetings portal access
       { resource: 'meetings', action: 'view', scope: 'team' },
       { resource: 'meetings', action: 'create', scope: 'team' },
@@ -425,6 +428,63 @@ export const hasActionPermission = (
   }
   
   return false;
+};
+
+// --- Report approval permissions (single source of truth) ---
+// All report-approval authorization across the app derives from these helpers,
+// which read from the canonical `reports:approve` permission in ROLES above.
+
+// Whether a user may approve OR reject reports. Superusers always qualify.
+export const canApproveReports = (
+  role: string | undefined | null,
+  email?: string | null,
+): boolean => {
+  if (isSuperUser(email)) return true;
+  if (!role) return false;
+  return hasActionPermission(role, 'reports', 'approve', 'all');
+};
+
+// Reviewing (approve or reject) requires the same authority as approving.
+export const canReviewReports = canApproveReports;
+
+// Whether a user may reach the report approval workspace at all.
+export const canAccessReportApproval = canApproveReports;
+
+// Whether a user may export reports. Approvers plus anyone who can view all reports.
+export const canExportReports = (
+  role: string | undefined | null,
+  email?: string | null,
+): boolean => {
+  if (canApproveReports(role, email)) return true;
+  if (!role) return false;
+  return hasActionPermission(role, 'reports', 'view', 'all');
+};
+
+// Tailwind badge classes per role, for consistent role display across the app.
+// Falls back to the neutral palette for unknown/custom roles (never gray/zinc).
+export const getRoleBadgeClasses = (role: string | undefined | null): string => {
+  switch (role) {
+    case 'Admin':
+    case 'Super Admin':
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+    case 'Engineer':
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
+    case 'Operations Manager':
+      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+    case 'NETA Technician':
+    case 'Lab Technician':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    case 'Sales Representative':
+      return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
+    case 'Scav':
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+    case 'HR Rep':
+      return 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300';
+    case 'Office Admin':
+      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+    default:
+      return 'bg-neutral-100 text-neutral-800 dark:bg-dark-300 dark:text-white';
+  }
 };
 
 // Helper function to evaluate permission conditions

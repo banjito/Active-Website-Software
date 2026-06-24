@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import { computeTravelTotals } from "../../lib/travelExpenses";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -282,13 +283,7 @@ function calculateEstimateNet30Amount(estimateData: any): number | null {
   const overtimeRate = toNumber(hourlyRates.overtime) || 360;
   const doubleTimeRate = toNumber(hourlyRates.doubleTime) || 480;
 
-  const travelNonLabor =
-    toNumber(travelData?.travelExpense?.[0]?.vehicleTravelCost) +
-    toNumber(travelData?.perDiem?.[0]?.totalPerDiem) +
-    toNumber(travelData?.lodging?.[0]?.totalAmount) +
-    toNumber(travelData?.localMiles?.[0]?.totalLocalMilesCost) +
-    toNumber(travelData?.flights?.[0]?.totalFlightAmount) +
-    toNumber(travelData?.rentalCar?.[0]?.totalAmount);
+  const travelNonLabor = computeTravelTotals(travelData).nonLaborCost;
 
   const travelLabor =
     toNumber(hoursSummary.travelStraightTimeHours) * straightTimeRate +
@@ -687,6 +682,7 @@ export default function OpportunityDetail() {
     "new" | "view" | "letter" | "letters" | "combined-letter" | false
   >(false);
   const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
+  const [isDraft, setIsDraft] = useState(false);
 
   const resolveQuotePreparedByNames = async (
     opportunityId: string,
@@ -1005,6 +1001,29 @@ export default function OpportunityDetail() {
       window.removeEventListener("resetEstimateMode", handleResetEstimateMode);
     };
   }, []);
+
+  // Auto-open estimate editor when navigated with ?autoEstimate=true
+  useEffect(() => {
+    const autoEstimate = search.get("autoEstimate");
+    const draftParam = search.get("isDraft");
+    if (autoEstimate === "true" && opportunity && !loading && id) {
+      setActiveEstimateId(null);
+      setShowEstimate("new");
+      setEstimateOpenSignal((s) => s + 1);
+      if (draftParam === "true") {
+        setIsDraft(true);
+      }
+
+      // Clean the URL params so they do not re-trigger on refresh
+      const params = new URLSearchParams(location.search);
+      params.delete("autoEstimate");
+      params.delete("isDraft");
+      const newSearch = params.toString();
+      navigate(location.pathname + (newSearch ? "?" + newSearch : ""), {
+        replace: true,
+      });
+    }
+  }, [opportunity, loading, id]);
 
   // Read any existing merge lock for this group from localStorage
   useEffect(() => {
@@ -3301,6 +3320,31 @@ export default function OpportunityDetail() {
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Draft estimate banner */}
+      {isDraft && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg mx-4 sm:mx-6 lg:mx-8 mb-4">
+          <div className="flex items-center gap-3 py-3 px-4">
+            <Pencil className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Draft Estimate
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                Update the customer, title, and opportunity details above. The
+                estimate has been saved to this draft.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsDraft(false)}
+              className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
       )}

@@ -12,6 +12,8 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import Button from "@/components/ui/Button";
+import { ArrowLeft } from "lucide-react";
 
 interface FormData {
   // Job Information
@@ -1048,12 +1050,14 @@ const GFITripTestReport: React.FC = () => {
 
           {/* Back Button */}
           <div className="print:hidden">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => navigate(`/jobs/${jobId}`)}
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
               className="text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-white"
             >
-              ← Back to Job
-            </button>
+              Back to Job
+            </Button>
           </div>
         </div>
       </div>

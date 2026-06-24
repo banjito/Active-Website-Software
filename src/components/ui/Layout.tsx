@@ -59,6 +59,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // Print preview modal for report pages
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isFieldTech = division === "field_tech";
@@ -110,6 +112,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const jobId = getJobIdFromReportPath();
+
+  // Build the print-preview URL for the current report and open it in a modal.
+  // Mirrors the deliverable viewer / PDF export: print=true renders print-look
+  // styling and embedded=true strips the app chrome so only the report shows.
+  // pv is a cache-buster so each open renders fresh.
+  const openReportPreview = () => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    params.set("print", "true");
+    params.set("embedded", "true");
+    params.set("pv", String(Date.now()));
+    setPreviewUrl(`${window.location.pathname}?${params.toString()}`);
+  };
 
   // Global report lock: prevent editing approved/sent reports across ALL report types
   const [isReportLocked, setIsReportLocked] = useState(false);
@@ -741,9 +756,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
-                className="print:hidden flex items-center gap-1 lg:gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
+                leftIcon={<ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />}
+                className="print:hidden text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
               >
-                <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />
                 <span className="hidden sm:inline">Back to Job</span>
                 <span className="sm:hidden">Back</span>
               </Button>
@@ -901,11 +916,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
-                  className="print:hidden flex items-center gap-1 lg:gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
+                  leftIcon={<ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />}
+                  className="print:hidden text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
                 >
-                  <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />
                   <span className="hidden sm:inline">Back to Job</span>
                   <span className="sm:hidden">Back</span>
+                </Button>
+              )}
+              {isReportPage && !isPrintExport && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={openReportPreview}
+                  leftIcon={<Eye className="h-3 w-3 lg:h-4 lg:w-4" />}
+                  className="print:hidden text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-500/10 text-xs lg:text-sm px-2 lg:px-3"
+                  aria-label="Preview report"
+                >
+                  <span className="hidden sm:inline">Preview</span>
                 </Button>
               )}
             </div>
@@ -931,6 +958,50 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      {/* Report print-preview modal */}
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-2 sm:p-6 print:hidden"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div
+            className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl dark:bg-dark-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2 dark:border-dark-200">
+              <div className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-white">
+                <Eye className="h-4 w-4" />
+                Report Preview
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-neutral-600 underline hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+                >
+                  Open in new tab
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewUrl(null)}
+                  className="rounded-md p-1.5 text-neutral-600 hover:bg-neutral-100 dark:text-white dark:hover:bg-dark-100"
+                  aria-label="Close preview"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+            <iframe
+              key={previewUrl}
+              src={previewUrl}
+              title="Report Preview"
+              className="h-full w-full flex-1 bg-white"
+            />
+          </div>
+        </div>
+      )}
 
       <Outlet />
     </div>

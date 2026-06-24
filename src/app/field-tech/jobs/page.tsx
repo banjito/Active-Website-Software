@@ -9,6 +9,7 @@ import { Dialog } from "@headlessui/react";
 import { addDefaultFilesToJob } from "@/lib/services/defaultJobFiles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { withPgTimeoutRetry } from "@/lib/retryPgTimeout";
+import { isSuperUser } from "@/lib/roles";
 
 interface Customer {
   id?: string;
@@ -519,15 +520,9 @@ export default function FieldTechJobsPage() {
             Aggregated from Alabama, Tennessee, Georgia, and International
           </p>
         </div>
-        {/* Only show T&M button to authorized users */}
-        {(user?.email === "william.sasser@ampqes.com" ||
-          user?.email === "john.chambers@ampqes.com" ||
-          user?.email === "anthony.masters@ampqes.com" ||
-          user?.email === "caleb.hipp@ampqes.com" ||
-          user?.email === "zach.freeborn@ampqes.com" ||
-          user?.email === "zecahriah.freeborn@ampqes.com" ||
-          user?.email === "michael.bland@ampqes.com" ||
-          user?.email === "kelly.lawton@ampqes.com") && (
+        {/* Only show T&M button to Admin role or superusers */}
+        {(user?.user_metadata?.role === "Admin" ||
+          isSuperUser(user?.email)) && (
           <button
             type="button"
             onClick={() => {

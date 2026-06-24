@@ -1682,8 +1682,8 @@ export const CustomFormFiller: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
+                  leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Job
                 </Button>
                 <div>

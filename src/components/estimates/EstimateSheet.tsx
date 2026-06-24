@@ -30,6 +30,12 @@ import {
   EstimatingPresets,
   DEFAULT_ESTIMATING_PRESETS,
 } from "../../services/estimatingPresetsService";
+import {
+  createEmptyTravelGroup,
+  DEFAULT_TRAVEL_DATA,
+  normalizeTravelData,
+  computeTravelTotals,
+} from "../../lib/travelExpenses";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
 import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
@@ -408,155 +414,6 @@ const DEFAULT_NON_SOV_ITEMS: EstimateLineItem[] = [
 const createDefaultNonSovItems = (): EstimateLineItem[] =>
   DEFAULT_NON_SOV_ITEMS.map((item) => normalizeEstimateLineItem(item));
 
-const EMPTY_TRAVEL_ITEM = {
-  trips: 1,
-  oneWayMiles: 0,
-  roundTripMiles: 0,
-  totalVehicleMiles: 0,
-  numVehicles: DEFAULT_ESTIMATING_PRESETS.default_number_of_vehicles,
-  totalMiles: 0,
-  rate: DEFAULT_ESTIMATING_PRESETS.default_vehicle_cost_per_mile,
-  vehicleTravelCost: 0,
-};
-
-const DEFAULT_TRAVEL_DATA = {
-  travelExpense: [
-    {
-      ...EMPTY_TRAVEL_ITEM,
-      numVehicles: DEFAULT_ESTIMATING_PRESETS.default_number_of_vehicles,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_vehicle_cost_per_mile,
-    },
-  ],
-  travelTime: [
-    {
-      trips: 1,
-      oneWayHours: 0,
-      roundTripHours: 0,
-      totalTravelHours: 0,
-      numMen: DEFAULT_ESTIMATING_PRESETS.default_number_of_men,
-      grandTotalTravelHours: 0,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_hourly_rate,
-      totalTravelLabor: 0,
-    },
-  ],
-  perDiem: [
-    {
-      numDays: 0,
-      firstDayRate: DEFAULT_ESTIMATING_PRESETS.default_per_diem_rate,
-      lastDayRate: DEFAULT_ESTIMATING_PRESETS.default_per_diem_rate,
-      dailyRate: DEFAULT_ESTIMATING_PRESETS.default_per_diem_rate,
-      additionalDays: -2,
-      totalPerDiemPerMan: 0,
-      numMen: DEFAULT_ESTIMATING_PRESETS.default_number_of_men,
-      totalPerDiem: 0,
-    },
-  ],
-  lodging: [
-    {
-      numNights: 0,
-      numMen: DEFAULT_ESTIMATING_PRESETS.default_number_of_men,
-      manNights: 0,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_lodging_rate,
-      totalAmount: 0,
-    },
-  ],
-  localMiles: [
-    {
-      numDays: 0,
-      numVehicles: DEFAULT_ESTIMATING_PRESETS.default_number_of_vehicles,
-      milesPerDay: DEFAULT_ESTIMATING_PRESETS.default_local_miles_per_day,
-      totalMiles: 0,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_vehicle_cost_per_mile,
-      totalLocalMilesCost: 0,
-    },
-  ],
-  flights: [
-    {
-      numFlights: 0,
-      numMen: DEFAULT_ESTIMATING_PRESETS.default_flight_number_of_men,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_flight_rate,
-      luggageFees: DEFAULT_ESTIMATING_PRESETS.default_flight_luggage_fees,
-      totalFlightAmount: 0,
-    },
-  ],
-  airTravelTime: [
-    {
-      trips: 0,
-      oneWayHoursInAir: 0,
-      roundTripTerminalTime: 0,
-      totalTravelHours: 0,
-      numMen: 0,
-      grandTotalTravelHours: 0,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_hourly_rate,
-      totalTravelLabor: 0,
-    },
-  ],
-  rentalCar: [
-    {
-      numCars: DEFAULT_ESTIMATING_PRESETS.default_rental_number_of_cars,
-      rate: DEFAULT_ESTIMATING_PRESETS.default_rental_rate,
-      totalAmount: 0,
-    },
-  ],
-  /** When true (default), changing # of men in one travel section updates the others. When false, each section keeps its own value. */
-  numMenLinked: true,
-};
-
-/** Ensure loaded quote travel_data has all required arrays so .map() never runs on undefined.
- *  Always clones default arrays to avoid mutating the module-level constant. */
-function normalizeTravelData(parsed: any) {
-  const d = DEFAULT_TRAVEL_DATA;
-  const cloneArr = (arr: any[]) => arr.map((item) => ({ ...item }));
-  if (!parsed || typeof parsed !== "object")
-    return {
-      ...d,
-      travelExpense: cloneArr(d.travelExpense),
-      travelTime: cloneArr(d.travelTime),
-      perDiem: cloneArr(d.perDiem),
-      lodging: cloneArr(d.lodging),
-      localMiles: cloneArr(d.localMiles),
-      flights: cloneArr(d.flights),
-      airTravelTime: cloneArr(d.airTravelTime),
-      rentalCar: cloneArr(d.rentalCar),
-    };
-  return {
-    ...d,
-    ...parsed,
-    travelExpense:
-      Array.isArray(parsed.travelExpense) && parsed.travelExpense.length > 0
-        ? parsed.travelExpense
-        : cloneArr(d.travelExpense),
-    travelTime:
-      Array.isArray(parsed.travelTime) && parsed.travelTime.length > 0
-        ? parsed.travelTime
-        : cloneArr(d.travelTime),
-    perDiem:
-      Array.isArray(parsed.perDiem) && parsed.perDiem.length > 0
-        ? parsed.perDiem
-        : cloneArr(d.perDiem),
-    lodging:
-      Array.isArray(parsed.lodging) && parsed.lodging.length > 0
-        ? parsed.lodging
-        : cloneArr(d.lodging),
-    localMiles:
-      Array.isArray(parsed.localMiles) && parsed.localMiles.length > 0
-        ? parsed.localMiles
-        : cloneArr(d.localMiles),
-    flights:
-      Array.isArray(parsed.flights) && parsed.flights.length > 0
-        ? parsed.flights
-        : cloneArr(d.flights),
-    airTravelTime:
-      Array.isArray(parsed.airTravelTime) && parsed.airTravelTime.length > 0
-        ? parsed.airTravelTime
-        : cloneArr(d.airTravelTime),
-    rentalCar:
-      Array.isArray(parsed.rentalCar) && parsed.rentalCar.length > 0
-        ? parsed.rentalCar
-        : cloneArr(d.rentalCar),
-    numMenLinked: parsed.numMenLinked !== false,
-  };
-}
 
 interface QuoteData {
   id: string;
@@ -731,8 +588,7 @@ export default function EstimateSheet({
     | null
   >(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isCopyToOpportunityOpen, setIsCopyToOpportunityOpen] =
-    useState(false);
+  const [isCopyToOpportunityOpen, setIsCopyToOpportunityOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [showTravel, setShowTravel] = useState(false);
@@ -754,9 +610,10 @@ export default function EstimateSheet({
   const [letterIncludeSaturday, setLetterIncludeSaturday] = useState(false);
   const [letterIncludeSunday, setLetterIncludeSunday] = useState(false);
   const [letterIncludeSovNotes, setLetterIncludeSovNotes] = useState(false);
-  const [linkLocalTravelToDays, setLinkLocalTravelToDays] = useState(false);
-  const [linkOutOfTownTravelToDays, setLinkOutOfTownTravelToDays] =
-    useState(false);
+  // Active section in the Travel Expenses nav/panel layout.
+  const [activeTravelSection, setActiveTravelSection] = useState<
+    "travel" | "perDiem" | "lodging" | "localMiles" | "airTravel" | "rentalCar"
+  >("travel");
   const { user } = useAuth(); // Get user at component level
   const { preferences, updatePreference, deletePreference } =
     useUserPreferences();
@@ -1732,44 +1589,11 @@ export default function EstimateSheet({
         if (typeof quote.travel_data === "string") {
           parsedTravelData = JSON.parse(quote.travel_data);
         }
-        // Restore the travel linking toggle states
-        if (parsedTravelData.linkLocalTravelToDays !== undefined) {
-          setLinkLocalTravelToDays(parsedTravelData.linkLocalTravelToDays);
-        } else {
-          setLinkLocalTravelToDays(false);
-        }
-        if (parsedTravelData.linkOutOfTownTravelToDays !== undefined) {
-          setLinkOutOfTownTravelToDays(
-            parsedTravelData.linkOutOfTownTravelToDays,
-          );
-        } else {
-          setLinkOutOfTownTravelToDays(false);
-        }
         setTravelData(normalizeTravelData(parsedTravelData));
         setShowTravel(true);
       } else {
         setShowTravel(false);
-        setLinkLocalTravelToDays(false);
-        setLinkOutOfTownTravelToDays(false);
-        setTravelData({
-          ...DEFAULT_TRAVEL_DATA,
-          travelExpense: DEFAULT_TRAVEL_DATA.travelExpense.map((item) => ({
-            ...item,
-          })),
-          travelTime: DEFAULT_TRAVEL_DATA.travelTime.map((item) => ({
-            ...item,
-          })),
-          perDiem: DEFAULT_TRAVEL_DATA.perDiem.map((item) => ({ ...item })),
-          lodging: DEFAULT_TRAVEL_DATA.lodging.map((item) => ({ ...item })),
-          localMiles: DEFAULT_TRAVEL_DATA.localMiles.map((item) => ({
-            ...item,
-          })),
-          flights: DEFAULT_TRAVEL_DATA.flights.map((item) => ({ ...item })),
-          airTravelTime: DEFAULT_TRAVEL_DATA.airTravelTime.map((item) => ({
-            ...item,
-          })),
-          rentalCar: DEFAULT_TRAVEL_DATA.rentalCar.map((item) => ({ ...item })),
-        });
+        setTravelData(normalizeTravelData(null));
       }
     } catch (error) {
       console.error("Error loading quote data:", error);
@@ -1887,13 +1711,7 @@ export default function EstimateSheet({
     };
 
     // Always persist travel data regardless of toggle visibility
-    const safeTravelData = travelData
-      ? {
-          ...travelData,
-          linkLocalTravelToDays: linkLocalTravelToDays,
-          linkOutOfTownTravelToDays: linkOutOfTownTravelToDays,
-        }
-      : {};
+    const safeTravelData = travelData ? { ...travelData } : {};
     const dataWithEmbeddedTravel = {
       ...(data as any),
       travel_data: safeTravelData,
@@ -2626,16 +2444,7 @@ export default function EstimateSheet({
 
     let totalTravelHours = 0;
     if (estimateTravelData) {
-      const normalizedTravel = normalizeTravelData(estimateTravelData);
-      totalTravelHours =
-        (normalizedTravel.travelTime ?? []).reduce(
-          (sum: number, item: any) => sum + toNum(item.grandTotalTravelHours),
-          0,
-        ) +
-        (normalizedTravel.airTravelTime ?? []).reduce(
-          (sum: number, item: any) => sum + toNum(item.grandTotalTravelHours),
-          0,
-        );
+      totalTravelHours = computeTravelTotals(estimateTravelData).laborHours;
     }
 
     const calculatedValues = {
@@ -2874,14 +2683,7 @@ export default function EstimateSheet({
   // Travel non-labor costs (vehicle, per diem, lodging, etc. — excludes travel labor which is now in the Labor Hours Tracking table)
   const getTravelNonLaborCost = () => {
     try {
-      const td: any = travelData as any;
-      const sum =
-        (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
-        (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
-        (td?.lodging?.[0]?.totalAmount ?? 0) +
-        (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
-        (td?.flights?.[0]?.totalFlightAmount ?? 0) +
-        (td?.rentalCar?.[0]?.totalAmount ?? 0);
+      const sum = computeTravelTotals(travelData).nonLaborCost;
       return Number.isFinite(sum) ? sum : 0;
     } catch {
       return 0;
@@ -3228,7 +3030,8 @@ export default function EstimateSheet({
     setData((prev) => {
       const current = prev.scopeNarrative || "";
       const pos = scopeNarrativeInsertPosRef.current ?? current.length;
-      const needsLeadingBreak = pos > 0 && !current.slice(0, pos).endsWith("\n");
+      const needsLeadingBreak =
+        pos > 0 && !current.slice(0, pos).endsWith("\n");
       const insertion = (needsLeadingBreak ? "\n" : "") + text;
       const next = current.slice(0, pos) + insertion + current.slice(pos);
       scopeNarrativeInsertPosRef.current = pos + insertion.length;
@@ -3690,15 +3493,7 @@ export default function EstimateSheet({
     // Calculate travel hours from travel data
     let totalTravelHours = 0;
     if (showTravel) {
-      totalTravelHours =
-        (travelData?.travelTime ?? []).reduce(
-          (sum, item) => sum + item.grandTotalTravelHours,
-          0,
-        ) +
-        (travelData?.airTravelTime ?? []).reduce(
-          (sum, item) => sum + item.grandTotalTravelHours,
-          0,
-        );
+      totalTravelHours = computeTravelTotals(travelData).laborHours;
     }
 
     const totalHours = totalWorkHours + totalTravelHours;
@@ -3742,107 +3537,6 @@ export default function EstimateSheet({
     travelData,
     isManualLaborHours,
     isManualTravelLaborHours,
-  ]);
-
-  // Sync travel values with days onsite when toggles are enabled
-  useEffect(() => {
-    if (!showTravel) return;
-
-    const daysOnsite = data.hoursSummary.daysOnsite;
-    const roundedDays = Math.ceil(daysOnsite);
-
-    if (roundedDays <= 0) return;
-
-    setTravelData((prev) => {
-      const newData = { ...prev };
-
-      // Toggle #1: Link Local Travel (Travel Expense trips & Travel Time trips) to Days Onsite
-      if (linkLocalTravelToDays) {
-        // Update Travel Expense trips
-        if (newData.travelExpense[0]) {
-          newData.travelExpense = [
-            {
-              ...newData.travelExpense[0],
-              trips: roundedDays,
-            },
-          ];
-          // Recalculate travel expense totals
-          const item = newData.travelExpense[0];
-          item.roundTripMiles = item.oneWayMiles * 2;
-          item.totalVehicleMiles = item.trips * item.roundTripMiles;
-          item.totalMiles = item.totalVehicleMiles * item.numVehicles;
-          item.vehicleTravelCost = item.totalMiles * item.rate;
-        }
-
-        // Update Travel Time trips
-        if (newData.travelTime[0]) {
-          newData.travelTime = [
-            {
-              ...newData.travelTime[0],
-              trips: roundedDays,
-            },
-          ];
-          // Recalculate travel time totals
-          const item = newData.travelTime[0];
-          item.roundTripHours = item.oneWayHours * 2;
-          item.totalTravelHours = item.trips * item.roundTripHours;
-          item.grandTotalTravelHours = item.totalTravelHours * item.numMen;
-          item.totalTravelLabor = item.grandTotalTravelHours * item.rate;
-        }
-      }
-
-      // Toggle #2: Link Out-of-Town Travel (Per Diem, Lodging, Local Miles) to Days Onsite
-      if (linkOutOfTownTravelToDays) {
-        // Update Per Diem # of days
-        if (newData.perDiem[0]) {
-          newData.perDiem = [
-            {
-              ...newData.perDiem[0],
-              numDays: roundedDays,
-            },
-          ];
-          // Recalculate per diem totals
-          const item = newData.perDiem[0];
-          item.totalPerDiemPerMan = item.numDays * item.dailyRate;
-          item.totalPerDiem = item.totalPerDiemPerMan * item.numMen;
-        }
-
-        // Update Lodging # of nights
-        if (newData.lodging[0]) {
-          newData.lodging = [
-            {
-              ...newData.lodging[0],
-              numNights: roundedDays,
-            },
-          ];
-          // Recalculate lodging totals
-          const item = newData.lodging[0];
-          item.manNights = item.numNights * item.numMen;
-          item.totalAmount = item.manNights * item.rate;
-        }
-
-        // Update Local Miles # of days
-        if (newData.localMiles[0]) {
-          newData.localMiles = [
-            {
-              ...newData.localMiles[0],
-              numDays: roundedDays,
-            },
-          ];
-          // Recalculate local miles totals
-          const item = newData.localMiles[0];
-          item.totalMiles = item.numDays * item.milesPerDay * item.numVehicles;
-          item.totalLocalMilesCost = item.totalMiles * item.rate;
-        }
-      }
-
-      return newData;
-    });
-  }, [
-    data.hoursSummary.daysOnsite,
-    linkLocalTravelToDays,
-    linkOutOfTownTravelToDays,
-    showTravel,
   ]);
 
   const handleAddLine = (
@@ -3902,414 +3596,49 @@ export default function EstimateSheet({
     setShowTravel(!showTravel);
   };
 
-  const handleTravelChange = (
-    section: string,
+  // --- Travel updaters (merged model; derived values are computed on read via computeTravelTotals) ---
+  const updateTravelGroup = (
     index: number,
     field: string,
     value: string | number,
   ) => {
+    const numValue = typeof value === "string" ? Number(value) : value;
     setTravelData((prev) => {
-      const newData = { ...prev };
-      const numValue = typeof value === "string" ? Number(value) : value;
-
-      // Update the specified field
-      newData[section][index] = {
-        ...newData[section][index],
-        [field]: numValue,
-      };
-
-      // Calculate derived values based on the section
-      const item = newData[section][index];
-
-      switch (section) {
-        case "travelExpense":
-          item.roundTripMiles = item.oneWayMiles * 2;
-          item.totalVehicleMiles = item.trips * item.roundTripMiles;
-          item.totalMiles = item.totalVehicleMiles * item.numVehicles;
-          item.vehicleTravelCost = item.totalMiles * item.rate;
-
-          // Auto-calculate one way hours in travelTime section based on one way miles (miles/50)
-          if (newData.travelTime[index]) {
-            newData.travelTime[index] = {
-              ...newData.travelTime[index],
-              oneWayHours: item.oneWayMiles / 50,
-            };
-            // Recalculate travel time totals
-            const travelTimeItem = newData.travelTime[index];
-            travelTimeItem.roundTripHours = travelTimeItem.oneWayHours * 2;
-            travelTimeItem.totalTravelHours =
-              travelTimeItem.trips * travelTimeItem.roundTripHours;
-            travelTimeItem.grandTotalTravelHours =
-              travelTimeItem.totalTravelHours * travelTimeItem.numMen;
-            travelTimeItem.totalTravelLabor =
-              travelTimeItem.grandTotalTravelHours * travelTimeItem.rate;
-          }
-
-          // Sync numVehicles with Local Miles when linked
-          if (
-            field === "numVehicles" &&
-            newData.numMenLinked &&
-            newData.localMiles[index]
-          ) {
-            newData.localMiles[index] = {
-              ...newData.localMiles[index],
-              numVehicles: item.numVehicles,
-            };
-            const localMilesItem = newData.localMiles[index];
-            localMilesItem.totalMiles =
-              localMilesItem.numDays *
-              localMilesItem.milesPerDay *
-              localMilesItem.numVehicles;
-            localMilesItem.totalLocalMilesCost =
-              localMilesItem.totalMiles * localMilesItem.rate;
-          }
-
-          // Sync trips with travelTime section
-          if (field === "trips" && newData.travelTime[index]) {
-            newData.travelTime[index] = {
-              ...newData.travelTime[index],
-              trips: item.trips,
-            };
-            // Recalculate travel time totals with new trips value
-            const travelTimeItem = newData.travelTime[index];
-            travelTimeItem.roundTripHours = travelTimeItem.oneWayHours * 2;
-            travelTimeItem.totalTravelHours =
-              travelTimeItem.trips * travelTimeItem.roundTripHours;
-            travelTimeItem.grandTotalTravelHours =
-              travelTimeItem.totalTravelHours * travelTimeItem.numMen;
-            travelTimeItem.totalTravelLabor =
-              travelTimeItem.grandTotalTravelHours * travelTimeItem.rate;
-          }
-          break;
-
-        case "travelTime":
-          // Only allow manual entry if not being auto-calculated from travelExpense
-          if (field === "oneWayHours") {
-            // Manual override - keep the entered value
-            item.roundTripHours = item.oneWayHours * 2;
-          } else {
-            // For other fields, recalculate based on current oneWayHours
-            item.roundTripHours = item.oneWayHours * 2;
-          }
-          item.totalTravelHours = item.trips * item.roundTripHours;
-          item.grandTotalTravelHours = item.totalTravelHours * item.numMen;
-          item.totalTravelLabor = item.grandTotalTravelHours * item.rate;
-
-          // Sync numMen with other travel sections (except flights and air travel) when linked
-          if (field === "numMen" && newData.numMenLinked) {
-            // Update per diem
-            if (newData.perDiem[index]) {
-              newData.perDiem[index] = {
-                ...newData.perDiem[index],
-                numMen: item.numMen,
-              };
-              // Recalculate per diem totals
-              const perDiemItem = newData.perDiem[index];
-              perDiemItem.totalPerDiemPerMan =
-                perDiemItem.numDays * perDiemItem.dailyRate;
-              perDiemItem.totalPerDiem =
-                perDiemItem.totalPerDiemPerMan * perDiemItem.numMen;
-            }
-
-            // Update lodging
-            if (newData.lodging[index]) {
-              newData.lodging[index] = {
-                ...newData.lodging[index],
-                numMen: item.numMen,
-              };
-              // Recalculate lodging totals
-              const lodgingItem = newData.lodging[index];
-              lodgingItem.manNights =
-                lodgingItem.numNights * lodgingItem.numMen;
-              lodgingItem.totalAmount =
-                lodgingItem.manNights * lodgingItem.rate;
-            }
-
-            // Sync local miles vehicles with Travel Expense vehicles
-            if (newData.localMiles[index] && newData.travelExpense[index]) {
-              newData.localMiles[index] = {
-                ...newData.localMiles[index],
-                numVehicles: newData.travelExpense[index].numVehicles,
-              };
-              // Recalculate local miles totals
-              const localMilesItem = newData.localMiles[index];
-              localMilesItem.totalMiles =
-                localMilesItem.numDays *
-                localMilesItem.milesPerDay *
-                localMilesItem.numVehicles;
-              localMilesItem.totalLocalMilesCost =
-                localMilesItem.totalMiles * localMilesItem.rate;
-            }
-          }
-          break;
-
-        case "perDiem":
-          // Update per diem calculations
-          item.totalPerDiemPerMan = item.numDays * item.dailyRate;
-          item.totalPerDiem = item.totalPerDiemPerMan * item.numMen;
-
-          // Sync lodging nights and local miles days with per diem days
-          if (field === "numDays") {
-            // Update lodging
-            newData.lodging[index] = {
-              ...newData.lodging[index],
-              numNights: item.numDays,
-            };
-            // Recalculate lodging totals
-            const lodgingItem = newData.lodging[index];
-            lodgingItem.manNights = lodgingItem.numNights * lodgingItem.numMen;
-            lodgingItem.totalAmount = lodgingItem.manNights * lodgingItem.rate;
-
-            // Update local miles
-            if (newData.localMiles[index]) {
-              newData.localMiles[index] = {
-                ...newData.localMiles[index],
-                numDays: item.numDays,
-              };
-              // Recalculate local miles totals
-              const localMilesItem = newData.localMiles[index];
-              localMilesItem.totalMiles =
-                localMilesItem.numDays *
-                localMilesItem.milesPerDay *
-                localMilesItem.numVehicles;
-              localMilesItem.totalLocalMilesCost =
-                localMilesItem.totalMiles * localMilesItem.rate;
-            }
-          }
-
-          // Sync numMen with other travel sections (except flights and air travel) when linked
-          if (field === "numMen" && newData.numMenLinked) {
-            // Update travel time
-            if (newData.travelTime[index]) {
-              newData.travelTime[index] = {
-                ...newData.travelTime[index],
-                numMen: item.numMen,
-              };
-              // Recalculate travel time totals
-              const travelTimeItem = newData.travelTime[index];
-              travelTimeItem.grandTotalTravelHours =
-                travelTimeItem.totalTravelHours * travelTimeItem.numMen;
-              travelTimeItem.totalTravelLabor =
-                travelTimeItem.grandTotalTravelHours * travelTimeItem.rate;
-            }
-
-            // Update lodging
-            if (newData.lodging[index]) {
-              newData.lodging[index] = {
-                ...newData.lodging[index],
-                numMen: item.numMen,
-              };
-              // Recalculate lodging totals
-              const lodgingItem = newData.lodging[index];
-              lodgingItem.manNights =
-                lodgingItem.numNights * lodgingItem.numMen;
-              lodgingItem.totalAmount =
-                lodgingItem.manNights * lodgingItem.rate;
-            }
-
-            // Sync local miles vehicles with Travel Expense vehicles
-            if (newData.localMiles[index] && newData.travelExpense[index]) {
-              newData.localMiles[index] = {
-                ...newData.localMiles[index],
-                numVehicles: newData.travelExpense[index].numVehicles,
-              };
-              // Recalculate local miles totals
-              const localMilesItem = newData.localMiles[index];
-              localMilesItem.totalMiles =
-                localMilesItem.numDays *
-                localMilesItem.milesPerDay *
-                localMilesItem.numVehicles;
-              localMilesItem.totalLocalMilesCost =
-                localMilesItem.totalMiles * localMilesItem.rate;
-            }
-          }
-          break;
-
-        case "lodging":
-          item.manNights = item.numNights * item.numMen;
-          item.totalAmount = item.manNights * item.rate;
-
-          // Sync per diem days and local miles days with lodging nights
-          if (field === "numNights") {
-            // Update per diem
-            if (newData.perDiem[index]) {
-              newData.perDiem[index] = {
-                ...newData.perDiem[index],
-                numDays: item.numNights,
-              };
-              // Recalculate per diem totals
-              const perDiemItem = newData.perDiem[index];
-              perDiemItem.totalPerDiemPerMan =
-                perDiemItem.numDays * perDiemItem.dailyRate;
-              perDiemItem.totalPerDiem =
-                perDiemItem.totalPerDiemPerMan * perDiemItem.numMen;
-            }
-
-            // Update local miles
-            if (newData.localMiles[index]) {
-              newData.localMiles[index] = {
-                ...newData.localMiles[index],
-                numDays: item.numNights,
-              };
-              // Recalculate local miles totals
-              const localMilesItem = newData.localMiles[index];
-              localMilesItem.totalMiles =
-                localMilesItem.numDays *
-                localMilesItem.milesPerDay *
-                localMilesItem.numVehicles;
-              localMilesItem.totalLocalMilesCost =
-                localMilesItem.totalMiles * localMilesItem.rate;
-            }
-          }
-
-          // Sync numMen with other travel sections (except flights and air travel) when linked
-          if (field === "numMen" && newData.numMenLinked) {
-            // Update travel time
-            if (newData.travelTime[index]) {
-              newData.travelTime[index] = {
-                ...newData.travelTime[index],
-                numMen: item.numMen,
-              };
-              // Recalculate travel time totals
-              const travelTimeItem = newData.travelTime[index];
-              travelTimeItem.grandTotalTravelHours =
-                travelTimeItem.totalTravelHours * travelTimeItem.numMen;
-              travelTimeItem.totalTravelLabor =
-                travelTimeItem.grandTotalTravelHours * travelTimeItem.rate;
-            }
-
-            // Update per diem
-            if (newData.perDiem[index]) {
-              newData.perDiem[index] = {
-                ...newData.perDiem[index],
-                numMen: item.numMen,
-              };
-              // Recalculate per diem totals
-              const perDiemItem = newData.perDiem[index];
-              perDiemItem.totalPerDiemPerMan =
-                perDiemItem.numDays * perDiemItem.dailyRate;
-              perDiemItem.totalPerDiem =
-                perDiemItem.totalPerDiemPerMan * perDiemItem.numMen;
-            }
-
-            // Sync local miles vehicles with Travel Expense vehicles
-            if (newData.localMiles[index] && newData.travelExpense[index]) {
-              newData.localMiles[index] = {
-                ...newData.localMiles[index],
-                numVehicles: newData.travelExpense[index].numVehicles,
-              };
-              // Recalculate local miles totals
-              const localMilesItem = newData.localMiles[index];
-              localMilesItem.totalMiles =
-                localMilesItem.numDays *
-                localMilesItem.milesPerDay *
-                localMilesItem.numVehicles;
-              localMilesItem.totalLocalMilesCost =
-                localMilesItem.totalMiles * localMilesItem.rate;
-            }
-          }
-          break;
-
-        case "localMiles":
-          item.totalMiles = item.numDays * item.milesPerDay * item.numVehicles;
-          item.totalLocalMilesCost = item.totalMiles * item.rate;
-
-          // Sync per diem days and lodging nights with local miles days
-          if (field === "numDays") {
-            // Update per diem
-            if (newData.perDiem[index]) {
-              newData.perDiem[index] = {
-                ...newData.perDiem[index],
-                numDays: item.numDays,
-              };
-              // Recalculate per diem totals
-              const perDiemItem = newData.perDiem[index];
-              perDiemItem.totalPerDiemPerMan =
-                perDiemItem.numDays * perDiemItem.dailyRate;
-              perDiemItem.totalPerDiem =
-                perDiemItem.totalPerDiemPerMan * perDiemItem.numMen;
-            }
-
-            // Update lodging
-            if (newData.lodging[index]) {
-              newData.lodging[index] = {
-                ...newData.lodging[index],
-                numNights: item.numDays,
-              };
-              // Recalculate lodging totals
-              const lodgingItem = newData.lodging[index];
-              lodgingItem.manNights =
-                lodgingItem.numNights * lodgingItem.numMen;
-              lodgingItem.totalAmount =
-                lodgingItem.manNights * lodgingItem.rate;
-            }
-          }
-          break;
-
-        case "flights":
-          item.totalFlightAmount =
-            item.numFlights * item.numMen * item.rate +
-            item.numFlights * item.numMen * item.luggageFees;
-
-          // Sync numMen with air travel time section when linked (flights and air travel stay in sync with each other)
-          if (
-            field === "numMen" &&
-            newData.numMenLinked &&
-            newData.airTravelTime[index]
-          ) {
-            newData.airTravelTime[index] = {
-              ...newData.airTravelTime[index],
-              numMen: item.numMen,
-            };
-            // Recalculate air travel time totals
-            const airTravelItem = newData.airTravelTime[index];
-            airTravelItem.roundTripTerminalTime =
-              airTravelItem.oneWayHoursInAir * 2;
-            airTravelItem.totalTravelHours =
-              airTravelItem.trips * airTravelItem.roundTripTerminalTime;
-            airTravelItem.grandTotalTravelHours =
-              airTravelItem.totalTravelHours * airTravelItem.numMen;
-            airTravelItem.totalTravelLabor =
-              airTravelItem.grandTotalTravelHours * airTravelItem.rate;
-          }
-          break;
-
-        case "airTravelTime":
-          // Update air travel time calculations
-          item.roundTripTerminalTime = item.oneWayHoursInAir * 2;
-          // Total travel hours is trips * round trip terminal time
-          item.totalTravelHours = item.trips * item.roundTripTerminalTime;
-          // Grand total travel hours is total travel hours * number of men
-          item.grandTotalTravelHours = item.totalTravelHours * item.numMen;
-          item.totalTravelLabor = item.grandTotalTravelHours * item.rate;
-
-          // Sync numMen with flights section when linked (flights and air travel stay in sync with each other)
-          if (
-            field === "numMen" &&
-            newData.numMenLinked &&
-            newData.flights[index]
-          ) {
-            newData.flights[index] = {
-              ...newData.flights[index],
-              numMen: item.numMen,
-            };
-            // Recalculate flights totals
-            const flightsItem = newData.flights[index];
-            flightsItem.totalFlightAmount =
-              flightsItem.numFlights * flightsItem.numMen * flightsItem.rate +
-              flightsItem.numFlights *
-                flightsItem.numMen *
-                flightsItem.luggageFees;
-          }
-          break;
-
-        case "rentalCar":
-          item.totalAmount = item.numCars * item.rate;
-          break;
-      }
-
-      return newData;
+      const travel = (prev.travel ?? []).map((g: any, i: number) =>
+        i === index ? { ...g, [field]: numValue } : g,
+      );
+      return { ...prev, travel };
     });
+    setIsDirty(true);
+  };
+
+  const addTravelGroup = () => {
+    setTravelData((prev) => ({
+      ...prev,
+      travel: [...(prev.travel ?? []), createEmptyTravelGroup()],
+    }));
+    setIsDirty(true);
+  };
+
+  const removeTravelGroup = (index: number) => {
+    setTravelData((prev) => {
+      const current = prev.travel ?? [];
+      if (current.length <= 1) return prev;
+      return { ...prev, travel: current.filter((_: any, i: number) => i !== index) };
+    });
+    setIsDirty(true);
+  };
+
+  const updateTravelSection = (
+    section: "perDiem" | "lodging" | "localMiles" | "airTravel" | "rentalCar",
+    field: string,
+    value: string | number,
+  ) => {
+    const numValue = typeof value === "string" ? Number(value) : value;
+    setTravelData((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: numValue },
+    }));
     setIsDirty(true);
   };
 
@@ -4531,66 +3860,44 @@ export default function EstimateSheet({
           // Apply travel data presets
           setTravelData((prev) => ({
             ...prev,
-            travelExpense: [
-              {
-                ...prev.travelExpense[0],
-                numVehicles: presets.default_number_of_vehicles,
-                rate: presets.default_vehicle_cost_per_mile,
-              },
-            ],
-            travelTime: [
-              {
-                ...prev.travelTime[0],
-                numMen: presets.default_number_of_men,
-                rate: presets.default_hourly_rate,
-              },
-            ],
-            perDiem: [
-              {
-                ...prev.perDiem[0],
-                dailyRate: presets.default_per_diem_rate,
-                firstDayRate: presets.default_per_diem_rate,
-                lastDayRate: presets.default_per_diem_rate,
-                numMen: presets.default_number_of_men,
-              },
-            ],
-            lodging: [
-              {
-                ...prev.lodging[0],
-                numMen: presets.default_number_of_men,
-                rate: presets.default_lodging_rate,
-              },
-            ],
-            localMiles: [
-              {
-                ...prev.localMiles[0],
-                numVehicles: presets.default_number_of_vehicles,
-                milesPerDay: presets.default_local_miles_per_day,
-                rate: presets.default_vehicle_cost_per_mile,
-              },
-            ],
-            flights: [
-              {
-                ...prev.flights[0],
-                numMen: presets.default_flight_number_of_men,
-                rate: presets.default_flight_rate,
-                luggageFees: presets.default_flight_luggage_fees,
-              },
-            ],
-            airTravelTime: [
-              {
-                ...prev.airTravelTime[0],
-                numMen: presets.default_flight_number_of_men,
-                rate: presets.default_hourly_rate,
-              },
-            ],
-            rentalCar: [
-              {
-                ...prev.rentalCar[0],
-                numCars: presets.default_rental_number_of_cars,
-                rate: presets.default_rental_rate,
-              },
-            ],
+            travel: prev.travel?.length
+              ? [
+                  {
+                    ...prev.travel[0],
+                    numVehicles: presets.default_number_of_vehicles,
+                    rate: presets.default_vehicle_cost_per_mile,
+                    numMen: presets.default_number_of_men,
+                    travelLaborRate: presets.default_hourly_rate,
+                  },
+                ]
+              : prev.travel,
+            perDiem: {
+              ...(prev.perDiem || {}),
+              dailyRate: presets.default_per_diem_rate,
+              numMen: presets.default_number_of_men,
+            },
+            lodging: {
+              ...(prev.lodging || {}),
+              numMen: presets.default_number_of_men,
+              rate: presets.default_lodging_rate,
+            },
+            localMiles: {
+              ...(prev.localMiles || {}),
+              numVehicles: presets.default_number_of_vehicles,
+              milesPerDay: presets.default_local_miles_per_day,
+              rate: presets.default_vehicle_cost_per_mile,
+            },
+            airTravel: {
+              ...(prev.airTravel || {}),
+              numMen: presets.default_flight_number_of_men,
+              flightRate: presets.default_flight_rate,
+              luggageFees: presets.default_flight_luggage_fees,
+            },
+            rentalCar: {
+              ...(prev.rentalCar || {}),
+              numCars: presets.default_rental_number_of_cars,
+              rate: presets.default_rental_rate,
+            },
           }));
 
           console.log("Estimating presets applied:", presets);
@@ -5565,17 +4872,8 @@ export default function EstimateSheet({
       }
       return source || {};
     })();
-    const getParsedTravelNonLaborCost = () => {
-      const td: any = parsedTravel as any;
-      return (
-        (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
-        (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
-        (td?.lodging?.[0]?.totalAmount ?? 0) +
-        (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
-        (td?.flights?.[0]?.totalFlightAmount ?? 0) +
-        (td?.rentalCar?.[0]?.totalAmount ?? 0)
-      );
-    };
+    const getParsedTravelNonLaborCost = () =>
+      computeTravelTotals(parsedTravel).nonLaborCost;
     const hs = parsedData.hoursSummary || {};
     const matExpBase = getMaterialExpenseBaseParsed(parsedData);
     const travelNonLabor = getParsedTravelNonLaborCost();
@@ -5946,20 +5244,6 @@ export default function EstimateSheet({
         return source || {};
       })();
 
-      const getParsedTotalTravelCost = () => {
-        const td: any = parsedTravel as any;
-        return (
-          (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
-          (td?.travelTime?.[0]?.totalTravelLabor ?? 0) +
-          (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
-          (td?.lodging?.[0]?.totalAmount ?? 0) +
-          (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
-          (td?.flights?.[0]?.totalFlightAmount ?? 0) +
-          (td?.airTravelTime?.[0]?.totalTravelLabor ?? 0) +
-          (td?.rentalCar?.[0]?.totalAmount ?? 0)
-        );
-      };
-
       // Material/expense base (shared across day-type scenarios)
       const cv = parsedData.calculatedValues || {};
       const matExpBase =
@@ -5976,10 +5260,7 @@ export default function EstimateSheet({
         (hs.travelStraightTimeHours || 0) * quoteHourlyRates.straightTime +
         (hs.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
         (hs.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-      const travelNonLabor =
-        getParsedTotalTravelCost() -
-        (((parsedTravel as any)?.travelTime?.[0]?.totalTravelLabor ?? 0) +
-          ((parsedTravel as any)?.airTravelTime?.[0]?.totalTravelLabor ?? 0));
+      const travelNonLabor = computeTravelTotals(parsedTravel).nonLaborCost;
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
       const finalValue = Math.ceil(
@@ -7819,81 +7100,282 @@ export default function EstimateSheet({
                       }}
                     />
                     {data.useSovItems !== false && (
-                    <div
-                      style={styles.tableContainer}
-                      onMouseMove={onMouseMove}
-                      onMouseUp={onMouseUp}
-                      onMouseLeave={onMouseUp}
-                    >
-                      <table style={styles.table}>
-                        <thead>
-                          <tr>
-                            <th
-                              style={{
-                                ...styles.tableHeader,
-                                width: "44px",
-                                minWidth: "44px",
-                              }}
-                            ></th>
-                            <th
-                              ref={itemHeaderRef}
-                              style={{
-                                ...styles.tableHeader,
-                                width: toPx(itemColWidth),
-                                minWidth: toPx(itemColWidth),
-                                position: "relative",
-                              }}
-                            >
-                              ITEM
-                              <span
-                                role="separator"
-                                aria-orientation="vertical"
-                                title="Drag to resize column"
-                                onMouseDown={(e) => {
-                                  e.stopPropagation();
-                                  onItemMouseDown(e);
-                                }}
+                      <div
+                        style={styles.tableContainer}
+                        onMouseMove={onMouseMove}
+                        onMouseUp={onMouseUp}
+                        onMouseLeave={onMouseUp}
+                      >
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th
                                 style={{
-                                  position: "absolute",
-                                  right: -4,
-                                  top: 0,
-                                  height: "100%",
-                                  width: 12,
-                                  minHeight: 24,
-                                  cursor: "col-resize",
-                                  userSelect: "none",
-                                  zIndex: 10,
+                                  ...styles.tableHeader,
+                                  width: "44px",
+                                  minWidth: "44px",
                                 }}
-                              />
-                            </th>
-                            <th style={styles.tableHeader}>QUANTITY</th>
-                            <th style={styles.tableHeader}>MATERIAL PRICE</th>
-                            <th style={styles.tableHeader}>EXPENSE PRICE</th>
-                            <th style={styles.tableHeader}>
-                              MATERIAL EXTENSION
-                            </th>
-                            <th style={styles.tableHeader}>
-                              EXPENSE EXTENSION
-                            </th>
-                            <th style={styles.tableHeader}>LABOR (MEN)</th>
-                            <th style={styles.tableHeader}>LABOR (HOURS)</th>
-                            <th style={styles.tableHeader}>LABOR UNIT</th>
-                            <th style={styles.tableHeader}>LABOR TOTAL</th>
-                            <th style={styles.tableHeader}>SOV ITEM PRICE</th>
-                            <th style={styles.tableHeader}>NOTES</th>
-                            {!isViewMode && (
-                              <th style={styles.tableHeader}>CLEAR</th>
-                            )}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.sovItems.map((item, index) => {
-                            const isSectionRow = isEstimateSectionRow(item);
-                            const isBlankRow = isEstimateBlankRow(item);
-                            if (isSectionRow || isBlankRow) {
-                              const structuralBg = isSectionRow
-                                ? "var(--header-bg)"
-                                : "var(--cell-bg)";
+                              ></th>
+                              <th
+                                ref={itemHeaderRef}
+                                style={{
+                                  ...styles.tableHeader,
+                                  width: toPx(itemColWidth),
+                                  minWidth: toPx(itemColWidth),
+                                  position: "relative",
+                                }}
+                              >
+                                ITEM
+                                <span
+                                  role="separator"
+                                  aria-orientation="vertical"
+                                  title="Drag to resize column"
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    onItemMouseDown(e);
+                                  }}
+                                  style={{
+                                    position: "absolute",
+                                    right: -4,
+                                    top: 0,
+                                    height: "100%",
+                                    width: 12,
+                                    minHeight: 24,
+                                    cursor: "col-resize",
+                                    userSelect: "none",
+                                    zIndex: 10,
+                                  }}
+                                />
+                              </th>
+                              <th style={styles.tableHeader}>QUANTITY</th>
+                              <th style={styles.tableHeader}>MATERIAL PRICE</th>
+                              <th style={styles.tableHeader}>EXPENSE PRICE</th>
+                              <th style={styles.tableHeader}>
+                                MATERIAL EXTENSION
+                              </th>
+                              <th style={styles.tableHeader}>
+                                EXPENSE EXTENSION
+                              </th>
+                              <th style={styles.tableHeader}>LABOR (MEN)</th>
+                              <th style={styles.tableHeader}>LABOR (HOURS)</th>
+                              <th style={styles.tableHeader}>LABOR UNIT</th>
+                              <th style={styles.tableHeader}>LABOR TOTAL</th>
+                              <th style={styles.tableHeader}>SOV ITEM PRICE</th>
+                              <th style={styles.tableHeader}>NOTES</th>
+                              {!isViewMode && (
+                                <th style={styles.tableHeader}>CLEAR</th>
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.sovItems.map((item, index) => {
+                              const isSectionRow = isEstimateSectionRow(item);
+                              const isBlankRow = isEstimateBlankRow(item);
+                              if (isSectionRow || isBlankRow) {
+                                const structuralBg = isSectionRow
+                                  ? "var(--header-bg)"
+                                  : "var(--cell-bg)";
+                                return (
+                                  <tr
+                                    key={index}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, index, "sov")}
+                                    style={{
+                                      backgroundColor:
+                                        dragOverIndex === index &&
+                                        draggedItemType === "sov"
+                                          ? "#f3f4f6"
+                                          : "transparent",
+                                      borderTop:
+                                        dragOverIndex === index &&
+                                        draggedItemType === "sov"
+                                          ? "2px solid #f26722"
+                                          : "none",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        backgroundColor: structuralBg,
+                                      }}
+                                    />
+                                    <td
+                                      colSpan={12}
+                                      style={{
+                                        ...styles.tableCell,
+                                        backgroundColor: structuralBg,
+                                        padding: isBlankRow
+                                          ? "10px 5px"
+                                          : "6px 5px",
+                                        borderTop: isSectionRow
+                                          ? "2px solid var(--border-color)"
+                                          : "1px solid var(--border-color)",
+                                        borderBottom: isSectionRow
+                                          ? "2px solid var(--border-color)"
+                                          : "1px solid var(--border-color)",
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          position: "relative",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          minHeight: isBlankRow
+                                            ? "22px"
+                                            : "28px",
+                                        }}
+                                      >
+                                        {!isViewMode && (
+                                          <div
+                                            draggable={true}
+                                            onDragStart={(e) =>
+                                              handleDragStart(e, index, "sov")
+                                            }
+                                            onDragEnd={handleDragEnd}
+                                            style={{
+                                              position: "absolute",
+                                              left: 8,
+                                              cursor: "grab",
+                                              color: "#6b7280",
+                                              fontSize: "14px",
+                                              userSelect: "none",
+                                              padding: "2px",
+                                            }}
+                                            title="Drag to reorder"
+                                          >
+                                            ⋮⋮
+                                          </div>
+                                        )}
+                                        {isSectionRow ? (
+                                          <input
+                                            type="text"
+                                            style={{
+                                              ...styles.tableInput,
+                                              width: "min(520px, 80%)",
+                                              border: "none",
+                                              backgroundColor: "transparent",
+                                              fontWeight: "bold",
+                                              textAlign: "center",
+                                              padding: "4px",
+                                            }}
+                                            value={item.item}
+                                            onChange={(e) =>
+                                              handleItemChange(
+                                                "sov",
+                                                index,
+                                                "item",
+                                                e.target.value,
+                                              )
+                                            }
+                                            onKeyDown={(e) =>
+                                              handleEstimateCellKeyDown(
+                                                e,
+                                                "sov",
+                                                index,
+                                                0,
+                                                data.sovItems.length,
+                                              )
+                                            }
+                                            data-estimate-table="sov"
+                                            data-estimate-row={index}
+                                            data-estimate-col={0}
+                                            readOnly={isViewMode}
+                                          />
+                                        ) : (
+                                          <div
+                                            style={{
+                                              width: "80%",
+                                              height: "1px",
+                                              backgroundColor:
+                                                "var(--border-color)",
+                                              opacity: 0.7,
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    </td>
+                                    {!isViewMode && (
+                                      <td
+                                        style={{
+                                          ...styles.tableCell,
+                                          backgroundColor: structuralBg,
+                                        }}
+                                      >
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleClearRow("sov", index)
+                                          }
+                                          onKeyDown={(e) =>
+                                            handleEstimateCellKeyDown(
+                                              e,
+                                              "sov",
+                                              index,
+                                              12,
+                                              data.sovItems.length,
+                                            )
+                                          }
+                                          data-estimate-table="sov"
+                                          data-estimate-row={index}
+                                          data-estimate-col={12}
+                                          style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#ef4444",
+                                            cursor: "pointer",
+                                            padding: "2px",
+                                          }}
+                                          title="Delete this row"
+                                        >
+                                          <Trash className="h-5 w-5" />
+                                        </button>
+                                      </td>
+                                    )}
+                                  </tr>
+                                );
+                              }
+
+                              const materialExtension =
+                                calculateMaterialExtension(
+                                  item.quantity,
+                                  item.materialPrice,
+                                );
+                              const expenseExtension =
+                                calculateExpenseExtension(
+                                  item.quantity,
+                                  item.expensePrice,
+                                );
+                              const laborUnit = calculateLaborUnit(
+                                item.laborMen,
+                                item.laborHours,
+                              );
+                              const laborTotal = calculateLaborTotal(
+                                item.quantity,
+                                item.laborMen,
+                                item.laborHours,
+                              );
+
+                              // Debug: Log the item values
+                              console.log("SOV Item Debug:", {
+                                index: index,
+                                item: item.item,
+                                laborMen: item.laborMen,
+                                laborHours: item.laborHours,
+                                calculatedLaborUnit: laborUnit,
+                                rawLaborMen: item.laborMen,
+                                rawLaborHours: item.laborHours,
+                                typeOfLaborMen: typeof item.laborMen,
+                                typeOfLaborHours: typeof item.laborHours,
+                              });
+
+                              const sovItemPrice = calculateSOVItemPrice(
+                                materialExtension,
+                                expenseExtension,
+                                laborUnit,
+                              );
+
                               return (
                                 <tr
                                   key={index}
@@ -7916,32 +7398,33 @@ export default function EstimateSheet({
                                   <td
                                     style={{
                                       ...styles.tableCell,
-                                      backgroundColor: structuralBg,
+                                      width: "44px",
+                                      minWidth: "44px",
                                     }}
-                                  />
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSovItemIndexes.includes(
+                                        index,
+                                      )}
+                                      onChange={() =>
+                                        toggleSovItemSelection(index)
+                                      }
+                                      title="Select this SOV item to copy"
+                                    />
+                                  </td>
                                   <td
-                                    colSpan={12}
                                     style={{
                                       ...styles.tableCell,
-                                      backgroundColor: structuralBg,
-                                      padding: isBlankRow
-                                        ? "10px 5px"
-                                        : "6px 5px",
-                                      borderTop: isSectionRow
-                                        ? "2px solid var(--border-color)"
-                                        : "1px solid var(--border-color)",
-                                      borderBottom: isSectionRow
-                                        ? "2px solid var(--border-color)"
-                                        : "1px solid var(--border-color)",
+                                      width: toPx(itemColWidth),
+                                      minWidth: toPx(itemColWidth),
                                     }}
                                   >
                                     <div
                                       style={{
-                                        position: "relative",
                                         display: "flex",
                                         alignItems: "center",
-                                        justifyContent: "center",
-                                        minHeight: isBlankRow ? "22px" : "28px",
+                                        gap: "8px",
                                       }}
                                     >
                                       {!isViewMode && (
@@ -7951,75 +7434,449 @@ export default function EstimateSheet({
                                             handleDragStart(e, index, "sov")
                                           }
                                           onDragEnd={handleDragEnd}
+                                          onMouseEnter={(e) => {
+                                            (
+                                              e.target as HTMLElement
+                                            ).style.color = "#374151";
+                                            (
+                                              e.target as HTMLElement
+                                            ).style.cursor = "grab";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            (
+                                              e.target as HTMLElement
+                                            ).style.color = "#6b7280";
+                                          }}
+                                          onMouseDown={(e) => {
+                                            (
+                                              e.target as HTMLElement
+                                            ).style.cursor = "grabbing";
+                                          }}
+                                          onMouseUp={(e) => {
+                                            (
+                                              e.target as HTMLElement
+                                            ).style.cursor = "grab";
+                                          }}
                                           style={{
-                                            position: "absolute",
-                                            left: 8,
                                             cursor: "grab",
                                             color: "#6b7280",
                                             fontSize: "14px",
                                             userSelect: "none",
                                             padding: "2px",
+                                            borderRadius: "2px",
+                                            transition: "color 0.2s ease",
                                           }}
                                           title="Drag to reorder"
                                         >
                                           ⋮⋮
                                         </div>
                                       )}
-                                      {isSectionRow ? (
-                                        <input
-                                          type="text"
+                                      <input
+                                        type="text"
+                                        style={{
+                                          ...styles.tableInput,
+                                          flex: 1,
+                                        }}
+                                        value={item.item}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "item",
+                                            e.target.value,
+                                          )
+                                        }
+                                        onKeyDown={(e) =>
+                                          handleEstimateCellKeyDown(
+                                            e,
+                                            "sov",
+                                            index,
+                                            0,
+                                            data.sovItems.length,
+                                          )
+                                        }
+                                        data-estimate-table="sov"
+                                        data-estimate-row={index}
+                                        data-estimate-col={0}
+                                        readOnly={isViewMode}
+                                      />
+                                      {!isViewMode && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setScopeLibraryPicker({
+                                              open: true,
+                                              section: "sov",
+                                              index,
+                                            })
+                                          }
+                                          title="Search scope item library"
+                                          aria-label="Search scope item library"
                                           style={{
-                                            ...styles.tableInput,
-                                            width: "min(520px, 80%)",
+                                            background: "none",
                                             border: "none",
-                                            backgroundColor: "transparent",
-                                            fontWeight: "bold",
-                                            textAlign: "center",
-                                            padding: "4px",
+                                            color: "#f26722",
+                                            cursor: "pointer",
+                                            padding: "3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: "4px",
                                           }}
-                                          value={item.item}
-                                          onChange={(e) =>
-                                            handleItemChange(
-                                              "sov",
-                                              index,
-                                              "item",
-                                              e.target.value,
-                                            )
-                                          }
-                                          onKeyDown={(e) =>
-                                            handleEstimateCellKeyDown(
-                                              e,
-                                              "sov",
-                                              index,
-                                              0,
-                                              data.sovItems.length,
-                                            )
-                                          }
-                                          data-estimate-table="sov"
-                                          data-estimate-row={index}
-                                          data-estimate-col={0}
-                                          readOnly={isViewMode}
-                                        />
-                                      ) : (
-                                        <div
-                                          style={{
-                                            width: "80%",
-                                            height: "1px",
-                                            backgroundColor:
-                                              "var(--border-color)",
-                                            opacity: 0.7,
-                                          }}
-                                        />
+                                        >
+                                          <BookOpen className="h-5 w-5" />
+                                        </button>
                                       )}
                                     </div>
                                   </td>
-                                  {!isViewMode && (
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        backgroundColor: structuralBg,
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      style={styles.tableInput}
+                                      value={
+                                        blankingKeys.has(
+                                          makeKey("sov", index, "quantity"),
+                                        )
+                                          ? ""
+                                          : String(item.quantity ?? "")
+                                      }
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "quantity",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          1,
+                                          data.sovItems.length,
+                                        );
+                                        if (
+                                          e.key === "Backspace" &&
+                                          String(item.quantity) === "0"
+                                        ) {
+                                          const copy = new Set(blankingKeys);
+                                          copy.add(
+                                            makeKey("sov", index, "quantity"),
+                                          );
+                                          setBlankingKeys(copy);
+                                          e.preventDefault();
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "quantity",
+                                            "",
+                                          );
+                                        }
                                       }}
-                                    >
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={1}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      style={styles.tableInput}
+                                      value={
+                                        blankingKeys.has(
+                                          makeKey(
+                                            "sov",
+                                            index,
+                                            "materialPrice",
+                                          ),
+                                        )
+                                          ? ""
+                                          : String(item.materialPrice ?? "")
+                                      }
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "materialPrice",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          2,
+                                          data.sovItems.length,
+                                        );
+                                        if (
+                                          e.key === "Backspace" &&
+                                          String(item.materialPrice) === "0"
+                                        ) {
+                                          const copy = new Set(blankingKeys);
+                                          copy.add(
+                                            makeKey(
+                                              "sov",
+                                              index,
+                                              "materialPrice",
+                                            ),
+                                          );
+                                          setBlankingKeys(copy);
+                                          e.preventDefault();
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "materialPrice",
+                                            "",
+                                          );
+                                        }
+                                      }}
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={2}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      style={styles.tableInput}
+                                      value={
+                                        blankingKeys.has(
+                                          makeKey("sov", index, "expensePrice"),
+                                        )
+                                          ? ""
+                                          : String(item.expensePrice ?? "")
+                                      }
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "expensePrice",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          3,
+                                          data.sovItems.length,
+                                        );
+                                        if (
+                                          e.key === "Backspace" &&
+                                          String(item.expensePrice) === "0"
+                                        ) {
+                                          const copy = new Set(blankingKeys);
+                                          copy.add(
+                                            makeKey(
+                                              "sov",
+                                              index,
+                                              "expensePrice",
+                                            ),
+                                          );
+                                          setBlankingKeys(copy);
+                                          e.preventDefault();
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "expensePrice",
+                                            "",
+                                          );
+                                        }
+                                      }}
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={3}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.tableCell,
+                                      ...styles.calculated,
+                                    }}
+                                  >
+                                    {formatCurrency(materialExtension)}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.tableCell,
+                                      ...styles.calculated,
+                                    }}
+                                  >
+                                    {formatCurrency(expenseExtension)}
+                                  </td>
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      style={styles.tableInput}
+                                      value={
+                                        blankingKeys.has(
+                                          makeKey("sov", index, "laborMen"),
+                                        )
+                                          ? ""
+                                          : Number.isNaN(Number(item.laborMen))
+                                            ? ""
+                                            : String(item.laborMen ?? "")
+                                      }
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "laborMen",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          6,
+                                          data.sovItems.length,
+                                        );
+                                        if (
+                                          e.key === "Backspace" &&
+                                          String(item.laborMen) === "0"
+                                        ) {
+                                          const copy = new Set(blankingKeys);
+                                          copy.add(
+                                            makeKey("sov", index, "laborMen"),
+                                          );
+                                          setBlankingKeys(copy);
+                                          e.preventDefault();
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "laborMen",
+                                            "",
+                                          );
+                                        }
+                                      }}
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={6}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      style={styles.tableInput}
+                                      value={
+                                        blankingKeys.has(
+                                          makeKey("sov", index, "laborHours"),
+                                        )
+                                          ? ""
+                                          : Number.isNaN(
+                                                Number(item.laborHours),
+                                              )
+                                            ? ""
+                                            : String(item.laborHours ?? "")
+                                      }
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "laborHours",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          7,
+                                          data.sovItems.length,
+                                        );
+                                        if (
+                                          e.key === "Backspace" &&
+                                          String(item.laborHours) === "0"
+                                        ) {
+                                          const copy = new Set(blankingKeys);
+                                          copy.add(
+                                            makeKey("sov", index, "laborHours"),
+                                          );
+                                          setBlankingKeys(copy);
+                                          e.preventDefault();
+                                          handleItemChange(
+                                            "sov",
+                                            index,
+                                            "laborHours",
+                                            "",
+                                          );
+                                        }
+                                      }}
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={7}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.tableCell,
+                                      ...styles.calculated,
+                                    }}
+                                  >
+                                    {formatNumber(laborUnit)}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.tableCell,
+                                      ...styles.calculated,
+                                    }}
+                                  >
+                                    {formatNumber(laborTotal)}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.tableCell,
+                                      ...styles.calculated,
+                                    }}
+                                  >
+                                    {formatCurrency(sovItemPrice)}
+                                  </td>
+                                  <td style={styles.tableCell}>
+                                    <input
+                                      type="text"
+                                      style={styles.tableInput}
+                                      value={item.notes}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          "sov",
+                                          index,
+                                          "notes",
+                                          e.target.value,
+                                        )
+                                      }
+                                      onKeyDown={(e) =>
+                                        handleEstimateCellKeyDown(
+                                          e,
+                                          "sov",
+                                          index,
+                                          11,
+                                          data.sovItems.length,
+                                        )
+                                      }
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={11}
+                                      readOnly={isViewMode}
+                                    />
+                                  </td>
+                                  {!isViewMode && (
+                                    <td style={styles.tableCell}>
                                       <button
                                         type="button"
                                         onClick={() =>
@@ -8052,728 +7909,176 @@ export default function EstimateSheet({
                                   )}
                                 </tr>
                               );
-                            }
+                            })}
+                          </tbody>
+                        </table>
 
-                            const materialExtension =
-                              calculateMaterialExtension(
-                                item.quantity,
-                                item.materialPrice,
-                              );
-                            const expenseExtension = calculateExpenseExtension(
-                              item.quantity,
-                              item.expensePrice,
+                        {(() => {
+                          const selectableSovIndexes = data.sovItems
+                            .map((item, index) =>
+                              !isStructuralLineItem(item) ? index : -1,
+                            )
+                            .filter((index) => index >= 0);
+                          const targetQuotes = quotes.filter(
+                            (quote) =>
+                              quote.id !==
+                              (!isNewQuote
+                                ? quotes[selectedQuoteIndex]?.id
+                                : ""),
+                          );
+                          const allSovItemsSelected =
+                            selectableSovIndexes.length > 0 &&
+                            selectableSovIndexes.every((index) =>
+                              selectedSovItemIndexes.includes(index),
                             );
-                            const laborUnit = calculateLaborUnit(
-                              item.laborMen,
-                              item.laborHours,
-                            );
-                            const laborTotal = calculateLaborTotal(
-                              item.quantity,
-                              item.laborMen,
-                              item.laborHours,
-                            );
-
-                            // Debug: Log the item values
-                            console.log("SOV Item Debug:", {
-                              index: index,
-                              item: item.item,
-                              laborMen: item.laborMen,
-                              laborHours: item.laborHours,
-                              calculatedLaborUnit: laborUnit,
-                              rawLaborMen: item.laborMen,
-                              rawLaborHours: item.laborHours,
-                              typeOfLaborMen: typeof item.laborMen,
-                              typeOfLaborHours: typeof item.laborHours,
-                            });
-
-                            const sovItemPrice = calculateSOVItemPrice(
-                              materialExtension,
-                              expenseExtension,
-                              laborUnit,
-                            );
-
-                            return (
-                              <tr
-                                key={index}
-                                onDragOver={(e) => handleDragOver(e, index)}
-                                onDragLeave={handleDragLeave}
-                                onDrop={(e) => handleDrop(e, index, "sov")}
-                                style={{
-                                  backgroundColor:
-                                    dragOverIndex === index &&
-                                    draggedItemType === "sov"
-                                      ? "#f3f4f6"
-                                      : "transparent",
-                                  borderTop:
-                                    dragOverIndex === index &&
-                                    draggedItemType === "sov"
-                                      ? "2px solid #f26722"
-                                      : "none",
-                                }}
-                              >
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    width: "44px",
-                                    minWidth: "44px",
-                                  }}
-                                >
+                          return (
+                            <div className="mt-4 space-y-2 print:hidden">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <label className="text-sm font-medium text-neutral-700 dark:text-dark-800">
+                                  {selectedSovItemIndexes.length} selected
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-dark-800">
                                   <input
                                     type="checkbox"
-                                    checked={selectedSovItemIndexes.includes(
-                                      index,
-                                    )}
-                                    onChange={() =>
-                                      toggleSovItemSelection(index)
-                                    }
-                                    title="Select this SOV item to copy"
-                                  />
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    width: toPx(itemColWidth),
-                                    minWidth: toPx(itemColWidth),
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "8px",
+                                    checked={allSovItemsSelected}
+                                    disabled={selectableSovIndexes.length === 0}
+                                    onChange={(e) => {
+                                      setSelectedSovItemIndexes(
+                                        e.target.checked
+                                          ? selectableSovIndexes
+                                          : [],
+                                      );
                                     }}
+                                  />
+                                  Select all
+                                </label>
+                                {selectedSovItemIndexes.length > 0 && (
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() =>
+                                      setSelectedSovItemIndexes([])
+                                    }
                                   >
-                                    {!isViewMode && (
-                                      <div
-                                        draggable={true}
-                                        onDragStart={(e) =>
-                                          handleDragStart(e, index, "sov")
-                                        }
-                                        onDragEnd={handleDragEnd}
-                                        onMouseEnter={(e) => {
-                                          (
-                                            e.target as HTMLElement
-                                          ).style.color = "#374151";
-                                          (
-                                            e.target as HTMLElement
-                                          ).style.cursor = "grab";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          (
-                                            e.target as HTMLElement
-                                          ).style.color = "#6b7280";
-                                        }}
-                                        onMouseDown={(e) => {
-                                          (
-                                            e.target as HTMLElement
-                                          ).style.cursor = "grabbing";
-                                        }}
-                                        onMouseUp={(e) => {
-                                          (
-                                            e.target as HTMLElement
-                                          ).style.cursor = "grab";
-                                        }}
-                                        style={{
-                                          cursor: "grab",
-                                          color: "#6b7280",
-                                          fontSize: "14px",
-                                          userSelect: "none",
-                                          padding: "2px",
-                                          borderRadius: "2px",
-                                          transition: "color 0.2s ease",
-                                        }}
-                                        title="Drag to reorder"
-                                      >
-                                        ⋮⋮
-                                      </div>
-                                    )}
-                                    <input
-                                      type="text"
-                                      style={{ ...styles.tableInput, flex: 1 }}
-                                      value={item.item}
-                                      onChange={(e) =>
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "item",
-                                          e.target.value,
-                                        )
-                                      }
-                                      onKeyDown={(e) =>
-                                        handleEstimateCellKeyDown(
-                                          e,
-                                          "sov",
-                                          index,
-                                          0,
-                                          data.sovItems.length,
-                                        )
-                                      }
-                                      data-estimate-table="sov"
-                                      data-estimate-row={index}
-                                      data-estimate-col={0}
-                                      readOnly={isViewMode}
-                                    />
-                                    {!isViewMode && (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          setScopeLibraryPicker({
-                                            open: true,
-                                            section: "sov",
-                                            index,
-                                          })
-                                        }
-                                        title="Search scope item library"
-                                        aria-label="Search scope item library"
-                                        style={{
-                                          background: "none",
-                                          border: "none",
-                                          color: "#f26722",
-                                          cursor: "pointer",
-                                          padding: "3px",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          borderRadius: "4px",
-                                        }}
-                                      >
-                                        <BookOpen className="h-5 w-5" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    style={styles.tableInput}
-                                    value={
-                                      blankingKeys.has(
-                                        makeKey("sov", index, "quantity"),
-                                      )
-                                        ? ""
-                                        : String(item.quantity ?? "")
-                                    }
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "quantity",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        1,
-                                        data.sovItems.length,
-                                      );
-                                      if (
-                                        e.key === "Backspace" &&
-                                        String(item.quantity) === "0"
-                                      ) {
-                                        const copy = new Set(blankingKeys);
-                                        copy.add(
-                                          makeKey("sov", index, "quantity"),
-                                        );
-                                        setBlankingKeys(copy);
-                                        e.preventDefault();
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "quantity",
-                                          "",
-                                        );
-                                      }
-                                    }}
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={1}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    style={styles.tableInput}
-                                    value={
-                                      blankingKeys.has(
-                                        makeKey("sov", index, "materialPrice"),
-                                      )
-                                        ? ""
-                                        : String(item.materialPrice ?? "")
-                                    }
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "materialPrice",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        2,
-                                        data.sovItems.length,
-                                      );
-                                      if (
-                                        e.key === "Backspace" &&
-                                        String(item.materialPrice) === "0"
-                                      ) {
-                                        const copy = new Set(blankingKeys);
-                                        copy.add(
-                                          makeKey(
-                                            "sov",
-                                            index,
-                                            "materialPrice",
-                                          ),
-                                        );
-                                        setBlankingKeys(copy);
-                                        e.preventDefault();
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "materialPrice",
-                                          "",
-                                        );
-                                      }
-                                    }}
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={2}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    style={styles.tableInput}
-                                    value={
-                                      blankingKeys.has(
-                                        makeKey("sov", index, "expensePrice"),
-                                      )
-                                        ? ""
-                                        : String(item.expensePrice ?? "")
-                                    }
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "expensePrice",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        3,
-                                        data.sovItems.length,
-                                      );
-                                      if (
-                                        e.key === "Backspace" &&
-                                        String(item.expensePrice) === "0"
-                                      ) {
-                                        const copy = new Set(blankingKeys);
-                                        copy.add(
-                                          makeKey("sov", index, "expensePrice"),
-                                        );
-                                        setBlankingKeys(copy);
-                                        e.preventDefault();
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "expensePrice",
-                                          "",
-                                        );
-                                      }
-                                    }}
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={3}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatCurrency(materialExtension)}
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatCurrency(expenseExtension)}
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    style={styles.tableInput}
-                                    value={
-                                      blankingKeys.has(
-                                        makeKey("sov", index, "laborMen"),
-                                      )
-                                        ? ""
-                                        : Number.isNaN(Number(item.laborMen))
-                                          ? ""
-                                          : String(item.laborMen ?? "")
-                                    }
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "laborMen",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        6,
-                                        data.sovItems.length,
-                                      );
-                                      if (
-                                        e.key === "Backspace" &&
-                                        String(item.laborMen) === "0"
-                                      ) {
-                                        const copy = new Set(blankingKeys);
-                                        copy.add(
-                                          makeKey("sov", index, "laborMen"),
-                                        );
-                                        setBlankingKeys(copy);
-                                        e.preventDefault();
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "laborMen",
-                                          "",
-                                        );
-                                      }
-                                    }}
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={6}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    style={styles.tableInput}
-                                    value={
-                                      blankingKeys.has(
-                                        makeKey("sov", index, "laborHours"),
-                                      )
-                                        ? ""
-                                        : Number.isNaN(Number(item.laborHours))
-                                          ? ""
-                                          : String(item.laborHours ?? "")
-                                    }
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "laborHours",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) => {
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        7,
-                                        data.sovItems.length,
-                                      );
-                                      if (
-                                        e.key === "Backspace" &&
-                                        String(item.laborHours) === "0"
-                                      ) {
-                                        const copy = new Set(blankingKeys);
-                                        copy.add(
-                                          makeKey("sov", index, "laborHours"),
-                                        );
-                                        setBlankingKeys(copy);
-                                        e.preventDefault();
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "laborHours",
-                                          "",
-                                        );
-                                      }
-                                    }}
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={7}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatNumber(laborUnit)}
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatNumber(laborTotal)}
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatCurrency(sovItemPrice)}
-                                </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="text"
-                                    style={styles.tableInput}
-                                    value={item.notes}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "sov",
-                                        index,
-                                        "notes",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "sov",
-                                        index,
-                                        11,
-                                        data.sovItems.length,
-                                      )
-                                    }
-                                    data-estimate-table="sov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={11}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
-                                {!isViewMode && (
-                                  <td style={styles.tableCell}>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleClearRow("sov", index)
-                                      }
-                                      onKeyDown={(e) =>
-                                        handleEstimateCellKeyDown(
-                                          e,
-                                          "sov",
-                                          index,
-                                          12,
-                                          data.sovItems.length,
-                                        )
-                                      }
-                                      data-estimate-table="sov"
-                                      data-estimate-row={index}
-                                      data-estimate-col={12}
-                                      style={{
-                                        background: "none",
-                                        border: "none",
-                                        color: "#ef4444",
-                                        cursor: "pointer",
-                                        padding: "2px",
-                                      }}
-                                      title="Delete this row"
-                                    >
-                                      <Trash className="h-5 w-5" />
-                                    </button>
-                                  </td>
+                                    Deselect
+                                  </Button>
                                 )}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-
-                      {(() => {
-                        const selectableSovIndexes = data.sovItems
-                          .map((item, index) =>
-                            !isStructuralLineItem(item) ? index : -1,
-                          )
-                          .filter((index) => index >= 0);
-                        const targetQuotes = quotes.filter(
-                          (quote) =>
-                            quote.id !==
-                            (!isNewQuote ? quotes[selectedQuoteIndex]?.id : ""),
-                        );
-                        const allSovItemsSelected =
-                          selectableSovIndexes.length > 0 &&
-                          selectableSovIndexes.every((index) =>
-                            selectedSovItemIndexes.includes(index),
-                          );
-                        return (
-                          <div className="mt-4 space-y-2 print:hidden">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <label className="text-sm font-medium text-neutral-700 dark:text-dark-800">
-                                {selectedSovItemIndexes.length} selected
-                              </label>
-                              <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-dark-800">
-                                <input
-                                  type="checkbox"
-                                  checked={allSovItemsSelected}
-                                  disabled={selectableSovIndexes.length === 0}
-                                  onChange={(e) => {
-                                    setSelectedSovItemIndexes(
-                                      e.target.checked
-                                        ? selectableSovIndexes
-                                        : [],
-                                    );
-                                  }}
-                                />
-                                Select all
-                              </label>
-                              {selectedSovItemIndexes.length > 0 && (
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => setSelectedSovItemIndexes([])}
-                                >
-                                  Deselect
-                                </Button>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <select
-                                value={copyTargetQuoteId}
-                                onChange={(e) =>
-                                  setCopyTargetQuoteId(e.target.value)
-                                }
-                                className="form-input h-9 min-w-[220px] flex-1 text-sm"
-                                style={{
-                                  width: "auto",
-                                  backgroundColor: "var(--input-bg)",
-                                  color: "var(--text-color)",
-                                  borderColor: "var(--border-color)",
-                                }}
-                              >
-                                <option value="">Copy to...</option>
-                                {targetQuotes.map((quote) => {
-                                  const quoteIndex = quotes.findIndex(
-                                    (q) => q.id === quote.id,
-                                  );
-                                  return (
-                                    <option key={quote.id} value={quote.id}>
-                                      {getQuoteDisplayName(quote, quoteIndex)}
-                                    </option>
-                                  );
-                                })}
-                                <option value="__new__">New estimate</option>
-                              </select>
-                              {copyTargetQuoteId === "__new__" && (
-                                <input
-                                  type="text"
-                                  value={newCopyEstimateTitle}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <select
+                                  value={copyTargetQuoteId}
                                   onChange={(e) =>
-                                    setNewCopyEstimateTitle(e.target.value)
+                                    setCopyTargetQuoteId(e.target.value)
                                   }
-                                  placeholder="New estimate name"
-                                  className="form-input h-9 min-w-[220px] text-sm"
+                                  className="form-input h-9 min-w-[220px] flex-1 text-sm"
                                   style={{
                                     width: "auto",
                                     backgroundColor: "var(--input-bg)",
                                     color: "var(--text-color)",
                                     borderColor: "var(--border-color)",
                                   }}
-                                />
-                              )}
-                              <Button
-                                type="button"
-                                onClick={handleCopySelectedSovItems}
-                                disabled={
-                                  isCopyingSovItems ||
-                                  selectedSovItemIndexes.length === 0 ||
-                                  !copyTargetQuoteId
-                                }
-                                className="h-9 bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                                leftIcon={<Copy className="h-5 w-5" />}
-                              >
-                                {isCopyingSovItems
-                                  ? "Copying..."
-                                  : "Copy SOV Items"}
-                              </Button>
-                              {!isViewMode && (
+                                >
+                                  <option value="">Copy to...</option>
+                                  {targetQuotes.map((quote) => {
+                                    const quoteIndex = quotes.findIndex(
+                                      (q) => q.id === quote.id,
+                                    );
+                                    return (
+                                      <option key={quote.id} value={quote.id}>
+                                        {getQuoteDisplayName(quote, quoteIndex)}
+                                      </option>
+                                    );
+                                  })}
+                                  <option value="__new__">New estimate</option>
+                                </select>
+                                {copyTargetQuoteId === "__new__" && (
+                                  <input
+                                    type="text"
+                                    value={newCopyEstimateTitle}
+                                    onChange={(e) =>
+                                      setNewCopyEstimateTitle(e.target.value)
+                                    }
+                                    placeholder="New estimate name"
+                                    className="form-input h-9 min-w-[220px] text-sm"
+                                    style={{
+                                      width: "auto",
+                                      backgroundColor: "var(--input-bg)",
+                                      color: "var(--text-color)",
+                                      borderColor: "var(--border-color)",
+                                    }}
+                                  />
+                                )}
                                 <Button
                                   type="button"
-                                  onClick={handleClearSelectedSovItems}
-                                  disabled={selectedSovItemIndexes.length === 0}
-                                  className="h-9 bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-1"
-                                  leftIcon={<Trash className="h-5 w-5" />}
+                                  onClick={handleCopySelectedSovItems}
+                                  disabled={
+                                    isCopyingSovItems ||
+                                    selectedSovItemIndexes.length === 0 ||
+                                    !copyTargetQuoteId
+                                  }
+                                  className="h-9 bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                  leftIcon={<Copy className="h-5 w-5" />}
                                 >
-                                  Delete Selected
+                                  {isCopyingSovItems
+                                    ? "Copying..."
+                                    : "Copy SOV Items"}
                                 </Button>
-                              )}
+                                {!isViewMode && (
+                                  <Button
+                                    type="button"
+                                    onClick={handleClearSelectedSovItems}
+                                    disabled={
+                                      selectedSovItemIndexes.length === 0
+                                    }
+                                    className="h-9 bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-1"
+                                    leftIcon={<Trash className="h-5 w-5" />}
+                                  >
+                                    Delete Selected
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()}
+                          );
+                        })()}
 
-                      <div className="mt-4 flex flex-wrap justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => handleAddLine("sov", "section")}
-                          className="inline-flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-                          leftIcon={<FileText className="h-5 w-5" />}
-                          style={{
-                            backgroundColor: "var(--cell-bg)",
-                            borderColor: "var(--border-color)",
-                            color: "var(--text-color)",
-                          }}
-                        >
-                          Add Section
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleAddLine("sov", "blank")}
-                          className="inline-flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-                          leftIcon={<SeparatorHorizontal className="h-5 w-5" />}
-                          style={{
-                            backgroundColor: "var(--cell-bg)",
-                            borderColor: "var(--border-color)",
-                            color: "var(--text-color)",
-                          }}
-                        >
-                          Add Blank Row
-                        </Button>
-                        <Button
-                          onClick={() => handleAddLine("sov")}
-                          className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
-                        >
-                          Add SOV Line
-                        </Button>
+                        <div className="mt-4 flex flex-wrap justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleAddLine("sov", "section")}
+                            className="inline-flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                            leftIcon={<FileText className="h-5 w-5" />}
+                            style={{
+                              backgroundColor: "var(--cell-bg)",
+                              borderColor: "var(--border-color)",
+                              color: "var(--text-color)",
+                            }}
+                          >
+                            Add Section
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleAddLine("sov", "blank")}
+                            className="inline-flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                            leftIcon={
+                              <SeparatorHorizontal className="h-5 w-5" />
+                            }
+                            style={{
+                              backgroundColor: "var(--cell-bg)",
+                              borderColor: "var(--border-color)",
+                              color: "var(--text-color)",
+                            }}
+                          >
+                            Add Blank Row
+                          </Button>
+                          <Button
+                            onClick={() => handleAddLine("sov")}
+                            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                          >
+                            Add SOV Line
+                          </Button>
+                        </div>
                       </div>
-                    </div>
                     )}
 
                     {/* Non-SOV Quote Items */}
@@ -9256,974 +8561,603 @@ export default function EstimateSheet({
                       </div>
                     </div>
 
-                    {showTravel && (
-                      <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-4">
-                          Travel Expenses
-                        </h3>
+                    {showTravel &&
+                      (() => {
+                        const tt = computeTravelTotals(travelData);
+                        const td = travelData as any;
+                        const speed =
+                          DEFAULT_ESTIMATING_PRESETS.default_average_speed || 50;
+                        const fmtMoney = (n: number) =>
+                          "$" +
+                          (Number(n) || 0).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          });
+                        const fmtMoney0 = (n: number) =>
+                          "$" +
+                          Math.round(Number(n) || 0).toLocaleString("en-US");
+                        const fmtNum = (n: number) =>
+                          Math.round(Number(n) || 0).toLocaleString("en-US");
 
-                        {/* Travel Linking Toggles */}
-                        <div className="mb-6 p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg border border-neutral-200 dark:border-dark-200">
-                          <div className="flex flex-wrap gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={linkLocalTravelToDays}
-                                onChange={(e) =>
-                                  setLinkLocalTravelToDays(e.target.checked)
-                                }
-                                className="w-4 h-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
-                              />
-                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                Link Local Travel to Days Onsite
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-1">
-                                  (Travel Expense & Travel Time Trips ={" "}
-                                  {Math.ceil(data.hoursSummary.daysOnsite) || 0}
-                                  )
-                                </span>
-                              </span>
-                            </label>
+                        const inputCls =
+                          "w-full text-sm rounded border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#f26722]";
+                        const calcCls =
+                          "text-sm rounded border px-2 py-1 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-200 font-medium";
+                        const totalCls =
+                          "text-sm rounded border px-2 py-1 bg-orange-50 dark:bg-orange-950/40 border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-200 font-semibold";
+                        const fieldLabelCls =
+                          "text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1";
 
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={linkOutOfTownTravelToDays}
-                                onChange={(e) =>
-                                  setLinkOutOfTownTravelToDays(e.target.checked)
-                                }
-                                className="w-4 h-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
-                              />
-                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                Link Out-of-Town Travel to Days Onsite
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-1">
-                                  (Per Diem, Lodging, Local Miles ={" "}
-                                  {Math.ceil(data.hoursSummary.daysOnsite) || 0}{" "}
-                                  days)
-                                </span>
-                              </span>
-                            </label>
-
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={travelData?.numMenLinked !== false}
-                                onChange={(e) =>
-                                  setTravelData((prev) => ({
-                                    ...prev,
-                                    numMenLinked: e.target.checked,
-                                  }))
-                                }
-                                className="w-4 h-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
-                              />
-                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                Link # of men across travel sections
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-1">
-                                  (Uncheck to enter different crew sizes per
-                                  section)
-                                </span>
-                              </span>
-                            </label>
+                        const numField = (
+                          label: string,
+                          value: number,
+                          onChange: (v: string) => void,
+                          step?: number,
+                        ) => (
+                          <label className="flex flex-col min-w-0">
+                            <span className={fieldLabelCls}>{label}</span>
+                            <input
+                              type="number"
+                              min={0}
+                              step={step}
+                              value={value}
+                              onChange={(e) => onChange(e.target.value)}
+                              className={inputCls}
+                            />
+                          </label>
+                        );
+                        const calcField = (label: string, text: string) => (
+                          <div className="flex flex-col min-w-0">
+                            <span className={fieldLabelCls}>{label}</span>
+                            <span className={calcCls}>{text}</span>
                           </div>
-                        </div>
+                        );
+                        const totalField = (label: string, text: string) => (
+                          <div className="flex flex-col min-w-0">
+                            <span className={fieldLabelCls}>{label}</span>
+                            <span className={totalCls}>{text}</span>
+                          </div>
+                        );
+                        const sectionTitle = (
+                          title: string,
+                          sub?: string,
+                        ) => (
+                          <div className="text-sm font-medium mb-3 pb-2 border-b border-neutral-200 dark:border-dark-200 text-neutral-800 dark:text-neutral-100">
+                            {title}
+                            {sub && (
+                              <span className="ml-2 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                                {sub}
+                              </span>
+                            )}
+                          </div>
+                        );
+                        const subLabel = (text: string) => (
+                          <div className="text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mt-3 mb-1">
+                            {text}
+                          </div>
+                        );
 
-                        <div style={styles.tableContainer}>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}>TRIPS</th>
-                                <th style={styles.tableHeader}>
-                                  ONE WAY MILES
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  ROUND TRIP MILES
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL VEHICLE MILES
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  # OF VEHICLES
-                                </th>
-                                <th style={styles.tableHeader}>TOTAL MILES</th>
-                                <th style={styles.tableHeader}>RATE</th>
-                                <th style={styles.tableHeader}>
-                                  VEHICLE TRAVEL COST
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.travelExpense ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.trips}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "travelExpense",
-                                            index,
-                                            "trips",
-                                            e.target.value,
-                                          )
-                                        }
-                                        disabled={linkLocalTravelToDays}
-                                        title={
-                                          linkLocalTravelToDays
-                                            ? "Linked to Days Onsite - value will update automatically"
-                                            : ""
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.oneWayMiles}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "travelExpense",
-                                            index,
-                                            "oneWayMiles",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.roundTripMiles}
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.totalVehicleMiles}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numVehicles}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "travelExpense",
-                                            index,
-                                            "numVehicles",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.totalMiles}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.rate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "travelExpense",
-                                            index,
-                                            "rate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.vehicleTravelCost.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                        const navItems: {
+                          key: typeof activeTravelSection;
+                          label: string;
+                          badge: string;
+                        }[] = [
+                          {
+                            key: "travel",
+                            label: "Travel",
+                            badge: `${fmtMoney0(tt.travel.cost)} · ${tt.travel.hours.toFixed(0)} hrs`,
+                          },
+                          {
+                            key: "perDiem",
+                            label: "Per diem",
+                            badge: fmtMoney0(tt.perDiem.total),
+                          },
+                          {
+                            key: "lodging",
+                            label: "Lodging",
+                            badge: fmtMoney0(tt.lodging.total),
+                          },
+                          {
+                            key: "localMiles",
+                            label: "Local miles",
+                            badge: fmtMoney0(tt.localMiles.total),
+                          },
+                          {
+                            key: "airTravel",
+                            label: "Air travel",
+                            badge: `${fmtMoney0(tt.airTravel.flightTotal)} · ${tt.airTravel.hours.toFixed(0)} hrs`,
+                          },
+                          {
+                            key: "rentalCar",
+                            label: "Rental car",
+                            badge: fmtMoney0(tt.rentalCar.total),
+                          },
+                        ];
 
-                        {/* Add the rest of the travel sections (Travel Time, Per Diem, etc.) here */}
+                        return (
+                          <div className="mt-8">
+                            <h3 className="text-xl font-semibold mb-4">
+                              Travel Expenses
+                            </h3>
 
-                        {/* Travel Time Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Travel Time
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}>TRIPS</th>
-                                <th style={styles.tableHeader}>
-                                  ONE WAY HOURS
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  ROUND TRIP HOURS
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL TRAVEL HOURS
-                                </th>
-                                <th style={styles.tableHeader}># OF MEN</th>
-                                <th style={styles.tableHeader}>
-                                  GRAND TOTAL TRAVEL HOURS
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.travelTime ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
+                            <div className="flex border border-neutral-200 dark:border-dark-200 rounded-lg overflow-hidden">
+                              {/* Nav */}
+                              <div className="w-44 shrink-0 bg-neutral-50 dark:bg-dark-100 border-r border-neutral-200 dark:border-dark-200 py-2">
+                                {navItems.map((n) => {
+                                  const active =
+                                    activeTravelSection === n.key;
+                                  return (
+                                    <button
+                                      key={n.key}
+                                      type="button"
+                                      onClick={() =>
+                                        setActiveTravelSection(n.key)
+                                      }
+                                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between gap-1 ${
+                                        active
+                                          ? "bg-white dark:bg-dark-200 text-neutral-900 dark:text-white font-medium border-r-2 border-[#f26722]"
+                                          : "text-neutral-600 dark:text-neutral-300 hover:bg-white/60 dark:hover:bg-dark-200/60"
+                                      }`}
                                     >
-                                      {item.trips}
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.oneWayHours.toFixed(2)}
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.roundTripHours}
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.totalTravelHours}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numMen}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "travelTime",
-                                            index,
-                                            "numMen",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.grandTotalTravelHours}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Per Diem Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Per Diem
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}># OF DAYS</th>
-                                <th style={styles.tableHeader}>
-                                  FIRST DAY RATE
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  LAST DAY RATE
-                                </th>
-                                <th style={styles.tableHeader}>DAILY RATE</th>
-                                <th style={styles.tableHeader}>
-                                  ADDITIONAL DAYS
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL PER DIEM PER MAN
-                                </th>
-                                <th style={styles.tableHeader}># OF MEN</th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL PER DIEM
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.perDiem ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numDays}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "numDays",
-                                            e.target.value,
-                                          )
-                                        }
-                                        disabled={linkOutOfTownTravelToDays}
-                                        title={
-                                          linkOutOfTownTravelToDays
-                                            ? "Linked to Days Onsite - value will update automatically"
-                                            : ""
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.firstDayRate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "firstDayRate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.lastDayRate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "lastDayRate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.dailyRate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "dailyRate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.additionalDays}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "additionalDays",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalPerDiemPerMan.toFixed(2)}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numMen}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "perDiem",
-                                            index,
-                                            "numMen",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalPerDiem.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Lodging Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Lodging
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}># OF NIGHTS</th>
-                                <th style={styles.tableHeader}># OF MEN</th>
-                                <th style={styles.tableHeader}>
-                                  # OF MAN NIGHTS
-                                </th>
-                                <th style={styles.tableHeader}>RATE</th>
-                                <th style={styles.tableHeader}>TOTAL AMOUNT</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.lodging ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numNights}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "lodging",
-                                            index,
-                                            "numNights",
-                                            e.target.value,
-                                          )
-                                        }
-                                        disabled={linkOutOfTownTravelToDays}
-                                        title={
-                                          linkOutOfTownTravelToDays
-                                            ? "Linked to Days Onsite - value will update automatically"
-                                            : ""
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numMen}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "lodging",
-                                            index,
-                                            "numMen",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.manNights}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.rate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "lodging",
-                                            index,
-                                            "rate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalAmount.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Local Miles Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Local Miles
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}># OF DAYS</th>
-                                <th style={styles.tableHeader}>
-                                  # OF VEHICLES
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  MILES PER DAY
-                                </th>
-                                <th style={styles.tableHeader}>TOTAL MILES</th>
-                                <th style={styles.tableHeader}>RATE</th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL LOCAL MILES COST
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.localMiles ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numDays}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "localMiles",
-                                            index,
-                                            "numDays",
-                                            e.target.value,
-                                          )
-                                        }
-                                        disabled={linkOutOfTownTravelToDays}
-                                        title={
-                                          linkOutOfTownTravelToDays
-                                            ? "Linked to Days Onsite - value will update automatically"
-                                            : ""
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numVehicles}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "localMiles",
-                                            index,
-                                            "numVehicles",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.milesPerDay}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "localMiles",
-                                            index,
-                                            "milesPerDay",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.totalMiles}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.rate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "localMiles",
-                                            index,
-                                            "rate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalLocalMilesCost.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Flights Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Flights
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}># OF FLIGHTS</th>
-                                <th style={styles.tableHeader}># OF MEN</th>
-                                <th style={styles.tableHeader}>RATE</th>
-                                <th style={styles.tableHeader}>LUGGAGE FEES</th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL FLIGHT AMOUNT
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.flights ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numFlights}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "flights",
-                                            index,
-                                            "numFlights",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numMen}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "flights",
-                                            index,
-                                            "numMen",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.rate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "flights",
-                                            index,
-                                            "rate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.luggageFees}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "flights",
-                                            index,
-                                            "luggageFees",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalFlightAmount.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Air Travel Time Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Air Travel Time
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}>TRIPS</th>
-                                <th style={styles.tableHeader}>
-                                  ONE WAY HOURS IN AIR
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  ROUND TRIP + TERMINAL TIME
-                                </th>
-                                <th style={styles.tableHeader}>
-                                  TOTAL TRAVEL HOURS
-                                </th>
-                                <th style={styles.tableHeader}># OF MEN</th>
-                                <th style={styles.tableHeader}>
-                                  GRAND TOTAL TRAVEL HOURS
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.airTravelTime ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.trips}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "airTravelTime",
-                                            index,
-                                            "trips",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.oneWayHoursInAir}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "airTravelTime",
-                                            index,
-                                            "oneWayHoursInAir",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.roundTripTerminalTime}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "airTravelTime",
-                                            index,
-                                            "roundTripTerminalTime",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.totalTravelHours}
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numMen}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "airTravelTime",
-                                            index,
-                                            "numMen",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      {item.grandTotalTravelHours}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Rental Car Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Rental Car
-                          </h4>
-                          <table style={styles.table}>
-                            <thead>
-                              <tr>
-                                <th style={styles.tableHeader}># OF CARS</th>
-                                <th style={styles.tableHeader}>RATE</th>
-                                <th style={styles.tableHeader}>TOTAL AMOUNT</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(travelData?.rentalCar ?? []).map(
-                                (item, index) => (
-                                  <tr key={index}>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        style={styles.tableInput}
-                                        value={item.numCars}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "rentalCar",
-                                            index,
-                                            "numCars",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        style={styles.tableInput}
-                                        value={item.rate}
-                                        onChange={(e) =>
-                                          handleTravelChange(
-                                            "rentalCar",
-                                            index,
-                                            "rate",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...styles.tableCell,
-                                        ...styles.calculated,
-                                      }}
-                                    >
-                                      ${item.totalAmount.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Travel Summary Section */}
-                        <div className="mt-8">
-                          <h4 className="text-lg font-semibold mb-4">
-                            Travel Summary
-                          </h4>
-                          <div style={styles.summarySection}>
-                            <div style={styles.summaryRow}>
-                              <div style={styles.summaryLabel}>
-                                Total Travel Expenses:
+                                      <span>{n.label}</span>
+                                      <span
+                                        className={`text-[11px] whitespace-nowrap ${
+                                          active
+                                            ? "text-[#854F0B] dark:text-orange-300"
+                                            : "text-neutral-400 dark:text-neutral-500"
+                                        }`}
+                                      >
+                                        {n.badge}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
                               </div>
-                              <div style={styles.summaryValue}>
-                                $
-                                {(
-                                  (travelData?.travelExpense?.[0]
-                                    ?.vehicleTravelCost ?? 0) +
-                                  (travelData?.travelTime?.[0]
-                                    ?.totalTravelLabor ?? 0) +
-                                  (travelData?.perDiem?.[0]?.totalPerDiem ??
-                                    0) +
-                                  (travelData?.lodging?.[0]?.totalAmount ?? 0) +
-                                  (travelData?.localMiles?.[0]
-                                    ?.totalLocalMilesCost ?? 0) +
-                                  (travelData?.flights?.[0]
-                                    ?.totalFlightAmount ?? 0) +
-                                  (travelData?.airTravelTime?.[0]
-                                    ?.totalTravelLabor ?? 0) +
-                                  (travelData?.rentalCar?.[0]?.totalAmount ?? 0)
-                                ).toFixed(2)}
+
+                              {/* Panel */}
+                              <div className="flex-1 p-4 min-w-0">
+                                {/* TRAVEL (vehicle + time merged) */}
+                                {activeTravelSection === "travel" && (
+                                  <div>
+                                    {sectionTitle(
+                                      "Travel",
+                                      `drive miles & time, @ ${speed} mph standard`,
+                                    )}
+                                    {tt.groups.map((g: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="border border-neutral-200 dark:border-dark-200 rounded-md p-3 mb-2"
+                                      >
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                                            Trip group {idx + 1}
+                                          </span>
+                                          {tt.groups.length > 1 && (
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                removeTravelGroup(idx)
+                                              }
+                                              className="text-xs text-neutral-400 hover:text-red-500"
+                                              aria-label="Remove trip group"
+                                            >
+                                              Remove
+                                            </button>
+                                          )}
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2">
+                                          {numField("Trips", g.trips, (v) =>
+                                            updateTravelGroup(idx, "trips", v),
+                                          )}
+                                          {numField(
+                                            "One way miles",
+                                            g.oneWayMiles,
+                                            (v) =>
+                                              updateTravelGroup(
+                                                idx,
+                                                "oneWayMiles",
+                                                v,
+                                              ),
+                                          )}
+                                          {numField(
+                                            "# vehicles",
+                                            g.numVehicles,
+                                            (v) =>
+                                              updateTravelGroup(
+                                                idx,
+                                                "numVehicles",
+                                                v,
+                                              ),
+                                          )}
+                                          {numField("# of men", g.numMen, (v) =>
+                                            updateTravelGroup(idx, "numMen", v),
+                                          )}
+                                          {numField(
+                                            "Rate ($/mi)",
+                                            g.rate,
+                                            (v) =>
+                                              updateTravelGroup(idx, "rate", v),
+                                            0.01,
+                                          )}
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                          {calcField(
+                                            "Vehicle miles",
+                                            fmtNum(g.vehicleMiles),
+                                          )}
+                                          {calcField(
+                                            "Vehicle cost",
+                                            fmtMoney(g.vehicleCost),
+                                          )}
+                                          {calcField(
+                                            "One way hours",
+                                            g.oneWayHours.toFixed(2),
+                                          )}
+                                          {calcField(
+                                            "Group travel hours",
+                                            g.groupHours.toFixed(2),
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={addTravelGroup}
+                                      className="w-full flex items-center justify-center gap-2 text-sm text-[#185FA5] dark:text-blue-300 border border-blue-200 dark:border-blue-900 rounded-md py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                                    >
+                                      + Add trip group
+                                    </button>
+                                    {subLabel("Section totals")}
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {totalField(
+                                        "Total vehicle miles",
+                                        fmtNum(tt.travel.vehicleMiles),
+                                      )}
+                                      {totalField(
+                                        "Total vehicle cost",
+                                        fmtMoney(tt.travel.cost),
+                                      )}
+                                      {totalField(
+                                        "Grand total travel hours",
+                                        tt.travel.hours.toFixed(2),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* PER DIEM */}
+                                {activeTravelSection === "perDiem" && (
+                                  <div>
+                                    {sectionTitle("Per diem")}
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {numField(
+                                        "# of days",
+                                        td.perDiem.numDays,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "perDiem",
+                                            "numDays",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Daily rate",
+                                        td.perDiem.dailyRate,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "perDiem",
+                                            "dailyRate",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                      {numField(
+                                        "# of men",
+                                        td.perDiem.numMen,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "perDiem",
+                                            "numMen",
+                                            v,
+                                          ),
+                                      )}
+                                    </div>
+                                    {subLabel("Calculated")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {calcField(
+                                        "Per diem per man",
+                                        fmtMoney(tt.perDiem.perMan),
+                                      )}
+                                      {totalField(
+                                        "Total per diem",
+                                        fmtMoney(tt.perDiem.total),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* LODGING */}
+                                {activeTravelSection === "lodging" && (
+                                  <div>
+                                    {sectionTitle("Lodging")}
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {numField(
+                                        "# of nights",
+                                        td.lodging.numNights,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "lodging",
+                                            "numNights",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "# of men",
+                                        td.lodging.numMen,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "lodging",
+                                            "numMen",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Rate ($/night)",
+                                        td.lodging.rate,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "lodging",
+                                            "rate",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                    </div>
+                                    {subLabel("Calculated")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {calcField(
+                                        "# of man nights",
+                                        fmtNum(tt.lodging.manNights),
+                                      )}
+                                      {totalField(
+                                        "Total lodging",
+                                        fmtMoney(tt.lodging.total),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* LOCAL MILES */}
+                                {activeTravelSection === "localMiles" && (
+                                  <div>
+                                    {sectionTitle("Local miles")}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                      {numField(
+                                        "# of days",
+                                        td.localMiles.numDays,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "localMiles",
+                                            "numDays",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "# of vehicles",
+                                        td.localMiles.numVehicles,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "localMiles",
+                                            "numVehicles",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Miles per day",
+                                        td.localMiles.milesPerDay,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "localMiles",
+                                            "milesPerDay",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Rate ($/mi)",
+                                        td.localMiles.rate,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "localMiles",
+                                            "rate",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                    </div>
+                                    {subLabel("Calculated")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {calcField(
+                                        "Total miles",
+                                        fmtNum(tt.localMiles.totalMiles),
+                                      )}
+                                      {totalField(
+                                        "Total cost",
+                                        fmtMoney(tt.localMiles.total),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* AIR TRAVEL (flights + air time merged) */}
+                                {activeTravelSection === "airTravel" && (
+                                  <div>
+                                    {sectionTitle(
+                                      "Air travel",
+                                      "flights & air time",
+                                    )}
+                                    {subLabel("Shared inputs")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {numField(
+                                        "# of men",
+                                        td.airTravel.numMen,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "numMen",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "# of trips",
+                                        td.airTravel.numTrips,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "numTrips",
+                                            v,
+                                          ),
+                                      )}
+                                    </div>
+                                    {subLabel("Flight cost")}
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {numField(
+                                        "# of flights",
+                                        td.airTravel.numFlights,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "numFlights",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Rate ($/ticket)",
+                                        td.airTravel.flightRate,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "flightRate",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                      {numField(
+                                        "Luggage fees",
+                                        td.airTravel.luggageFees,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "luggageFees",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                    </div>
+                                    {subLabel("Air time")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {numField(
+                                        "One way hours in air",
+                                        td.airTravel.oneWayHoursInAir,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "airTravel",
+                                            "oneWayHoursInAir",
+                                            v,
+                                          ),
+                                        0.5,
+                                      )}
+                                      {calcField(
+                                        "Round trip + terminal",
+                                        tt.airTravel.roundTripTerminal.toFixed(
+                                          1,
+                                        ),
+                                      )}
+                                    </div>
+                                    {subLabel("Section totals")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {totalField(
+                                        "Total flight amount",
+                                        fmtMoney(tt.airTravel.flightTotal),
+                                      )}
+                                      {totalField(
+                                        "Grand total air hours",
+                                        tt.airTravel.hours.toFixed(2),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* RENTAL CAR */}
+                                {activeTravelSection === "rentalCar" && (
+                                  <div>
+                                    {sectionTitle("Rental car")}
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {numField(
+                                        "# of cars",
+                                        td.rentalCar.numCars,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "rentalCar",
+                                            "numCars",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "# of days",
+                                        td.rentalCar.numDays,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "rentalCar",
+                                            "numDays",
+                                            v,
+                                          ),
+                                      )}
+                                      {numField(
+                                        "Daily rate ($/day)",
+                                        td.rentalCar.rate,
+                                        (v) =>
+                                          updateTravelSection(
+                                            "rentalCar",
+                                            "rate",
+                                            v,
+                                          ),
+                                        0.01,
+                                      )}
+                                    </div>
+                                    {subLabel("Calculated")}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {calcField(
+                                        "Total car-days",
+                                        fmtNum(tt.rentalCar.carDays),
+                                      )}
+                                      {totalField(
+                                        "Total rental cost",
+                                        fmtMoney(tt.rentalCar.total),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Travel grand totals */}
+                            <div className="mt-4 flex flex-wrap items-center justify-end gap-6 rounded-md bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-dark-200 px-4 py-3">
+                              <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                                Total travel hours:{" "}
+                                <span className="font-semibold text-neutral-900 dark:text-white">
+                                  {tt.laborHours.toFixed(2)}
+                                </span>
+                              </div>
+                              <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                                Total travel expenses (non-labor):{" "}
+                                <span className="font-semibold text-[#854F0B] dark:text-orange-300">
+                                  {fmtMoney(tt.nonLaborCost)}
+                                </span>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
+                        );
+                      })()}
 
                     {/* Summary Sections Container - Side by Side (wraps on narrow viewports) */}
                     <div

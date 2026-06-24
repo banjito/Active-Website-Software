@@ -26,6 +26,7 @@ import { Database } from "@/types/supabase"; // Assuming this is the correct pat
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
+import { isSuperUser } from "../../lib/roles";
 import { formatStatusLabel } from "@/utils/formatters";
 
 interface Contact {
@@ -1361,23 +1362,15 @@ export default function JobList() {
         <div className="flex items-center gap-3">
           <JobNotifications />
 
-          {/* T&M button for Field Tech divisions - only visible to authorized users */}
+          {/* T&M button for Field Tech divisions - Admin role or superusers */}
           {(division === "field_tech" ||
             division === "field-tech" ||
             division === "north_alabama" ||
             division === "tennessee" ||
             division === "georgia" ||
             division === "international") &&
-            (user?.email === "william.sasser@ampqes.com" ||
-              user?.email === "john.chambers@ampqes.com" ||
-              user?.email === "anthony.masters@ampqes.com" ||
-              user?.email === "caleb.hipp@ampqes.com" ||
-              user?.email === "zach.freeborn@ampqes.com" ||
-              user?.email === "zecahriah.freeborn@ampqes.com" ||
-              user?.email === "ethan.thoenes@ampqes.com" ||
-              user?.email === "greg.pellerito@ampqes.com" ||
-              user?.email === "michael.bland@ampqes.com" ||
-              user?.email === "kelly.lawton@ampqes.com") && (
+            (user?.user_metadata?.role === "Admin" ||
+              isSuperUser(user?.email)) && (
               <button
                 type="button"
                 onClick={() => {

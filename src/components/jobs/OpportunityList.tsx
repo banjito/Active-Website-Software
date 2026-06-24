@@ -14,6 +14,8 @@ import {
   ChartGantt,
   ExternalLink,
   MinusCircle,
+  ChevronDown,
+  Calculator,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -26,6 +28,7 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { isSuperUser } from "../../lib/roles";
 
 interface Customer {
   id: string;
@@ -522,6 +525,9 @@ export default function OpportunityList() {
     division: "",
   });
   const [isCreatingTM, setIsCreatingTM] = useState(false);
+  const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
+  const createMenuRef = useRef<HTMLDivElement>(null);
 
   function toggleFilterValue(
     currentValues: string[],
@@ -819,6 +825,22 @@ export default function OpportunityList() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isFilterMenuOpen]);
 
+  useEffect(() => {
+    if (!isCreateMenuOpen) return;
+
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        createMenuRef.current &&
+        !createMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsCreateMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isCreateMenuOpen]);
+
   async function handleOpportunityStatusChange(
     opportunityId: string,
     newStatus: string,
@@ -1061,11 +1083,7 @@ export default function OpportunityList() {
         setSortDirection(savedFilters.sortDirection);
         hasStateUpdates = true;
       }
-      if (savedFilters.searchTerm && savedFilters.searchTerm !== searchTerm) {
-        setSearchTerm(savedFilters.searchTerm);
-        setDebouncedSearch(savedFilters.searchTerm);
-        hasStateUpdates = true;
-      }
+      // Note: searchTerm is intentionally NOT restored - always starts empty
       const savedDivisionFilters = normalizeFilterValue(
         savedFilters.divisionFilter,
       );
@@ -2521,9 +2539,17 @@ export default function OpportunityList() {
                 </div>
               )}
               {searchTerm && !searchLoading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-2 h-2 bg-[#f26722] rounded-full"></div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setDebouncedSearch("");
+                  }}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-0.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
             </div>
             <div className="relative" ref={filterMenuRef}>
@@ -2626,46 +2652,210 @@ export default function OpportunityList() {
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(true);
-                setFormData(initialFormData);
-              }}
-              className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add
-            </button>
-            {/* Only show T&M button to authorized users */}
-            {(user?.email === "william.sasser@ampqes.com" ||
-              user?.email === "john.chambers@ampqes.com" ||
-              user?.email === "anthony.masters@ampqes.com" ||
-              user?.email === "caleb.hipp@ampqes.com" ||
-              user?.email === "zach.freeborn@ampqes.com" ||
-              user?.email === "zecahriah.freeborn@ampqes.com" ||
-              user?.email === "ethan.thoenes@ampqes.com" ||
-              user?.email === "greg.pellerito@ampqes.com" ||
-              user?.email === "michael.bland@ampqes.com" ||
-              user?.email === "kelly.lawton@ampqes.com") && (
+            {/* Combined Create dropdown */}
+            <div className="relative" ref={createMenuRef}>
               <button
                 type="button"
-                onClick={() => {
-                  setShowTMModal(true);
-                  setTMFormData({
-                    customer_id: "",
-                    contact_id: "",
-                    title: "",
-                    description: "",
-                    division: "",
-                  });
-                }}
-                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onClick={() => setIsCreateMenuOpen((prev) => !prev)}
+                className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add T&M or Emergency Job
+                <Plus className="h-4 w-4 mr-1.5" />
+                Create
+                <ChevronDown className="h-4 w-4 ml-1.5 opacity-80" />
               </button>
-            )}
+              {isCreateMenuOpen && (
+                <div className="absolute right-0 z-30 mt-2 w-64 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-lg py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCreateMenuOpen(false);
+                      setIsOpen(true);
+                      setFormData(initialFormData);
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 text-[#f26722]" />
+                    <div className="text-left">
+                      <div className="font-medium">New Opportunity</div>
+                      <div className="text-xs text-neutral-500 dark:text-dark-400">
+                        Add to sales pipeline
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsCreateMenuOpen(false);
+                      setIsCreatingEstimate(true);
+                      try {
+                        // 1. Find or create a "Draft" placeholder customer
+                        let draftCustomerId: string | null = null;
+                        const { data: existingDraft } = await supabase
+                          .schema("common")
+                          .from("customers")
+                          .select("id")
+                          .eq("name", "Draft Estimate")
+                          .maybeSingle();
+
+                        if (existingDraft?.id) {
+                          draftCustomerId = existingDraft.id;
+                        } else {
+                          const { data: newCust, error: custErr } =
+                            await supabase
+                              .schema("common")
+                              .from("customers")
+                              .insert({
+                                name: "Draft Estimate",
+                                company_name: "Draft Estimate",
+                                email: "",
+                                phone: "",
+                                address: "",
+                                status: "active",
+                                user_id: user?.id || "",
+                              })
+                              .select("id")
+                              .single();
+                          if (custErr || !newCust?.id) {
+                            throw (
+                              custErr ||
+                              new Error("Failed to create draft customer")
+                            );
+                          }
+                          draftCustomerId = newCust.id;
+                        }
+
+                        // 2. Compute next quote number
+                        const { data: recent } = await supabase
+                          .schema("business")
+                          .from("opportunities")
+                          .select("quote_number")
+                          .order("created_at", { ascending: false })
+                          .limit(500);
+                        const nums: number[] = (recent || [])
+                          .map((r) => (r as any)?.quote_number)
+                          .filter(
+                            (q: any) =>
+                              typeof q === "string" && /^[0-9]+$/.test(q),
+                          )
+                          .map((q: string) => parseInt(q, 10))
+                          .filter((n) => Number.isFinite(n));
+                        const maxNumeric = nums.length ? Math.max(...nums) : 0;
+                        const nextQuoteNumber = Math.max(maxNumeric, 3802) + 1;
+
+                        // 3. Create draft opportunity
+                        const { data: newOpp, error: createError } =
+                          await supabase
+                            .schema("business")
+                            .from("opportunities")
+                            .insert({
+                              customer_id: draftCustomerId,
+                              title: "Draft Estimate",
+                              description: "Draft created for new estimate",
+                              status: "awareness",
+                              expected_value: 0,
+                              probability: 0,
+                              notes: "",
+                              sales_person: user?.email || "",
+                              user_id: user?.id || "",
+                              quote_number: String(nextQuoteNumber),
+                              opportunity_type: "other",
+                            })
+                            .select("id")
+                            .single();
+
+                        if (createError || !newOpp) {
+                          throw (
+                            createError ||
+                            new Error("Failed to create draft opportunity")
+                          );
+                        }
+
+                        navigate(
+                          `/sales-dashboard/opportunities/${newOpp.id}?autoEstimate=true&isDraft=true`,
+                        );
+                      } catch (err: any) {
+                        console.error(
+                          "Error creating draft for estimate:",
+                          err,
+                        );
+                        alert(
+                          `Failed to start new estimate: ${err?.message || "Unknown error"}`,
+                        );
+                      } finally {
+                        setIsCreatingEstimate(false);
+                      }
+                    }}
+                    disabled={isCreatingEstimate}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors disabled:opacity-50"
+                  >
+                    {isCreatingEstimate ? (
+                      <LoadingSpinner size="xs" />
+                    ) : (
+                      <Calculator className="h-4 w-4 text-emerald-600" />
+                    )}
+                    <div className="text-left">
+                      <div className="font-medium">New Estimate</div>
+                      <div className="text-xs text-neutral-500 dark:text-dark-400">
+                        Build estimate, assign later
+                      </div>
+                    </div>
+                  </button>
+                  {/* Only show T&M / Emergency options to Admin role or superusers */}
+                  {(user?.user_metadata?.role === "Admin" ||
+                    isSuperUser(user?.email)) && (
+                    <>
+                      <div className="border-t border-neutral-200 dark:border-dark-300 my-1" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCreateMenuOpen(false);
+                          setShowTMModal(true);
+                          setTMFormData({
+                            customer_id: "",
+                            contact_id: "",
+                            title: "",
+                            description: "",
+                            division: "",
+                          });
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
+                      >
+                        <Plus className="h-4 w-4 text-blue-600" />
+                        <div className="text-left">
+                          <div className="font-medium">Add T&amp;M</div>
+                          <div className="text-xs text-neutral-500 dark:text-dark-400">
+                            Create time &amp; materials job
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCreateMenuOpen(false);
+                          setShowTMModal(true);
+                          setTMFormData({
+                            customer_id: "",
+                            contact_id: "",
+                            title: "(Emergency)",
+                            description: "",
+                            division: "",
+                          });
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
+                      >
+                        <Plus className="h-4 w-4 text-red-600" />
+                        <div className="text-left">
+                          <div className="font-medium">Add Emergency</div>
+                          <div className="text-xs text-neutral-500 dark:text-dark-400">
+                            Create emergency job
+                          </div>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

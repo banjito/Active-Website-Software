@@ -26,6 +26,7 @@ import JobDetail from "./components/jobs/JobDetail";
 import GeneratedDocumentViewer from "./components/jobs/GeneratedDocumentViewer";
 import DeliverableViewer from "./components/jobs/DeliverableViewer";
 import Dashboard from "./app/dashboard/page";
+import AmpuPage from "./app/ampu/AmpuPage";
 import PortalLanding from "./app/portal/page";
 import UnifiedJobsPage from "./app/all-jobs/page";
 import SalesDashboard from "./app/sales-dashboard/page";
@@ -587,6 +588,16 @@ function App() {
                     element={
                       <RequireAuth>
                         <PortalLanding />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/ampu"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <AmpuPage />
+                        </Layout>
                       </RequireAuth>
                     }
                   />

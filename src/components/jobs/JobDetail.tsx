@@ -7883,8 +7883,8 @@ ${newBodyHtml}
               type="button"
               onClick={() => navigate(getJobsListPath())}
               className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
             >
-              <ArrowLeft className="h-5 w-5 mr-2" />
               Back to Jobs
             </button>
             <div className="flex items-center gap-2">

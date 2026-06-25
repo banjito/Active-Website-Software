@@ -51,7 +51,25 @@ const store_cjs_1 = require("../db/store.cjs");
 // Vite dev server URL (see `npm run electron:dev`). When unset we load the
 // packaged renderer from disk.
 const DEV_SERVER_URL = process.env.ELECTRON_RENDERER_URL;
+electron_1.app.setName("ampOS Offline");
 let mainWindow = null;
+function getBuildResourcePath(fileName) {
+    return [
+        path.join(__dirname, "../../../build-resources", fileName),
+        path.join(process.resourcesPath, "build-resources", fileName),
+    ].find((candidate) => fs.existsSync(candidate));
+}
+function updateDockIcon() {
+    if (process.platform !== "darwin")
+        return;
+    const preferredIcon = electron_1.nativeTheme.shouldUseDarkColors
+        ? "icon-dark.png"
+        : "icon.png";
+    const iconPath = getBuildResourcePath(preferredIcon) ?? getBuildResourcePath("icon.png");
+    if (!iconPath)
+        return;
+    electron_1.app.dock?.setIcon(electron_1.nativeImage.createFromPath(iconPath).resize({ width: 256, height: 256 }));
+}
 function createWindow() {
     mainWindow = new electron_1.BrowserWindow({
         width: 1440,
@@ -104,6 +122,8 @@ function createWindow() {
     });
 }
 electron_1.app.whenReady().then(() => {
+    updateDockIcon();
+    electron_1.nativeTheme.on("updated", updateDockIcon);
     // Open the offline SQLite store under the OS app-data dir and expose the
     // query executor to the renderer's offline Supabase adapter over IPC.
     (0, store_cjs_1.initStore)(path.join(electron_1.app.getPath("userData"), "ampreports.sqlite"));
@@ -170,26 +190,60 @@ async function exportReportPdf(win, opts = {}) {
                 return { ok: false, error: "canceled" };
             target = res.filePath;
         }
-        const data = await win.webContents.printToPDF({
-            printBackground: true,
-            pageSize: "Letter",
-            landscape: !!opts.landscape,
-            margins: { marginType: "default" },
+        const exportWindow = new electron_1.BrowserWindow({
+            width: 1024,
+            height: 1325,
+            show: false,
+            backgroundColor: "#ffffff",
+            webPreferences: {
+                preload: path.join(__dirname, "../preload/preload.cjs"),
+                contextIsolation: true,
+                nodeIntegration: false,
+                sandbox: false,
+            },
         });
-        fs.writeFileSync(target, data);
+        try {
+            const currentUrl = new URL(win.webContents.getURL());
+            const exportSearch = opts.search || "export=pdf&print=true";
+            const hashSource = opts.hash || currentUrl.hash || "#/";
+            const hashWithoutMarker = hashSource.startsWith("#")
+                ? hashSource.slice(1)
+                : hashSource;
+            const hashPath = hashWithoutMarker.split("?")[0] || "/";
+            currentUrl.hash = `${hashPath}?${exportSearch}`;
+            await exportWindow.loadURL(currentUrl.toString());
+            await exportWindow.webContents.executeJavaScript(`
+        new Promise((resolve) => {
+          document.documentElement.style.background = '#ffffff';
+          document.body.style.background = '#ffffff';
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
+      `);
+            const data = await exportWindow.webContents.printToPDF({
+                printBackground: true,
+                pageSize: "Letter",
+                landscape: !!opts.landscape,
+                margins: { marginType: "default" },
+            });
+            fs.writeFileSync(target, data);
+        }
+        finally {
+            exportWindow.destroy();
+        }
         return { ok: true, path: target };
     }
     catch (err) {
-        return { ok: false, error: err instanceof Error ? err.message : String(err) };
+        return {
+            ok: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
     }
 }
 /** Application menu with a non-invasive "Export Report to PDF" action. */
 function buildMenu() {
     const isMac = process.platform === "darwin";
     const template = [
-        ...(isMac
-            ? [{ role: "appMenu" }]
-            : []),
+        ...(isMac ? [{ role: "appMenu" }] : []),
         {
             label: "File",
             submenu: [
@@ -265,7 +319,11 @@ function runDbSelfTest() {
         returning: true,
         modifier: "single",
         columns: "*",
-        payload: { job_id: "job-1", user_id: "user-1", data: { foo: "bar", n: 42 } },
+        payload: {
+            job_id: "job-1",
+            user_id: "user-1",
+            data: { foo: "bar", n: 42 },
+        },
     });
     const inserted = ins.data;
     assert(!!inserted?.id, "insert returns generated id");

@@ -9,7 +9,16 @@
  * Later phases add: IPC for the SQLite query executor, the sync engine,
  * offline auth via safeStorage, and printToPDF report export.
  */
-import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  nativeImage,
+  nativeTheme,
+  shell,
+} from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { initStore, runQuery, type QueryIntent } from "../db/store.cjs";
@@ -18,7 +27,31 @@ import { initStore, runQuery, type QueryIntent } from "../db/store.cjs";
 // packaged renderer from disk.
 const DEV_SERVER_URL = process.env.ELECTRON_RENDERER_URL;
 
+app.setName("ampOS Offline");
+
 let mainWindow: BrowserWindow | null = null;
+
+function getBuildResourcePath(fileName: string): string | undefined {
+  return [
+    path.join(__dirname, "../../../build-resources", fileName),
+    path.join(process.resourcesPath, "build-resources", fileName),
+  ].find((candidate) => fs.existsSync(candidate));
+}
+
+function updateDockIcon(): void {
+  if (process.platform !== "darwin") return;
+
+  const preferredIcon = nativeTheme.shouldUseDarkColors
+    ? "icon-dark.png"
+    : "icon.png";
+  const iconPath =
+    getBuildResourcePath(preferredIcon) ?? getBuildResourcePath("icon.png");
+  if (!iconPath) return;
+
+  app.dock?.setIcon(
+    nativeImage.createFromPath(iconPath).resize({ width: 256, height: 256 }),
+  );
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -63,18 +96,17 @@ function createWindow(): void {
     // `vite build --config vite.config.electron.ts`. __dirname here is
     // electron/build/main, so step up two levels.
     void mainWindow.loadFile(
-      path.join(__dirname, "../../renderer-dist/index.html")
+      path.join(__dirname, "../../renderer-dist/index.html"),
     );
   }
 
   // Surface renderer console + load failures during tests/dev.
   if (process.env.ELECTRON_SHELL_TEST || process.env.ELECTRON_DEBUG) {
     mainWindow.webContents.on("console-message", (_e, _lvl, msg) =>
-      console.log("[renderer]", msg)
+      console.log("[renderer]", msg),
     );
-    mainWindow.webContents.on(
-      "did-fail-load",
-      (_e, code, desc) => console.log("[did-fail-load]", code, desc)
+    mainWindow.webContents.on("did-fail-load", (_e, code, desc) =>
+      console.log("[did-fail-load]", code, desc),
     );
   }
 
@@ -84,6 +116,9 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  updateDockIcon();
+  nativeTheme.on("updated", updateDockIcon);
+
   // Open the offline SQLite store under the OS app-data dir and expose the
   // query executor to the renderer's offline Supabase adapter over IPC.
   initStore(path.join(app.getPath("userData"), "ampreports.sqlite"));
@@ -96,7 +131,7 @@ app.whenReady().then(() => {
       const win = BrowserWindow.fromWebContents(evt.sender);
       if (!win) return { ok: false, error: "no window" };
       return exportReportPdf(win, opts);
-    }
+    },
   );
 
   buildMenu();
@@ -124,9 +159,13 @@ app.whenReady().then(() => {
     win.webContents.once("did-finish-load", async () => {
       const out = path.join(app.getPath("temp"), "ampreports-pdf-test.pdf");
       const res = await exportReportPdf(win, { toPath: out });
-      const bytes = res.ok && fs.existsSync(out) ? fs.readFileSync(out) : Buffer.alloc(0);
-      const isPdf = bytes.length > 0 && bytes.subarray(0, 5).toString() === "%PDF-";
-      console.log(`${isPdf ? "PASS" : "FAIL"}: printToPDF wrote a valid PDF (${bytes.length} bytes)`);
+      const bytes =
+        res.ok && fs.existsSync(out) ? fs.readFileSync(out) : Buffer.alloc(0);
+      const isPdf =
+        bytes.length > 0 && bytes.subarray(0, 5).toString() === "%PDF-";
+      console.log(
+        `${isPdf ? "PASS" : "FAIL"}: printToPDF wrote a valid PDF (${bytes.length} bytes)`,
+      );
       if (!isPdf) process.exitCode = 1;
       console.log("[pdf-test] complete");
       app.quit();
@@ -147,7 +186,13 @@ app.whenReady().then(() => {
  */
 async function exportReportPdf(
   win: BrowserWindow,
-  opts: { defaultName?: string; landscape?: boolean; toPath?: string } = {}
+  opts: {
+    defaultName?: string;
+    landscape?: boolean;
+    toPath?: string;
+    search?: string;
+    hash?: string;
+  } = {},
 ): Promise<{ ok: boolean; path?: string; error?: string }> {
   try {
     let target = opts.toPath;
@@ -157,19 +202,58 @@ async function exportReportPdf(
         defaultPath: `${opts.defaultName || "report"}.pdf`,
         filters: [{ name: "PDF", extensions: ["pdf"] }],
       });
-      if (res.canceled || !res.filePath) return { ok: false, error: "canceled" };
+      if (res.canceled || !res.filePath)
+        return { ok: false, error: "canceled" };
       target = res.filePath;
     }
-    const data = await win.webContents.printToPDF({
-      printBackground: true,
-      pageSize: "Letter",
-      landscape: !!opts.landscape,
-      margins: { marginType: "default" },
+    const exportWindow = new BrowserWindow({
+      width: 1024,
+      height: 1325,
+      show: false,
+      backgroundColor: "#ffffff",
+      webPreferences: {
+        preload: path.join(__dirname, "../preload/preload.cjs"),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+      },
     });
-    fs.writeFileSync(target, data);
+
+    try {
+      const currentUrl = new URL(win.webContents.getURL());
+      const exportSearch = opts.search || "export=pdf&print=true";
+      const hashSource = opts.hash || currentUrl.hash || "#/";
+      const hashWithoutMarker = hashSource.startsWith("#")
+        ? hashSource.slice(1)
+        : hashSource;
+      const hashPath = hashWithoutMarker.split("?")[0] || "/";
+      currentUrl.hash = `${hashPath}?${exportSearch}`;
+      await exportWindow.loadURL(currentUrl.toString());
+
+      await exportWindow.webContents.executeJavaScript(`
+        new Promise((resolve) => {
+          document.documentElement.style.background = '#ffffff';
+          document.body.style.background = '#ffffff';
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
+      `);
+
+      const data = await exportWindow.webContents.printToPDF({
+        printBackground: true,
+        pageSize: "Letter",
+        landscape: !!opts.landscape,
+        margins: { marginType: "default" },
+      });
+      fs.writeFileSync(target, data);
+    } finally {
+      exportWindow.destroy();
+    }
     return { ok: true, path: target };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 
@@ -177,9 +261,7 @@ async function exportReportPdf(
 function buildMenu(): void {
   const isMac = process.platform === "darwin";
   const template: Electron.MenuItemConstructorOptions[] = [
-    ...(isMac
-      ? [{ role: "appMenu" as const }]
-      : []),
+    ...(isMac ? [{ role: "appMenu" as const }] : []),
     {
       label: "File",
       submenu: [
@@ -205,11 +287,13 @@ function buildMenu(): void {
 async function waitForDom(
   win: BrowserWindow,
   expr: string,
-  timeoutMs = 15000
+  timeoutMs = 15000,
 ): Promise<unknown> {
   const start = Date.now();
   for (;;) {
-    const val = await win.webContents.executeJavaScript(`(()=>{try{return ${expr}}catch(e){return null}})()`);
+    const val = await win.webContents.executeJavaScript(
+      `(()=>{try{return ${expr}}catch(e){return null}})()`,
+    );
     if (val) return val;
     if (Date.now() - start > timeoutMs) return val;
     await new Promise((r) => setTimeout(r, 250));
@@ -224,7 +308,10 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   };
 
   // 1. Report list renders with report buttons.
-  const title = await waitForDom(win, `document.querySelector('h1')?.textContent`);
+  const title = await waitForDom(
+    win,
+    `document.querySelector('h1')?.textContent`,
+  );
   assert(title === "ampOS Offline", "list page heading renders");
 
   if (process.env.ELECTRON_CAPTURE) {
@@ -234,21 +321,21 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   }
   const count = (await waitForDom(
     win,
-    `document.querySelectorAll('main button').length`
+    `document.querySelectorAll('main button').length`,
   )) as number;
   assert(count > 30, `report list shows many reports (${count})`);
 
   // 2. Navigate into a report and confirm it mounts without an error overlay.
   await win.webContents.executeJavaScript(
-    `location.hash = '#/jobs/offline/switchgear-report'`
+    `location.hash = '#/jobs/offline/switchgear-report'`,
   );
   const opened = await waitForDom(
     win,
-    `!!document.querySelector('button') && document.body.innerText.includes('All reports')`
+    `!!document.querySelector('button') && document.body.innerText.includes('All reports')`,
   );
   assert(!!opened, "report page mounts (toolbar present)");
   const crashed = (await win.webContents.executeJavaScript(
-    `document.body.innerText.toLowerCase().includes('cannot read') || document.body.innerText.includes('Unknown report')`
+    `document.body.innerText.toLowerCase().includes('cannot read') || document.body.innerText.includes('Unknown report')`,
   )) as boolean;
   assert(!crashed, "report mounted without a render crash");
 
@@ -272,7 +359,11 @@ function runDbSelfTest(): void {
     returning: true,
     modifier: "single",
     columns: "*",
-    payload: { job_id: "job-1", user_id: "user-1", data: { foo: "bar", n: 42 } },
+    payload: {
+      job_id: "job-1",
+      user_id: "user-1",
+      data: { foo: "bar", n: 42 },
+    },
   });
   const inserted = ins.data as { id?: string; data?: { foo?: string } } | null;
   assert(!!inserted?.id, "insert returns generated id");

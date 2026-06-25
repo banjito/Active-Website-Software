@@ -1010,7 +1010,11 @@ export default function PortalLanding() {
         handlePortalClick("HR Portal", "/hr/dashboard");
         break;
       case "Meetings":
-        window.open("https://www.ninety.io/", "_blank", "noopener,noreferrer");
+        window.open(
+          "https://www.app.ninety.io/",
+          "_blank",
+          "noopener,noreferrer",
+        );
         break;
       case "Features & Fixes":
         navigate("/features-fixes");

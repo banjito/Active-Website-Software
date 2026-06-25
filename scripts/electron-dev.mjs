@@ -6,8 +6,10 @@
  * pointed at the dev server. Uses only Node built-ins to avoid adding
  * concurrently/wait-on dependencies.
  */
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import fs from "node:fs";
 import http from "node:http";
+import path from "node:path";
 import process from "node:process";
 
 // Dedicated port for the offline shell (the main ampOS dev server uses 5175).
@@ -41,6 +43,34 @@ function waitForServer(url, timeoutMs = 60_000) {
   });
 }
 
+function setPlistValue(plistPath, key, value) {
+  const set = spawnSync("/usr/libexec/PlistBuddy", [
+    "-c",
+    `Set :${key} ${value}`,
+    plistPath,
+  ]);
+  if (set.status === 0) return;
+
+  spawnSync("/usr/libexec/PlistBuddy", [
+    "-c",
+    `Add :${key} string ${value}`,
+    plistPath,
+  ]);
+}
+
+function ensureDevElectronBundleName() {
+  if (process.platform !== "darwin") return;
+
+  const plistPath = path.join(
+    process.cwd(),
+    "node_modules/electron/dist/Electron.app/Contents/Info.plist",
+  );
+  if (!fs.existsSync(plistPath)) return;
+
+  setPlistValue(plistPath, "CFBundleName", "ampOS Offline");
+  setPlistValue(plistPath, "CFBundleDisplayName", "ampOS Offline");
+}
+
 function shutdown(code = 0) {
   for (const c of children) {
     if (!c.killed) c.kill("SIGTERM");
@@ -58,12 +88,13 @@ async function main() {
   await new Promise((resolve, reject) => {
     const tsc = run("npx", ["tsc", "-p", "electron/tsconfig.json"]);
     tsc.on("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error(`tsc exited ${code}`))
+      code === 0 ? resolve() : reject(new Error(`tsc exited ${code}`)),
     );
   });
 
   // 3. Wait for the renderer, then launch Electron.
   await waitForServer(URL);
+  ensureDevElectronBundleName();
   const electron = run("npx", ["electron", "."], {
     env: { ...process.env, ELECTRON_RENDERER_URL: URL },
   });

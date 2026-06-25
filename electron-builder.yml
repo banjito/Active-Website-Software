@@ -14,6 +14,12 @@ files:
   - electron/build/**/*
   - electron/renderer-dist/**/*
 
+extraResources:
+  - from: build-resources/icon.png
+    to: build-resources/icon.png
+  - from: build-resources/icon-dark.png
+    to: build-resources/icon-dark.png
+
 # better-sqlite3 (added in Phase 1) is a native module and must stay unpacked.
 asarUnpack:
   - "**/node_modules/better-sqlite3/**"

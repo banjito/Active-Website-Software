@@ -221,6 +221,19 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           }
         }
 
+        @media print {
+          html, body, #root, #report-container {
+            background: #ffffff !important;
+            color: #000000 !important;
+            color-scheme: light !important;
+          }
+
+          #report-container,
+          #report-container * {
+            color-scheme: light !important;
+          }
+        }
+
         /* ============================================ */
         /* COMMENT TEXT WRAPPING - all reports         */
         /* ============================================ */

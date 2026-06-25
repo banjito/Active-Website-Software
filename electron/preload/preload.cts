@@ -25,8 +25,12 @@ const api = {
   },
   // Offline PDF export of the current report (Phase 4).
   pdf: {
-    export: (opts?: { defaultName?: string; landscape?: boolean }) =>
-      ipcRenderer.invoke("pdf:export", opts ?? {}),
+    export: (opts?: {
+      defaultName?: string;
+      landscape?: boolean;
+      search?: string;
+      hash?: string;
+    }) => ipcRenderer.invoke("pdf:export", opts ?? {}),
   },
 };
 

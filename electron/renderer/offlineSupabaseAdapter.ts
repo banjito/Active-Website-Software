@@ -45,9 +45,11 @@ interface Result<T = unknown> {
 }
 
 // Bridge exposed by electron/preload/preload.cts.
-const bridge = (window as unknown as {
-  electronAPI?: { db: { query: (i: Intent) => Promise<Result> } };
-}).electronAPI;
+const bridge = (
+  window as unknown as {
+    electronAPI?: { db: { query: (i: Intent) => Promise<Result> } };
+  }
+).electronAPI;
 
 const DEFAULT_SCHEMA = "neta_ops";
 
@@ -159,13 +161,33 @@ class QueryBuilder implements PromiseLike<Result> {
     return this;
   }
 
+  private normalizeOfflineResult(result: Result): Result {
+    // Many legacy report components use .single() for optional job/customer
+    // metadata. In the offline app those seed rows often do not exist yet, and
+    // PostgREST returns PGRST116. Treat those lookups like maybeSingle() so the
+    // report can render with blank job info instead of spamming console/errors.
+    const isOptionalLookup =
+      this.intent.op === "select" &&
+      this.intent.modifier === "single" &&
+      ((this.intent.schema === "neta_ops" && this.intent.table === "jobs") ||
+        (this.intent.schema === "common" && this.intent.table === "customers"));
+
+    if (isOptionalLookup && result.error?.code === "PGRST116") {
+      return { data: null, error: null };
+    }
+
+    return result;
+  }
+
   // ---- thenable ----
   then<TResult1 = Result, TResult2 = never>(
     onfulfilled?: ((value: Result) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     const exec = bridge
-      ? bridge.db.query(this.intent)
+      ? bridge.db
+          .query(this.intent)
+          .then((result) => this.normalizeOfflineResult(result))
       : Promise.resolve<Result>({
           data: null,
           error: { message: "offline bridge unavailable" },
@@ -204,13 +226,19 @@ const auth = {
     return { data: { session: OFFLINE_SESSION }, error: null };
   },
   async signInWithPassword() {
-    return { data: { user: OFFLINE_USER, session: OFFLINE_SESSION }, error: null };
+    return {
+      data: { user: OFFLINE_USER, session: OFFLINE_SESSION },
+      error: null,
+    };
   },
   async signOut() {
     return { error: null };
   },
   async refreshSession() {
-    return { data: { session: OFFLINE_SESSION, user: OFFLINE_USER }, error: null };
+    return {
+      data: { session: OFFLINE_SESSION, user: OFFLINE_USER },
+      error: null,
+    };
   },
   onAuthStateChange(cb: (event: string, session: unknown) => void) {
     // Fire once so AuthContext resolves to a signed-in (local) user offline.
@@ -252,16 +280,25 @@ export const supabase = {
     from() {
       return {
         async upload() {
-          return { data: null, error: { message: "storage unavailable offline" } };
+          return {
+            data: null,
+            error: { message: "storage unavailable offline" },
+          };
         },
         async download() {
-          return { data: null, error: { message: "storage unavailable offline" } };
+          return {
+            data: null,
+            error: { message: "storage unavailable offline" },
+          };
         },
         getPublicUrl(path: string) {
           return { data: { publicUrl: path } };
         },
         async createSignedUrl() {
-          return { data: null, error: { message: "storage unavailable offline" } };
+          return {
+            data: null,
+            error: { message: "storage unavailable offline" },
+          };
         },
       };
     },
@@ -301,7 +338,7 @@ export async function performSoftSessionRefresh(): Promise<boolean> {
   return true;
 }
 export async function tryWithFallbackSchema<T>(
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
 ): Promise<T> {
   // No PostgREST schema-cache fallbacks needed against local SQLite.
   return fn();

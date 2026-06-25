@@ -1055,7 +1055,7 @@ const PanelboardReport: React.FC = () => {
         `,
         )
         .eq("id", jobId)
-        .single();
+        .maybeSingle();
 
       if (jobError) throw jobError;
 
@@ -1076,7 +1076,7 @@ const PanelboardReport: React.FC = () => {
             `,
             )
             .eq("id", jobData.customer_id)
-            .single();
+            .maybeSingle();
 
           if (!customerError && customerData) {
             customerName = customerData.company_name || customerData.name || "";
@@ -1093,8 +1093,7 @@ const PanelboardReport: React.FC = () => {
         }));
       }
     } catch (error) {
-      console.error("Error loading job info:", error);
-      alert(`Failed to load job info: ${(error as Error).message}`);
+      console.warn("Unable to load optional job info:", error);
     } finally {
       if (!currentReportId) {
         setLoading(false);
@@ -1335,10 +1334,7 @@ const PanelboardReport: React.FC = () => {
             const assetData = {
               name: getAssetName(
                 reportSlug,
-                formData.identifier ||
-                  formData.eqptLocation ||
-                  formData.location ||
-                  "",
+                formData.identifier || formData.eqptLocation || "",
               ),
               file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
               user_id: user.id,

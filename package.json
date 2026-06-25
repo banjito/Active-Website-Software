@@ -17,7 +17,12 @@
     "quoted-import-apply": "node scripts/update_quoted_amounts_from_csv.mjs --file imports/opportunities_export.csv --apply",
     "list": "node scripts/dev.js list",
     "generate": "node scripts/dev.js generate",
-    "parse-prd": "node scripts/dev.js parse-prd"
+    "parse-prd": "node scripts/dev.js parse-prd",
+    "electron:dev": "node scripts/electron-dev.mjs",
+    "electron:build:main": "tsc -p electron/tsconfig.json",
+    "electron:build:renderer": "vite build --config vite.config.electron.ts",
+    "electron:build": "npm run electron:build:renderer && npm run electron:build:main && electron-builder",
+    "electron:pack": "npm run electron:build:renderer && npm run electron:build:main && electron-builder --dir"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -55,6 +60,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.57.2",
     "axios": "^1.13.2",
+    "better-sqlite3": "^12.11.1",
     "bootstrap": "^5.3.5",
     "boxen": "^8.0.1",
     "chalk": "^4.1.2",
@@ -104,8 +110,10 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
     "@eslint/js": "^8.56.0",
     "@shadcn/ui": "^0.0.4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.19",
     "@types/papaparse": "^5.3.15",
@@ -122,6 +130,8 @@
     "autoprefixer": "^10.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "electron": "^42.5.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
@@ -139,7 +149,7 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "description": "[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary) ](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)",
-  "main": "add-test-customer.js",
+  "main": "electron/build/main/main.cjs",
   "directories": {
     "doc": "docs"
   },

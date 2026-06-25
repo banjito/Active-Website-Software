@@ -2311,12 +2311,10 @@ const MediumVoltageCableVLFTest = () => {
                   customer: formData?.customerName,
                   address: formData?.siteAddress,
                   jobNumber: formData?.jobNumber,
-                  technicians: Array.isArray(formData?.reportInfo?.technicians)
-                    ? formData.reportInfo.technicians.join(", ")
-                    : formData?.reportInfo?.technicians,
+                  technicians: formData?.testedBy,
                   date: formData?.testDate || formData?.reportDate,
                   identifier: formData?.identifier,
-                  user: formData?.testedBy || formData?.contactPerson,
+                  user: formData?.contactPerson,
                   substation: formData?.location,
                   eqptLocation: formData?.equipmentLocation,
                   temperature: {

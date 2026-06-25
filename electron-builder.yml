@@ -1,0 +1,39 @@
+# electron-builder config for AmpOfflineReports.
+# Phase 0 baseline; signing/notarization/auto-update feeds are wired in Phase 6.
+appId: com.ampreports.offlinereports
+productName: AmpOfflineReports
+copyright: Copyright © Amp Reports
+
+directories:
+  output: release
+  buildResources: build-resources
+
+# What ships inside the asar. The compiled Electron processes plus the built
+# renderer (emitted by `npm run electron:build`).
+files:
+  - electron/build/**/*
+  - electron/renderer-dist/**/*
+
+# better-sqlite3 (added in Phase 1) is a native module and must stay unpacked.
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+
+win:
+  target:
+    - nsis
+    - msi
+  artifactName: ${productName}_${version}_${arch}.${ext}
+
+mac:
+  category: public.app-category.business
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  hardenedRuntime: true
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true

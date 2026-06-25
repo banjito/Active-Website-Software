@@ -241,6 +241,10 @@ export const ROLES: Record<Role, RolePermissions> = {
     isSystemRole: true,
     permissions: [
       // Admin has all permissions
+      { resource: 'reports', action: 'view', scope: 'all' },
+      { resource: 'reports', action: 'create', scope: 'all' },
+      { resource: 'reports', action: 'edit', scope: 'all' },
+      { resource: 'reports', action: 'approve', scope: 'all' },
       { resource: 'users', action: 'view', scope: 'all' },
       { resource: 'users', action: 'create', scope: 'all' },
       { resource: 'users', action: 'edit', scope: 'all' },

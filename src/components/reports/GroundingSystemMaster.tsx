@@ -181,29 +181,9 @@ const GroundingSystemMaster: React.FC = () => {
 
   const reportName = getReportName(REPORT_SLUG) || "Grounding System MASTER";
   const tableWrapperRef = useRef<HTMLDivElement | null>(null);
-  const [scrollMax, setScrollMax] = useState<number>(0);
-  const [scrollValue, setScrollValue] = useState<number>(0);
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
   const startScrollLeftRef = useRef(0);
-
-  useEffect(() => {
-    const el = tableWrapperRef.current;
-    if (!el) return;
-    const update = () => {
-      const max = Math.max(0, el.scrollWidth - el.clientWidth);
-      setScrollMax(max);
-      setScrollValue(el.scrollLeft);
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    el.addEventListener("scroll", update, { passive: true });
-    return () => {
-      ro.disconnect();
-      el.removeEventListener("scroll", update as any);
-    };
-  }, []);
 
   const onHeaderMouseDown = (e: React.MouseEvent) => {
     const el = tableWrapperRef.current;
@@ -435,7 +415,7 @@ const GroundingSystemMaster: React.FC = () => {
       />
 
       <div className="p-6 flex justify-center print:p-0">
-        <div className="max-w-7xl w-full space-y-6 print:space-y-0">
+        <div className="max-w-7xl w-full min-w-0 space-y-6 print:space-y-0">
           {/* Global print header (hidden now in favor of per-row headers) */}
           <div className="hidden">
             <div className="relative flex items-center justify-between border-b-2 border-neutral-800 pb-4 mb-4">
@@ -1239,22 +1219,6 @@ const GroundingSystemMaster: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-              <div className="mt-2">
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(0, scrollMax)}
-                  value={Math.min(scrollValue, scrollMax)}
-                  onChange={(e) => {
-                    const el = tableWrapperRef.current;
-                    if (!el) return;
-                    const next = Number(e.target.value) || 0;
-                    el.scrollLeft = next;
-                    setScrollValue(next);
-                  }}
-                  className="w-full"
-                />
-              </div>
             </div>
           </section>
 
@@ -1803,7 +1767,7 @@ const GroundingSystemMaster: React.FC = () => {
                             Test
                           </th>
                           <th className="border border-black px-1 py-1 text-left font-semibold">
-                            Location / Area / Identifier
+                            Location
                           </th>
                           <th className="border border-black px-1 py-1 text-left font-semibold">
                             From

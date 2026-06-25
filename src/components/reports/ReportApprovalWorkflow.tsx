@@ -167,12 +167,13 @@ export function ReportApprovalWorkflow({
     fetchReports(0);
     fetchMetrics();
     loadOpenFlags();
-    if (user?.user_metadata?.role) {
-      const role = user.user_metadata.role as string;
+    if (user) {
+      const role = (user.user_metadata?.role as string) || "";
       const email = user.email;
       setUserRole(role);
 
-      // Permissions derive from the single source of truth in roles.ts
+      // Permissions derive from the single source of truth in roles.ts.
+      // Pass role + email so superusers qualify even without a role set.
       const approver = canApproveReports(role, email);
       setUserPermissions({
         canView: true, // All authenticated users can view

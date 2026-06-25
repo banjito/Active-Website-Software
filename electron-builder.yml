@@ -1,7 +1,7 @@
-# electron-builder config for AmpOfflineReports.
+# electron-builder config for ampOS Offline.
 # Phase 0 baseline; signing/notarization/auto-update feeds are wired in Phase 6.
 appId: com.ampreports.offlinereports
-productName: AmpOfflineReports
+productName: ampOS Offline
 copyright: Copyright © Amp Reports
 
 directories:

@@ -1,5 +1,5 @@
 /**
- * Offline SQLite store for AmpOfflineReports (main process).
+ * Offline SQLite store for ampOS Offline (main process).
  *
  * Design: a GENERIC JSON ROW STORE. Rather than mirror ~45 Postgres report
  * schemas (which would require live prod introspection), every mirrored table

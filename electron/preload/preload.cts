@@ -1,5 +1,5 @@
 /**
- * Preload bridge for AmpOfflineReports.
+ * Preload bridge for ampOS Offline.
  *
  * Runs with contextIsolation enabled and exposes a minimal, typed API on
  * `window.electronAPI`. Phase 0 only advertises the platform/version so the

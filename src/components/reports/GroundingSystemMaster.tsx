@@ -11,6 +11,151 @@ import { EquipmentAutocomplete } from "@/components/equipment/EquipmentAutocompl
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 
+// Temperature Correction Factor (TCF) lookup table – maps Celsius to correction factor
+const TCF_TABLE: Record<string, number> = {
+  "-24": 0.054,
+  "-23": 0.068,
+  "-22": 0.082,
+  "-21": 0.096,
+  "-20": 0.11,
+  "-19": 0.124,
+  "-18": 0.138,
+  "-17": 0.152,
+  "-16": 0.166,
+  "-15": 0.18,
+  "-14": 0.194,
+  "-13": 0.208,
+  "-12": 0.222,
+  "-11": 0.236,
+  "-10": 0.25,
+  "-9": 0.264,
+  "-8": 0.278,
+  "-7": 0.292,
+  "-6": 0.306,
+  "-5": 0.32,
+  "-4": 0.336,
+  "-3": 0.352,
+  "-2": 0.368,
+  "-1": 0.384,
+  "0": 0.4,
+  "1": 0.42,
+  "2": 0.44,
+  "3": 0.46,
+  "4": 0.48,
+  "5": 0.5,
+  "6": 0.526,
+  "7": 0.552,
+  "8": 0.578,
+  "9": 0.604,
+  "10": 0.63,
+  "11": 0.666,
+  "12": 0.702,
+  "13": 0.738,
+  "14": 0.774,
+  "15": 0.81,
+  "16": 0.848,
+  "17": 0.886,
+  "18": 0.924,
+  "19": 0.962,
+  "20": 1,
+  "21": 1.05,
+  "22": 1.1,
+  "23": 1.15,
+  "24": 1.2,
+  "25": 1.25,
+  "26": 1.316,
+  "27": 1.382,
+  "28": 1.448,
+  "29": 1.514,
+  "30": 1.58,
+  "31": 1.664,
+  "32": 1.748,
+  "33": 1.832,
+  "34": 1.872,
+  "35": 2,
+  "36": 2.1,
+  "37": 2.2,
+  "38": 2.3,
+  "39": 2.4,
+  "40": 2.5,
+  "41": 2.628,
+  "42": 2.756,
+  "43": 2.884,
+  "44": 3.012,
+  "45": 3.15,
+  "46": 3.316,
+  "47": 3.482,
+  "48": 3.648,
+  "49": 3.814,
+  "50": 3.98,
+  "51": 4.184,
+  "52": 4.388,
+  "53": 4.592,
+  "54": 4.796,
+  "55": 5,
+  "56": 5.26,
+  "57": 5.52,
+  "58": 5.78,
+  "59": 6.04,
+  "60": 6.3,
+  "61": 6.62,
+  "62": 6.94,
+  "63": 7.26,
+  "64": 7.58,
+  "65": 7.9,
+  "66": 8.32,
+  "67": 8.74,
+  "68": 9.16,
+  "69": 9.58,
+  "70": 10,
+  "71": 10.52,
+  "72": 11.04,
+  "73": 11.56,
+  "74": 12.08,
+  "75": 12.6,
+  "76": 13.24,
+  "77": 13.88,
+  "78": 14.52,
+  "79": 15.16,
+  "80": 15.8,
+  "81": 16.64,
+  "82": 17.48,
+  "83": 18.32,
+  "84": 19.16,
+  "85": 20,
+  "86": 21.04,
+  "87": 22.08,
+  "88": 23.12,
+  "89": 24.16,
+  "90": 25.2,
+  "91": 26.45,
+  "92": 27.7,
+  "93": 28.95,
+  "94": 30.2,
+  "95": 31.6,
+  "96": 33.28,
+  "97": 34.96,
+  "98": 36.64,
+  "99": 38.32,
+  "100": 40,
+  "101": 42.08,
+  "102": 44.16,
+  "103": 46.24,
+  "104": 48.32,
+  "105": 50.4,
+  "106": 52.96,
+  "107": 55.52,
+  "108": 58.08,
+  "109": 60.64,
+  "110": 63.2,
+};
+
+function getTCF(celsius: number): number {
+  const key = Math.round(celsius).toString();
+  if (TCF_TABLE[key] !== undefined) return TCF_TABLE[key];
+  return 1;
+}
+
 // Route slug and DB table placeholders
 const REPORT_SLUG = "grounding-system-master";
 const TABLE_NAME = "grounding_system_master_reports";
@@ -54,7 +199,7 @@ const GroundingSystemMaster: React.FC = () => {
     technicians: "",
     substation: "",
     eqptLocation: "",
-    temperature: { fahrenheit: 68, celsius: 20, humidity: 0 },
+    temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 },
   });
 
   // Master table rows
@@ -248,6 +393,7 @@ const GroundingSystemMaster: React.FC = () => {
               fahrenheit:
                 info.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
               celsius: info.temperature?.celsius ?? prev.temperature.celsius,
+              tcf: info.temperature?.tcf ?? prev.temperature.tcf ?? 1,
               humidity: info.temperature?.humidity ?? prev.temperature.humidity,
             },
           }));
@@ -614,34 +760,51 @@ const GroundingSystemMaster: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
+                <div className="mb-4 flex items-start">
+                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300 pt-0.5">
                     Temp.
                   </label>
-                  <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
-                      <input
-                        type="number"
-                        value={jobInfo.temperature.fahrenheit}
-                        onChange={(e) =>
-                          setJobInfo((p) => ({
-                            ...p,
-                            temperature: {
-                              ...p.temperature,
-                              fahrenheit: Number(e.target.value),
-                              celsius: Math.round(
-                                ((Number(e.target.value) - 32) * 5) / 9,
-                              ),
-                            },
-                          }))
-                        }
-                        readOnly={!isEditing}
-                        className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                      />
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex items-center">
+                      <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
+                        <input
+                          type="number"
+                          value={jobInfo.temperature.fahrenheit}
+                          onChange={(e) =>
+                            setJobInfo((p) => ({
+                              ...p,
+                              temperature: {
+                                ...p.temperature,
+                                fahrenheit: Number(e.target.value),
+                                celsius: Math.round(
+                                  ((Number(e.target.value) - 32) * 5) / 9,
+                                ),
+                                tcf: getTCF(
+                                  Math.round(
+                                    ((Number(e.target.value) - 32) * 5) / 9,
+                                  ),
+                                ),
+                              },
+                            }))
+                          }
+                          readOnly={!isEditing}
+                          className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
+                        />
+                      </div>
+                      <span className="mx-2">°F</span>
+                      <span className="mx-2">
+                        {jobInfo.temperature.celsius}
+                      </span>
+                      <span className="mx-2">°C</span>
                     </div>
-                    <span className="mx-2">°F</span>
-                    <span className="mx-2">{jobInfo.temperature.celsius}</span>
-                    <span className="mx-2">°C</span>
+                    <div className="flex items-center mt-0.5">
+                      <span className="text-neutral-700 dark:text-neutral-300 mr-2">
+                        TCF:
+                      </span>
+                      <span className="text-neutral-900 dark:text-white">
+                        {(jobInfo.temperature.tcf ?? 1).toFixed(3)}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="mb-4 flex">
@@ -1549,6 +1712,7 @@ const GroundingSystemMaster: React.FC = () => {
                         temperature: {
                           fahrenheit: jobInfo.temperature.fahrenheit,
                           celsius: jobInfo.temperature.celsius,
+                          tcf: jobInfo.temperature.tcf,
                           humidity: jobInfo.temperature.humidity,
                         },
                       }}
@@ -1667,6 +1831,7 @@ const GroundingSystemMaster: React.FC = () => {
                       temperature: {
                         fahrenheit: jobInfo.temperature.fahrenheit,
                         celsius: jobInfo.temperature.celsius,
+                        tcf: jobInfo.temperature.tcf,
                         humidity: jobInfo.temperature.humidity,
                       },
                     }}

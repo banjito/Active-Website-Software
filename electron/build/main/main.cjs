@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * Electron main process for AmpOfflineReports.
+ * Electron main process for ampOS Offline.
  *
  * Phase 0: boot a BrowserWindow that loads the existing Vite renderer
  * (the full ampOS React app) so we can confirm the ~60 report components
@@ -60,7 +60,7 @@ function createWindow() {
         minHeight: 700,
         backgroundColor: "#0a0a0a",
         show: false,
-        title: "AmpOfflineReports",
+        title: "ampOS Offline",
         webPreferences: {
             preload: path.join(__dirname, "../preload/preload.cjs"),
             contextIsolation: true,
@@ -232,7 +232,12 @@ async function runShellSelfTest(win) {
     };
     // 1. Report list renders with report buttons.
     const title = await waitForDom(win, `document.querySelector('h1')?.textContent`);
-    assert(title === "AmpOfflineReports", "list page heading renders");
+    assert(title === "ampOS Offline", "list page heading renders");
+    if (process.env.ELECTRON_CAPTURE) {
+        await new Promise((r) => setTimeout(r, 700));
+        const png = await win.webContents.capturePage();
+        fs.writeFileSync("/tmp/shell-capture.png", png.toPNG());
+    }
     const count = (await waitForDom(win, `document.querySelectorAll('main button').length`));
     assert(count > 30, `report list shows many reports (${count})`);
     // 2. Navigate into a report and confirm it mounts without an error overlay.

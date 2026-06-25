@@ -8728,7 +8728,7 @@ export default function EstimateSheet({
                         ];
 
                         return (
-                          <div className="mt-8">
+                          <div className="mt-8 max-w-4xl">
                             <h3 className="text-xl font-semibold mb-4">
                               Travel Expenses
                             </h3>
@@ -9187,7 +9187,7 @@ export default function EstimateSheet({
                         { key: "financial", label: "Financial", badge: formatCurrency(getFinalValue()) },
                       ];
                       return (
-                        <div className="mt-8">
+                        <div className="mt-8 max-w-4xl">
                           <h3 className="text-xl font-semibold mb-4">Estimate Summary</h3>
                           <SectionNav
                             items={summaryNavItems}

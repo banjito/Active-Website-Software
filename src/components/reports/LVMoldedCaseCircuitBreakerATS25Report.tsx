@@ -3952,8 +3952,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               );
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                  {renderTable("asFound")}
+                <div className="grid grid-cols-1">
                   {renderTable("asLeft")}
                 </div>
               );

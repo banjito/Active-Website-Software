@@ -10,7 +10,8 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import process from "node:process";
 
-const PORT = 5175;
+// Dedicated port for the offline shell (the main ampOS dev server uses 5175).
+const PORT = 5180;
 const URL = `http://localhost:${PORT}`;
 const children = [];
 

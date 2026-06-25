@@ -8521,8 +8521,8 @@ ${newBodyHtml}
                       activeTab === "reports"
                         ? "border-b-2 border-[#f26722] text-[#f26722]"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    } ${user?.user_metadata?.role !== "Admin" ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={user?.user_metadata?.role !== "Admin"}
+                    } ${!isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={!isAdmin}
                   >
                     <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0 inline-block mr-1" />
                     Report Approvals

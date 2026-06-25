@@ -72,12 +72,22 @@ function manualChunks(id: string): string | undefined {
 }
 
 export default defineConfig((env) => {
-  const base = baseConfigFactory(env);
+  const base = baseConfigFactory(env) as Record<string, any>;
+
+  // The base config pre-bundles `pdfjs-dist/build/pdf.mjs` while also aliasing
+  // bare `pdfjs-dist` to that same file — in this (electron) root that yields a
+  // bogus ".../pdf.mjs/build/pdf.mjs" path and crashes the dev optimizer. The
+  // offline shell doesn't need the pdfjs pre-bundle, so drop the include.
+  base.optimizeDeps = { ...(base.optimizeDeps ?? {}), include: [] };
+
   return mergeConfig(base, {
     // Serve/build the standalone offline shell (electron/renderer/index.html),
     // NOT the full ampOS app at the repo-root index.html.
     root: path.resolve(__dirname, "electron/renderer"),
     base: "./",
+    // Dedicated port so the offline app never collides with the main ampOS dev
+    // server (which holds 5175). You can run both at once.
+    server: { port: 5180, strictPort: true },
     plugins: [offlineSupabasePlugin()],
     build: {
       outDir: path.resolve(__dirname, "electron/renderer-dist"),

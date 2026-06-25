@@ -50,8 +50,8 @@ process.on("SIGINT", () => shutdown(0));
 process.on("SIGTERM", () => shutdown(0));
 
 async function main() {
-  // 1. Vite dev server (the existing renderer).
-  run("npx", ["vite"]);
+  // 1. Vite dev server for the offline shell (electron/renderer/index.html).
+  run("npx", ["vite", "--config", "vite.config.electron.ts"]);
 
   // 2. Compile Electron main/preload.
   await new Promise((resolve, reject) => {

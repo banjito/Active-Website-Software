@@ -54,6 +54,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 const TestStatus = {
   PASS: "PASS",
   FAIL: "FAIL",
+  LIMITED_SERVICE: "LIMITED SERVICE",
 };
 
 const CablePhase = {
@@ -2032,9 +2033,15 @@ const MediumVoltageCableVLFTest = () => {
                 border:
                   formData.status === TestStatus.PASS
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === TestStatus.FAIL
+                      ? "2px solid #dc2626"
+                      : "2px solid #ca8a04",
                 backgroundColor:
-                  formData.status === TestStatus.PASS ? "#22c55e" : "#ef4444",
+                  formData.status === TestStatus.PASS
+                    ? "#22c55e"
+                    : formData.status === TestStatus.FAIL
+                      ? "#ef4444"
+                      : "#eab308",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -2042,12 +2049,20 @@ const MediumVoltageCableVLFTest = () => {
                 minWidth: "50px",
                 // CSS variables for print override
                 "--mv-status-bg":
-                  formData.status === TestStatus.PASS ? "#22c55e" : "#ef4444",
+                  formData.status === TestStatus.PASS
+                    ? "#22c55e"
+                    : formData.status === TestStatus.FAIL
+                      ? "#ef4444"
+                      : "#eab308",
                 "--mv-status-border":
-                  formData.status === TestStatus.PASS ? "#16a34a" : "#dc2626",
+                  formData.status === TestStatus.PASS
+                    ? "#16a34a"
+                    : formData.status === TestStatus.FAIL
+                      ? "#dc2626"
+                      : "#ca8a04",
               }}
             >
-              {formData.status === TestStatus.PASS ? "PASS" : "FAIL"}
+              {formData.status || "PASS"}
             </div>
           </div>
         </div>
@@ -2072,7 +2087,9 @@ const MediumVoltageCableVLFTest = () => {
                   status:
                     prev.status === TestStatus.PASS
                       ? TestStatus.FAIL
-                      : TestStatus.PASS,
+                      : prev.status === TestStatus.FAIL
+                        ? TestStatus.LIMITED_SERVICE
+                        : TestStatus.PASS,
                 }));
               }
             }}

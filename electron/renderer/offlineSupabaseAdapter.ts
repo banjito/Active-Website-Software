@@ -212,7 +212,11 @@ const auth = {
   async refreshSession() {
     return { data: { session: OFFLINE_SESSION, user: OFFLINE_USER }, error: null };
   },
-  onAuthStateChange(_cb: unknown) {
+  onAuthStateChange(cb: (event: string, session: unknown) => void) {
+    // Fire once so AuthContext resolves to a signed-in (local) user offline.
+    if (typeof cb === "function") {
+      setTimeout(() => cb("SIGNED_IN", OFFLINE_SESSION), 0);
+    }
     return { data: { subscription: { unsubscribe() {} } } };
   },
 };

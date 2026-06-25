@@ -20,7 +20,10 @@ function offlineSupabasePlugin(): Plugin {
     enforce: "pre",
     async resolveId(source, importer, options) {
       if (!importer || importer === OFFLINE_ADAPTER) return null;
-      if (!source.includes("lib/supabase")) return null;
+      // Cheap pre-filter; the resolved-path equality below is the real gate.
+      // Must be broad enough to catch relative forms ("./supabase",
+      // "../supabase") used by AuthContext and lib/supabase/client.ts.
+      if (!source.includes("supabase")) return null;
       const resolved = await this.resolve(source, importer, {
         ...options,
         skipSelf: true,
@@ -71,6 +74,9 @@ function manualChunks(id: string): string | undefined {
 export default defineConfig((env) => {
   const base = baseConfigFactory(env);
   return mergeConfig(base, {
+    // Serve/build the standalone offline shell (electron/renderer/index.html),
+    // NOT the full ampOS app at the repo-root index.html.
+    root: path.resolve(__dirname, "electron/renderer"),
     base: "./",
     plugins: [offlineSupabasePlugin()],
     build: {

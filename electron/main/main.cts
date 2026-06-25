@@ -67,6 +67,17 @@ function createWindow(): void {
     );
   }
 
+  // Surface renderer console + load failures during tests/dev.
+  if (process.env.ELECTRON_SHELL_TEST || process.env.ELECTRON_DEBUG) {
+    mainWindow.webContents.on("console-message", (_e, _lvl, msg) =>
+      console.log("[renderer]", msg)
+    );
+    mainWindow.webContents.on(
+      "did-fail-load",
+      (_e, code, desc) => console.log("[did-fail-load]", code, desc)
+    );
+  }
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -97,6 +108,15 @@ app.whenReady().then(() => {
   }
 
   createWindow();
+
+  // Headless shell test: boot the offline shell, confirm the report list
+  // renders, then navigate into a report and confirm it mounts.
+  if (process.env.ELECTRON_SHELL_TEST) {
+    const win = BrowserWindow.getAllWindows()[0];
+    win.webContents.once("did-finish-load", () => {
+      void runShellSelfTest(win);
+    });
+  }
 
   // Headless PDF test: render the loaded renderer to a PDF file and verify.
   if (process.env.ELECTRON_PDF_TEST) {
@@ -179,6 +199,55 @@ function buildMenu(): void {
     { role: "windowMenu" as const },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+/** Poll the renderer DOM until `expr` is truthy (or timeout). */
+async function waitForDom(
+  win: BrowserWindow,
+  expr: string,
+  timeoutMs = 15000
+): Promise<unknown> {
+  const start = Date.now();
+  for (;;) {
+    const val = await win.webContents.executeJavaScript(`(()=>{try{return ${expr}}catch(e){return null}})()`);
+    if (val) return val;
+    if (Date.now() - start > timeoutMs) return val;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+}
+
+/** Boots the offline shell, checks the list page, then opens a report. */
+async function runShellSelfTest(win: BrowserWindow): Promise<void> {
+  const assert = (cond: boolean, msg: string) => {
+    console.log(`${cond ? "PASS" : "FAIL"}: ${msg}`);
+    if (!cond) process.exitCode = 1;
+  };
+
+  // 1. Report list renders with report buttons.
+  const title = await waitForDom(win, `document.querySelector('h1')?.textContent`);
+  assert(title === "AmpOfflineReports", "list page heading renders");
+  const count = (await waitForDom(
+    win,
+    `document.querySelectorAll('main button').length`
+  )) as number;
+  assert(count > 30, `report list shows many reports (${count})`);
+
+  // 2. Navigate into a report and confirm it mounts without an error overlay.
+  await win.webContents.executeJavaScript(
+    `location.hash = '#/jobs/offline/switchgear-report'`
+  );
+  const opened = await waitForDom(
+    win,
+    `!!document.querySelector('button') && document.body.innerText.includes('All reports')`
+  );
+  assert(!!opened, "report page mounts (toolbar present)");
+  const crashed = (await win.webContents.executeJavaScript(
+    `document.body.innerText.toLowerCase().includes('cannot read') || document.body.innerText.includes('Unknown report')`
+  )) as boolean;
+  assert(!crashed, "report mounted without a render crash");
+
+  console.log("[shell-test] complete");
+  app.quit();
 }
 
 /** Round-trips the offline executor to verify the data layer end-to-end. */

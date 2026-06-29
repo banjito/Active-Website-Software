@@ -19,6 +19,9 @@ import {
   ExternalLink,
   Copy,
   Settings,
+  Building2,
+  FilePlus2,
+  Check,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -51,6 +54,10 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { PDFEditor } from "../pdf/PDFEditor";
 import OpportunityNotes from "./OpportunityNotes";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import CopyEstimateToOpportunityModal, {
+  type CopyTargetOpportunity,
+} from "../estimates/CopyEstimateToOpportunityModal";
+import { toast } from "../ui/toast";
 
 interface Customer {
   id: string;
@@ -633,6 +640,8 @@ export default function OpportunityDetail() {
   const [formData, setFormData] =
     useState<OpportunityFormData>(initialFormData);
   const [confirmConvertToJobOpen, setConfirmConvertToJobOpen] = useState(false);
+  const [letterPickerOpen, setLetterPickerOpen] = useState(false);
+  const [isSavingLetterSelection, setIsSavingLetterSelection] = useState(false);
   const [isConvertingToJob, setIsConvertingToJob] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
@@ -683,6 +692,19 @@ export default function OpportunityDetail() {
   >(false);
   const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
   const [isDraft, setIsDraft] = useState(false);
+  // Keep a ref in sync so the (id, showEstimate)-scoped estimateSaved listener
+  // can read the latest draft state without re-subscribing on every toggle.
+  const isDraftRef = useRef(false);
+  useEffect(() => {
+    isDraftRef.current = isDraft;
+  }, [isDraft]);
+  // Draft-estimate assignment flow: after a draft estimate is saved we prompt
+  // the user to file it under an existing opportunity or promote this draft
+  // into a brand-new one.
+  const [showAssignDraftPrompt, setShowAssignDraftPrompt] = useState(false);
+  const [showAssignExistingPicker, setShowAssignExistingPicker] =
+    useState(false);
+  const [isAssigningDraft, setIsAssigningDraft] = useState(false);
 
   const resolveQuotePreparedByNames = async (
     opportunityId: string,
@@ -833,6 +855,12 @@ export default function OpportunityDetail() {
         // Switch to view mode to show the saved estimate in read mode
         if (showEstimate === "new") {
           setShowEstimate("view");
+        }
+
+        // If this estimate was built from a fresh "New Estimate" draft, prompt
+        // the user to assign it to an opportunity now that it exists.
+        if (isDraftRef.current) {
+          setShowAssignDraftPrompt(true);
         }
       }
     };
@@ -2308,6 +2336,168 @@ export default function OpportunityDetail() {
     }
   }
 
+  // Populate the edit form from the current opportunity and switch into edit
+  // mode. `overrides` lets callers blank out specific fields (used when
+  // promoting a draft into a brand-new opportunity).
+  function beginEditOpportunity(overrides?: Partial<OpportunityFormData>) {
+    if (!opportunity) return;
+    let opportunityType = (opportunity as any).opportunity_type;
+    if (!opportunityType) {
+      const quotedAmount = (opportunity as any).quoted_amount;
+      if (quotedAmount && Number(quotedAmount) > 0) {
+        opportunityType =
+          Number(quotedAmount) >= 100000
+            ? "large_acceptance"
+            : "small_acceptance";
+      } else {
+        opportunityType = "other";
+      }
+    }
+    const nextFormData: OpportunityFormData = {
+      customer_id: opportunity.customer_id || "",
+      contact_id: opportunity.contact_id || null,
+      title: opportunity.title || "",
+      description: opportunity.description || "",
+      expected_value: opportunity.expected_value?.toString() || "",
+      status: opportunity.status || "",
+      opportunity_created_date: opportunity.opportunity_created_date
+        ? opportunity.opportunity_created_date.substring(0, 10)
+        : "",
+      letter_proposal_date: opportunity.letter_proposal_date
+        ? opportunity.letter_proposal_date.substring(0, 10)
+        : "",
+      proposal_due_date: opportunity.proposal_due_date
+        ? opportunity.proposal_due_date.substring(0, 10)
+        : "",
+      sales_person: opportunity.sales_person || "",
+      notes: opportunity.notes || "",
+      probability: opportunity.probability?.toString() || "0",
+      amp_division: opportunity.amp_division || "",
+      quoted_amount: (opportunity as any).quoted_amount?.toString() || "",
+      selected_letter_proposal:
+        (opportunity as any).selected_letter_proposal || "",
+      reviewed_by: (opportunity as any).reviewed_by || "",
+      prepared_by: (opportunity as any).prepared_by || "",
+      jobsite_location: (opportunity as any).jobsite_location || "",
+      estimated_start_date: (opportunity as any).estimated_start_date
+        ? (opportunity as any).estimated_start_date.substring(0, 10)
+        : "",
+      estimated_end_date: (opportunity as any).estimated_end_date
+        ? (opportunity as any).estimated_end_date.substring(0, 10)
+        : "",
+      period_of_performance: (opportunity as any).period_of_performance || "",
+      total_man_hours:
+        (opportunity as any).total_man_hours?.toString() || "0",
+      opportunity_type: opportunityType,
+      documents_stage: (opportunity as any).documents_stage || "",
+      ...overrides,
+    };
+    setEditFormData(nextFormData);
+    setIsEditing(true);
+    if (nextFormData.customer_id) {
+      fetchContactsForCustomer(nextFormData.customer_id);
+    }
+  }
+
+  // "Add to New Opportunity": promote the current draft in place. Clear the
+  // placeholder customer/title so the user fills in real values, drop the draft
+  // banner, and open the edit form. The estimate stays attached.
+  function handlePromoteDraftToNew() {
+    setShowAssignDraftPrompt(false);
+    setIsDraft(false);
+    beginEditOpportunity({
+      customer_id: "",
+      contact_id: null,
+      title:
+        opportunity?.title && opportunity.title !== "Draft Estimate"
+          ? opportunity.title
+          : "",
+      description:
+        opportunity?.description &&
+        opportunity.description !== "Draft created for new estimate"
+          ? opportunity.description
+          : "",
+    });
+    toast({
+      title: "Fill in the opportunity details",
+      description:
+        "Choose a customer and title, then save. Your estimate is already attached.",
+      variant: "info",
+    });
+  }
+
+  // "Add to Existing Opportunity": move this draft's estimate(s) onto the chosen
+  // opportunity, delete the now-empty draft opportunity, and navigate there.
+  async function handleMoveDraftToExisting(target: CopyTargetOpportunity) {
+    if (!id || isAssigningDraft) return;
+    if (target.id === id) {
+      alert("That estimate already belongs to this opportunity.");
+      return;
+    }
+    setIsAssigningDraft(true);
+    try {
+      // Move estimates from the draft opportunity to the target.
+      const { error: estimatesError } = await supabase
+        .schema("business")
+        .from("estimates")
+        .update({ opportunity_id: target.id })
+        .eq("opportunity_id", id);
+      if (estimatesError) throw estimatesError;
+
+      // Move any letter proposals as well (best effort).
+      const { error: lettersError } = await supabase
+        .schema("business")
+        .from("letter_proposals")
+        .update({ opportunity_id: target.id })
+        .eq("opportunity_id", id);
+      if (lettersError) {
+        console.warn(
+          "Could not move letter proposals to target opportunity:",
+          lettersError,
+        );
+      }
+
+      // Delete the now-empty draft opportunity. The shared "Draft Estimate"
+      // customer is intentionally left alone since it is reused across drafts.
+      const { error: deleteError } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .delete()
+        .eq("id", id);
+      if (deleteError) {
+        console.warn("Could not delete draft opportunity:", deleteError);
+      }
+
+      // Let the destination opportunity refresh its estimate list.
+      window.dispatchEvent(
+        new CustomEvent("estimateSaved", {
+          detail: { opportunityId: target.id },
+        }),
+      );
+
+      const targetLabel =
+        target.quote_number ||
+        target.title ||
+        target.customer_name ||
+        "the selected opportunity";
+      setShowAssignExistingPicker(false);
+      setIsDraft(false);
+      toast({
+        title: "Estimate assigned",
+        description: `Moved to ${targetLabel}.`,
+        variant: "success",
+      });
+      navigate(`/sales-dashboard/opportunities/${target.id}`);
+    } catch (error: any) {
+      console.error("Error assigning draft estimate to opportunity:", error);
+      alert(
+        `Failed to assign estimate: ${error?.message || "Unknown error"}. Please try again.`,
+      );
+    } finally {
+      setIsAssigningDraft(false);
+    }
+  }
+
   function handleInputChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -2757,6 +2947,76 @@ export default function OpportunityDetail() {
         "Failed to update opportunity type: " +
           (error instanceof Error ? error.message : "Please try again."),
       );
+    }
+  };
+
+  // Select which letter proposal the quoted amount is pulled from (from view mode)
+  const handleSelectLetterProposalSource = async (letterId: string) => {
+    if (!opportunity?.id || !user) return;
+
+    const selectedProposal = letterProposals.find(
+      (p) => p.id === letterId,
+    ) as any;
+    const newQuotedAmount = selectedProposal
+      ? parseMoneyValue(selectedProposal.net_30_price) ||
+        extractNet30FromLetterHtml(selectedProposal.html)
+      : null;
+
+    setIsSavingLetterSelection(true);
+    try {
+      const updatePayload: Record<string, any> = {
+        selected_letter_proposal: letterId || null,
+        quoted_amount: newQuotedAmount,
+      };
+
+      // Keep opportunity_type in sync for acceptance categories
+      let nextOpportunityType = (opportunity as any).opportunity_type;
+      if (
+        (nextOpportunityType === "large_acceptance" ||
+          nextOpportunityType === "small_acceptance") &&
+        newQuotedAmount !== null
+      ) {
+        nextOpportunityType =
+          newQuotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
+        updatePayload.opportunity_type = nextOpportunityType;
+      }
+
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update(updatePayload)
+        .eq("id", opportunity.id);
+
+      if (error) throw error;
+
+      setOpportunity((prev) =>
+        prev
+          ? ({
+              ...prev,
+              selected_letter_proposal: letterId || null,
+              quoted_amount: newQuotedAmount ?? undefined,
+              opportunity_type: nextOpportunityType,
+            } as any)
+          : null,
+      );
+
+      // Keep the edit form in sync in case the user opens edit mode next
+      setEditFormData((prev) => ({
+        ...prev,
+        selected_letter_proposal: letterId || "",
+        quoted_amount: newQuotedAmount ? newQuotedAmount.toString() : "",
+        opportunity_type: nextOpportunityType ?? prev.opportunity_type,
+      }));
+
+      setLetterPickerOpen(false);
+    } catch (error) {
+      console.error("Error selecting letter proposal:", error);
+      alert(
+        "Failed to update letter proposal: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
+    } finally {
+      setIsSavingLetterSelection(false);
     }
   };
 
@@ -3334,10 +3594,16 @@ export default function OpportunityDetail() {
                 Draft Estimate
               </p>
               <p className="text-xs text-amber-700 dark:text-amber-400">
-                Update the customer, title, and opportunity details above. The
-                estimate has been saved to this draft.
+                This estimate isn't filed under an opportunity yet. Assign it to
+                an existing opportunity or turn this draft into a new one.
               </p>
             </div>
+            <button
+              onClick={() => setShowAssignDraftPrompt(true)}
+              className="flex-shrink-0 inline-flex items-center rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 transition-colors"
+            >
+              Assign to Opportunity
+            </button>
             <button
               onClick={() => setIsDraft(false)}
               className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 flex-shrink-0"
@@ -3348,6 +3614,81 @@ export default function OpportunityDetail() {
           </div>
         </div>
       )}
+
+      {/* Assign draft estimate: pick existing opportunity or promote to new */}
+      {showAssignDraftPrompt && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowAssignDraftPrompt(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-[71] w-full max-w-md mx-4 rounded-lg bg-white dark:bg-dark-150 shadow-xl border border-neutral-200 dark:border-neutral-700 p-6"
+          >
+            <button
+              type="button"
+              onClick={() => setShowAssignDraftPrompt(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+              Assign this estimate
+            </h2>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              Your estimate is saved. Where should it live?
+            </p>
+            <div className="mt-5 space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAssignDraftPrompt(false);
+                  setShowAssignExistingPicker(true);
+                }}
+                className="flex w-full items-center gap-3 rounded-lg border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
+              >
+                <Building2 className="h-5 w-5 text-[#f26722] flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-neutral-900 dark:text-white">
+                    Add to Existing Opportunity
+                  </div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Move this estimate onto one already in the pipeline
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={handlePromoteDraftToNew}
+                className="flex w-full items-center gap-3 rounded-lg border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
+              >
+                <FilePlus2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-neutral-900 dark:text-white">
+                    Add to New Opportunity
+                  </div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Turn this draft into a new opportunity
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CopyEstimateToOpportunityModal
+        open={showAssignExistingPicker}
+        onClose={() => setShowAssignExistingPicker(false)}
+        currentOpportunityId={id || ""}
+        isSaving={isAssigningDraft}
+        onSelect={handleMoveDraftToExisting}
+        title="Add Estimate to Opportunity"
+        selectLabel="Add here"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white dark:bg-dark-150 shadow-md rounded-lg overflow-hidden">
@@ -3411,90 +3752,7 @@ export default function OpportunityDetail() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem
                       className="cursor-pointer"
-                      onSelect={() => {
-                        setIsEditing(true);
-                        if (opportunity) {
-                          let opportunityType = (opportunity as any)
-                            .opportunity_type;
-                          if (!opportunityType) {
-                            const quotedAmount = (opportunity as any)
-                              .quoted_amount;
-                            if (quotedAmount && Number(quotedAmount) > 0) {
-                              opportunityType =
-                                Number(quotedAmount) >= 100000
-                                  ? "large_acceptance"
-                                  : "small_acceptance";
-                            } else {
-                              opportunityType = "other";
-                            }
-                          }
-                          setEditFormData({
-                            customer_id: opportunity.customer_id || "",
-                            contact_id: opportunity.contact_id || null,
-                            title: opportunity.title || "",
-                            description: opportunity.description || "",
-                            expected_value:
-                              opportunity.expected_value?.toString() || "",
-                            status: opportunity.status || "",
-                            opportunity_created_date:
-                              opportunity.opportunity_created_date
-                                ? opportunity.opportunity_created_date.substring(
-                                    0,
-                                    10,
-                                  )
-                                : "",
-                            letter_proposal_date:
-                              opportunity.letter_proposal_date
-                                ? opportunity.letter_proposal_date.substring(
-                                    0,
-                                    10,
-                                  )
-                                : "",
-                            proposal_due_date: opportunity.proposal_due_date
-                              ? opportunity.proposal_due_date.substring(0, 10)
-                              : "",
-                            sales_person: opportunity.sales_person || "",
-                            notes: opportunity.notes || "",
-                            probability:
-                              opportunity.probability?.toString() || "0",
-                            amp_division: opportunity.amp_division || "",
-                            quoted_amount:
-                              (opportunity as any).quoted_amount?.toString() ||
-                              "",
-                            selected_letter_proposal:
-                              (opportunity as any).selected_letter_proposal ||
-                              "",
-                            reviewed_by: (opportunity as any).reviewed_by || "",
-                            prepared_by: (opportunity as any).prepared_by || "",
-                            jobsite_location:
-                              (opportunity as any).jobsite_location || "",
-                            estimated_start_date: (opportunity as any)
-                              .estimated_start_date
-                              ? (
-                                  opportunity as any
-                                ).estimated_start_date.substring(0, 10)
-                              : "",
-                            estimated_end_date: (opportunity as any)
-                              .estimated_end_date
-                              ? (
-                                  opportunity as any
-                                ).estimated_end_date.substring(0, 10)
-                              : "",
-                            period_of_performance:
-                              (opportunity as any).period_of_performance || "",
-                            total_man_hours:
-                              (
-                                opportunity as any
-                              ).total_man_hours?.toString() || "0",
-                            opportunity_type: opportunityType,
-                            documents_stage:
-                              (opportunity as any).documents_stage || "",
-                          });
-                          if (opportunity.customer_id) {
-                            fetchContactsForCustomer(opportunity.customer_id);
-                          }
-                        }
-                      }}
+                      onSelect={() => beginEditOpportunity()}
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Opportunity
@@ -4990,7 +5248,25 @@ export default function OpportunityDetail() {
                       <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Quoted Amount (NET 30)
                       </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          letterProposals.length > 0 &&
+                          setLetterPickerOpen(true)
+                        }
+                        disabled={letterProposals.length === 0}
+                        title={
+                          letterProposals.length > 0
+                            ? "Click to choose which letter proposal this amount is pulled from"
+                            : undefined
+                        }
+                        className={`group flex w-full items-center gap-1 rounded-md px-1 -mx-1 text-left text-neutral-900 dark:text-dark-900 ${
+                          letterProposals.length > 0
+                            ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
+                            : "cursor-default"
+                        }`}
+                      >
+                        <span className="flex-1">
                         {(() => {
                           const selectedId =
                             (opportunity as any).selected_letter_proposal || "";
@@ -5043,14 +5319,18 @@ export default function OpportunityDetail() {
                               <span className="ml-2 text-xs text-neutral-400 dark:text-neutral-500">
                                 from {isSelected ? "" : "latest "}
                                 {letterLabel}
-                                {!isSelected && letterProposals.length > 1
-                                  ? " (use edit to select)"
+                                {letterProposals.length > 1
+                                  ? " (click to change)"
                                   : ""}
                               </span>
                             </>
                           );
                         })()}
-                      </p>
+                        </span>
+                        {letterProposals.length > 0 && (
+                          <ChevronDown className="h-4 w-4 flex-shrink-0 text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                        )}
+                      </button>
                     </div>
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div>
@@ -5534,6 +5814,102 @@ export default function OpportunityDetail() {
                     onClick={handleConvertToJob}
                   >
                     {isConvertingToJob ? "Creating..." : "Convert to Job"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Dialog>
+
+          {/* Letter Proposal Source Picker */}
+          <Dialog
+            open={letterPickerOpen}
+            onClose={() => setLetterPickerOpen(false)}
+            className="fixed inset-0 z-50 overflow-y-auto"
+          >
+            <div className="flex items-center justify-center min-h-screen">
+              <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+
+              <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-lg w-full mx-auto p-6 shadow-xl">
+                <div className="absolute top-0 right-0 pt-4 pr-4">
+                  <button
+                    type="button"
+                    className="text-neutral-400 hover:text-neutral-500 dark:text-white dark:hover:text-neutral-200"
+                    onClick={() => setLetterPickerOpen(false)}
+                  >
+                    <span className="sr-only">Close</span>
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
+                  Select Letter Proposal
+                </Dialog.Title>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                  Choose which letter proposal the quoted amount is pulled
+                  from.
+                </p>
+
+                {letterProposals.length === 0 ? (
+                  <p className="text-sm text-neutral-500 dark:text-white">
+                    No letter proposals found for this opportunity.
+                  </p>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto -mx-1 space-y-2">
+                    {letterProposals.map((lp: any) => {
+                      const lpAmount =
+                        parseMoneyValue(lp.net_30_price) ||
+                        extractNet30FromLetterHtml(lp.html);
+                      const lpLabel =
+                        lp.title ||
+                        `Letter ${lp.letter_number || lp.id?.slice(0, 8)}`;
+                      const isCurrent =
+                        (opportunity as any).selected_letter_proposal ===
+                        lp.id;
+                      return (
+                        <button
+                          key={lp.id}
+                          type="button"
+                          disabled={isSavingLetterSelection}
+                          onClick={() =>
+                            handleSelectLetterProposalSource(lp.id)
+                          }
+                          className={`flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors disabled:opacity-50 ${
+                            isCurrent
+                              ? "border-[#f26722] bg-[#f26722]/5"
+                              : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-200"
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
+                              {lpLabel}
+                            </p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                              {lp.created_at
+                                ? lp.created_at.slice(0, 10)
+                                : ""}
+                            </p>
+                          </div>
+                          <div className="flex flex-shrink-0 items-center gap-2">
+                            <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              {lpAmount ? formatMoney(lpAmount) : "—"}
+                            </span>
+                            {isCurrent && (
+                              <Check className="h-4 w-4 text-[#f26722]" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    onClick={() => setLetterPickerOpen(false)}
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>

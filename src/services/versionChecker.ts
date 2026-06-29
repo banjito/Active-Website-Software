@@ -1,5 +1,6 @@
-// Automatic version checker - forces reload when new version is deployed
-// This ensures users NEVER need to manually clear cache
+// Automatic version checker - notifies users when a new version is deployed
+// so they can refresh on their own terms (no surprise auto-reload)
+import { toast } from "../components/ui/toast";
 
 interface VersionInfo {
   version: string;
@@ -12,6 +13,7 @@ export class VersionChecker {
   private checkInterval: number = 5 * 60 * 1000; // Check every 5 minutes
   private intervalId: NodeJS.Timeout | null = null;
   private isChecking = false;
+  private updateNotified = false;
 
   private constructor() {
     this.initialize();
@@ -27,12 +29,12 @@ export class VersionChecker {
   private async initialize() {
     // Get current version on startup
     this.currentVersion = await this.fetchVersion();
-    
+
     // Start periodic checking
     this.startPeriodicCheck();
-    
+
     // Also check when window regains focus
-    window.addEventListener('focus', () => {
+    window.addEventListener("focus", () => {
       this.checkForUpdate();
     });
   }
@@ -41,19 +43,19 @@ export class VersionChecker {
     try {
       // Add timestamp to prevent caching of the version file itself
       const response = await fetch(`/version.json?t=${Date.now()}`, {
-        cache: 'no-cache',
+        cache: "no-cache",
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
-      
+
       if (response.ok) {
         const data: VersionInfo = await response.json();
         return data.version;
       }
     } catch (error) {
-      console.warn('Could not fetch version info:', error);
+      console.warn("Could not fetch version info:", error);
     }
     return null;
   }
@@ -73,12 +75,12 @@ export class VersionChecker {
   private async checkForUpdate() {
     // Prevent concurrent checks
     if (this.isChecking) return;
-    
+
     this.isChecking = true;
-    
+
     try {
       const latestVersion = await this.fetchVersion();
-      
+
       if (!latestVersion || !this.currentVersion) {
         this.isChecking = false;
         return;
@@ -86,67 +88,45 @@ export class VersionChecker {
 
       // If versions don't match, we have an update
       if (latestVersion !== this.currentVersion) {
-        console.log('New version detected:', latestVersion, 'Current:', this.currentVersion);
+        console.log(
+          "New version detected:",
+          latestVersion,
+          "Current:",
+          this.currentVersion,
+        );
         this.handleUpdate(latestVersion);
       }
     } catch (error) {
-      console.warn('Error checking for updates:', error);
+      console.warn("Error checking for updates:", error);
     } finally {
       this.isChecking = false;
     }
   }
 
   private handleUpdate(newVersion: string) {
-    // Stop checking
+    // Stop checking - we only need to notify once per session
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
 
-    // Check if user might have unsaved work
-    const hasUnsavedWork = this.checkForUnsavedWork();
-    
-    if (hasUnsavedWork) {
-      // User has unsaved work - wait and check again in 30 seconds
-      console.log('Update available but user has unsaved work. Will retry in 30 seconds.');
-      setTimeout(() => {
-        this.handleUpdate(newVersion);
-      }, 30 * 1000);
-    } else {
-      // Safe to reload - do it silently without notification
-      console.log('Applying update silently...');
-      window.location.reload();
-    }
-  }
+    // Avoid stacking duplicate toasts (e.g. focus event firing repeatedly)
+    if (this.updateNotified) return;
+    this.updateNotified = true;
 
-  private checkForUnsavedWork(): boolean {
-    // Check various indicators of active work
-    
-    // 1. Check for form inputs with content (not just the search bar)
-    const inputs = document.querySelectorAll('input[type="text"], textarea');
-    const hasInputContent = Array.from(inputs).some((input: any) => {
-      // Ignore search bars and filters
-      const isSearchOrFilter = input.name?.includes('search') || 
-                               input.placeholder?.toLowerCase().includes('search') ||
-                               input.id?.includes('search');
-      return !isSearchOrFilter && input.value && input.value.length > 0;
+    console.log("New version available:", newVersion);
+
+    // Show a persistent toast and let the user refresh when they're ready.
+    // Never reload out from under them - they may be mid-task.
+    toast({
+      title: "Hey! Refresh the page to update ampOS!",
+      variant: "info",
+      persistent: true,
+      action: {
+        label: "Refresh now",
+        onClick: () => window.location.reload(),
+      },
     });
-
-    // 2. Check URL for edit/create/new pages
-    const url = window.location.pathname.toLowerCase();
-    const isWorkingPage = url.includes('/edit') || 
-                          url.includes('/new') || 
-                          url.includes('/create') ||
-                          url.includes('/estimate') ||
-                          url.includes('/opportunity/') ||
-                          url.includes('/letter-proposal');
-
-    // 3. Check for any modals/dialogs open (using common dialog classes)
-    const hasOpenModal = document.querySelector('[role="dialog"]') !== null ||
-                        document.querySelector('.modal') !== null ||
-                        document.querySelector('[data-headlessui-state="open"]') !== null;
-
-    return hasInputContent || isWorkingPage || hasOpenModal;
   }
 
   // Allow manual check from dev tools or admin panel
@@ -171,8 +151,6 @@ export class VersionChecker {
 export const versionChecker = VersionChecker.getInstance();
 
 // Expose to window for debugging
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   (window as any).versionChecker = versionChecker;
 }
-
-

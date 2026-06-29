@@ -19,6 +19,10 @@ interface CopyEstimateToOpportunityModalProps {
   currentOpportunityId: string;
   onSelect: (opportunity: CopyTargetOpportunity) => void;
   isSaving?: boolean;
+  /** Heading text (defaults to the copy-estimate wording). */
+  title?: string;
+  /** Per-row action button label (defaults to "Copy here"). */
+  selectLabel?: string;
 }
 
 interface OpportunityRow {
@@ -34,7 +38,15 @@ const PAGE_SIZE = 50;
 
 export const CopyEstimateToOpportunityModal: React.FC<
   CopyEstimateToOpportunityModalProps
-> = ({ open, onClose, currentOpportunityId, onSelect, isSaving }) => {
+> = ({
+  open,
+  onClose,
+  currentOpportunityId,
+  onSelect,
+  isSaving,
+  title = "Copy Estimate to Opportunity",
+  selectLabel = "Copy here",
+}) => {
   const [rows, setRows] = useState<OpportunityRow[]>([]);
   const [customerNames, setCustomerNames] = useState<Record<string, string>>(
     {},
@@ -197,7 +209,7 @@ export const CopyEstimateToOpportunityModal: React.FC<
           <div>
             <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <Copy className="h-5 w-5 text-[#f26722]" />
-              Copy Estimate to Opportunity
+              {title}
             </h2>
           </div>
           <button
@@ -307,7 +319,7 @@ export const CopyEstimateToOpportunityModal: React.FC<
                             disabled={isSaving}
                             className="bg-[#f26722] text-white hover:bg-[#d4551a]"
                           >
-                            Copy here
+                            {selectLabel}
                           </Button>
                         </td>
                         <td className="px-3 py-3 align-top text-neutral-900 dark:text-white whitespace-nowrap font-medium">

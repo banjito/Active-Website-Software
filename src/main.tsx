@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { initEncryptionService } from './services/encryptionService';
-// import './services/versionChecker'; // Auto-start version checker - DISABLED: removed auto-refresh on Netlify deploy
+import './services/versionChecker'; // Auto-start version checker - shows a "refresh to update" toast on new deploys
 // Initialize global keyboard navigation for all input fields
 import './lib/keyboardNavigation';
 

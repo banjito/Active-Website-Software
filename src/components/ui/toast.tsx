@@ -1,12 +1,16 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { CheckCircle, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle, AlertCircle, Info, X, BellRing } from "lucide-react";
 
 export interface ToastProps {
   title: string;
   description?: string;
   variant?: "default" | "success" | "warning" | "destructive" | "info";
   duration?: number;
+  /** When true the toast stays until the user dismisses it (ignores duration). */
+  persistent?: boolean;
+  /** Optional action button rendered below the message. */
+  action?: { label: string; onClick: () => void };
   onClose?: () => void;
 }
 
@@ -17,20 +21,29 @@ const ToastContainer: React.FC<ToastProps> = ({
   description,
   variant = "default",
   duration = 5000,
+  persistent = false,
+  action,
   onClose,
 }) => {
   const [isVisible, setIsVisible] = React.useState(true);
 
+  const dismiss = React.useCallback(() => {
+    setIsVisible(false);
+    setTimeout(() => {
+      onClose?.();
+    }, 300); // Animation duration
+  }, [onClose]);
+
   React.useEffect(() => {
+    // Persistent toasts (e.g. "update available") stay until dismissed.
+    if (persistent) return;
+
     const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        onClose?.();
-      }, 300); // Animation duration
+      dismiss();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [duration, persistent, dismiss]);
 
   const getVariantStyles = () => {
     switch (variant) {
@@ -41,7 +54,7 @@ const ToastContainer: React.FC<ToastProps> = ({
       case "destructive":
         return "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800";
       case "info":
-        return "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800";
+        return "bg-white dark:bg-dark-150 border-neutral-200 dark:border-neutral-700";
       default:
         return "bg-white dark:bg-dark-150 border-neutral-200 dark:border-neutral-700";
     }
@@ -56,7 +69,9 @@ const ToastContainer: React.FC<ToastProps> = ({
       case "destructive":
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       case "info":
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return (
+          <BellRing className="h-5 w-5 text-neutral-500 dark:text-white" />
+        );
       default:
         return <Info className="h-5 w-5 text-neutral-500 dark:text-white" />;
     }
@@ -84,16 +99,23 @@ const ToastContainer: React.FC<ToastProps> = ({
               {description}
             </div>
           )}
+          {action && (
+            <button
+              type="button"
+              className="mt-2 inline-flex items-center rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              onClick={() => {
+                action.onClick();
+                dismiss();
+              }}
+            >
+              {action.label}
+            </button>
+          )}
         </div>
         <button
           type="button"
           className="ml-4 inline-flex flex-shrink-0 text-neutral-400 hover:text-neutral-500 focus:outline-none"
-          onClick={() => {
-            setIsVisible(false);
-            setTimeout(() => {
-              onClose?.();
-            }, 300);
-          }}
+          onClick={dismiss}
         >
           <X className="h-4 w-4" />
         </button>

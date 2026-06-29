@@ -230,6 +230,7 @@ export const InterviewScheduling: React.FC = () => {
         .schema("common")
         .from("profiles")
         .select("id, email, user_metadata")
+        .eq("is_active", true)
         .limit(100);
 
       if (!profileError && profiles && profiles.length > 0) {

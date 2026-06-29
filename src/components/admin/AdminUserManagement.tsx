@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Role, ROLES, isSuperUser, getRoleBadgeClasses } from "@/lib/roles";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "../ui/Button";
+import { Switch } from "@/components/ui/Switch";
 import {
   Edit,
   CheckCircle,
@@ -11,6 +12,8 @@ import {
   RefreshCw,
   KeyRound,
   Camera,
+  Ban,
+  UserCheck,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -18,6 +21,7 @@ interface UserData {
   id: string;
   email: string;
   created_at: string;
+  is_active: boolean;
   user_metadata: {
     name?: string;
     role?: Role | string; // Allow string for initial load, map to Role
@@ -66,6 +70,13 @@ export default function AdminUserManagement() {
   const [avatarUploadingUserId, setAvatarUploadingUserId] = useState<
     string | null
   >(null);
+  const [activeLoadingUserId, setActiveLoadingUserId] = useState<string | null>(
+    null,
+  );
+  const [confirmDeactivateUserId, setConfirmDeactivateUserId] = useState<
+    string | null
+  >(null);
+  const [showDeactivated, setShowDeactivated] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -117,6 +128,7 @@ export default function AdminUserManagement() {
           id: user.id,
           email: user.email,
           created_at: user.created_at,
+          is_active: user.is_active !== false, // default active if missing
           user_metadata: user.raw_user_meta_data || {},
         }));
         console.log(
@@ -325,6 +337,56 @@ export default function AdminUserManagement() {
     }
   };
 
+  async function handleSetActive(userId: string, active: boolean) {
+    // Deactivation is confirmed via the inline popover, not window.confirm.
+    setConfirmDeactivateUserId(null);
+
+    setError(null);
+    setUpdateErrorUserId(null);
+    setUpdateSuccessUserId(null);
+    setActiveLoadingUserId(userId);
+
+    try {
+      const { error } = await supabase
+        .schema("common")
+        .rpc("admin_set_user_active", {
+          target_user_id: userId,
+          active,
+        });
+
+      if (error) {
+        if (error.message.toLowerCase().includes("access denied")) {
+          setError("Access denied: Admin role required to deactivate users.");
+        } else if (error.message.toLowerCase().includes("your own account")) {
+          setError("You cannot deactivate your own account.");
+        } else if (
+          error.message.includes("function common.admin_set_user_active")
+        ) {
+          setError(
+            "Deactivation function not found. Please run database/migrations/add_user_deactivation.sql in your Supabase SQL editor.",
+          );
+        } else {
+          setError(`Failed to update user: ${error.message}`);
+        }
+        setUpdateErrorUserId(userId);
+        return;
+      }
+
+      // Reflect new status locally without a full refetch.
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, is_active: active } : u)),
+      );
+      setUpdateSuccessUserId(userId);
+      setTimeout(() => setUpdateSuccessUserId(null), 3000);
+    } catch (err: any) {
+      console.error("Error updating user active state:", err);
+      setUpdateErrorUserId(userId);
+      setError(`Failed to update user: ${err.message || "Unknown error"}`);
+    } finally {
+      setActiveLoadingUserId(null);
+    }
+  }
+
   const handleStartAvatarChange = (userId: string) => {
     avatarTargetUserIdRef.current = userId;
     if (avatarFileInputRef.current) {
@@ -443,18 +505,26 @@ export default function AdminUserManagement() {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const searchLower = searchQuery.toLowerCase();
-    const email = user.email?.toLowerCase() || "";
-    const name = user.user_metadata?.name?.toLowerCase() || "";
-    const role = (user.user_metadata?.role as string)?.toLowerCase() || ""; // Treat role as string for search
+  // First name for sorting: first token of the display name, else the email.
+  const firstNameKey = (user: UserData) =>
+    (user.user_metadata?.name?.trim().split(/\s+/)[0] || user.email || "")
+      .toLowerCase();
 
-    return (
-      email.includes(searchLower) ||
-      name.includes(searchLower) ||
-      role.includes(searchLower)
-    );
-  });
+  const filteredUsers = users
+    .filter((user) => showDeactivated || user.is_active)
+    .filter((user) => {
+      const searchLower = searchQuery.toLowerCase();
+      const email = user.email?.toLowerCase() || "";
+      const name = user.user_metadata?.name?.toLowerCase() || "";
+      const role = (user.user_metadata?.role as string)?.toLowerCase() || ""; // Treat role as string for search
+
+      return (
+        email.includes(searchLower) ||
+        name.includes(searchLower) ||
+        role.includes(searchLower)
+      );
+    })
+    .sort((a, b) => firstNameKey(a).localeCompare(firstNameKey(b)));
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -477,14 +547,28 @@ export default function AdminUserManagement() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <Switch
+              checked={showDeactivated}
+              onCheckedChange={setShowDeactivated}
+              checkedClassName="bg-[#f26722]"
+            />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200 whitespace-nowrap">
+              Show Deactivated Users
+            </span>
+          </label>
           <Button
             onClick={fetchUsers}
             disabled={loading}
             variant="outline"
-            className="flex items-center gap-2"
+            className="border-none flex items-center gap-2"
+            leftIcon={
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+            }
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           {/* Placeholder for Invite User functionality */}
@@ -513,9 +597,10 @@ export default function AdminUserManagement() {
         />
       </div>
 
-      {/* Users List */}
-      <div className="border border-neutral-200 dark:border-dark-300 rounded-lg overflow-hidden shadow-sm">
-        <div className="bg-neutral-50 dark:bg-dark-150 px-6 py-3 border-b border-neutral-200 dark:border-dark-300 flex items-center justify-between">
+      {/* Users List (no overflow-hidden so the deactivate confirm popover
+          can extend above the top row) */}
+      <div className="border border-neutral-200 dark:border-dark-300 rounded-lg shadow-sm">
+        <div className="bg-neutral-50 dark:bg-dark-150 px-6 py-3 border-b border-neutral-200 dark:border-dark-300 rounded-t-lg flex items-center justify-between">
           <h3 className="text-base font-medium text-neutral-700 dark:text-neutral-200">
             All Users ({filteredUsers.length})
           </h3>
@@ -552,7 +637,9 @@ export default function AdminUserManagement() {
                           : undefined
                       }
                       title={
-                        canEditProfileImages ? "Change profile photo" : undefined
+                        canEditProfileImages
+                          ? "Change profile photo"
+                          : undefined
                       }
                     >
                       {user.user_metadata?.profileImage ? (
@@ -599,8 +686,13 @@ export default function AdminUserManagement() {
                           <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
                         )}
                       </p>
-                      <p className="text-xs text-neutral-500 dark:text-white truncate">
-                        {user.email}
+                      <p className="text-xs text-neutral-500 dark:text-white truncate flex items-center gap-2">
+                        <span className="truncate">{user.email}</span>
+                        {!user.is_active && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 flex-shrink-0">
+                            Inactive
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -664,8 +756,9 @@ export default function AdminUserManagement() {
                         }
                         className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
                         aria-label="Edit Role"
+                        leftIcon={<Edit className="h-4 w-4" />}
                       >
-                        <Edit className="h-4 w-4" />
+                        Edit
                       </Button>
                       {canChangePasswords && (
                         <Button
@@ -673,20 +766,116 @@ export default function AdminUserManagement() {
                           variant="ghost"
                           onClick={() => handleStartPasswordEdit(user.id)}
                           className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
+                          leftIcon={<KeyRound className="h-4 w-4" />}
                         >
-                          <KeyRound className="h-4 w-4" />
                           <span className="ml-1">Change password</span>
                         </Button>
                       )}
-                      {/* Placeholder for Delete User */}
-                      {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      className="px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
-                      aria-label="Delete User"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button> */}
+                      {/* Deactivate (soft-delete) / Reactivate. We never
+                          delete the account, so report authorship is kept. */}
+                      {user.id !== currentUser?.id &&
+                        (user.is_active ? (
+                          <div className="relative">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                setConfirmDeactivateUserId((prev) =>
+                                  prev === user.id ? null : user.id,
+                                )
+                              }
+                              disabled={activeLoadingUserId === user.id}
+                              className="px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                              aria-label="Deactivate User"
+                              title="Deactivate user (blocks login, keeps their reports)"
+                              leftIcon={
+                                activeLoadingUserId === user.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Ban className="h-4 w-4" />
+                                )
+                              }
+                            >
+                              Deactivate
+                            </Button>
+
+                            {confirmDeactivateUserId === user.id && (
+                              <>
+                                {/* click-away backdrop */}
+                                <div
+                                  className="fixed inset-0 z-40"
+                                  onClick={() =>
+                                    setConfirmDeactivateUserId(null)
+                                  }
+                                />
+                                <div
+                                  role="dialog"
+                                  className="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-lg border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-4 shadow-xl"
+                                >
+                                  {/* caret pointing down to the button */}
+                                  <div className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45 border-b border-r border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150" />
+
+                                  <div className="flex items-start gap-2">
+                                    <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+                                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                      Deactivate{" "}
+                                      {user.user_metadata?.name || user.email}?
+                                    </p>
+                                  </div>
+                                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                    They'll be <b>signed out</b> and{" "}
+                                    <b>blocked</b> from logging in, and hidden
+                                    from selection lists. Their account and all
+                                    reports they authored are kept (their name
+                                    stays on those reports). You can reactivate
+                                    them anytime.
+                                  </p>
+                                  <div className="mt-3 flex justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() =>
+                                        setConfirmDeactivateUserId(null)
+                                      }
+                                      className="text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-50"
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetActive(user.id, false)
+                                      }
+                                      className="bg-red-600 text-white hover:bg-red-700"
+                                      leftIcon={<Ban className="h-4 w-4" />}
+                                    >
+                                      Deactivate
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleSetActive(user.id, true)}
+                            disabled={activeLoadingUserId === user.id}
+                            className="px-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20"
+                            aria-label="Reactivate User"
+                            title="Reactivate user (restores login)"
+                            leftIcon={
+                              activeLoadingUserId === user.id ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <UserCheck className="h-4 w-4" />
+                              )
+                            }
+                          >
+                            Reactivate
+                          </Button>
+                        ))}
                     </div>
                   )}
                 </div>

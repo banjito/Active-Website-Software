@@ -62,13 +62,19 @@ import { onboardingService } from "@/services/hr/onboardingService";
 import { toast } from "@/components/ui/toast";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { FireworksOverlay } from "@/components/ui/FireworksOverlay";
 
 export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [fireworksTrigger, setFireworksTrigger] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("");
+  const [offlineTooltip, setOfflineTooltip] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -1133,6 +1139,19 @@ export default function PortalLanding() {
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
+      <FireworksOverlay trigger={fireworksTrigger} />
+      {offlineTooltip && (
+        <div
+          className="pointer-events-none fixed z-[100] rounded-full border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
+          style={{
+            left: offlineTooltip.x,
+            top: offlineTooltip.y,
+            transform: "translateX(-100%)",
+          }}
+        >
+          In Development
+        </div>
+      )}
       <HeaderBar onEnterEditMode={handleEnterEditMode} />
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
@@ -1197,11 +1216,22 @@ export default function PortalLanding() {
                 </button>
               </div>
             )}
-            <img
-              src="/ampOS_full_logo.svg"
-              alt="ampOS"
-              className="h-[5rem] w-auto mb-4 dark:brightness-0 dark:invert"
-            />
+            <div
+              className="group relative mb-4 inline-block cursor-pointer select-none"
+              onClick={() => setFireworksTrigger((n) => n + 1)}
+              title="🎆"
+            >
+              {/* Spinning red/white/blue glow, revealed on hover */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-6 -z-10 animate-spin-glow rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-70 [background:conic-gradient(from_0deg,rgba(187,0,0,0.7),rgba(255,255,255,0.7),rgba(53,63,163,0.7),rgba(187,0,0,0.7))]"
+              />
+              <img
+                src="/ampOS-america.svg"
+                alt="ampOS"
+                className="relative h-[6rem] w-auto transition-transform duration-300 group-hover:scale-[1.03] group-active:scale-95"
+              />
+            </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -1210,17 +1240,27 @@ export default function PortalLanding() {
               >
                 Learn More
               </Button>
-              <Button
-                onClick={() =>
-                  window.open("/assets/offline-software.zip", "_blank")
+              <span
+                onMouseEnter={(e) =>
+                  setOfflineTooltip({ x: e.clientX - 12, y: e.clientY + 14 })
                 }
-                className="group inline-flex items-center rounded-md justify-center h-11 px-5 !text-neutral-600 bg-transparent hover:bg-neutral-700 hover:!text-white"
-                leftIcon={
-                  <Download className="h-5 w-5 text-neutral-600 group-hover:text-white" />
+                onMouseMove={(e) =>
+                  setOfflineTooltip({ x: e.clientX - 12, y: e.clientY + 14 })
                 }
+                onMouseLeave={() => setOfflineTooltip(null)}
+                className="inline-flex cursor-not-allowed"
               >
-                Offline Software
-              </Button>
+                <Button
+                  disabled
+                  aria-disabled="true"
+                  className="group pointer-events-none inline-flex items-center rounded-md justify-center h-11 px-5 !text-neutral-600 bg-transparent opacity-60"
+                  leftIcon={
+                    <Download className="h-5 w-5 text-neutral-600" />
+                  }
+                >
+                  Offline Software
+                </Button>
+              </span>
             </div>
           </div>
         </div>

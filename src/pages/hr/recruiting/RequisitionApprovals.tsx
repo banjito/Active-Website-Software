@@ -48,6 +48,7 @@ interface AppUser {
   id: string;
   email: string;
   name: string;
+  is_active?: boolean;
 }
 
 export const RequisitionApprovals: React.FC = () => {
@@ -124,6 +125,8 @@ export const RequisitionApprovals: React.FC = () => {
       }
 
       if (!adminError && adminData) {
+        // Keep all users so existing approvers' names still resolve; the
+        // picker hides deactivated users at render time.
         users = adminData.map((u: any) => ({
           id: u.id,
           email: u.email || "",
@@ -132,12 +135,13 @@ export const RequisitionApprovals: React.FC = () => {
             u.user_metadata?.name ||
             u.email?.split("@")[0] ||
             "Unknown",
+          is_active: u.is_active !== false,
         }));
       } else {
         const { data: profiles } = await supabase
           .schema("common")
           .from("profiles")
-          .select("id, email, full_name, user_metadata");
+          .select("id, email, full_name, user_metadata, is_active");
 
         if (profiles) {
           users = profiles.map((p: any) => ({
@@ -148,6 +152,7 @@ export const RequisitionApprovals: React.FC = () => {
               p.user_metadata?.name ||
               p.email?.split("@")[0] ||
               "Unknown",
+            is_active: p.is_active !== false,
           }));
         }
       }

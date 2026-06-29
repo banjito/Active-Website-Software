@@ -29,6 +29,23 @@ const deriveNameFromEmail = (email?: string | null): string | null => {
   return `${cap(m[1])} ${cap(m[2])}`;
 };
 
+// Set of user ids that have been deactivated (soft-deleted). Used to hide
+// removed staff from technician pickers without touching the DB views/RPCs.
+const getDeactivatedUserIds = async (): Promise<Set<string>> => {
+  try {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('profiles')
+      .select('id')
+      .eq('is_active', false);
+    if (error || !data) return new Set();
+    return new Set(data.map((r: { id: string }) => r.id));
+  } catch {
+    // If the column/migration isn't present yet, fail open (show everyone).
+    return new Set();
+  }
+};
+
 const formatDisplayName = (name?: string, email?: string): string => {
   // Always prioritize email-derived name (firstname.lastname format)
   const derived = deriveNameFromEmail(email);
@@ -599,7 +616,7 @@ export const schedulingService = {
     error: PostgrestError | null;
   }> {
     // Call the stored procedure
-    return supabase
+    const result = await supabase
       .rpc('find_available_technicians', {
         job_id: jobId,
         assignment_date: assignmentDate,
@@ -607,6 +624,20 @@ export const schedulingService = {
         end_time: endTime,
         portal: portalType
       });
+
+    // Drop any deactivated (soft-deleted) technicians from the picker.
+    if (!result.error && Array.isArray(result.data)) {
+      const deactivated = await getDeactivatedUserIds();
+      if (deactivated.size) {
+        return {
+          ...result,
+          data: result.data.filter(
+            (t: TechnicianMatch) => !deactivated.has(t.user_id),
+          ),
+        };
+      }
+    }
+    return result;
   },
 
   /**
@@ -627,9 +658,16 @@ export const schedulingService = {
       query = query.eq('division', division);
     }
 
+    // Ids of removed staff, so they don't appear as schedulable technicians.
+    const deactivated = await getDeactivatedUserIds();
+    const stripDeactivated = (rows: any[] | null) =>
+      deactivated.size && Array.isArray(rows)
+        ? rows.filter((r) => !deactivated.has(r.user_id))
+        : rows;
+
     const first = await query.order('division').order('full_name').order('day_of_week').order('start_time');
     if (!first.error && first.data && first.data.length) {
-      return first as any;
+      return { ...first, data: stripDeactivated(first.data) } as any;
     }
 
     // Fallback to neta_ops.available_technicians if common view isn't present
@@ -650,6 +688,9 @@ export const schedulingService = {
       .order('division')
       .order('day_of_week')
       .order('start_time');
+    if (!fallback.error && Array.isArray(fallback.data)) {
+      return { ...fallback, data: stripDeactivated(fallback.data) } as any;
+    }
     return fallback as any;
   },
 

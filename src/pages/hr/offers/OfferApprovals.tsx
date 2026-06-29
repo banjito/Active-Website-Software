@@ -58,6 +58,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 interface User {
   id: string;
   email: string;
+  is_active?: boolean;
   user_metadata?: {
     name?: string;
   };
@@ -188,9 +189,12 @@ export const OfferApprovals: React.FC = () => {
       }
 
       if (!adminError && adminData) {
+        // Keep all users so existing approvers' names still resolve; the
+        // picker filters out deactivated users at render time.
         const mappedUsers = adminData.map((u: any) => ({
           id: u.id,
           email: u.email || "",
+          is_active: u.is_active !== false,
           user_metadata: {
             name: u.raw_user_meta_data?.name || u.user_metadata?.name || null,
             ...(u.raw_user_meta_data || u.user_metadata || {}),
@@ -204,7 +208,7 @@ export const OfferApprovals: React.FC = () => {
       const { data: profiles, error: profileError } = await supabase
         .schema("common")
         .from("profiles")
-        .select("id, email, user_metadata")
+        .select("id, email, user_metadata, is_active")
         .limit(500);
 
       if (!profileError && profiles && profiles.length > 0) {
@@ -212,6 +216,7 @@ export const OfferApprovals: React.FC = () => {
           profiles.map((p: any) => ({
             id: p.id,
             email: p.email || "",
+            is_active: p.is_active !== false,
             user_metadata: p.user_metadata || {},
           })),
         );
@@ -1861,6 +1866,7 @@ export const OfferApprovals: React.FC = () => {
                 <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {users
                     .filter((u) => {
+                      if (u.is_active === false) return false; // hide deactivated
                       const searchLower = approverSearchTerm.toLowerCase();
                       const name = (u.user_metadata?.name || "").toLowerCase();
                       const email = (u.email || "").toLowerCase();
@@ -1911,6 +1917,7 @@ export const OfferApprovals: React.FC = () => {
             </div>
             {approverSearchTerm &&
               users.filter((u) => {
+                if (u.is_active === false) return false;
                 const searchLower = approverSearchTerm.toLowerCase();
                 const name = (u.user_metadata?.name || "").toLowerCase();
                 const email = (u.email || "").toLowerCase();

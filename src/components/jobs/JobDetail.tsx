@@ -6711,6 +6711,7 @@ ${newBodyHtml}
           id: user.id,
           email: user.email,
           created_at: user.created_at,
+          is_active: user.is_active !== false,
           user_metadata: user.raw_user_meta_data || {},
         }));
         setUsers(mappedUsers);
@@ -8929,6 +8930,9 @@ ${newBodyHtml}
                                   <div className="max-h-60 overflow-y-auto">
                                     {users
                                       .filter((u) => {
+                                        // Hide deactivated users from the picker
+                                        // (their name still resolves elsewhere).
+                                        if (u.is_active === false) return false;
                                         const searchLower =
                                           userSearchQuery.toLowerCase();
                                         const email =
@@ -8966,6 +8970,7 @@ ${newBodyHtml}
                                         </div>
                                       ))}
                                     {users.filter((u) => {
+                                      if (u.is_active === false) return false;
                                       const searchLower =
                                         userSearchQuery.toLowerCase();
                                       const email =

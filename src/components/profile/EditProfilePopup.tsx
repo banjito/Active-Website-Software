@@ -231,9 +231,22 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // Hydrate the form from server data only ONCE per open. Without this guard,
+  // an auth-context refresh (token refresh / window focus / soft refresh) hands
+  // back a new user_metadata reference, re-firing the effects below and wiping
+  // out the user's unsaved edits before they can be saved.
+  const metaHydratedRef = useRef(false);
+  const profilesHydratedRef = useRef(false);
 
-  // Update state when user metadata changes
+  // Hydrate the form from user metadata / currentUser when the popup opens.
   useEffect(() => {
+    if (!isOpen) {
+      // Reset so the form re-hydrates fresh the next time it opens.
+      metaHydratedRef.current = false;
+      profilesHydratedRef.current = false;
+      return;
+    }
+    if (metaHydratedRef.current) return;
     if (isEditingOwnProfile && user?.user_metadata) {
       setName(user.user_metadata.name || "");
       setSelectedRole(user.user_metadata.role || "");
@@ -254,6 +267,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       setGoals(user.user_metadata.goals || "");
       setProfileImage(user.user_metadata.profileImage || null);
       setCoverImage(user.user_metadata.coverImage || null);
+      metaHydratedRef.current = true;
       return;
     }
     if (currentUser) {
@@ -274,8 +288,9 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       setGoals(currentUser.goals || "");
       setProfileImage(currentUser.profileImage || null);
       setCoverImage(currentUser.coverImage || null);
+      metaHydratedRef.current = true;
     }
-  }, [currentUser, isEditingOwnProfile, user?.user_metadata]);
+  }, [isOpen, currentUser, isEditingOwnProfile, user?.user_metadata]);
 
   // Load job_title and department from common.profiles when opening (source of truth for employee info)
   // Also backfill profile/cover image to profiles if it exists in user_metadata but not in profiles (so others can see it)
@@ -288,9 +303,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         .select("job_title, department, avatar_url, profile_image, cover_image")
         .eq("id", editingUserId)
         .single();
-      if (data) {
-        if (data.job_title != null) setJobTitle(data.job_title);
-        if (data.department != null) setDepartment(data.department);
+      // Only hydrate job_title/department from profiles once per open, and only
+      // when profiles actually has a value — otherwise we'd wipe the value loaded
+      // from user_metadata (or the user's in-progress edit) with an empty string.
+      if (data && !profilesHydratedRef.current) {
+        if (data.job_title) setJobTitle(data.job_title);
+        if (data.department) setDepartment(data.department);
+        profilesHydratedRef.current = true;
       }
       // Backfill: if user has profile/cover in metadata but profiles doesn't, sync so others can see
       const metaImg = isEditingOwnProfile
@@ -846,6 +865,11 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         emergency_contact_phone: emergencyContactPhone || null,
         emergency_contact_relationship: emergencyContactRelationship || null,
         goals: goals || null,
+        // Mirror job_title/department into metadata too. The common.profiles
+        // upsert below can fail silently (RLS/grants), so metadata is the
+        // reliable store; ProfileView falls back to these when profiles is empty.
+        job_title: jobTitle || null,
+        department: department || null,
         // DO NOT include 'role' here - it should only be updated by admins
       };
 

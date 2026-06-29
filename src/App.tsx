@@ -28,6 +28,7 @@ import DeliverableViewer from "./components/jobs/DeliverableViewer";
 import Dashboard from "./app/dashboard/page";
 import AmpuPage from "./app/ampu/AmpuPage";
 import PortalLanding from "./app/portal/page";
+import ContactListPage from "./app/contact-list/page";
 import UnifiedJobsPage from "./app/all-jobs/page";
 import SalesDashboard from "./app/sales-dashboard/page";
 import MobileLogInteraction from "./app/sales-dashboard/mobile-log/page";
@@ -583,6 +584,14 @@ function App() {
                     element={<QuickBooksCallback />}
                   />
                   <Route path="/" element={<Navigate to="/portal" replace />} />
+                  <Route
+                    path="/contact-list"
+                    element={
+                      <RequireAuth>
+                        <ContactListPage />
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/portal"
                     element={

@@ -11,22 +11,22 @@
 // Division / Tennessee Division / Georgia Division" portal naming.
 
 const DIVISION_DISPLAY_MAP: Record<string, string> = {
-  // Internal identifiers (snake_case / camelCase)
-  north_alabama: 'Alabama Division',
-  northAlabama: 'Alabama Division',
-  tennessee: 'Tennessee Division',
-  georgia: 'Georgia Division',
-  international: 'International Division',
+  // Internal identifiers (snake_case / camelCase) — displayed as bare city names
+  north_alabama: 'Decatur',
+  northAlabama: 'Decatur',
+  tennessee: 'Nashville',
+  georgia: 'Atlanta',
+  international: 'International',
   calibration: 'Calibration Division',
   armadillo: 'Armadillo Division',
   scavenger: 'Scavenger Division',
   engineering: 'Engineering',
   field_tech: 'Field Technician Portal',
-  Decatur: 'Alabama Division (Decatur)',
+  Decatur: 'Decatur',
 
   // Human-readable values that may be persisted (e.g. user_metadata.divisions)
-  'North Alabama': 'Alabama',
-  'North Alabama Division': 'Alabama Division',
+  'North Alabama': 'Decatur',
+  'North Alabama Division': 'Decatur',
 };
 
 /**

@@ -906,6 +906,19 @@ export default function PortalLanding() {
     }
   };
 
+  // Field Tech city mini-cards: enter a single city's job list (NETA-gated).
+  const handleCityCardClick = (divisionId: string) => {
+    if (!checkPortalAccess("neta")) {
+      setPopupContent(
+        "Your current role does not have access to this portal. Please request an updated role and await admin approval.",
+      );
+      setShowPopup(true);
+      return;
+    }
+    setDivision(divisionId);
+    navigate(`/${divisionId}/jobs`);
+  };
+
   const handleOtherPortalClick = (path: string) => {
     setDivision(null);
     navigate(path);
@@ -979,16 +992,16 @@ export default function PortalLanding() {
     const title = card.querySelector("h3")?.textContent?.trim();
 
     switch (title) {
-      case "Alabama Division":
+      case "Decatur":
         handleDivisionClick("north_alabama");
         break;
-      case "Tennessee Division":
+      case "Nashville":
         handleDivisionClick("tennessee");
         break;
-      case "Georgia Division":
+      case "Atlanta":
         handleDivisionClick("georgia");
         break;
-      case "International Division":
+      case "International":
         handleDivisionClick("international");
         break;
       case "Field Technician Portal":
@@ -1069,16 +1082,18 @@ export default function PortalLanding() {
   const PortalCardWrapper = ({
     portalName,
     children,
+    className = "",
   }: {
     portalName: string;
     children: React.ReactNode;
+    className?: string;
   }) => {
     if (!isPortalHidden(portalName) || isEditMode) {
       return (
         <div
-          className={
+          className={`${className} ${
             isEditMode && isPortalHidden(portalName) ? "opacity-50" : ""
-          }
+          }`}
         >
           {children}
         </div>
@@ -1219,7 +1234,7 @@ export default function PortalLanding() {
             <div
               className="group relative mb-4 inline-block cursor-pointer select-none"
               onClick={() => setFireworksTrigger((n) => n + 1)}
-              title="🎆"
+              title="Happy Birthday, America!"
             >
               {/* Spinning red/white/blue glow, revealed on hover */}
               <div
@@ -1240,7 +1255,13 @@ export default function PortalLanding() {
                 }}
                 className="relative h-[6rem] w-auto transition-transform duration-300 group-hover:scale-[1.03] group-active:scale-95"
               >
-                <rect x="0" y="0" width="7210.5" height="2614.45" style={{ fill: "none" }} />
+                <rect
+                  x="0"
+                  y="0"
+                  width="7210.5"
+                  height="2614.45"
+                  style={{ fill: "none" }}
+                />
                 <g>
                   <path
                     id="ampOS"
@@ -1308,9 +1329,7 @@ export default function PortalLanding() {
                   disabled
                   aria-disabled="true"
                   className="group pointer-events-none inline-flex items-center rounded-md justify-center h-11 px-5 !text-neutral-600 bg-transparent opacity-60"
-                  leftIcon={
-                    <Download className="h-5 w-5 text-neutral-600" />
-                  }
+                  leftIcon={<Download className="h-5 w-5 text-neutral-600" />}
                 >
                   Offline Software
                 </Button>
@@ -2069,165 +2088,61 @@ export default function PortalLanding() {
           onClick={handlePortalCardGridClick}
           onKeyDown={handlePortalCardGridKeyDown}
         >
-          {/* NETA Technician Group */}
-          {/* North Alabama Division */}
-          <PortalCardWrapper portalName="North Alabama Division">
-            <Card
-              tabIndex={0}
-              role="button"
-              className="portal-click-card portal-neta border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-            >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-full"
-                    style={{ color: "#f26722" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-rose-500 dark:text-white"
-                      style={{ color: "#f26722" }}
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Alabama Division
-                    </CardTitle>
-                  </div>
-                </div>
-                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  NETA Technicians
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
-            </Card>
-          </PortalCardWrapper>
-
-          {/* Tennessee Division */}
-          <PortalCardWrapper portalName="Tennessee Division">
-            <Card
-              tabIndex={0}
-              role="button"
-              className="portal-click-card portal-neta border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-            >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-full"
-                    style={{ color: "#f26722" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-emerald-500 dark:text-white"
-                      style={{ color: "#f26722" }}
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Tennessee Division
-                    </CardTitle>
-                  </div>
-                </div>
-                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  NETA Technicians
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
-            </Card>
-          </PortalCardWrapper>
-
-          {/* Georgia Division */}
-          <PortalCardWrapper portalName="Georgia Division">
-            <Card
-              tabIndex={0}
-              role="button"
-              className="portal-click-card portal-neta border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-            >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-full"
-                    style={{ color: "#f26722" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-blue-500 dark:text-white"
-                      style={{ color: "#f26722" }}
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Georgia Division
-                    </CardTitle>
-                  </div>
-                </div>
-                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  NETA Technicians
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
-            </Card>
-          </PortalCardWrapper>
-
-          {/* International Portal */}
-          <PortalCardWrapper portalName="International Division">
-            <Card
-              tabIndex={0}
-              role="button"
-              className="portal-click-card portal-neta border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-            >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-full"
-                    style={{ color: "#f26722" }}
-                  >
-                    <Globe
-                      className="h-5 w-5 text-sky-500 dark:text-white"
-                      style={{ color: "#f26722" }}
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      International Division
-                    </CardTitle>
-                  </div>
-                </div>
-                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  NETA Technicians
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
-            </Card>
-          </PortalCardWrapper>
-
           {/* Other Technician Group */}
-          {/* Field Technician Portal (Aggregated) */}
-          <PortalCardWrapper portalName="Field Technician Portal">
+          {/* Field Technician Portal (Aggregated, with per-city mini-cards) */}
+          <PortalCardWrapper
+            portalName="Field Technician Portal"
+            className="md:col-span-2"
+          >
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-field-tech border border-neutral-200 dark:border-dark-300 overflow-hidden h-full cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-full"
-                    style={{ color: "#a36a0d" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-amber-500 dark:text-white"
+              <div className="flex flex-col sm:flex-row sm:items-stretch">
+                {/* Identity — clicking the card opens the aggregated Field Tech portal */}
+                <div className="flex flex-col justify-between p-6 sm:w-1/2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="portal-icon-bg p-2.5 rounded-full"
                       style={{ color: "#a36a0d" }}
-                    />
-                  </div>
-                  <div>
+                    >
+                      <MapPin
+                        className="h-5 w-5 text-amber-500 dark:text-white"
+                        style={{ color: "#a36a0d" }}
+                      />
+                    </div>
                     <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
                       Field Technician Portal
                     </CardTitle>
                   </div>
+                  <span className="portal-card-badge mt-4 inline-flex items-center self-start rounded-full px-2.5 py-1 text-xs font-medium text-white">
+                    Field Tech
+                  </span>
                 </div>
-                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  Field Tech
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
+
+                {/* Per-city mini-cards */}
+                <div className="grid grid-cols-2 gap-2 p-4 sm:w-1/2">
+                  {[
+                    { id: "north_alabama", label: "Decatur" },
+                    { id: "tennessee", label: "Nashville" },
+                    { id: "georgia", label: "Atlanta" },
+                    { id: "international", label: "International" },
+                  ].map((city) => (
+                    <button
+                      key={city.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCityCardClick(city.id);
+                      }}
+                      className="field-tech-city-button flex items-center justify-center rounded-full border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-white transition-colors hover:border-[#664610] hover:bg-[#664610] hover:text-white"
+                    >
+                      {city.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </Card>
           </PortalCardWrapper>
 

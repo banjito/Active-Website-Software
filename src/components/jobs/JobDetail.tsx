@@ -35,6 +35,7 @@ import {
   Eye,
   Bookmark,
   MessageCircle,
+  Flag,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { supabase, isConnectionError } from "../../lib/supabase";
@@ -458,6 +459,7 @@ export default function JobDetail() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [jobAssets, setJobAssets] = useState<Asset[]>([]);
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
+  const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
   const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<
     Record<string, ReportAuditInfo>
   >({});
@@ -2798,11 +2800,38 @@ export default function JobDetail() {
   const JOB_ASSETS_BATCH_SIZE = 500;
   const FOLDER_PAGE_TARGET = 500;
 
+  async function fetchOpenReportFlagCount(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      setOpenReportFlagCount(0);
+      return;
+    }
+
+    try {
+      let count = 0;
+      for (let i = 0; i < assetIds.length; i += JOB_ASSETS_BATCH_SIZE) {
+        const chunk = assetIds.slice(i, i + JOB_ASSETS_BATCH_SIZE);
+        const { count: chunkCount, error } = await supabase
+          .schema("common")
+          .from("report_flags")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "open")
+          .in("asset_id", chunk);
+
+        if (error) throw error;
+        count += chunkCount || 0;
+      }
+      setOpenReportFlagCount(count);
+    } catch (error) {
+      console.warn("[JobDetail] Failed to load report flag count:", error);
+      setOpenReportFlagCount(0);
+    }
+  }
+
   async function fetchJobAssets() {
     if (!id) return;
     try {
       // 1. Fetch ALL asset IDs in batches
-      let allAssetIds: string[] = [];
+      const allAssetIds: string[] = [];
       let offset = 0;
       while (true) {
         const { data: batch, error: batchError } = await supabase
@@ -2824,8 +2853,11 @@ export default function JobDetail() {
         setTotalAssetCount(0);
         setJobAssets([]);
         setFilteredJobAssets([]);
+        setOpenReportFlagCount(0);
         return;
       }
+
+      fetchOpenReportFlagCount(allAssetIds);
 
       // 2. Fetch asset details in batches
       const allAssetsData: any[] = [];
@@ -8030,12 +8062,10 @@ ${newBodyHtml}
                         className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
-                        <option value="north_alabama">Alabama Division</option>
-                        <option value="tennessee">Tennessee Division</option>
-                        <option value="georgia">Georgia Division</option>
-                        <option value="international">
-                          International Division
-                        </option>
+                        <option value="north_alabama">Decatur</option>
+                        <option value="tennessee">Nashville</option>
+                        <option value="georgia">Atlanta</option>
+                        <option value="international">International</option>
                         <option value="engineering">Engineering</option>
                         <option value="scavenger">Scavenger</option>
                       </select>
@@ -8525,8 +8555,19 @@ ${newBodyHtml}
                     } ${!isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                     disabled={!isAdmin}
                   >
-                    <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0 inline-block mr-1" />
-                    Report Approvals
+                    <span className="inline-flex items-center gap-1.5">
+                      <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                      Report Approvals
+                      {openReportFlagCount > 0 && (
+                        <span
+                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+                          title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+                          aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+                        >
+                          <Flag className="h-3 w-3" />
+                        </span>
+                      )}
+                    </span>
                   </button>
                   <button
                     onClick={() => handleTabChange("report-audit")}

@@ -14,6 +14,11 @@ import {
   ArrowLeft,
   Menu,
   X,
+  Users,
+  Contact,
+  Briefcase,
+  CalendarDays,
+  Wrench,
 } from "lucide-react";
 import { Button } from "./Button";
 import { ThemeToggle } from "../theme/theme-toggle";
@@ -49,7 +54,7 @@ function isReportFormPath(pathname: string): boolean {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
-  const { division } = useDivision();
+  const { division, setDivision } = useDivision();
   const location = useLocation();
   const navigate = useNavigate();
   const { isMobile, deviceType } = useMobileDetection();
@@ -394,17 +399,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (!divisionValue) return "AMP Portal";
     const divisionMap: { [key: string]: string } = {
       neta: "Global Portal",
-      north_alabama: "Alabama Division",
-      northAlabama: "Alabama Division",
-      tennessee: "Tennessee Division",
-      georgia: "Georgia Division",
-      international: "International Division",
+      north_alabama: "Decatur",
+      northAlabama: "Decatur",
+      tennessee: "Nashville",
+      georgia: "Atlanta",
+      international: "International",
       calibration: "Calibration Division",
       armadillo: "Armadillo Division",
       scavenger: "Scavenger Division",
       engineering: "Engineering Portal",
       field_tech: "Field Technician Portal",
-      Decatur: "Alabama Division (Decatur)",
+      Decatur: "Decatur",
     };
     return divisionMap[divisionValue] || "All Divisions";
   }
@@ -496,9 +501,51 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Global Portal: Jobs link goes to /all-jobs when here or when user was on Global Portal (useGlobalJobs)
     const isGlobalPortal = location.pathname === "/all-jobs" || useGlobalJobs;
 
+    // Field Technician Portal + its per-city views share a city switcher so users
+    // can drill from the combined view into a single city and back.
+    const fieldTechCities = [
+      { id: "field_tech", label: "Field Tech (All)", path: "/field-tech" },
+      { id: "north_alabama", label: "Decatur", path: "/north_alabama/jobs" },
+      { id: "tennessee", label: "Nashville", path: "/tennessee/jobs" },
+      { id: "georgia", label: "Atlanta", path: "/georgia/jobs" },
+      { id: "international", label: "International", path: "/international/jobs" },
+    ];
+    const showCitySwitcher = fieldTechCities.some((c) => c.id === division);
+
+    const handleCityClick = (cityId: string, path: string) => {
+      setDivision(cityId);
+      navigate(path);
+      setIsMobileSidebarOpen(false);
+    };
+
     // Default menu items for non-HR portals (no NETA dashboard link)
     return (
       <>
+        {showCitySwitcher && (
+          <div className="mb-2">
+            <p className="px-0 pb-2 text-xs font-semibold uppercase tracking-wide text-black/50 dark:text-dark-400">
+              Divisions
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {fieldTechCities.map((city) => (
+                <Button
+                  key={city.id}
+                  variant="ghost"
+                  onClick={() => handleCityClick(city.id, city.path)}
+                  className={`!h-auto w-full !justify-start !rounded-full border px-4 !py-1.5 text-left text-sm font-medium transition-colors ${
+                    division === city.id
+                      ? "border-transparent bg-black text-white hover:bg-black/90 dark:bg-dark-50 dark:text-dark-900"
+                      : "border-black/10 bg-transparent text-black hover:bg-black/5 dark:border-dark-300 dark:text-dark-900 dark:hover:bg-dark-50"
+                  }`}
+                >
+                  {city.label}
+                </Button>
+              ))}
+            </div>
+            <div className="my-3 border-b border-black/10 dark:border-dark-300" />
+          </div>
+        )}
+
         {/* Office Admin menu items */}
         {(isOfficeAdmin || isOfficePortal) && (
           <>
@@ -508,7 +555,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/office/vendors"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -520,7 +567,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/office"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -538,7 +585,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           <Button
             variant="ghost"
-            className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+            leftIcon={<Users className="h-4 w-4" />}
+            className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
               location.pathname.endsWith("/customers")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -553,7 +601,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           <Button
             variant="ghost"
-            className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+            leftIcon={<Contact className="h-4 w-4" />}
+            className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
               location.pathname.endsWith("/contacts")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -572,7 +621,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                leftIcon={<Briefcase className="h-4 w-4" />}
+                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/all-jobs" ||
                   location.pathname.endsWith("/jobs")
                     ? "bg-black/5 dark:bg-dark-50"
@@ -588,7 +638,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                leftIcon={<CalendarDays className="h-4 w-4" />}
+                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname.endsWith("/scheduling")
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -613,7 +664,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               >
                 <Button
                   variant="ghost"
-                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                  leftIcon={<Wrench className="h-4 w-4" />}
+                  className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                     location.pathname.endsWith("/field-equipment")
                       ? "bg-black/5 dark:bg-dark-50"
                       : ""
@@ -633,7 +685,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+              className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                 location.pathname.startsWith("/custom-forms")
                   ? "bg-black/5 dark:bg-dark-50"
                   : ""

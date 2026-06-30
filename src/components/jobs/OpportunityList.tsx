@@ -269,10 +269,10 @@ const DEFAULT_FILTER_SETTINGS = {
 };
 
 const DIVISION_FILTER_OPTIONS = [
-  { value: "north_alabama", label: "Alabama Division" },
-  { value: "tennessee", label: "Tennessee Division" },
-  { value: "georgia", label: "Georgia Division" },
-  { value: "international", label: "International Division" },
+  { value: "north_alabama", label: "Decatur" },
+  { value: "tennessee", label: "Nashville" },
+  { value: "georgia", label: "Atlanta" },
+  { value: "international", label: "International" },
   { value: "engineering", label: "Engineering" },
   { value: "scavenger", label: "Scavenger" },
 ];
@@ -3900,25 +3900,25 @@ export default function OpportunityList() {
                     value="north_alabama"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Alabama Division
+                    Decatur
                   </option>
                   <option
                     value="tennessee"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Tennessee Division
+                    Nashville
                   </option>
                   <option
                     value="georgia"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Georgia Division
+                    Atlanta
                   </option>
                   <option
                     value="international"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    International Division
+                    International
                   </option>
                   <option
                     value="engineering"
@@ -4418,25 +4418,25 @@ export default function OpportunityList() {
                     value="north_alabama"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Alabama Division
+                    Decatur
                   </option>
                   <option
                     value="tennessee"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Tennessee Division
+                    Nashville
                   </option>
                   <option
                     value="georgia"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Georgia Division
+                    Atlanta
                   </option>
                   <option
                     value="international"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    International Division
+                    International
                   </option>
                   <option
                     value="engineering"

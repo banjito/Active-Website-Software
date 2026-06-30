@@ -126,8 +126,8 @@ export function ReportApprovalWorkflow({
   });
 
   // Open customer flags (from the ampOS ACCESS portal), keyed by asset/report id.
-  // A flagged report keeps its approved/sent status but is surfaced in the
-  // Rejected/Issue tab with a yellow "Flagged" badge until staff resolve it.
+  // A flagged report keeps its approved/sent status but is surfaced with a red
+  // customer-flag alert until staff view and resolve it.
   interface OpenFlag {
     id: string;
     asset_id: string;
@@ -138,6 +138,10 @@ export function ReportApprovalWorkflow({
   const [flagsByAsset, setFlagsByAsset] = useState<Record<string, OpenFlag[]>>(
     {},
   );
+  const [selectedFlagReportId, setSelectedFlagReportId] = useState<
+    string | null
+  >(null);
+  const [flagAlertCounts, setFlagAlertCounts] = useState({ total: 0, sent: 0 });
 
   // Role-based access control
   const [userRole, setUserRole] = useState<string>("");
@@ -276,9 +280,52 @@ export function ReportApprovalWorkflow({
     }
   };
 
-  // Keep the badge map in sync so flagged reports show the yellow badge on any tab.
+  // Keep the badge map in sync so flagged reports show the red alert badge on any tab.
   const loadOpenFlags = async () => {
-    setFlagsByAsset(await fetchOpenFlagsMap());
+    const flagMap = await fetchOpenFlagsMap();
+    setFlagsByAsset(flagMap);
+
+    const flaggedAssetIds = Object.keys(flagMap);
+    const total = Object.values(flagMap).reduce(
+      (sum, flags) => sum + flags.length,
+      0,
+    );
+
+    if (flaggedAssetIds.length === 0) {
+      setFlagAlertCounts({ total: 0, sent: 0 });
+      return;
+    }
+
+    try {
+      let sent = 0;
+      const ASSET_STATUS_QUERY_BATCH = 500;
+      for (
+        let i = 0;
+        i < flaggedAssetIds.length;
+        i += ASSET_STATUS_QUERY_BATCH
+      ) {
+        const chunk = flaggedAssetIds.slice(i, i + ASSET_STATUS_QUERY_BATCH);
+        const { data, error } = await supabase
+          .schema("neta_ops")
+          .from("assets")
+          .select("id, status")
+          .in("id", chunk);
+
+        if (error) throw error;
+        (data || []).forEach((asset) => {
+          if (asset.status === "sent") {
+            sent += flagMap[asset.id]?.length || 0;
+          }
+        });
+      }
+      setFlagAlertCounts({ total, sent });
+    } catch (e) {
+      console.warn(
+        "[ReportApproval] Failed to load flagged report statuses:",
+        e,
+      );
+      setFlagAlertCounts({ total, sent: total });
+    }
   };
 
   // Map a neta_ops.assets row to the TechnicalReport shape used by the list
@@ -352,6 +399,7 @@ export function ReportApprovalWorkflow({
       });
       await loadOpenFlags();
       fetchReports(0);
+      onUpdate?.();
     } catch (e: any) {
       toast({
         title: "Error",
@@ -361,20 +409,45 @@ export function ReportApprovalWorkflow({
     }
   };
 
-  // Yellow "Flagged" badge (+ resolve control for reviewers) shown next to a
-  // report's status badge when it has open customer flags.
+  const openFlagCount = flagAlertCounts.total;
+  const sentOpenFlagCount = flagAlertCounts.sent;
+
+  const selectedFlagReport = selectedFlagReportId
+    ? reports.find((report) => report.id === selectedFlagReportId)
+    : null;
+  const selectedFlags = selectedFlagReportId
+    ? flagsByAsset[selectedFlagReportId] || []
+    : [];
+
+  const renderFlagAlertIndicator = (count: number, label: string) => {
+    if (count === 0) return null;
+    return (
+      <span
+        className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+        title={`${count} open customer flag${count === 1 ? "" : "s"} ${label}`}
+        aria-label={`${count} open customer flag${count === 1 ? "" : "s"} ${label}`}
+      >
+        <Flag className="h-3 w-3" />
+      </span>
+    );
+  };
+
+  // Customer flag badge (+ notes and resolve controls for reviewers) shown next
+  // to a report's status badge when it has open customer flags.
   const renderFlaggedBadge = (reportId: string) => {
     const flags = flagsByAsset[reportId] || [];
     if (flags.length === 0) return null;
     return (
       <span className="inline-flex items-center gap-1">
-        <span
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
-          title="Flagged by a customer in ampOS ACCESS"
+        <button
+          type="button"
+          onClick={() => setSelectedFlagReportId(reportId)}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-200 dark:hover:bg-yellow-900/70"
+          title="View customer flag notes"
         >
           <Flag className="w-3 h-3" />
-          Flagged{flags.length > 1 ? ` (${flags.length})` : ""}
-        </span>
+          Flagged
+        </button>
         {userPermissions.canReview && (
           <button
             type="button"
@@ -2052,6 +2125,45 @@ export function ReportApprovalWorkflow({
           description: "Report marked as approved successfully",
           variant: "success",
         });
+
+        // Unsending pulls the report back from the customer portal (ampOS
+        // ACCESS): delete the published PDF and clear published_pdf_path so the
+        // customer can no longer view or download it. Mirror of the on-send
+        // publish in handleMarkAsSent. Fire-and-forget so it doesn't block the
+        // status UI. Only meaningful for internal reports (file_url "report:").
+        const fileUrl = report.report_data?.file_url as string | undefined;
+        if (fileUrl?.startsWith("report:")) {
+          void (async () => {
+            try {
+              const { data, error } = await supabase.functions.invoke(
+                "unpublish-report-pdf",
+                { body: { assetId: report.id } },
+              );
+              if (error) throw error;
+              if ((data as { error?: string })?.error) {
+                throw new Error((data as { error?: string }).error);
+              }
+              toast({
+                title: "Removed from customer portal",
+                description:
+                  "The report is no longer viewable in ampOS ACCESS.",
+                variant: "success",
+              });
+            } catch (e) {
+              console.warn(
+                "Portal PDF unpublish failed:",
+                e instanceof Error ? e.message : e,
+              );
+              toast({
+                title: "Portal access not removed",
+                description:
+                  "Report was marked as approved, but its ampOS ACCESS viewing access could not be removed. Try unsending again.",
+                variant: "destructive",
+              });
+            }
+          })();
+        }
+
         fetchReports();
         fetchMetrics();
         if (onUpdate) {
@@ -2434,6 +2546,10 @@ export function ReportApprovalWorkflow({
           >
             <Send className="mr-2 h-4 w-4" />
             Sent
+            {renderFlagAlertIndicator(
+              sentOpenFlagCount,
+              "on sent reports needing attention",
+            )}
           </TabsTrigger>
           <TabsTrigger
             value="rejected"
@@ -2700,8 +2816,9 @@ export function ReportApprovalWorkflow({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewReport(report)}
+                                    leftIcon={<Eye className="h-4 w-4" />}
+                                    className="border-none"
                                   >
-                                    <Eye className="h-4 w-4 mr-2" />
                                     View
                                   </Button>
                                   {/* Show download/print button for PDF reports on approved tab */}
@@ -2784,18 +2901,16 @@ export function ReportApprovalWorkflow({
                                           handleMarkAsApproved(report);
                                         }
                                       }}
-                                      className={`${
+                                      className={`border-none ${
                                         report.status === "approved"
                                           ? "text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
-                                          : "text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
+                                          : "text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
                                       }`}
-                                      leftIcon={
-                                        <Download className="h-4 w-4 mr-2" />
-                                      }
+                                      leftIcon={<Send className="h-4 w-4" />}
                                     >
                                       {report.status === "approved"
                                         ? "Mark as Sent"
-                                        : "Mark as Approved"}
+                                        : "Unsend"}
                                     </Button>
                                   )}
                                 </div>
@@ -3108,6 +3223,70 @@ export function ReportApprovalWorkflow({
           </DialogContent>
         </Dialog>
       )}
+
+      <Dialog
+        open={!!selectedFlagReportId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedFlagReportId(null);
+        }}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="h-5 w-5 text-yellow-600" />
+              Customer Flag Notes
+            </DialogTitle>
+            <DialogDescription>
+              {selectedFlagReport?.title || "This report"} has been flagged by a
+              customer and needs staff attention.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {selectedFlags.length === 0 ? (
+              <p className="text-sm text-neutral-500">
+                No open flag notes were found for this report.
+              </p>
+            ) : (
+              selectedFlags.map((flag) => (
+                <div
+                  key={flag.id}
+                  className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm dark:border-yellow-900/60 dark:bg-yellow-950/30"
+                >
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+                    <span>Flagged by {flag.flagged_by || "customer"}</span>
+                    <span>{formatDate(flag.created_at)}</span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-neutral-900 dark:text-neutral-100">
+                    {flag.reason || "No note provided."}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSelectedFlagReportId(null)}
+            >
+              Close
+            </Button>
+            {userPermissions.canReview &&
+              selectedFlagReportId &&
+              selectedFlags.length > 0 && (
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    await handleResolveFlags(selectedFlagReportId);
+                    setSelectedFlagReportId(null);
+                  }}
+                >
+                  Resolve Flag{selectedFlags.length === 1 ? "" : "s"}
+                </Button>
+              )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

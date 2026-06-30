@@ -197,11 +197,13 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
   ).map((key) => ({
     key,
     label:
-      key === "north_alabama"
-        ? "Alabama"
-        : key === "international"
-          ? "International"
-          : key.charAt(0).toUpperCase() + key.slice(1),
+      ({
+        north_alabama: "Decatur",
+        tennessee: "Nashville",
+        georgia: "Atlanta",
+        international: "International",
+      } as Record<string, string>)[key] ??
+      key.charAt(0).toUpperCase() + key.slice(1),
     options: [
       { label: "Dashboard", path: `/${key}/dashboard` },
       { label: "Customers", path: `/${key}/customers` },

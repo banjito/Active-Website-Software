@@ -26,10 +26,10 @@ function formatDivisionForDisplay(division?: string | null): string {
   if (!division) return "All Divisions";
 
   const divisionMap: { [key: string]: string } = {
-    north_alabama: "Alabama Division",
-    tennessee: "Tennessee Division",
-    georgia: "Georgia Division",
-    international: "International Division",
+    north_alabama: "Decatur",
+    tennessee: "Nashville",
+    georgia: "Atlanta",
+    international: "International",
   };
 
   return divisionMap[division] || division;

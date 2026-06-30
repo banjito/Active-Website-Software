@@ -103,9 +103,9 @@ const statusOptions = [
 ];
 
 const divisionOptions = [
-  { value: "north_alabama", label: "Alabama" },
-  { value: "tennessee", label: "Tennessee" },
-  { value: "georgia", label: "Georgia" },
+  { value: "north_alabama", label: "Decatur" },
+  { value: "tennessee", label: "Nashville" },
+  { value: "georgia", label: "Atlanta" },
   { value: "international", label: "International" },
 ];
 

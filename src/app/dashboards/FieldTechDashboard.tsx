@@ -6,19 +6,19 @@ import {
   CheckCircle,
   ChevronRight,
   Clock,
+  Contact,
   FileText,
   Users2,
-  Building,
   Wrench,
 } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
 import { supabase, isConnectionError, isSchemaError } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { formatStatusLabel } from "@/utils/formatters";
+import CityComparisonTable from "@/components/dashboards/CityComparisonTable";
 
 interface CountsData {
   customers: number;
@@ -43,7 +43,7 @@ interface JobItem {
   };
 }
 
-const FIELD_TECH_DIVISIONS = [
+export const FIELD_TECH_DIVISIONS = [
   "north_alabama",
   "tennessee",
   "georgia",
@@ -250,9 +250,7 @@ export const FieldTechDashboard: React.FC = () => {
         </div>
       )}
 
-      <p className="mb-6 sm:mb-8 text-sm sm:text-base text-neutral-600 dark:text-dark-400">
-        Alabama, Tennessee, Georgia, and International
-      </p>
+      <CityComparisonTable />
 
       <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
@@ -281,7 +279,7 @@ export const FieldTechDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
                 <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                  <Building className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                  <Users2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
@@ -302,7 +300,7 @@ export const FieldTechDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
                 <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                  <Users2 className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
+                  <Contact className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium text-neutral-900 dark:text-white text-sm sm:text-base truncate">
@@ -355,14 +353,14 @@ export const FieldTechDashboard: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all customers
-                  <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
             <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <Building className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+              <Users2 className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
         </Card>
@@ -381,14 +379,14 @@ export const FieldTechDashboard: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all contacts
-                  <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
             <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <Users2 className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+              <Contact className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
         </Card>
@@ -407,9 +405,9 @@ export const FieldTechDashboard: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all documents
-                  <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
@@ -430,12 +428,12 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Active Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">
                 {counts.activeJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            <div className="rounded-full bg-blue-50 dark:bg-blue-500/15 p-2 flex-shrink-0">
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-300" />
             </div>
           </div>
         </Card>
@@ -446,12 +444,12 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Upcoming Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-amber-700 dark:text-amber-300">
                 {counts.upcomingJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <CalendarIcon className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            <div className="rounded-full bg-amber-50 dark:bg-amber-500/15 p-2 flex-shrink-0">
+              <CalendarIcon className="h-4 w-4 text-amber-600 dark:text-amber-300" />
             </div>
           </div>
         </Card>
@@ -462,12 +460,12 @@ export const FieldTechDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
                 Completed Jobs
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300">
                 {counts.completedJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <CheckCircle className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            <div className="rounded-full bg-green-50 dark:bg-green-500/15 p-2 flex-shrink-0">
+              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-300" />
             </div>
           </div>
         </Card>
@@ -476,90 +474,80 @@ export const FieldTechDashboard: React.FC = () => {
       <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
         Recent Activity
       </h2>
-      <Card>
-        <Tabs defaultValue="jobs" className="w-full">
-          <TabsList className="flex justify-between bg-transparent space-x-0 border-b overflow-x-auto">
-            <TabsTrigger
-              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
-              value="jobs"
-            >
-              <div className="flex flex-col items-center justify-center px-2">
-                <span className="truncate">Recent Jobs</span>
-                <span className="text-xs text-muted-foreground mt-1">
-                  {recentJobs.length} jobs
-                </span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
+      <Card className="p-4 sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="rounded-full bg-neutral-100 dark:bg-dark-200 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-dark-400">
+            {recentJobs.length} {recentJobs.length === 1 ? "job" : "jobs"}
+          </span>
+        </div>
 
-          <TabsContent value="jobs" className="p-3 sm:p-6">
-            <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {recentJobs.length === 0 ? (
-                <div className="text-center py-6 text-neutral-500 text-sm sm:text-base">
-                  No recent jobs found
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {recentJobs.map((job) => (
-                      <Link to={`/jobs/${job.id}`} key={job.id}>
-                        <Card className="h-full hover:shadow-md transition-shadow duration-200 cursor-pointer">
-                          <div className="p-3 sm:p-4 flex flex-col h-full">
-                            <div className="flex justify-between items-start gap-2">
-                              <div className="min-w-0 flex-1">
-                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">
-                                  {maskJobTitle(job.title)}
-                                </p>
-                                <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2">
-                                  {maskCustomerName(
-                                    job.customers?.company_name ||
-                                      job.customers?.name,
-                                  ) || "No customer"}
-                                </p>
-                              </div>
-                              <Badge
-                                className={`${getJobStatusColor(job.status)} px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0`}
-                              >
-                                {formatStatusLabel(job.status)}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-neutral-500 dark:text-white border-t border-neutral-100 dark:border-neutral-700 mt-2 sm:mt-3">
-                              <div className="flex items-center min-w-0 flex-1">
-                                <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
-                                <span className="truncate">
-                                  {job.job_number || "No number"}
-                                </span>
-                              </div>
-                              {job.due_date && (
-                                <div className="flex items-center flex-shrink-0 ml-2">
-                                  <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                                  <span>
-                                    {new Date(
-                                      job.due_date,
-                                    ).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-center mt-4 sm:mt-6">
-                    <Link to="/field-tech/jobs">
-                      <Button variant="outline" size="sm">
-                        View all jobs
-                        <ChevronRight className="ml-1 h-3 w-3" />
-                      </Button>
-                    </Link>
-                  </div>
-                </>
-              )}
+        <div className="grid grid-cols-1 gap-3 sm:gap-4">
+          {recentJobs.length === 0 ? (
+            <div className="text-center py-8 text-neutral-500 text-sm sm:text-base">
+              No recent jobs found
             </div>
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {recentJobs.map((job) => (
+                  <Link to={`/jobs/${job.id}`} key={job.id}>
+                    <Card className="h-full hover:shadow-md transition-shadow duration-200 cursor-pointer">
+                      <div className="p-3 sm:p-4 flex flex-col h-full">
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">
+                              {maskJobTitle(job.title)}
+                            </p>
+                            <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2">
+                              {maskCustomerName(
+                                job.customers?.company_name ||
+                                  job.customers?.name,
+                              ) || "No customer"}
+                            </p>
+                          </div>
+                          <Badge
+                            className={`${getJobStatusColor(job.status)} px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0`}
+                          >
+                            {formatStatusLabel(job.status)}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-neutral-500 dark:text-white border-t border-neutral-100 dark:border-neutral-700 mt-2 sm:mt-3">
+                          <div className="flex items-center min-w-0 flex-1">
+                            <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                            <span className="truncate">
+                              {job.job_number || "No number"}
+                            </span>
+                          </div>
+                          {job.due_date && (
+                            <div className="flex items-center flex-shrink-0 ml-2">
+                              <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                              <span>
+                                {new Date(job.due_date).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="flex justify-center mt-4 sm:mt-6">
+                <Link to="/field-tech/jobs">
+                  <Button
+                    className="border-none"
+                    variant="outline"
+                    size="sm"
+                    rightIcon={<ChevronRight className="h-3.5 w-3.5" />}
+                  >
+                    View all jobs
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
       </Card>
     </div>
   );

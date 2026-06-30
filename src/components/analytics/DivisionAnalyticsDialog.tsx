@@ -194,10 +194,10 @@ export function DivisionAnalyticsDialog({
 
   function formatDivisionName(division: string): string {
     const divisionMap: { [key: string]: string } = {
-      north_alabama: "Alabama Division",
-      tennessee: "Tennessee Division",
-      georgia: "Georgia Division",
-      international: "International Division",
+      north_alabama: "Decatur",
+      tennessee: "Nashville",
+      georgia: "Atlanta",
+      international: "International",
       engineering: "Engineering",
     };
     return divisionMap[division] || division;

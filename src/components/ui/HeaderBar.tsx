@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Bookmark,
   ClipboardCheck,
+  Flag,
   ChevronLeft,
   ShieldCogCorner,
   Moon,
@@ -152,6 +153,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const [isShortcutMenuOpen, setIsShortcutMenuOpen] = useState(false);
   const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false);
   const [reviewJobCount, setReviewJobCount] = useState(0);
+  const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
   const [hiddenShortcutCount, setHiddenShortcutCount] = useState(0);
   const shortcutsBarRef = useRef<HTMLDivElement>(null);
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
@@ -286,8 +288,30 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   };
 
+  const loadOpenReportFlagCount = async () => {
+    if (!user || !canAccessReportApprovals(user)) {
+      setOpenReportFlagCount(0);
+      return;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .schema("common")
+        .from("report_flags")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "open");
+
+      if (error) throw error;
+      setOpenReportFlagCount(count || 0);
+    } catch (error) {
+      console.warn("[HeaderBar] Failed to load open report flag count:", error);
+      setOpenReportFlagCount(0);
+    }
+  };
+
   useEffect(() => {
     void loadReviewJobCount();
+    void loadOpenReportFlagCount();
     if (!canAccessReportApprovals(user)) return;
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
@@ -303,6 +327,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         ].includes(newStatus)
       ) {
         void loadReviewJobCount();
+        void loadOpenReportFlagCount();
       }
     };
     window.addEventListener(
@@ -321,6 +346,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   useEffect(() => {
     if (!isReviewMenuOpen) {
       void loadReviewJobCount();
+      void loadOpenReportFlagCount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReviewMenuOpen]);
@@ -694,9 +720,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               window.clearTimeout(rtDebounceRef.current);
             rtDebounceRef.current = window.setTimeout(() => {
               void loadNotificationSummary();
+              void loadOpenReportFlagCount();
               rtDebounceRef.current = null;
             }, 250);
           }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "common", table: "report_flags" },
+        () => {
+          if (rtDebounceRef.current) window.clearTimeout(rtDebounceRef.current);
+          rtDebounceRef.current = window.setTimeout(() => {
+            void loadOpenReportFlagCount();
+            rtDebounceRef.current = null;
+          }, 250);
         },
       )
       .subscribe();
@@ -889,11 +927,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       {Math.min(99, reviewJobCount)}
                     </span>
                   )}
+                  {openReportFlagCount > 0 && (
+                    <span
+                      className="absolute top-[15px] -right-1 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-yellow-400 text-yellow-950 shadow-sm ring-2 ring-white dark:ring-dark-150"
+                      title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+                      aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+                    >
+                      <Flag className="h-3 w-3" />
+                    </span>
+                  )}
                 </button>
 
                 {isReviewMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 z-50">
                     <ReviewShortcutsDropdown
+                      openFlagCount={openReportFlagCount}
                       onNavigate={(url) => {
                         setIsReviewMenuOpen(false);
                         handleHeaderShortcutClick(url);

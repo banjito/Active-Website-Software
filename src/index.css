@@ -149,6 +149,10 @@
         --portal-card-color: #f26722;
     }
 
+    .portal-click-card.portal-field-tech {
+        --portal-card-color: #a36a0d;
+    }
+
     .portal-card-badge {
         background-color: var(--portal-card-color) !important;
     }
@@ -233,6 +237,22 @@
 
     .portal-click-card.portal-neta:hover {
         background-color: #f26722;
+    }
+
+    .portal-click-card.portal-field-tech:hover {
+        background-color: #a36a0d;
+    }
+
+    .portal-click-card:hover .field-tech-city-button {
+        color: var(--portal-card-color) !important;
+        background-color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.55) !important;
+    }
+
+    .portal-click-card:hover .field-tech-city-button:hover {
+        color: #ffffff !important;
+        background-color: #664610 !important;
+        border-color: #664610 !important;
     }
 }
 

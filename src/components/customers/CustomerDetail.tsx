@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
@@ -16,6 +16,10 @@ import {
   Trash2,
   Edit,
   Feather,
+  Upload,
+  Image as ImageIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
@@ -28,8 +32,11 @@ import {
   getCustomerById,
   updateCustomer,
   getCategories,
+  uploadCustomerLogo,
+  getCustomerIdsAZ,
   DIVISION_OPTIONS,
 } from "../../services/customerService";
+import { extractLogoColors, normalizeHexColor } from "@/lib/brandColors";
 import CustomerDocumentManagement from "./CustomerDocumentManagement";
 import CustomerHealthMonitoring from "./CustomerHealth";
 import { toast } from "../../components/ui/toast";
@@ -93,9 +100,11 @@ const initialContactFormData: ContactFormData = {
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customerIdsAZ, setCustomerIdsAZ] = useState<string[]>([]);
   const [categories, setCategories] = useState<CustomerCategory[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -122,6 +131,8 @@ export default function CustomerDetail() {
     address: string;
     status: string;
     divisions: string[];
+    logo_url: string;
+    brand_primary: string;
   }>({
     company_name: "",
     email: "",
@@ -129,7 +140,14 @@ export default function CustomerDetail() {
     address: "",
     status: "active",
     divisions: [],
+    logo_url: "",
+    brand_primary: "",
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [logoPalette, setLogoPalette] = useState<string[]>([]);
+  const [extractingColors, setExtractingColors] = useState(false);
+  const [logoDragOver, setLogoDragOver] = useState(false);
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
   const [isSavingDivisions, setIsSavingDivisions] = useState(false);
   const [portalInviteOpen, setPortalInviteOpen] = useState(false);
@@ -177,6 +195,14 @@ export default function CustomerDetail() {
       fetchCustomerData();
     }
   }, [user, id]);
+
+  // Load the A-Z customer order once, for prev/next navigation.
+  useEffect(() => {
+    if (!user) return;
+    getCustomerIdsAZ()
+      .then(setCustomerIdsAZ)
+      .catch((e) => console.error("Failed to load customer order:", e));
+  }, [user]);
 
   useEffect(() => {
     if (
@@ -335,7 +361,16 @@ export default function CustomerDetail() {
         address: customerData.address || "",
         status: customerData.status || "active",
         divisions: customerData.divisions || [],
+        logo_url: customerData.logo_url || "",
+        brand_primary: customerData.brand_primary || "",
       });
+      setLogoFile(null);
+      setLogoPreviewUrl(null);
+      setLogoPalette(
+        customerData.brand_primary
+          ? [normalizeHexColor(customerData.brand_primary) || ""]
+          : [],
+      );
 
       // Set the selected category from the customer data
       setSelectedCategoryId(customerData.category_id || null);
@@ -377,15 +412,68 @@ export default function CustomerDetail() {
     }
   }
 
+  async function processLogoFile(file: File) {
+    const lower = file.name.toLowerCase();
+    const ok =
+      file.type === "image/png" ||
+      file.type === "image/svg+xml" ||
+      lower.endsWith(".png") ||
+      lower.endsWith(".svg");
+    if (!ok) {
+      toast({
+        title: "Unsupported file",
+        description: "Logo must be a PNG or SVG.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Logo must be 4 MB or smaller.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (logoPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(logoPreviewUrl);
+    setLogoFile(file);
+    setLogoPreviewUrl(URL.createObjectURL(file));
+
+    setExtractingColors(true);
+    try {
+      const colors = await extractLogoColors(file);
+      setLogoPalette(colors);
+      if (colors[0])
+        setCustomerEditForm((prev) => ({ ...prev, brand_primary: colors[0] }));
+    } catch {
+      setLogoPalette([]);
+    } finally {
+      setExtractingColors(false);
+    }
+  }
+
   async function handleSaveCustomerEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!customer) return;
     try {
       setIsSavingCustomer(true);
-      const { divisions, ...rest } = customerEditForm;
+      const { divisions, brand_primary, ...rest } = customerEditForm;
+
+      const normalizedColor = brand_primary.trim().toUpperCase();
+      if (normalizedColor && !/^#[0-9A-F]{6}$/.test(normalizedColor)) {
+        throw new Error("Brand color must be a hex value like #F26722.");
+      }
+
+      let nextLogoUrl: string | null = customerEditForm.logo_url.trim() || null;
+      if (logoFile) {
+        nextLogoUrl = await uploadCustomerLogo(logoFile, customer.id);
+      }
+
       await updateCustomer(customer.id, {
         ...rest,
         divisions: divisions.length > 0 ? divisions : (null as any),
+        logo_url: nextLogoUrl,
+        brand_primary: normalizedColor || null,
       });
       setIsCustomerEditOpen(false);
       await fetchCustomerData();
@@ -398,7 +486,8 @@ export default function CustomerDetail() {
       console.error("Error updating customer:", error);
       toast({
         title: "Error",
-        description: "Failed to update customer",
+        description:
+          error instanceof Error ? error.message : "Failed to update customer",
         variant: "destructive",
       });
     } finally {
@@ -542,6 +631,31 @@ export default function CustomerDetail() {
         }
       }
 
+      // Clear rows that reference this contact, or the delete hits a foreign-key
+      // conflict (409). Logged interaction notes are tied to the contact, so they
+      // go with it; customer_interactions belong to the customer, so just unlink.
+      const { error: notesError } = await supabase
+        .schema("common")
+        .from("contact_notes")
+        .delete()
+        .eq("contact_id", contactToDelete.id);
+      if (notesError) throw notesError;
+
+      const { error: unlinkError } = await supabase
+        .schema("common")
+        .from("customer_interactions")
+        .update({ associated_contact_id: null })
+        .eq("associated_contact_id", contactToDelete.id);
+      if (unlinkError) throw unlinkError;
+
+      // Opportunities belong to the customer, not just the contact — unlink them.
+      const { error: oppError } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ contact_id: null })
+        .eq("contact_id", contactToDelete.id);
+      if (oppError) throw oppError;
+
       const { error } = await supabase
         .schema("common")
         .from("contacts")
@@ -569,9 +683,14 @@ export default function CustomerDetail() {
       }
     } catch (error) {
       console.error("Error deleting contact:", error);
+      const detail =
+        (error as { message?: string; details?: string })?.details ||
+        (error as { message?: string })?.message;
       toast({
         title: "Error",
-        description: "Failed to remove contact",
+        description: detail
+          ? `Failed to remove contact: ${detail}`
+          : "Failed to remove contact",
         variant: "destructive",
       });
     } finally {
@@ -752,23 +871,62 @@ export default function CustomerDetail() {
     }
   }
 
+  const currentIndex = id ? customerIdsAZ.indexOf(id) : -1;
+  const prevId = currentIndex > 0 ? customerIdsAZ[currentIndex - 1] : null;
+  const nextId =
+    currentIndex >= 0 && currentIndex < customerIdsAZ.length - 1
+      ? customerIdsAZ[currentIndex + 1]
+      : null;
+  const goToCustomer = (targetId: string) =>
+    navigate(location.pathname.replace(/[^/]+$/, targetId));
+
   return (
     <>
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() =>
+                navigate(location.pathname.replace(/\/[^/]+$/, ""))
+              }
               className="inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700 mr-4"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
             </button>
+            <div className="mr-3 flex items-center">
+              <button
+                onClick={() => prevId && goToCustomer(prevId)}
+                disabled={!prevId}
+                title="Previous customer (A-Z)"
+                aria-label="Previous customer"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => nextId && goToCustomer(nextId)}
+                disabled={!nextId}
+                title="Next customer (A-Z)"
+                aria-label="Next customer"
+                className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
             <div className="flex items-center">
               <Building2 className="h-8 w-8 text-[#f26722]" />
               <h1 className="ml-3 text-2xl font-semibold text-neutral-900 dark:text-white">
                 {maskCustomerName(customer.company_name) || "No Company Name"}
               </h1>
+              {customer.logo_url && (
+                <div
+                  className="ml-4 h-10 w-28 shrink-0 bg-contain bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url("${customer.logo_url}")` }}
+                  role="img"
+                  aria-label="Company logo"
+                />
+              )}
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -2556,10 +2714,154 @@ export default function CustomerDetail() {
                   ))}
                 </div>
               </div>
+              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Portal Branding
+                </label>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Shows on this customer's portal at login. They can still change
+                  it on their end.
+                </p>
+
+                <div className="mt-3 flex items-start gap-3">
+                  <label
+                    htmlFor="customer_logo"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setLogoDragOver(true);
+                    }}
+                    onDragLeave={() => setLogoDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setLogoDragOver(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) void processLogoFile(file);
+                    }}
+                    title="Click or drop a PNG/SVG here"
+                    className={`flex h-14 w-32 shrink-0 cursor-pointer items-center justify-center rounded border bg-white dark:bg-dark-200 bg-contain bg-center bg-no-repeat p-2 transition-colors ${
+                      logoDragOver
+                        ? "border-[#f26722] ring-2 ring-[#f26722]/40"
+                        : "border-neutral-300 dark:border-neutral-600 hover:border-[#f26722]/50"
+                    }`}
+                    style={
+                      logoPreviewUrl || customerEditForm.logo_url
+                        ? {
+                            backgroundImage: `url("${logoPreviewUrl || customerEditForm.logo_url}")`,
+                            backgroundOrigin: "content-box",
+                          }
+                        : undefined
+                    }
+                  >
+                    {!logoPreviewUrl && !customerEditForm.logo_url && (
+                      <ImageIcon className="h-5 w-5 text-neutral-400" />
+                    )}
+                  </label>
+                  <div className="min-w-0 flex-1">
+                    <label
+                      htmlFor="customer_logo"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-[#f26722]/50 bg-[#f26722]/5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {logoFile ? logoFile.name : "Upload logo"}
+                      <input
+                        id="customer_logo"
+                        type="file"
+                        accept=".png,.svg,image/png,image/svg+xml"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.currentTarget.value = "";
+                          if (file) void processLogoFile(file);
+                        }}
+                      />
+                    </label>
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                      PNG or SVG, up to 4 MB.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label
+                    htmlFor="brand_primary"
+                    className="block text-sm font-medium text-neutral-700 dark:text-white"
+                  >
+                    Brand Color
+                  </label>
+                  {extractingColors && (
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                      Finding colors from the logo…
+                    </p>
+                  )}
+                  {logoPalette.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {logoPalette.map((color) => {
+                        const selected =
+                          normalizeHexColor(customerEditForm.brand_primary) ===
+                          color;
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() =>
+                              setCustomerEditForm((prev) => ({
+                                ...prev,
+                                brand_primary: color,
+                              }))
+                            }
+                            title={color}
+                            className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                              selected
+                                ? "border-[#f26722] ring-2 ring-[#f26722]/40 text-neutral-900 dark:text-white"
+                                : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-[#f26722]/50"
+                            }`}
+                          >
+                            <span
+                              className="h-5 w-5 rounded border border-black/10"
+                              style={{ backgroundColor: color }}
+                            />
+                            {color}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="mt-1 flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={
+                        /^#[0-9a-fA-F]{6}$/.test(customerEditForm.brand_primary)
+                          ? customerEditForm.brand_primary
+                          : "#f26722"
+                      }
+                      onChange={(e) =>
+                        setCustomerEditForm((prev) => ({
+                          ...prev,
+                          brand_primary: e.target.value,
+                        }))
+                      }
+                      className="h-9 w-12 rounded border border-neutral-300 dark:border-neutral-600 p-1"
+                    />
+                    <input
+                      id="brand_primary"
+                      value={customerEditForm.brand_primary}
+                      onChange={(e) =>
+                        setCustomerEditForm((prev) => ({
+                          ...prev,
+                          brand_primary: e.target.value,
+                        }))
+                      }
+                      placeholder="#F26722"
+                      className="flex-1 p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
-                  disabled={isSavingCustomer}
+                  disabled={isSavingCustomer || extractingColors}
                   className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50"
                 >
                   {isSavingCustomer ? "Saving..." : "Save Changes"}

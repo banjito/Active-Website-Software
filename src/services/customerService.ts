@@ -1,5 +1,15 @@
 import { supabase } from '../lib/supabase';
 
+/**
+ * Wrap a value for safe use inside a PostgREST `.or()` / `.and()` filter string.
+ * Reserved characters (commas, parentheses, dots, etc.) would otherwise be
+ * parsed as filter syntax, so the value is double-quoted with backslashes and
+ * inner quotes escaped. This lets users search for terms like "Smith, Inc.".
+ */
+function escapeOrFilterValue(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
 export interface CategoryRule {
   id?: string;
   field: string;
@@ -29,6 +39,9 @@ export interface Customer {
   divisions?: string[];
   created_at: string;
   user_id?: string;
+  // Customer-portal branding (shared with the portal via common.customers).
+  logo_url?: string | null;
+  brand_primary?: string | null;
 }
 
 export const DIVISION_OPTIONS = [
@@ -489,7 +502,7 @@ export async function getCustomers(
     // Apply search (name/company/email) - substring search
     const search = options?.search?.trim();
     if (search) {
-      const like = `%${search}%`;
+      const like = escapeOrFilterValue(`%${search}%`);
       countQuery = countQuery.or(`name.ilike.${like},company_name.ilike.${like},email.ilike.${like}`);
     }
 
@@ -526,7 +539,7 @@ export async function getCustomers(
 
     // Apply search (name/company/email) - substring search
     if (search) {
-      const like = `%${search}%`;
+      const like = escapeOrFilterValue(`%${search}%`);
       query = query.or(`name.ilike.${like},company_name.ilike.${like},email.ilike.${like}`);
     }
 
@@ -560,6 +573,21 @@ export async function getCustomers(
     console.error("Unexpected error in getCustomers:", err);
     throw err;
   }
+}
+
+/**
+ * All customer ids ordered by company name (A-Z), for prev/next navigation on the
+ * detail page. Lightweight: only pulls ids + the name used for sorting.
+ */
+export async function getCustomerIdsAZ(): Promise<string[]> {
+  const { data, error } = await supabase
+    .schema('common')
+    .from('customers')
+    .select('id, company_name')
+    .order('company_name', { ascending: true });
+
+  if (error) throw error;
+  return (data || []).map((row: { id: string }) => row.id);
 }
 
 export async function getCustomerById(id: string) {
@@ -631,6 +659,64 @@ export async function updateCustomer(id: string, customer: Partial<Customer>) {
   return data;
 }
 
+/**
+ * Upload a PNG/SVG company logo for a customer to the shared customer-brand-assets
+ * bucket and return its public URL. Employees can write here via the
+ * "Employees manage customer brand assets" storage policy. The path is keyed by
+ * customer id, the same convention the customer portal uses, so the portal reads
+ * back exactly what ampOS uploads (and vice-versa).
+ */
+export async function uploadCustomerLogo(file: File, customerId: string): Promise<string> {
+  const name = file.name.toLowerCase();
+  const extension =
+    file.type === 'image/png' || name.endsWith('.png')
+      ? 'png'
+      : file.type === 'image/svg+xml' || name.endsWith('.svg')
+        ? 'svg'
+        : null;
+  if (!extension) throw new Error('Logo must be a PNG or SVG file.');
+
+  const rand =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2, 10);
+  const path = `${customerId}/company-logo-${Date.now()}-${rand}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from('customer-brand-assets')
+    .upload(path, file, {
+      cacheControl: '3600',
+      contentType: file.type || (extension === 'svg' ? 'image/svg+xml' : 'image/png'),
+      upsert: true,
+    });
+  if (error) throw error;
+
+  const { data } = supabase.storage.from('customer-brand-assets').getPublicUrl(path);
+  if (!data.publicUrl) throw new Error('Logo uploaded, but no public URL was returned.');
+  return data.publicUrl;
+}
+
+/**
+ * Merge duplicate customers into one. The primary record is kept; all the
+ * duplicates' related records (contacts, jobs, opportunities, interactions,
+ * notes, documents, ...) are repointed to it and the duplicate rows are deleted.
+ * Runs server-side in a single transaction via common.merge_customers.
+ */
+export async function mergeCustomers(
+  primaryId: string,
+  duplicateIds: string[],
+  companyName?: string | null,
+) {
+  const { error } = await supabase
+    .schema('common')
+    .rpc('merge_customers', {
+      p_primary_id: primaryId,
+      p_duplicate_ids: duplicateIds,
+      p_company_name: companyName?.trim() || null,
+    });
+  if (error) throw error;
+}
+
 export async function deleteCustomer(id: string) {
   const { error } = await supabase
     .schema('common')
@@ -670,7 +756,8 @@ export async function getCustomerInteractions(customerId: string, filters?: {
     }
     
     if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      const like = escapeOrFilterValue(`%${filters.search}%`);
+      query = query.or(`title.ilike.${like},description.ilike.${like}`);
     }
     
     if (filters.tags && filters.tags.length > 0) {

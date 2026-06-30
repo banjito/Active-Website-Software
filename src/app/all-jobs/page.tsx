@@ -21,9 +21,9 @@ const UNIFIED_DIVISIONS = [
 ] as const;
 
 const DIVISION_LABELS: Record<string, string> = {
-  north_alabama: "Alabama",
-  tennessee: "Tennessee",
-  georgia: "Georgia",
+  north_alabama: "Decatur",
+  tennessee: "Nashville",
+  georgia: "Atlanta",
   international: "International",
   engineering: "Engineering",
   scavenger: "Scavenger",

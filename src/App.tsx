@@ -153,10 +153,6 @@ import { QualityMetrics } from "./components/lab/QualityMetrics";
 import { LabDashboard } from "./components/lab/LabDashboard";
 
 // Import division-specific dashboards
-import NorthAlabamaDashboard from "./app/dashboards/NorthAlabamaDashboard";
-import TennesseeDashboard from "./app/dashboards/TennesseeDashboard";
-import GeorgiaDashboard from "./app/dashboards/GeorgiaDashboard";
-import InternationalDashboard from "./app/dashboards/InternationalDashboard";
 import CalibrationDashboard from "./app/dashboards/CalibrationDashboard";
 import ScavengerDashboard from "./app/dashboards/ScavengerDashboard";
 import FieldTechDashboard from "./app/dashboards/FieldTechDashboard";
@@ -1752,45 +1748,22 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {/* Per-region dashboards retired — consolidated into the Field Technician Portal. Redirect old bookmarks. */}
                   <Route
                     path="/north_alabama/dashboard"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <NorthAlabamaDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
+                    element={<Navigate to="/field-tech" replace />}
                   />
                   <Route
                     path="/tennessee/dashboard"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <TennesseeDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
+                    element={<Navigate to="/field-tech" replace />}
                   />
                   <Route
                     path="/georgia/dashboard"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <GeorgiaDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
+                    element={<Navigate to="/field-tech" replace />}
                   />
                   <Route
                     path="/international/dashboard"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <InternationalDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
+                    element={<Navigate to="/field-tech" replace />}
                   />
                   <Route
                     path="/engineering/dashboard"

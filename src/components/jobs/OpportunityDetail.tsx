@@ -4311,25 +4311,25 @@ export default function OpportunityDetail() {
                         value="north_alabama"
                         className="dark:bg-dark-150 dark:text-white"
                       >
-                        Alabama Division
+                        Decatur
                       </option>
                       <option
                         value="tennessee"
                         className="dark:bg-dark-150 dark:text-white"
                       >
-                        Tennessee Division
+                        Nashville
                       </option>
                       <option
                         value="georgia"
                         className="dark:bg-dark-150 dark:text-white"
                       >
-                        Georgia Division
+                        Atlanta
                       </option>
                       <option
                         value="international"
                         className="dark:bg-dark-150 dark:text-white"
                       >
-                        International Division
+                        International
                       </option>
                       <option
                         value="engineering"
@@ -6228,10 +6228,10 @@ export default function OpportunityDetail() {
 
 function formatDivisionName(division: string): string {
   const divisionMap: { [key: string]: string } = {
-    north_alabama: "Alabama Division",
-    tennessee: "Tennessee Division",
-    georgia: "Georgia Division",
-    international: "International Division",
+    north_alabama: "Decatur",
+    tennessee: "Nashville",
+    georgia: "Atlanta",
+    international: "International",
     engineering: "Engineering",
     scavenger: "Scavenger",
   };

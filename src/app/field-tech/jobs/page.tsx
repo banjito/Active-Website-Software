@@ -517,7 +517,7 @@ export default function FieldTechJobsPage() {
             All Field Tech Jobs
           </h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-600 dark:text-dark-400">
-            Aggregated from Alabama, Tennessee, Georgia, and International
+            Aggregated from Decatur, Nashville, Atlanta, and International
           </p>
         </div>
         {/* Only show T&M button to Admin role or superusers */}
@@ -965,25 +965,25 @@ export default function FieldTechJobsPage() {
                     value="north_alabama"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Alabama Division
+                    Decatur
                   </option>
                   <option
                     value="tennessee"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Tennessee Division
+                    Nashville
                   </option>
                   <option
                     value="georgia"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    Georgia Division
+                    Atlanta
                   </option>
                   <option
                     value="international"
                     className="dark:bg-dark-150 dark:text-white"
                   >
-                    International Division
+                    International
                   </option>
                 </select>
               </div>

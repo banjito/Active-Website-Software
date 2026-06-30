@@ -11,6 +11,7 @@ import {
   Users,
   Phone,
   Mail,
+  Blend,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -27,6 +28,7 @@ import {
   updateCustomer,
   deleteCustomer,
   getCategories,
+  mergeCustomers,
   DIVISION_OPTIONS,
 } from "../../services/customerService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -171,6 +173,13 @@ export default function CustomerList() {
     useState<Customer | null>(null);
   const [contactsPopupData, setContactsPopupData] = useState<ContactInfo[]>([]);
   const [contactsPopupLoading, setContactsPopupLoading] = useState(false);
+  const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(
+    new Set(),
+  );
+  const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [mergePrimaryId, setMergePrimaryId] = useState<string | null>(null);
+  const [mergeName, setMergeName] = useState("");
+  const [isMerging, setIsMerging] = useState(false);
 
   const pageSize = 50;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -320,6 +329,9 @@ export default function CustomerList() {
 
   async function fetchData() {
     setLoadError(null);
+    // Reset merge selection when the visible list changes, so a merge only ever
+    // acts on customers currently shown.
+    setSelectedForMerge(new Set());
     if (debouncedSearch || startsWithFilter) {
       setSearchLoading(true);
     } else {
@@ -463,6 +475,57 @@ export default function CustomerList() {
     setCustomerToDelete(customerId);
     setDeleteConfirmOpen(true);
   }
+
+  function toggleMergeSelection(customerId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    setSelectedForMerge((prev) => {
+      const next = new Set(prev);
+      if (next.has(customerId)) next.delete(customerId);
+      else next.add(customerId);
+      return next;
+    });
+  }
+
+  function openMergeModal() {
+    const ids = Array.from(selectedForMerge);
+    if (ids.length < 2) return;
+    setMergePrimaryId(ids[0]);
+    const first = customers.find((c) => c.id === ids[0]);
+    setMergeName(first?.company_name || "");
+    setMergeModalOpen(true);
+  }
+
+  function selectMergePrimary(customerId: string) {
+    setMergePrimaryId(customerId);
+    const c = customers.find((x) => x.id === customerId);
+    setMergeName(c?.company_name || "");
+  }
+
+  async function handleConfirmMerge() {
+    if (!mergePrimaryId || isMerging) return;
+    const duplicateIds = Array.from(selectedForMerge).filter(
+      (id) => id !== mergePrimaryId,
+    );
+    if (duplicateIds.length === 0) return;
+    try {
+      setIsMerging(true);
+      await mergeCustomers(mergePrimaryId, duplicateIds, mergeName);
+      setMergeModalOpen(false);
+      setSelectedForMerge(new Set());
+      setMergePrimaryId(null);
+      await fetchData();
+    } catch (err: any) {
+      console.error("Error merging customers:", err);
+      alert(
+        `Failed to merge customers: ${err?.details || err?.message || "Unknown error"}`,
+      );
+    } finally {
+      setIsMerging(false);
+    }
+  }
+
+  // Customers currently selected, resolved to the loaded customer objects.
+  const selectedCustomers = customers.filter((c) => selectedForMerge.has(c.id));
 
   function handleEdit(customer: Customer, e: React.MouseEvent) {
     e.stopPropagation();
@@ -830,6 +893,29 @@ export default function CustomerList() {
             Sorted A-Z by default
           </span>
         )}
+
+        {/* Merge action — only appears once 2+ customers are selected, in this
+            always-present row so it never shifts the list down */}
+        {selectedForMerge.size >= 2 && (
+          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-neutral-200 dark:border-dark-300">
+            <button
+              type="button"
+              onClick={openMergeModal}
+              title="Merge selected customers"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-[#f26722] text-white hover:bg-[#f26722]/90"
+            >
+              <Blend className="h-4 w-4" />
+              Merge customers ({selectedForMerge.size})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedForMerge(new Set())}
+              className="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-300"
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Active Filters */}
@@ -936,6 +1022,14 @@ export default function CustomerList() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedForMerge.has(customer.id)}
+                      onClick={(e) => toggleMergeSelection(customer.id, e)}
+                      onChange={() => {}}
+                      title="Select to merge"
+                      className="mr-4 h-4 w-4 shrink-0 accent-[#f26722] cursor-pointer"
+                    />
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                         <span className="text-neutral-500 dark:text-white text-lg font-medium">
@@ -1384,6 +1478,102 @@ export default function CustomerList() {
                 className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 Delete
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Merge Customers Dialog */}
+      <Dialog
+        open={mergeModalOpen}
+        onClose={() => !isMerging && setMergeModalOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-lg rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
+            <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
+              Merge {selectedForMerge.size} customers
+            </Dialog.Title>
+            <p className="text-sm text-neutral-500 dark:text-neutral-300">
+              Choose the customer to keep. The others' contacts, jobs,
+              opportunities, interactions, and documents move onto it, then the
+              duplicates are deleted. This cannot be undone.
+            </p>
+
+            <div className="mt-4">
+              <label
+                htmlFor="merge-name"
+                className="block text-sm font-medium text-neutral-700 dark:text-white"
+              >
+                Merged company name
+              </label>
+              <input
+                id="merge-name"
+                value={mergeName}
+                onChange={(e) => setMergeName(e.target.value)}
+                placeholder="Company name to keep"
+                className="mt-1 block w-full rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:bg-dark-150 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              />
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Defaults to the kept customer's name. Edit it to use any name.
+              </p>
+            </div>
+
+            <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
+              {selectedCustomers.map((c) => (
+                <label
+                  key={c.id}
+                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors ${
+                    mergePrimaryId === c.id
+                      ? "border-[#f26722] bg-[#f26722]/5"
+                      : "border-neutral-200 dark:border-neutral-600 hover:border-[#f26722]/50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="merge-primary"
+                    checked={mergePrimaryId === c.id}
+                    onChange={() => selectMergePrimary(c.id)}
+                    className="mt-0.5 h-4 w-4 accent-[#f26722]"
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-neutral-900 dark:text-white">
+                      {maskCustomerName(c.company_name) || "No Company Name"}
+                      {mergePrimaryId === c.id && (
+                        <span className="ml-2 rounded-full bg-[#f26722] px-2 py-0.5 text-xs font-medium text-white">
+                          Keep
+                        </span>
+                      )}
+                    </div>
+                    <div className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {[c.email, c.phone, c.address]
+                        .filter(Boolean)
+                        .join(" · ") || "No contact details"}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setMergeModalOpen(false)}
+                disabled={isMerging}
+                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmMerge}
+                disabled={isMerging || !mergePrimaryId}
+                className="inline-flex items-center gap-1.5 justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 disabled:opacity-50"
+              >
+                <Blend className="h-4 w-4" />
+                {isMerging ? "Merging..." : "Merge"}
               </button>
             </div>
           </Dialog.Panel>

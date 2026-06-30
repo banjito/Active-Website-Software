@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CheckCircle,
@@ -47,6 +48,7 @@ export function JobNotifications({
   showTray = true,
 }: JobNotificationsProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<JobNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -344,6 +346,21 @@ export function JobNotifications({
           ))
         )}
       </div>
+
+      {!jobId && (
+        <div className="border-t border-neutral-200 p-3 text-center dark:border-neutral-700">
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => {
+              setShowNotifications(false);
+              navigate("/notifications");
+            }}
+          >
+            View all notifications
+          </Button>
+        </div>
+      )}
     </>
   );
 

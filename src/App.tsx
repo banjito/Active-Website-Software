@@ -63,7 +63,7 @@ import ThreeLowVoltageCableMTSForm from "./components/reports/3-LowVoltageCableM
 import ThreeLowVoltageCableATSForm from "./components/reports/3-LowVoltageCableATS";
 import MediumVoltageVLFMTSReport from "./components/reports/MediumVoltageVLFMTSReport";
 import ProfileSetup from "./pages/ProfileSetup";
-import CustomerCategoriesPage from "./pages/CustomerCategoriesPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import ReportsPage from "./app/[division]/reports/page";
 import AdminDashboard from "./app/admin-dashboard/page";
 import FloatingIssueReporter from "./components/feedback/FloatingIssueReporter";
@@ -997,17 +997,6 @@ function App() {
                     }
                   />
 
-                  <Route
-                    path="/sales-dashboard/customer-categories"
-                    element={
-                      <RequireAuth>
-                        <SalesLayout>
-                          <CustomerCategoriesPage />
-                        </SalesLayout>
-                      </RequireAuth>
-                    }
-                  />
-
                   {/* === Territory Management Routes === */}
                   <Route
                     path="/territories"
@@ -1829,16 +1818,6 @@ function App() {
                     }
                   />
                   <Route
-                    path="/:division/customer-categories"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <CustomerCategoriesPage />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
                     path="/:division/customers/:id"
                     element={
                       <RequireAuth>
@@ -1911,6 +1890,20 @@ function App() {
                         </Layout>
                       </RequireAuth>
                     }
+                  />
+                  <Route
+                    path="/notifications"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <NotificationsPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/neta/reports"
+                    element={<Navigate to="/notifications" replace />}
                   />
                   {/* Reports Management */}
                   <Route

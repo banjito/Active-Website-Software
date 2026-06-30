@@ -42,6 +42,7 @@ import {
   History,
   UserCheck,
   Flag,
+  MessageCircleWarning,
 } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { compareLinkedAssetFolderLabels } from "@/utils/sortUtils";
@@ -423,11 +424,12 @@ export function ReportApprovalWorkflow({
     if (count === 0) return null;
     return (
       <span
-        className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+        className="ml-2 inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
         title={`${count} open customer flag${count === 1 ? "" : "s"} ${label}`}
         aria-label={`${count} open customer flag${count === 1 ? "" : "s"} ${label}`}
       >
-        <Flag className="h-3 w-3" />
+        <MessageCircleWarning className="h-3 w-3" />
+        {count}
       </span>
     );
   };

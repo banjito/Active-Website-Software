@@ -74,7 +74,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     ? isFieldTech
       ? "/field-tech"
       : `/${division}`
-    : "";
+    : "/field-tech";
 
   // Remember "Global Portal" so Jobs link stays /all-jobs after visiting Contacts/Customers etc.
   // Only clear when user is on a real division's jobs or dashboard page (e.g. /north_alabama/jobs), not when on /neta/contacts
@@ -532,10 +532,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   key={city.id}
                   variant="ghost"
                   onClick={() => handleCityClick(city.id, city.path)}
-                  className={`!h-auto w-full !justify-start !rounded-full border px-4 !py-1.5 text-left text-sm font-medium transition-colors ${
-                    division === city.id
-                      ? "border-transparent bg-black text-white hover:bg-black/90 dark:bg-dark-50 dark:text-dark-900"
-                      : "border-black/10 bg-transparent text-black hover:bg-black/5 dark:border-dark-300 dark:text-dark-900 dark:hover:bg-dark-50"
+                  className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                    division === city.id ? "bg-black/5 dark:bg-dark-50" : ""
                   }`}
                 >
                   {city.label}

@@ -16,6 +16,7 @@ import {
   Package,
   Trash2,
   ClipboardCheck,
+  MessageCircleWarning,
   Calendar,
   DollarSign,
   Building,
@@ -35,7 +36,6 @@ import {
   Eye,
   Bookmark,
   MessageCircle,
-  Flag,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { supabase, isConnectionError } from "../../lib/supabase";
@@ -8560,11 +8560,12 @@ ${newBodyHtml}
                       Report Approvals
                       {openReportFlagCount > 0 && (
                         <span
-                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+                          className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
                           title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                           aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                         >
-                          <Flag className="h-3 w-3" />
+                          <MessageCircleWarning className="h-3 w-3" />
+                          {openReportFlagCount}
                         </span>
                       )}
                     </span>

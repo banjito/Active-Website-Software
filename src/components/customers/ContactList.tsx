@@ -3,7 +3,6 @@ import { Plus, Pencil, Trash2, X, ArrowUpAZ, ArrowDownAZ } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
-import { useDivision } from "../../App";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Pagination } from "../ui/Pagination";
 import { DIVISION_OPTIONS } from "../../services/customerService";
@@ -54,19 +53,6 @@ const initialFormData: ContactFormData = {
   divisions: [],
 };
 
-const DIVISION_TO_PORTAL: Record<string, string> = {
-  north_alabama: "neta",
-  northAlabama: "neta",
-  tennessee: "neta",
-  georgia: "neta",
-  international: "neta",
-  neta: "neta",
-  field_tech: "field_tech",
-  scavenger: "scavenger",
-  armadillo: "armadillo",
-  engineering: "engineering",
-};
-
 // Function to get initial filter settings from localStorage synchronously
 function getInitialFilterSettings() {
   try {
@@ -99,23 +85,17 @@ function getInitialFilterSettings() {
 
 export default function ContactList() {
   const { user, loading: authLoading } = useAuth();
-  const { division } = useDivision();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Load initial settings synchronously before first render
   const initialSettings = getInitialFilterSettings();
 
+  // Default to "All" divisions regardless of the current portal; only honor a
+  // selection the user previously made (persisted in localStorage).
   const getInitialDivisionTabs = (): string[] => {
     if (initialSettings.activeDivisionTabs.length > 0) {
       return initialSettings.activeDivisionTabs;
-    }
-    const portalDivision = division ? DIVISION_TO_PORTAL[division] : null;
-    if (
-      portalDivision &&
-      DIVISION_OPTIONS.some((d) => d.value === portalDivision)
-    ) {
-      return [portalDivision];
     }
     return [];
   };

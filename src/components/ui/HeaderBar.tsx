@@ -70,6 +70,23 @@ type JobGroup = {
 
 const HIDDEN_NOTIF_JOB_IDS_KEY = "hiddenNotificationJobIds";
 const NOTIF_LAST_SEEN_KEY = "notifLastSeenByStatus";
+// Shared with NotificationsPage so the bell badge and the page agree on which
+// items are read. The page persists these; the bell reads them.
+const MANUALLY_READ_KEY = "notifManuallyRead";
+const MANUAL_UNREAD_KEY = "notifManualUnread";
+const CALIBRATION_SEEN_KEY = "notifSeenCalibrationIds";
+// Fired by either surface after any read/unread change so the other updates
+// instantly (no refetch, no poll wait).
+const NOTIF_UPDATED_EVENT = "notificationsUpdated";
+
+function readStoredSet(key: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(key);
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch {
+    return new Set();
+  }
+}
 
 type StatusKey = "ready_for_review" | "issue" | "approved";
 
@@ -175,16 +192,69 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     issue: 0,
     approved: 0,
   });
+  // Read-state shared with NotificationsPage (kept in sync via localStorage +
+  // the NOTIF_UPDATED_EVENT) plus the raw report assets behind each status, so
+  // the badge can honor per-item manual reads without refetching.
+  const [manualReadIds, setManualReadIds] = useState<Set<string>>(() =>
+    readStoredSet(MANUALLY_READ_KEY),
+  );
+  const [manualUnreadIds, setManualUnreadIds] = useState<Set<string>>(() =>
+    readStoredSet(MANUAL_UNREAD_KEY),
+  );
+  const [seenCalibrationIds, setSeenCalibrationIds] = useState<Set<string>>(() =>
+    readStoredSet(CALIBRATION_SEEN_KEY),
+  );
+  const [reportAssetsByStatus, setReportAssetsByStatus] = useState<
+    Record<StatusKey, { id: string; createdAt: string }[]>
+  >({ ready_for_review: [], issue: [], approved: [] });
   const rtDebounceRef = useRef<number | null>(null);
 
   const canApproveReports = canAccessReportApprovals(user);
   const canSeeAdminPortal = canAccessReportApprovals(user);
+  // Total calibration items in the dropdown lists (used only to decide whether
+  // to show the bell at all — not the unread badge number).
   const calibrationNotificationCount =
     calibrationNeedsList.length + calibrationOutList.length;
-  const reportUnseenCount = Object.values(unseenCounts).reduce(
-    (a, b) => a + b,
-    0,
-  );
+
+  // Unread counts that match NotificationsPage exactly: a report is unread when
+  // it's newer than its status' last-seen AND not manually marked read; a
+  // calibration item is unread when it isn't in the seen set or manual-read set.
+  const reportUnseenCount = canApproveReports
+    ? (["ready_for_review", "issue", "approved"] as StatusKey[]).reduce(
+        (sum, status) => {
+          const threshold = lastSeen[status]
+            ? new Date(lastSeen[status]).getTime()
+            : 0;
+          return (
+            sum +
+            reportAssetsByStatus[status].filter((asset) =>
+              manualUnreadIds.has(asset.id)
+                ? true
+                : !manualReadIds.has(asset.id) &&
+                  new Date(asset.createdAt).getTime() > threshold,
+            ).length
+          );
+        },
+        0,
+      )
+    : 0;
+
+  const isCalibrationUnread = (pid: string) =>
+    manualUnreadIds.has(pid)
+      ? true
+      : !manualReadIds.has(pid) && !seenCalibrationIds.has(pid);
+
+  const calibrationUnreadCount =
+    calibrationNeedsList.filter((item) =>
+      isCalibrationUnread(`needs_calibration:${item.id}`),
+    ).length +
+    calibrationOutList.filter((item) =>
+      isCalibrationUnread(`equipment_out_of_cal:${item.id}`),
+    ).length;
+
+  const totalUnreadCount =
+    (canApproveReports ? reportUnseenCount : 0) + calibrationUnreadCount;
+
   const showNotificationBell =
     canApproveReports ||
     calibrationNotificationCount > 0 ||
@@ -498,6 +568,33 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   }, []);
 
+  // Re-read the shared read-state whenever NotificationsPage (or another tab)
+  // changes it, so the badge updates instantly without waiting for the poll or
+  // a refetch. The underlying report/calibration data stays cached; only the
+  // read signals are re-read, and the badge counts are derived from both.
+  useEffect(() => {
+    const syncReadState = () => {
+      setManualReadIds(readStoredSet(MANUALLY_READ_KEY));
+      setManualUnreadIds(readStoredSet(MANUAL_UNREAD_KEY));
+      setSeenCalibrationIds(readStoredSet(CALIBRATION_SEEN_KEY));
+      try {
+        const raw = localStorage.getItem(NOTIF_LAST_SEEN_KEY);
+        const parsed = raw
+          ? (JSON.parse(raw) as Partial<Record<StatusKey, string>>)
+          : {};
+        setLastSeen((prev) => ({ ...prev, ...parsed }));
+      } catch {
+        // no-op
+      }
+    };
+    window.addEventListener(NOTIF_UPDATED_EVENT, syncReadState);
+    window.addEventListener("storage", syncReadState);
+    return () => {
+      window.removeEventListener(NOTIF_UPDATED_EVENT, syncReadState);
+      window.removeEventListener("storage", syncReadState);
+    };
+  }, []);
+
   const persistLastSeen = (map: Record<StatusKey, string>) => {
     try {
       localStorage.setItem(NOTIF_LAST_SEEN_KEY, JSON.stringify(map));
@@ -526,6 +623,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         approved: 0,
       };
 
+      const nextReportAssets: Record<
+        StatusKey,
+        { id: string; createdAt: string }[]
+      > = { ready_for_review: [], issue: [], approved: [] };
+
       if (canApprove) {
         const statuses: StatusKey[] = ["ready_for_review", "issue", "approved"];
         for (const s of statuses) {
@@ -535,6 +637,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             jobCount: groups.length,
             reportCount: assets.length,
           });
+          nextReportAssets[s] = assets.map((a) => ({
+            id: a.assetId,
+            createdAt: a.createdAt,
+          }));
           const ls = lastSeen[s] ? new Date(lastSeen[s]).getTime() : 0;
           const countNew = assets.filter(
             (a) => new Date(a.createdAt).getTime() > ls,
@@ -542,6 +648,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           unseen[s] = countNew;
         }
       }
+      setReportAssetsByStatus(nextReportAssets);
       setNotificationSummary(summary);
 
       try {
@@ -667,6 +774,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       return next;
     });
     setUnseenCounts((prev) => ({ ...prev, [status]: 0 }));
+    // Clear any force-unread overrides on these reports so they actually read.
+    setManualUnreadIds((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      assets.forEach((a) => next.delete(a.assetId));
+      try {
+        localStorage.setItem(MANUAL_UNREAD_KEY, JSON.stringify([...next]));
+      } catch {
+        // no-op
+      }
+      return next;
+    });
+    // Let an open NotificationsPage reflect this immediately.
+    window.dispatchEvent(new CustomEvent(NOTIF_UPDATED_EVENT));
   };
 
   const loadDetailForStatus = async (status: NotificationSummary["status"]) => {
@@ -1091,15 +1212,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   }}
                 >
                   <Bell className="h-5 w-5" />
-                  {(canApproveReports ? reportUnseenCount : 0) +
-                    calibrationNotificationCount >
-                    0 && (
+                  {totalUnreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
-                      {Math.min(
-                        99,
-                        (canApproveReports ? reportUnseenCount : 0) +
-                          calibrationNotificationCount,
-                      )}
+                      {Math.min(99, totalUnreadCount)}
                     </span>
                   )}
                 </button>
@@ -1107,8 +1222,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 {isNotificationsOpen && (
                   <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
-                      <div className="font-medium text-neutral-900 dark:text-white">
-                        Notifications
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-neutral-900 dark:text-white">
+                          Notifications
+                        </div>
+                        {detailStatus === null && (
+                          <button
+                            onClick={() => {
+                              setIsNotificationsOpen(false);
+                              navigate("/notifications");
+                            }}
+                            className="font-medium text-[#f26722] hover:underline"
+                          >
+                            View All
+                          </button>
+                        )}
                       </div>
                       {canApproveReports && (
                         <div className="text-xs text-neutral-500 dark:text-white">
@@ -1335,17 +1463,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         </div>
                       )}
                     </div>
+                    {detailStatus !== null && (
                     <div className="p-2 border-t border-neutral-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
-                      {detailStatus === null ? (
-                        canApproveReports ? (
-                          <button
-                            onClick={() => navigate("/neta/reports")}
-                            className="text-xs text-[#f26722] hover:underline"
-                          >
-                            View all
-                          </button>
-                        ) : null
-                      ) : detailStatus === "needs_calibration" ||
+                      {detailStatus === "needs_calibration" ||
                         detailStatus === "equipment_out_of_cal" ? (
                         <>
                           <button
@@ -1378,6 +1498,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         </button>
                       )}
                     </div>
+                    )}
                   </div>
                 )}
               </div>

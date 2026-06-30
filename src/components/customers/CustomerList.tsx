@@ -5,7 +5,6 @@ import {
   Trash2,
   X,
   Filter,
-  Tag,
   ArrowDownWideNarrow,
   Check,
   Users,
@@ -17,17 +16,14 @@ import { Dialog } from "@headlessui/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../lib/AuthContext";
 import { useDemoMode } from "../../lib/DemoModeContext";
-import { useDivision } from "../../App";
 import { Pagination } from "../ui/Pagination";
 import { supabase } from "../../lib/supabase";
 import {
   Customer,
-  CustomerCategory,
   getCustomers,
   createCustomer,
   updateCustomer,
   deleteCustomer,
-  getCategories,
   mergeCustomers,
   DIVISION_OPTIONS,
 } from "../../services/customerService";
@@ -48,7 +44,6 @@ interface CustomerFormData {
   email: string;
   phone: string;
   address: string;
-  category_id: string | null;
   divisions: string[];
 }
 
@@ -57,21 +52,7 @@ const initialFormData: CustomerFormData = {
   email: "",
   phone: "",
   address: "",
-  category_id: null,
   divisions: [],
-};
-
-const DIVISION_TO_PORTAL: Record<string, string> = {
-  north_alabama: "neta",
-  northAlabama: "neta",
-  tennessee: "neta",
-  georgia: "neta",
-  international: "neta",
-  neta: "neta",
-  field_tech: "field_tech",
-  scavenger: "scavenger",
-  armadillo: "armadillo",
-  engineering: "engineering",
 };
 
 // Function to get initial filter settings from localStorage synchronously
@@ -110,24 +91,17 @@ function getInitialFilterSettings() {
 export default function CustomerList() {
   const { user, loading: authLoading } = useAuth();
   const { maskCustomerName } = useDemoMode();
-  const { division } = useDivision();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Load initial settings synchronously before first render
   const initialSettings = getInitialFilterSettings();
 
-  // Determine if we should auto-select a division tab based on current portal
+  // Default to "All" divisions regardless of the current portal; only honor a
+  // selection the user previously made (persisted in localStorage).
   const getInitialDivisionTabs = (): string[] => {
     if (initialSettings.activeDivisionTabs.length > 0) {
       return initialSettings.activeDivisionTabs;
-    }
-    const portalDivision = division ? DIVISION_TO_PORTAL[division] : null;
-    if (
-      portalDivision &&
-      DIVISION_OPTIONS.some((d) => d.value === portalDivision)
-    ) {
-      return [portalDivision];
     }
     return [];
   };
@@ -135,7 +109,6 @@ export default function CustomerList() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [page, setPage] = useState<number>(initialSettings.page);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [categories, setCategories] = useState<CustomerCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
@@ -158,7 +131,6 @@ export default function CustomerList() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<{
-    category_id?: string | null;
     status?: string | null;
   }>(initialSettings.activeFilters);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
@@ -382,10 +354,7 @@ export default function CustomerList() {
       setTotalCount(count);
 
       // Get categories
-      const categoriesData = await getCategories();
-
       setCustomers(customersData);
-      setCategories(categoriesData);
     } catch (error) {
       console.error("CustomerList: Error fetching data:", error);
       setLoadError("Failed to load customers. Please try again.");
@@ -405,15 +374,8 @@ export default function CustomerList() {
       setFormLoading(true);
 
       const { divisions, ...baseData } = formData;
-      const dataWithDivisions = {
-        ...baseData,
-        name: baseData.company_name,
-        divisions: divisions.length > 0 ? divisions : null,
-      };
-      const dataWithoutDivisions = {
-        ...baseData,
-        name: baseData.company_name,
-      };
+      const dataWithDivisions = { ...baseData, name: baseData.company_name, divisions: divisions.length > 0 ? divisions : null };
+      const dataWithoutDivisions = { ...baseData, name: baseData.company_name };
 
       if (isEditing && customerToEdit) {
         try {
@@ -467,7 +429,7 @@ export default function CustomerList() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "category_id" ? value || null : value,
+      [name]: value,
     }));
   }
 
@@ -536,7 +498,6 @@ export default function CustomerList() {
       email: customer.email,
       phone: customer.phone,
       address: customer.address,
-      category_id: customer.category_id || null,
       divisions: customer.divisions || [],
     });
     setIsOpen(true);
@@ -570,7 +531,7 @@ export default function CustomerList() {
   };
 
   function handleFilterChange(
-    type: "category_id" | "status",
+    type: "status",
     value: string | null,
   ) {
     setActiveFilters((prev) => ({
@@ -594,18 +555,6 @@ export default function CustomerList() {
     setPage(1);
   }
 
-  function getCategoryNameById(categoryId: string | null | undefined) {
-    if (!categoryId) return null;
-    const category = categories.find((c) => c.id === categoryId);
-    return category ? category.name : null;
-  }
-
-  function getCategoryColorById(categoryId: string | null | undefined) {
-    if (!categoryId) return null;
-    const category = categories.find((c) => c.id === categoryId);
-    return category ? category.color : null;
-  }
-
   async function openContactsPopup(customer: Customer, e: React.MouseEvent) {
     e.stopPropagation();
     setContactsPopupCustomer(customer);
@@ -625,24 +574,6 @@ export default function CustomerList() {
       setContactsPopupData([]);
     } finally {
       setContactsPopupLoading(false);
-    }
-  }
-
-  function navigateToCategoriesPage() {
-    const currentPath = location.pathname;
-
-    if (currentPath.startsWith("/sales-dashboard")) {
-      navigate("/sales-dashboard/customer-categories");
-    } else {
-      // Check if we are in a division context (e.g., /north_alabama/customers)
-      const pathParts = currentPath.split("/").filter((part) => part !== ""); // filter empty strings
-      if (pathParts.length >= 2 && pathParts[1] === "customers") {
-        const division = pathParts[0];
-        navigate(`/${division}/customer-categories`);
-      } else {
-        // Fallback to sales dashboard path if context is unclear
-        navigate("/sales-dashboard/customer-categories");
-      }
     }
   }
 
@@ -783,13 +714,6 @@ export default function CustomerList() {
               </div>
             )}
           </div>
-          <button
-            onClick={navigateToCategoriesPage}
-            className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
-          >
-            <Tag className="h-4 w-4 mr-2" />
-            Categories
-          </button>
           <div className="relative" ref={filterMenuRef}>
             <button
               type="button"
@@ -807,23 +731,7 @@ export default function CustomerList() {
             </button>
             {isFilterMenuOpen && (
               <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
-                {categories.length > 0 && (
-                  <div>
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
-                      Category
-                    </div>
-                    {renderSingleChoiceOptions(
-                      categories.map((category) => ({
-                        value: category.id,
-                        label: category.name,
-                      })),
-                      activeFilters.category_id,
-                      (nextValue) =>
-                        handleFilterChange("category_id", nextValue),
-                    )}
-                  </div>
-                )}
-                <div className={categories.length > 0 ? "mt-2" : ""}>
+                <div className="">
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Status
                   </div>
@@ -926,27 +834,6 @@ export default function CustomerList() {
               Active filters:
             </span>
 
-            {activeFilters.category_id && (
-              <div className="flex items-center bg-white dark:bg-neutral-800 rounded-full px-3 py-1 text-sm">
-                <div
-                  className="w-3 h-3 rounded-full mr-2"
-                  style={{
-                    backgroundColor:
-                      getCategoryColorById(activeFilters.category_id) || "#ccc",
-                  }}
-                />
-                <span className="mr-1">
-                  Category: {getCategoryNameById(activeFilters.category_id)}
-                </span>
-                <button
-                  onClick={() => handleFilterChange("category_id", null)}
-                  className="text-neutral-400 hover:text-neutral-500"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-
             {activeFilters.status && (
               <div className="flex items-center bg-white dark:bg-neutral-800 rounded-full px-3 py-1 text-sm">
                 <span className="mr-1">Status: {activeFilters.status}</span>
@@ -1041,29 +928,6 @@ export default function CustomerList() {
                     <div className="ml-4">
                       <div className="text-sm font-medium text-neutral-900 dark:text-white">
                         {maskCustomerName(customer.company_name)}
-                        {customer.category_id && categories.length > 0 && (
-                          <span
-                            className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            style={{
-                              backgroundColor: (getCategoryColorById(
-                                customer.category_id,
-                              ) + "20") as string,
-                              color: getCategoryColorById(
-                                customer.category_id,
-                              ) as string,
-                            }}
-                          >
-                            <div
-                              className="w-2 h-2 rounded-full mr-1"
-                              style={{
-                                backgroundColor: getCategoryColorById(
-                                  customer.category_id,
-                                ) as string,
-                              }}
-                            ></div>
-                            {getCategoryNameById(customer.category_id)}
-                          </span>
-                        )}
                       </div>
                       {customer.divisions && customer.divisions.length > 0 && (
                         <div className="flex gap-1 mt-1">
@@ -1178,32 +1042,6 @@ export default function CustomerList() {
             </div>
 
             <div className="space-y-4">
-              {categories.length > 0 && (
-                <div>
-                  <label
-                    htmlFor="category_filter"
-                    className="block text-sm font-medium text-neutral-700 dark:text-white"
-                  >
-                    Category
-                  </label>
-                  <select
-                    id="category_filter"
-                    value={activeFilters.category_id || ""}
-                    onChange={(e) =>
-                      handleFilterChange("category_id", e.target.value || null)
-                    }
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               <div>
                 <label
                   htmlFor="status_filter"
@@ -1341,31 +1179,6 @@ export default function CustomerList() {
                     className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
-
-                {categories.length > 0 && (
-                  <div>
-                    <label
-                      htmlFor="category_id"
-                      className="block text-sm font-medium text-neutral-700 dark:text-white"
-                    >
-                      Category
-                    </label>
-                    <select
-                      id="category_id"
-                      name="category_id"
-                      value={formData.category_id || ""}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
-                    >
-                      <option value="">No Category</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">

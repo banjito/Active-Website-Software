@@ -65,7 +65,20 @@ import MediumVoltageVLFMTSReport from "./components/reports/MediumVoltageVLFMTSR
 import ProfileSetup from "./pages/ProfileSetup";
 import NotificationsPage from "./pages/NotificationsPage";
 import ReportsPage from "./app/[division]/reports/page";
-import AdminDashboard from "./app/admin-dashboard/page";
+import AdminDashboardLayout, {
+  AdminDashboardIndex,
+} from "./app/admin-dashboard/page";
+import AdminUserManagement from "./components/admin/AdminUserManagement";
+import SystemHealthMonitoring from "./components/admin/SystemHealthMonitoring";
+import { SystemLogsCard } from "./components/admin/SystemLogsCard";
+import { PortalConfiguration } from "./components/admin/PortalConfiguration";
+import { DataBackupControls } from "./components/admin/DataBackupControls";
+import RoleManagement from "./components/admin/RoleManagement";
+import PermissionManagement from "./components/admin/PermissionManagement";
+import NotificationDevControls from "./components/admin/NotificationDevControls";
+import InProgressDashboard from "./components/admin/InProgressDashboard";
+import IntegrationsSettings from "./components/admin/IntegrationsSettings";
+import QuickBooksDashboard from "./components/admin/QuickBooksDashboard";
 import FloatingIssueReporter from "./components/feedback/FloatingIssueReporter";
 import SchedulingPage from "./app/scheduling/page";
 import FieldEquipmentPage from "./app/[division]/field-equipment/page";
@@ -610,20 +623,54 @@ function App() {
                     path="/admin-dashboard"
                     element={
                       <RequireAuth>
-                        <AdminDashboard />
+                        <AdminDashboardLayout />
                       </RequireAuth>
                     }
-                  />
-                  <Route
-                    path="/admin/encryption"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <EncryptionSettings />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
+                  >
+                    <Route index element={<AdminDashboardIndex />} />
+                    <Route
+                      path="in-progress"
+                      element={<InProgressDashboard />}
+                    />
+                    <Route
+                      path="user-management"
+                      element={<AdminUserManagement />}
+                    />
+                    <Route
+                      path="role-management"
+                      element={<RoleManagement />}
+                    />
+                    <Route
+                      path="permission-management"
+                      element={<PermissionManagement />}
+                    />
+                    <Route
+                      path="notification-controls"
+                      element={<NotificationDevControls />}
+                    />
+                    <Route
+                      path="system-health"
+                      element={<SystemHealthMonitoring />}
+                    />
+                    <Route path="system-logs" element={<SystemLogsCard />} />
+                    <Route
+                      path="portal-config"
+                      element={<PortalConfiguration />}
+                    />
+                    <Route path="data-backup" element={<DataBackupControls />} />
+                    <Route
+                      path="encryption"
+                      element={<EncryptionSettings />}
+                    />
+                    <Route
+                      path="integrations"
+                      element={<IntegrationsSettings />}
+                    />
+                    <Route
+                      path="quickbooks"
+                      element={<QuickBooksDashboard />}
+                    />
+                  </Route>
                   <Route
                     path="/profile-setup"
                     element={

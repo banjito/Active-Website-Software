@@ -888,3 +888,128 @@ export async function getQuickBooksPurchaseOrders(): Promise<any[]> {
   const response = await quickBooksApiCall('/v3/company/{realmId}/query?query=SELECT * FROM PurchaseOrder MAXRESULTS 1000');
   return response?.QueryResponse?.PurchaseOrder || [];
 }
+
+// ============================================
+// PER-JOB PROFITABILITY DATA
+// ============================================
+
+export interface QBOTimeActivityRow {
+  id: string;
+  txnDate: string;
+  employeeName: string;
+  hours: number;
+  costRate: number;
+  cost: number;
+  description: string;
+}
+
+export interface QBOInvoiceRow {
+  id: string;
+  txnDate: string;
+  docNumber: string;
+  totalAmt: number;
+  balance: number;
+}
+
+export interface QBOPnLRow {
+  accountNum: string;
+  accountName: string;
+  amount: number;
+  txnDate: string;
+  memo: string;
+  rowType: 'income' | 'expense';
+}
+
+/**
+ * Get TimeActivity rows for a single QBO customer (job sub-customer).
+ * Fetches all-time history and filters client-side by CustomerRef.
+ */
+export async function getQBOTimeActivitiesByCustomer(customerId: string): Promise<QBOTimeActivityRow[]> {
+  try {
+    const query = `SELECT * FROM TimeActivity WHERE CustomerRef = '${customerId}' MAXRESULTS 1000`;
+    const response = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(query)}`);
+    const activities: any[] = response?.QueryResponse?.TimeActivity ?? [];
+    return activities.map((a: any) => {
+      const hours = Number(a.Hours ?? 0) + Number(a.Minutes ?? 0) / 60;
+      const costRate = Number(a.CostRate ?? 0);
+      return {
+        id: String(a.Id),
+        txnDate: a.TxnDate ?? '',
+        employeeName: a.EmployeeRef?.name ?? a.NameOf ?? '',
+        hours,
+        costRate,
+        cost: hours * costRate,
+        description: a.Description ?? '',
+      };
+    });
+  } catch (err) {
+    console.warn('[QB Profitability] TimeActivity fetch failed:', err);
+    return [];
+  }
+}
+
+/**
+ * Get Invoice rows for a single QBO customer (job sub-customer).
+ */
+export async function getQBOInvoicesByCustomer(customerId: string): Promise<QBOInvoiceRow[]> {
+  try {
+    const query = `SELECT * FROM Invoice WHERE CustomerRef = '${customerId}' MAXRESULTS 1000`;
+    const response = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(query)}`);
+    const invoices: any[] = response?.QueryResponse?.Invoice ?? [];
+    return invoices.map((inv: any) => ({
+      id: String(inv.Id),
+      txnDate: inv.TxnDate ?? '',
+      docNumber: inv.DocNumber ?? '',
+      totalAmt: Number(inv.TotalAmt ?? 0),
+      balance: Number(inv.Balance ?? 0),
+    }));
+  } catch (err) {
+    console.warn('[QB Profitability] Invoice fetch failed:', err);
+    return [];
+  }
+}
+
+/**
+ * Walk the nested QBO report Row structure to emit flat transaction rows.
+ * The ProfitAndLossDetail report nests: Header > Rows > Row (Section) > Rows > Row (Account) > Rows > Row (Txn)
+ */
+function flattenPnLRows(rows: any[]): QBOPnLRow[] {
+  const result: QBOPnLRow[] = [];
+  for (const row of rows ?? []) {
+    if (row.type === 'Data' && row.ColData) {
+      const cols: any[] = row.ColData;
+      // Typical column order in ProfitAndLossDetail: Date, Transaction Type, Num, Name, Memo/Description, Account, Split, Amount
+      const amount = parseFloat(cols[cols.length - 1]?.value ?? '0') || 0;
+      const txnDate = cols[0]?.value ?? '';
+      const memo = cols[4]?.value ?? cols[3]?.value ?? '';
+      const accountName = cols[5]?.value ?? cols[4]?.value ?? '';
+      const accountNum = cols[5]?.id ?? '';
+      result.push({ accountNum, accountName, amount, txnDate, memo, rowType: amount >= 0 ? 'income' : 'expense' });
+    } else if (row.Rows?.Row) {
+      result.push(...flattenPnLRows(row.Rows.Row));
+    }
+  }
+  return result;
+}
+
+/**
+ * Get ProfitAndLossDetail report for a single QBO customer.
+ * Returns flat transaction rows with account info for COGS categorization.
+ */
+export async function getQBOProfitAndLossDetail(customerId: string): Promise<QBOPnLRow[]> {
+  try {
+    const params = new URLSearchParams({
+      customer: customerId,
+      accounting_method: 'Accrual',
+      minorversion: '65',
+    });
+    const response = await quickBooksApiCall(
+      `/v3/company/{realmId}/reports/ProfitAndLossDetail?${params.toString()}`
+    );
+    const topRows: any[] = response?.Rows?.Row ?? [];
+    return flattenPnLRows(topRows);
+  } catch (err) {
+    console.warn('[QB Profitability] ProfitAndLossDetail fetch failed:', err);
+    return [];
+  }
+}

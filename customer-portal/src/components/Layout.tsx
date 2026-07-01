@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Briefcase, FileText } from "lucide-react";
+import { Briefcase, FileText, MessageCircleQuestion } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import { useBranding } from "@/lib/BrandingContext";
@@ -87,6 +87,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </nav>
             <div className="flex items-center gap-2 sm:pl-4">
               <ThemeToggle />
+              <a
+                href="mailto:jack@ampos.io"
+                aria-label="Support"
+                title="Support"
+                className="inline-flex h-9 w-9 items-center justify-center border border-border bg-card/60 text-muted-foreground transition-all duration-300 ease-spring hover:scale-105 hover:border-primary/40 hover:text-foreground active:scale-95"
+              >
+                <MessageCircleQuestion className="h-[18px] w-[18px]" />
+              </a>
               <CompanyMenu />
               <AccountMenu />
             </div>

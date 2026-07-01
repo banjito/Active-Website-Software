@@ -85,6 +85,7 @@ import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
 import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
 import JobPictures from "./JobPictures";
+import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
 import { formatDivisionDisplay } from "../../lib/utils/divisionDisplay";
 import {
   compareAlphanumericLabels,
@@ -2312,6 +2313,7 @@ export default function JobDetail() {
         "reports",
         "report-audit",
         "after-action",
+        "profitability",
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam);
@@ -8640,6 +8642,21 @@ ${newBodyHtml}
                   >
                     After-Action Reports
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleTabChange("profitability")}
+                      className={`py-4 px-6 text-sm font-medium ${
+                        activeTab === "profitability"
+                          ? "border-b-2 border-[#f26722] text-[#f26722]"
+                          : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                      }`}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <DollarSign className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                        Profitability
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -11177,6 +11194,100 @@ ${newBodyHtml}
                       customer?.company_name || customer?.name || undefined
                     }
                   />
+                )}
+
+                {activeTab === "profitability" && job && isAdmin && (
+                  <div>
+                    {!job.quickbooks_project_id ? (
+                      <div className="space-y-4 p-2">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                          Link a QuickBooks project to pull actuals and compute profitability.
+                        </p>
+                        {!qbConnected ? (
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Connect QuickBooks in{" "}
+                            <strong>Admin Dashboard → Integrations</strong> first.
+                          </p>
+                        ) : (
+                          <div className="relative max-w-md">
+                            <input
+                              type="text"
+                              placeholder="Search QuickBooks projects or customers..."
+                              value={qbProjectSearchQuery}
+                              onChange={(e) => {
+                                setQbProjectSearchQuery(e.target.value);
+                                setQbProjectSearchOpen(true);
+                              }}
+                              onFocus={() => setQbProjectSearchOpen(true)}
+                              className="w-full rounded-md border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                            />
+                            {qbProjectSearchOpen && (
+                              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-neutral-300 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-800">
+                                {qbProjectSearching ? (
+                                  <div className="p-3 text-sm text-neutral-500">Searching...</div>
+                                ) : qbProjectError ? (
+                                  <div className="p-3 text-sm text-amber-600">{qbProjectError}</div>
+                                ) : qbProjectSearchResults.length === 0 ? (
+                                  <div className="p-3 text-sm text-neutral-500">
+                                    {qbProjectSearchQuery.trim() ? "No results." : "Type to search…"}
+                                  </div>
+                                ) : (
+                                  qbProjectSearchResults.map((p) => (
+                                    <button
+                                      key={p.Id}
+                                      type="button"
+                                      disabled={qbAssigning}
+                                      onClick={() =>
+                                        handleAssignQuickBooksProject(
+                                          p.Id,
+                                          p.Name || p.DisplayName || p.Id,
+                                        )
+                                      }
+                                      className="w-full border-b border-neutral-100 px-3 py-2 text-left text-neutral-900 last:border-b-0 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
+                                    >
+                                      {p.Name || p.DisplayName || p.Id}
+                                    </button>
+                                  ))
+                                )}
+                                <div className="border-t border-neutral-200 p-2 dark:border-neutral-700">
+                                  <button
+                                    type="button"
+                                    className="w-full text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
+                                    onClick={() => {
+                                      setQbProjectSearchOpen(false);
+                                      setQbProjectSearchQuery("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-center justify-between px-2 pb-2 pt-1">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            Linked QBO project:{" "}
+                            <span className="font-medium text-neutral-700 dark:text-neutral-200">
+                              {job.quickbooks_project_name || job.quickbooks_project_id}
+                            </span>
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleUnlinkQuickBooksProject}
+                            disabled={qbAssigning}
+                            className="text-xs text-neutral-400 hover:text-red-500 disabled:opacity-50"
+                          >
+                            {qbAssigning ? "Unlinking…" : "Unlink"}
+                          </button>
+                        </div>
+                        <JobProfitabilityDashboard job={job} />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

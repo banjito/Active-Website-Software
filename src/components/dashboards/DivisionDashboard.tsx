@@ -541,7 +541,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? "mobile-container mobile-force-small" : ""}`}
     >
       {error && (
-        <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">
+        <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-none text-sm">
           Error loading dashboard: {error}
         </div>
       )}
@@ -585,7 +585,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0 mobile-p-2">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0 mobile-p-2">
               <Building className="h-4 w-4 text-black dark:text-[#8D5F3D] mobile-icon-sm" />
             </div>
           </div>
@@ -612,7 +612,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Users2 className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -640,7 +640,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   </Button>
                 </Link>
               </div>
-              <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+              <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
                 <FileText className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -663,7 +663,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 {counts.activeJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -679,7 +679,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 {counts.upcomingJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CalendarIcon className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -695,7 +695,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 {counts.completedJobs}
               </p>
             </div>
-            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CheckCircle className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>

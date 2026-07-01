@@ -245,7 +245,7 @@ export default function MaintenanceSchedule({
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(daysLeft)}`}
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-none ${getStatusClass(daysLeft)}`}
                                 >
                                   {daysLeft} days
                                 </span>
@@ -364,7 +364,7 @@ export default function MaintenanceSchedule({
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-none bg-red-100 text-red-800">
                                   {daysOverdue} days
                                 </span>
                               </td>

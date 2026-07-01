@@ -550,7 +550,7 @@ export default function FieldTechJobsPage() {
                 division: "",
               });
             }}
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-none bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add T&M or Emergency Job
@@ -620,7 +620,7 @@ export default function FieldTechJobsPage() {
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+          <div className="relative bg-white dark:bg-dark-150 rounded-none max-w-md w-full mx-auto p-6 shadow-xl">
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
@@ -655,7 +655,7 @@ export default function FieldTechJobsPage() {
 
             <form onSubmit={handleTMSubmit} className="space-y-4">
               {showNewCustomer && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Customer
@@ -742,7 +742,7 @@ export default function FieldTechJobsPage() {
                 </div>
               )}
               {showNewContact && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Contact
@@ -826,7 +826,7 @@ export default function FieldTechJobsPage() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
                   <div className="text-xs text-neutral-600 dark:text-white mb-1">
@@ -847,7 +847,7 @@ export default function FieldTechJobsPage() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-none">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = TMFormData.customer_id === customer.id;
                     return (
@@ -905,7 +905,7 @@ export default function FieldTechJobsPage() {
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -942,7 +942,7 @@ export default function FieldTechJobsPage() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -955,7 +955,7 @@ export default function FieldTechJobsPage() {
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -997,7 +997,7 @@ export default function FieldTechJobsPage() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>
@@ -1005,7 +1005,7 @@ export default function FieldTechJobsPage() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => {
                     setShowTMModal(false);
                     setShowNewCustomer(false);
@@ -1030,7 +1030,7 @@ export default function FieldTechJobsPage() {
                 <button
                   type="submit"
                   disabled={isCreatingTM}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-none shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                 >
                   {isCreatingTM ? "Creating..." : "Create T&M or Emergency Job"}
                 </button>

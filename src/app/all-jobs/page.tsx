@@ -394,7 +394,7 @@ export default function UnifiedJobsPage() {
         </p>
 
         {loadError && (
-          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg flex items-center justify-between">
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-none flex items-center justify-between">
             <span>{loadError}</span>
             <button
               onClick={() => {
@@ -422,7 +422,7 @@ export default function UnifiedJobsPage() {
             {showTotals ? "Hide" : "Show"} Totals & Date Range
           </button>
           {showTotals && (
-            <div className="mt-4 bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
+            <div className="mt-4 bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-medium text-neutral-700 dark:text-white">
@@ -431,7 +431,7 @@ export default function UnifiedJobsPage() {
                   <button
                     type="button"
                     onClick={() => setAllTime(!allTime)}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    className={`px-4 py-1.5 text-sm font-medium rounded-none transition-colors ${
                       allTime
                         ? "bg-[#f26722] text-white"
                         : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
@@ -445,7 +445,7 @@ export default function UnifiedJobsPage() {
                         type="date"
                         value={dateRangeStart}
                         onChange={(e) => setDateRangeStart(e.target.value)}
-                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                       />
                       <span className="text-neutral-500 dark:text-neutral-400">
                         to
@@ -454,14 +454,14 @@ export default function UnifiedJobsPage() {
                         type="date"
                         value={dateRangeEnd}
                         onChange={(e) => setDateRangeEnd(e.target.value)}
-                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                       />
                     </div>
                   )}
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                <div className="bg-neutral-50 dark:bg-dark-100 rounded-md p-3">
+                <div className="bg-neutral-50 dark:bg-dark-100 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     All Jobs
                   </div>
@@ -476,7 +476,7 @@ export default function UnifiedJobsPage() {
                     {statusTotals.all.count} jobs
                   </div>
                 </div>
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-md p-3">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Pending
                   </div>
@@ -491,7 +491,7 @@ export default function UnifiedJobsPage() {
                     {statusTotals.pending.count} jobs
                   </div>
                 </div>
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     In Progress
                   </div>
@@ -506,7 +506,7 @@ export default function UnifiedJobsPage() {
                     {statusTotals.in_progress.count} jobs
                   </div>
                 </div>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-3">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Completed
                   </div>
@@ -521,7 +521,7 @@ export default function UnifiedJobsPage() {
                     {statusTotals.completed.count} jobs
                   </div>
                 </div>
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-md p-3">
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Billed
                   </div>
@@ -538,7 +538,7 @@ export default function UnifiedJobsPage() {
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3">
+                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-none p-3">
                   <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                     Remaining Balance Left to Bill
                   </div>
@@ -563,7 +563,7 @@ export default function UnifiedJobsPage() {
         {/* Status Tabs */}
         <div className="mt-6">
           <div
-            className="inline-flex rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+            className="inline-flex rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
             role="tablist"
           >
             {[
@@ -594,7 +594,7 @@ export default function UnifiedJobsPage() {
           <button
             type="button"
             onClick={() => setFilterByContractValue(!filterByContractValue)}
-            className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`inline-flex items-center px-4 py-2 rounded-none text-sm font-medium transition-colors ${
               filterByContractValue
                 ? "bg-[#f26722] text-white"
                 : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100"
@@ -612,7 +612,7 @@ export default function UnifiedJobsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
-              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <svg
@@ -654,7 +654,7 @@ export default function UnifiedJobsPage() {
           </div>
         ) : (
           <>
-            <div className="mt-8 -mx-4 overflow-x-auto sm:mx-0 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <div className="mt-8 -mx-4 overflow-x-auto sm:mx-0 shadow ring-1 ring-black ring-opacity-5 md:rounded-none">
               <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                 <thead className="bg-neutral-50 dark:bg-dark-200">
                   <tr>
@@ -724,7 +724,7 @@ export default function UnifiedJobsPage() {
                         >
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6">
                             <span
-                              className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold border ${badgeClass}`}
+                              className={`inline-flex items-center rounded-none px-2.5 py-1 text-xs font-semibold border ${badgeClass}`}
                             >
                               {sourceLabel}
                             </span>
@@ -743,7 +743,7 @@ export default function UnifiedJobsPage() {
                           </td>
                           <td className="whitespace-nowrap px-3 py-4">
                             <span
-                              className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
+                              className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
                             >
                               {formatStatusLabel(job.status)}
                             </span>
@@ -791,7 +791,7 @@ export default function UnifiedJobsPage() {
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={pageSafe <= 1}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     Previous
                   </button>
@@ -802,7 +802,7 @@ export default function UnifiedJobsPage() {
                     type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={pageSafe >= totalPages}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     Next
                   </button>

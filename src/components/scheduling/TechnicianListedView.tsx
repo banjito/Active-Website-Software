@@ -446,7 +446,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setIsTechFilterOpen(!isTechFilterOpen)}
-                  className="w-full px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                  className="w-full px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
                 >
                   <span>
                     {selectedTechIds.length === 0
@@ -473,7 +473,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                       className="fixed inset-0 z-40"
                       onClick={() => setIsTechFilterOpen(false)}
                     />
-                    <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 shadow-lg">
+                    <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow-lg">
                       <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-neutral-200 dark:border-neutral-700">
                         <Input
                           placeholder="Search technician..."
@@ -564,7 +564,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 )}
               </div>
               {selectedTechIds.length > 0 && (
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                <span className="text-xs px-2 py-1 rounded-none bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                   {selectedTechIds.length} filtered
                 </span>
               )}
@@ -725,9 +725,9 @@ export const TechnicianListedView: React.FC<Props> = ({
                 placeholder="Search technicians..."
                 value={qaTechSearch}
                 onChange={(e) => setQaTechSearch(e.target.value)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                className="mb-2 w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
               />
-              <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
+              <div className="max-h-48 overflow-auto border rounded-none dark:border-neutral-700">
                 {displayTechs
                   .filter(
                     (t) =>
@@ -782,10 +782,10 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) => setQaJobSearch(e.target.value)}
                 onFocus={() => setQaJobOpen(true)}
                 onBlur={() => setTimeout(() => setQaJobOpen(false), 100)}
-                className="mb-2 w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                className="mb-2 w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
               />
               {qaJobOpen && (
-                <div className="max-h-48 overflow-auto border rounded-md dark:border-neutral-700">
+                <div className="max-h-48 overflow-auto border rounded-none dark:border-neutral-700">
                   {[...jobs]
                     .filter(
                       (j) =>
@@ -832,7 +832,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
@@ -845,7 +845,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, endDate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
               />
             </div>
             <div>
@@ -900,7 +900,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 onChange={(e) =>
                   setQaForm((prev) => ({ ...prev, startTime: e.target.value }))
                 }
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                 disabled={qaForm.isAllDay}
               />
             </div>
@@ -915,7 +915,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                   setQaForm((prev) => ({ ...prev, endTime: e.target.value }))
                 }
                 disabled={qaForm.unknownHours || qaForm.isAllDay}
-                className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
+                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
               />
               <label className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
                 <input

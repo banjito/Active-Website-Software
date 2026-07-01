@@ -333,7 +333,7 @@ export function GoalsDashboard() {
                 </p>
                 <h3 className="text-2xl font-bold mt-1">{goals.length}</h3>
               </div>
-              <div className="p-2 bg-blue-100 rounded-md dark:bg-blue-900">
+              <div className="p-2 bg-blue-100 rounded-none dark:bg-blue-900">
                 <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -365,7 +365,7 @@ export function GoalsDashboard() {
                   }
                 </h3>
               </div>
-              <div className="p-2 bg-green-100 rounded-md dark:bg-green-900">
+              <div className="p-2 bg-green-100 rounded-none dark:bg-green-900">
                 <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -400,7 +400,7 @@ export function GoalsDashboard() {
                   }
                 </h3>
               </div>
-              <div className="p-2 bg-amber-100 rounded-md dark:bg-amber-900">
+              <div className="p-2 bg-amber-100 rounded-none dark:bg-amber-900">
                 <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
@@ -427,7 +427,7 @@ export function GoalsDashboard() {
                   }
                 </h3>
               </div>
-              <div className="p-2 bg-purple-100 rounded-md dark:bg-purple-900">
+              <div className="p-2 bg-purple-100 rounded-none dark:bg-purple-900">
                 <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>

@@ -150,7 +150,7 @@ export default function AmpContactsManager() {
         {loading ? (
           <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         ) : (
-          <div className="rounded-md border overflow-x-auto">
+          <div className="rounded-none border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -34,10 +34,10 @@ const Progress: React.FC<{ value: number; className?: string }> = ({
 }) => {
   return (
     <div
-      className={`w-full bg-neutral-200 rounded-full h-2.5 dark:bg-dark-150 ${className}`}
+      className={`w-full bg-neutral-200 rounded-none h-2.5 dark:bg-dark-150 ${className}`}
     >
       <div
-        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+        className="bg-blue-600 h-2.5 rounded-none transition-all duration-300"
         style={{ width: `${value}%` }}
       ></div>
     </div>
@@ -442,13 +442,13 @@ export const DataBackupControls: React.FC = () => {
                 <label
                   htmlFor="auto-backup-toggle"
                   className={`
-                    block overflow-hidden h-6 rounded-full cursor-pointer
+                    block overflow-hidden h-6 rounded-none cursor-pointer
                     ${backupSchedule.enabled ? "bg-green-500" : "bg-neutral-300"}
                   `}
                 >
                   <span
                     className={`
-                      block h-6 w-6 rounded-full bg-white shadow transform transition-transform
+                      block h-6 w-6 rounded-none bg-white shadow transform transition-transform
                       ${backupSchedule.enabled ? "translate-x-4" : "translate-x-0"}
                     `}
                   />
@@ -467,7 +467,7 @@ export const DataBackupControls: React.FC = () => {
                   updateBackupSchedule("frequency", e.target.value)
                 }
                 disabled={!backupSchedule.enabled}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -551,7 +551,7 @@ export const DataBackupControls: React.FC = () => {
                 <div
                   key={backup.id}
                   className={`
-                    p-4 border rounded-md relative
+                    p-4 border rounded-none relative
                     ${backup.status === "failed" ? "border-red-200 bg-red-50" : "border-neutral-200 bg-white"}
                     ${selectedBackup === backup.id && restoreStatus.inProgress ? "border-blue-300 bg-blue-50" : ""}
                   `}

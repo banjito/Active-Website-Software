@@ -245,11 +245,11 @@ export default function JobSurveys({
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-800 p-4 rounded-md">{error}</div>
+        <div className="bg-red-50 text-red-800 p-4 rounded-none">{error}</div>
       )}
 
       {surveys.length === 0 ? (
-        <div className="bg-neutral-50 dark:bg-dark-150 p-8 text-center rounded-md">
+        <div className="bg-neutral-50 dark:bg-dark-150 p-8 text-center rounded-none">
           <FileText className="h-12 w-12 mx-auto text-neutral-400" />
           <h3 className="mt-2 text-lg font-medium">No surveys yet</h3>
           <p className="mt-1 text-neutral-500 dark:text-white">
@@ -346,11 +346,11 @@ export default function JobSurveys({
 
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-dark-150 rounded-lg p-6 max-w-md w-full">
+          <div className="bg-white dark:bg-dark-150 rounded-none p-6 max-w-md w-full">
             <h2 className="text-xl font-semibold mb-4">Create New Survey</h2>
 
             {error && (
-              <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4">
+              <div className="bg-red-50 text-red-800 p-3 rounded-none mb-4">
                 {error}
               </div>
             )}
@@ -363,7 +363,7 @@ export default function JobSurveys({
                 <select
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  className="w-full border border-neutral-300 rounded-md p-2"
+                  className="w-full border border-neutral-300 rounded-none p-2"
                   disabled={isSubmitting}
                 >
                   <option value="">Select a template</option>
@@ -382,7 +382,7 @@ export default function JobSurveys({
                 <select
                   value={selectedContactId}
                   onChange={(e) => setSelectedContactId(e.target.value)}
-                  className="w-full border border-neutral-300 rounded-md p-2"
+                  className="w-full border border-neutral-300 rounded-none p-2"
                   disabled={isSubmitting}
                 >
                   <option value="">No contact</option>

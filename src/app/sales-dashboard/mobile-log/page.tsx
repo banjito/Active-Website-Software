@@ -358,7 +358,7 @@ export default function MobileLogInteraction() {
             1. Customer
           </label>
           {selectedCustomer ? (
-            <div className="flex items-center justify-between rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4">
+            <div className="flex items-center justify-between rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4">
               <span className="text-lg font-medium text-neutral-900 dark:text-white truncate">
                 {selectedCustomer.company_name || selectedCustomer.name}
               </span>
@@ -380,10 +380,10 @@ export default function MobileLogInteraction() {
                 value={customerTerm}
                 onChange={(e) => setCustomerTerm(e.target.value)}
                 placeholder="Search customers..."
-                className="w-full rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
               />
               {customerTerm.trim() && (
-                <div className="mt-2 rounded-xl border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-neutral-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
+                <div className="mt-2 rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-neutral-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
                   {searching ? (
                     <div className="px-5 py-4 text-base text-neutral-500">
                       Searching…
@@ -434,7 +434,7 @@ export default function MobileLogInteraction() {
             value={contactId}
             onChange={(e) => setContactId(e.target.value)}
             disabled={!selectedCustomer || contactsLoading}
-            className="w-full rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
           >
             {!selectedCustomer ? (
               <option value="">Select a customer first</option>
@@ -455,21 +455,21 @@ export default function MobileLogInteraction() {
           {selectedCustomer && !contactsLoading && (
             <div className="mt-2">
               {showNewContact ? (
-                <div className="rounded-xl border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 p-3 space-y-2">
+                <div className="rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="text"
                       value={newContactFirst}
                       onChange={(e) => setNewContactFirst(e.target.value)}
                       placeholder="First name"
-                      className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                     />
                     <input
                       type="text"
                       value={newContactLast}
                       onChange={(e) => setNewContactLast(e.target.value)}
                       placeholder="Last name"
-                      className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <input
@@ -478,7 +478,7 @@ export default function MobileLogInteraction() {
                     value={newContactPhone}
                     onChange={(e) => setNewContactPhone(e.target.value)}
                     placeholder="Phone (optional)"
-                    className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                   />
                   <div className="flex items-center gap-2">
                     <button
@@ -488,7 +488,7 @@ export default function MobileLogInteraction() {
                         setNewContactLast("");
                         setNewContactPhone("");
                       }}
-                      className="px-4 py-3 rounded-lg text-base font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-dark-200"
+                      className="px-4 py-3 rounded-none text-base font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-dark-200"
                     >
                       Cancel
                     </button>
@@ -498,7 +498,7 @@ export default function MobileLogInteraction() {
                         creatingContact ||
                         (!newContactFirst.trim() && !newContactLast.trim())
                       }
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[#f26722] px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-[#f26722] px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
                     >
                       <Plus className="h-5 w-5" />
                       {creatingContact ? "Adding…" : "Add contact"}
@@ -528,7 +528,7 @@ export default function MobileLogInteraction() {
               <button
                 key={t.value}
                 onClick={() => setNoteType(t.value)}
-                className={`flex flex-col items-center justify-center gap-2 rounded-xl border py-5 text-base font-medium transition-colors ${
+                className={`flex flex-col items-center justify-center gap-2 rounded-none border py-5 text-base font-medium transition-colors ${
                   noteType === t.value
                     ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
                     : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-600 dark:text-neutral-300"
@@ -552,7 +552,7 @@ export default function MobileLogInteraction() {
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="What happened during this interaction..."
-            className="w-full rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
           />
         </div>
 
@@ -561,7 +561,7 @@ export default function MobileLogInteraction() {
           {selectedCustomer && (
             <button
               onClick={clearAll}
-              className="px-5 py-4 rounded-xl text-lg font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-dark-200"
+              className="px-5 py-4 rounded-none text-lg font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-dark-200"
             >
               Clear
             </button>
@@ -569,7 +569,7 @@ export default function MobileLogInteraction() {
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#f26722] px-5 py-4 text-lg font-semibold text-white shadow-sm active:bg-[#f26722]/90 disabled:opacity-50"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-[#f26722] px-5 py-4 text-lg font-semibold text-white shadow-sm active:bg-[#f26722]/90 disabled:opacity-50"
           >
             <Feather className="h-6 w-6" />
             {saving ? "Saving…" : "Log Interaction"}
@@ -586,7 +586,7 @@ export default function MobileLogInteraction() {
               {sessionLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-start gap-2 rounded-xl border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-4 py-3"
+                  className="flex items-start gap-2 rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-4 py-3"
                 >
                   <CheckCircle2 className="h-6 w-6 text-green-500 shrink-0 mt-0.5" />
                   <div className="min-w-0">

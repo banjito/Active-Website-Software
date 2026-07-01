@@ -685,7 +685,7 @@ export default function ExpenseTracking() {
               </div>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-none border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -762,7 +762,7 @@ export default function ExpenseTracking() {
                         </TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[expense.status]}`}
+                            className={`inline-flex items-center px-2 py-1 rounded-none text-xs font-medium ${statusColors[expense.status]}`}
                           >
                             {expense.status.charAt(0).toUpperCase() +
                               expense.status.slice(1)}

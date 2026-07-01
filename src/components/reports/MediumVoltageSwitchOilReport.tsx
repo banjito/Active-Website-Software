@@ -449,16 +449,16 @@ const initialWaySectionContact: ContactResistance = {
 // Add these CSS classes near the top of the file, after the interfaces and before the component
 const tableStyles = {
   container:
-    "w-full overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700",
+    "w-full overflow-x-auto rounded-none border border-neutral-200 dark:border-neutral-700",
   table:
     "w-full min-w-full table-fixed divide-y divide-neutral-200 dark:divide-neutral-700",
   headerCell:
     "px-2 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
 };
 
 export default function MediumVoltageSwitchOilReport() {
@@ -1583,7 +1583,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.customer}
                   onChange={(e) => handleChange("customer", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1595,7 +1595,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.jobNumber}
                   onChange={(e) => handleChange("jobNumber", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1607,7 +1607,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1619,7 +1619,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.identifier}
                   onChange={(e) => handleChange("identifier", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1631,7 +1631,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1643,7 +1643,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.substation}
                   onChange={(e) => handleChange("substation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1655,7 +1655,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1667,7 +1667,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex gap-4 items-start">
@@ -1683,14 +1683,14 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("temperature", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-neutral-600 dark:text-white">°F</span>
                     <input
                       type="number"
                       value={(((formData.temperature - 32) * 5) / 9).toFixed(0)}
                       readOnly
-                      className="block w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
+                      className="block w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
                     />
                     <span className="text-neutral-600 dark:text-white">°C</span>
                     <span className="text-neutral-600 dark:text-white ml-4">
@@ -1700,7 +1700,7 @@ export default function MediumVoltageSwitchOilReport() {
                       type="number"
                       value={getTCF(fahrenheitToCelsius(formData.temperature))}
                       readOnly
-                      className="block w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
+                      className="block w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-white text-base"
                     />
                   </div>
                 </div>
@@ -1716,7 +1716,7 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("humidity", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-neutral-600 dark:text-white">%</span>
                   </div>
@@ -2952,7 +2952,7 @@ export default function MediumVoltageSwitchOilReport() {
                       newVFITestEntry,
                     ]);
                   }}
-                  className="mt-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md"
+                  className="mt-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-none"
                 >
                   Add VFI Test Entry
                 </button>
@@ -3403,7 +3403,7 @@ export default function MediumVoltageSwitchOilReport() {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

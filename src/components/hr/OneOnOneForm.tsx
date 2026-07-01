@@ -232,7 +232,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
   return (
     <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/50 backdrop-blur-sm overflow-y-auto p-4">
       <div
-        className="relative w-full max-w-4xl bg-white dark:bg-dark-150 rounded-xl shadow-2xl my-6 overflow-hidden"
+        className="relative w-full max-w-4xl bg-white dark:bg-dark-150 rounded-none shadow-2xl my-6 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Accent stripe */}
@@ -253,7 +253,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-200 text-neutral-500 dark:text-neutral-400"
+            className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-200 text-neutral-500 dark:text-neutral-400"
           >
             <X className="h-5 w-5" />
           </button>
@@ -318,7 +318,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                   key={opt.value}
                   type="button"
                   onClick={() => setPulse(opt.value)}
-                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
+                  className={`flex flex-col items-center gap-2 rounded-none border-2 p-4 transition-all ${
                     pulse === opt.value
                       ? opt.colors
                       : "border-neutral-200 dark:border-dark-300 hover:border-neutral-300 dark:hover:border-dark-200"
@@ -341,11 +341,11 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               {events.map((evt, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4"
+                  className="rounded-none border border-neutral-200 dark:border-dark-300 p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4a4e8a]" />
+                      <span className="w-1.5 h-1.5 rounded-none bg-[#4a4e8a]" />
                       Event {idx + 1}
                     </span>
                     {events.length > 1 && (
@@ -389,11 +389,11 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
             title="Counseling & Feedback"
             desc="Specific behaviors, outcomes, and coaching notes from this period"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-lg border border-neutral-200 dark:border-dark-300 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-none border border-neutral-200 dark:border-dark-300 overflow-hidden">
               {/* Strengths */}
               <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-5 md:border-r border-b md:border-b-0 border-neutral-200 dark:border-dark-300">
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-200 dark:border-dark-300">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                     Strengths & Wins
                   </span>
                   <span className="text-xs text-neutral-400 ml-auto">
@@ -457,7 +457,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               {/* Development Areas */}
               <div className="bg-orange-50/50 dark:bg-orange-900/10 p-5">
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-200 dark:border-dark-300">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
                     Areas to Develop
                   </span>
                   <span className="text-xs text-neutral-400 ml-auto">
@@ -644,13 +644,13 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
             desc="What both parties commit to before the next check-in"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4">
+              <div className="rounded-none border border-neutral-200 dark:border-dark-300 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3 flex items-center gap-1.5">
                   <span className="text-sm">Employee Commits To</span>
                 </p>
                 {employeeCommitments.map((c, idx) => (
                   <div key={idx} className="flex items-center gap-2 mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-none bg-neutral-300 flex-shrink-0" />
                     <input
                       value={c}
                       onChange={(e) => {
@@ -686,13 +686,13 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
                   <Plus className="h-3 w-3" /> Add
                 </button>
               </div>
-              <div className="rounded-lg border border-neutral-200 dark:border-dark-300 p-4">
+              <div className="rounded-none border border-neutral-200 dark:border-dark-300 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3 flex items-center gap-1.5">
                   <span className="text-sm">Manager Commits To</span>
                 </p>
                 {managerCommitments.map((c, idx) => (
                   <div key={idx} className="flex items-center gap-2 mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-none bg-neutral-300 flex-shrink-0" />
                     <input
                       value={c}
                       onChange={(e) => {
@@ -739,7 +739,7 @@ export const OneOnOneForm: React.FC<OneOnOneFormProps> = ({
               value={additionalNotes}
               onChange={(e) => setAdditionalNotes(e.target.value)}
               placeholder="Free-form notes from the conversation..."
-              className="w-full rounded-lg border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 p-4 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600 resize-y min-h-[80px] outline-none focus:border-[#4a4e8a] transition-colors"
+              className="w-full rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 p-4 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-300 dark:placeholder:text-neutral-600 resize-y min-h-[80px] outline-none focus:border-[#4a4e8a] transition-colors"
               rows={4}
             />
           </Section>
@@ -812,7 +812,7 @@ function Section({
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-md bg-neutral-100 dark:bg-dark-200 flex items-center justify-center text-[#f26722]">
+        <div className="w-8 h-8 rounded-none bg-neutral-100 dark:bg-dark-200 flex items-center justify-center text-[#f26722]">
           {icon}
         </div>
         <div className="flex-1 min-w-0">

@@ -879,7 +879,7 @@ const PotentialTransformerATSReport: React.FC = () => {
         }
 
         /* Remove all card styling and shadows */
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow {
           background: white !important;
           box-shadow: none !important;
           border-radius: 0 !important;
@@ -1076,7 +1076,7 @@ const PotentialTransformerATSReport: React.FC = () => {
         }
 
         /* Specifically target common form styling classes */
-        .border, .border-neutral-300, .shadow-sm, .rounded-md,
+        .border, .border-neutral-300, .shadow-sm, .rounded-none,
         .focus\\:ring-2, .focus\\:border-blue-500, .focus\\:outline-none {
           border: none !important;
           box-shadow: none !important;

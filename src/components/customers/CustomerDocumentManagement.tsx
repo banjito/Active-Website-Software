@@ -701,7 +701,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
     <div className="p-6">
       {/* Document Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             All Documents
           </div>
@@ -718,7 +718,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Contracts
           </div>
@@ -735,7 +735,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Invoices
           </div>
@@ -752,7 +752,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Storage Used
           </div>
@@ -761,9 +761,9 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
               45.2MB
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
             <div
-              className="h-full bg-blue-500 rounded-full"
+              className="h-full bg-blue-500 rounded-none"
               style={{ width: "15%" }}
             ></div>
           </div>
@@ -775,7 +775,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
         <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Recent Documents
         </h3>
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow overflow-hidden">
           <div className="divide-y divide-neutral-200 dark:divide-neutral-600">
             <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
               <div className="flex items-center">
@@ -923,11 +923,11 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Document Folders
           </h3>
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow overflow-hidden">
             <div className="divide-y divide-neutral-200 dark:divide-neutral-600">
               <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-none flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-yellow-600"
                       fill="none"
@@ -961,7 +961,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
               <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-none flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-yellow-600"
                       fill="none"
@@ -995,7 +995,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
               <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-none flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-yellow-600"
                       fill="none"
@@ -1029,7 +1029,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
               <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-none flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-yellow-600"
                       fill="none"
@@ -1069,10 +1069,10 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Recent Activity
           </h3>
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow">
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-100 rounded-none flex items-center justify-center">
                   <svg
                     className="w-4 h-4 text-blue-600"
                     fill="none"
@@ -1104,7 +1104,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-indigo-100 rounded-none flex items-center justify-center">
                   <svg
                     className="w-4 h-4 text-indigo-600"
                     fill="none"
@@ -1142,7 +1142,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-100 rounded-none flex items-center justify-center">
                   <svg
                     className="w-4 h-4 text-green-600"
                     fill="none"
@@ -1175,7 +1175,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
             <div className="p-4">
               <div className="flex items-start">
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-red-100 rounded-none flex items-center justify-center">
                   <svg
                     className="w-4 h-4 text-red-600"
                     fill="none"
@@ -1208,7 +1208,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
       {/* Upload Button */}
       <div className="mt-8 flex justify-end">
-        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+        <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
           <svg
             className="w-4 h-4 mr-2"
             fill="none"

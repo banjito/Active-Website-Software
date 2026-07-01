@@ -707,7 +707,7 @@ const InProgressDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-blue-600"></div>
         <span className="ml-2 text-neutral-600 dark:text-neutral-400">
           <LoadingSpinner size="md" />
         </span>
@@ -889,7 +889,7 @@ const InProgressDashboard: React.FC = () => {
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
+                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       />
                       <span className="text-neutral-500 dark:text-neutral-400">
                         to
@@ -898,7 +898,7 @@ const InProgressDashboard: React.FC = () => {
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
+                        className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       />
                     </div>
                   )}
@@ -917,7 +917,7 @@ const InProgressDashboard: React.FC = () => {
                     onChange={(e) =>
                       setStatusFilter(e.target.value as StatusFilterType)
                     }
-                    className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
+                    className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
                   >
                     <option value="all">All Statuses</option>
                     <option value="active">
@@ -940,7 +940,7 @@ const InProgressDashboard: React.FC = () => {
                     <select
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
-                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
+                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm font-medium"
                     >
                       <option value="all">All Divisions</option>
                       {regionData.map((region) => (
@@ -958,7 +958,7 @@ const InProgressDashboard: React.FC = () => {
                       placeholder="Search jobs..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
+                      className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
                     />
                   </div>
                 </div>
@@ -983,7 +983,7 @@ const InProgressDashboard: React.FC = () => {
                     From opportunities
                   </p>
                 </div>
-                <div className="bg-green-500/10 p-3 rounded-lg">
+                <div className="bg-green-500/10 p-3 rounded-none">
                   <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
               </div>
@@ -1004,7 +1004,7 @@ const InProgressDashboard: React.FC = () => {
                     T&M tracking
                   </p>
                 </div>
-                <div className="bg-purple-500/10 p-3 rounded-lg">
+                <div className="bg-purple-500/10 p-3 rounded-none">
                   <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -1033,7 +1033,7 @@ const InProgressDashboard: React.FC = () => {
                             : statusFilter.replace("_", " ")}
                   </p>
                 </div>
-                <div className="bg-blue-500/10 p-3 rounded-lg">
+                <div className="bg-blue-500/10 p-3 rounded-none">
                   <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -1279,7 +1279,7 @@ const InProgressDashboard: React.FC = () => {
                   return (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
+                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -1292,7 +1292,7 @@ const InProgressDashboard: React.FC = () => {
                         </div>
                         <div className="text-right">
                           <div
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}
+                            className={`inline-block px-3 py-1 rounded-none text-xs font-medium ${getJobStatusColor(job.status)}`}
                           >
                             {formatStatusLabel(job.status)}
                           </div>
@@ -1317,7 +1317,7 @@ const InProgressDashboard: React.FC = () => {
                 <select
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
+                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                 >
                   <option value="all">All Divisions</option>
                   {regionData.map((region) => (
@@ -1335,7 +1335,7 @@ const InProgressDashboard: React.FC = () => {
                   placeholder="Search jobs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
+                  className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm w-64"
                 />
               </div>
             </div>
@@ -1349,7 +1349,7 @@ const InProgressDashboard: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-500/10 p-2 rounded-lg">
+                    <div className="bg-blue-500/10 p-2 rounded-none">
                       <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <CardTitle className="text-xl text-neutral-900 dark:text-white">
@@ -1383,7 +1383,7 @@ const InProgressDashboard: React.FC = () => {
                   {region.jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 dark:hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 hover:shadow-md"
+                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 dark:hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 hover:shadow-md"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -1399,17 +1399,17 @@ const InProgressDashboard: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 flex-wrap">
                             <div
-                              className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}
+                              className={`inline-block px-3 py-1 rounded-none text-xs font-medium ${getJobStatusColor(job.status)}`}
                             >
                               {formatStatusLabel(job.status)}
                             </div>
                             <div
-                              className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(job.priority)}`}
+                              className={`inline-block px-3 py-1 rounded-none text-xs font-medium ${getPriorityColor(job.priority)}`}
                             >
                               {formatStatusLabel(job.priority)}
                             </div>
                             {job.job_number && (
-                              <div className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300">
+                              <div className="inline-block px-3 py-1 rounded-none text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300">
                                 #{job.job_number}
                               </div>
                             )}
@@ -1535,11 +1535,11 @@ const InProgressDashboard: React.FC = () => {
         {/* Opportunity Modal - embed full OpportunityDetail route */}
         {showOppModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-5xl p-0 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-none shadow-xl w-full max-w-5xl p-0 overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="sr-only">Opportunity</h3>
                 <button
-                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   onClick={() => setShowOppModal({ open: false, id: null })}
                 >
                   Close
@@ -1559,11 +1559,11 @@ const InProgressDashboard: React.FC = () => {
         {/* Job Modal - embed full JobDetail route */}
         {showJobModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-6xl p-0 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-none shadow-xl w-full max-w-6xl p-0 overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="sr-only">Job</h3>
                 <button
-                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="m-2 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   onClick={() => setShowJobModal({ open: false, id: null })}
                 >
                   Close

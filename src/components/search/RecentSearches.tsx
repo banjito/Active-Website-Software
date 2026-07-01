@@ -85,7 +85,7 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
   // If there are no recent searches, don't render anything
   if (recentSearches.length === 0) {
     return (
-      <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300 p-3">
+      <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-none border border-neutral-200 dark:border-dark-300 p-3">
         <div className="text-sm text-neutral-500 dark:text-dark-400 italic">
           No recent searches
         </div>
@@ -94,7 +94,7 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
   }
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-none border border-neutral-200 dark:border-dark-300">
       <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-dark-300">
         <h3 className="text-sm font-medium text-neutral-700 dark:text-dark-300">
           Recent Searches
@@ -112,7 +112,7 @@ export const RecentSearches: React.FC<RecentSearchesProps> = ({
           <div
             key={index}
             onClick={() => handleSelect(searchTerm)}
-            className="flex items-center justify-between px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-md"
+            className="flex items-center justify-between px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-none"
           >
             <div className="flex items-center">
               <Clock

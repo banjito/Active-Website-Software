@@ -16,7 +16,7 @@ export default function NewGoalPage() {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Create New Goal

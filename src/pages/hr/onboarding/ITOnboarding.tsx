@@ -238,7 +238,7 @@ export const ITOnboarding: React.FC = () => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-block px-2 py-1 rounded-none text-xs font-medium ${
                             t.status === "completed"
                               ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                               : t.status === "in_progress"
@@ -344,7 +344,7 @@ export const ITOnboarding: React.FC = () => {
           </DialogHeader>
           {detailTask && (
             <div className="space-y-4 pt-2">
-              <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-3">
+              <div className="rounded-none bg-neutral-50 dark:bg-neutral-800/50 p-3">
                 <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                   What to do
                 </h4>

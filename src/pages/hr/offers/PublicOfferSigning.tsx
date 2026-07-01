@@ -489,7 +489,7 @@ export const PublicOfferSigning: React.FC = () => {
 
         {/* Attachments (e.g. benefit package) */}
         {attachments.length > 0 && (
-          <div className="mb-8 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+          <div className="mb-8 p-4 border border-neutral-200 dark:border-neutral-700 rounded-none bg-neutral-50 dark:bg-neutral-800/50">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
               <Paperclip className="h-5 w-5" />
               Additional documents
@@ -532,7 +532,7 @@ export const PublicOfferSigning: React.FC = () => {
                   type="text"
                   value={signerName}
                   onChange={(e) => setSignerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
@@ -544,7 +544,7 @@ export const PublicOfferSigning: React.FC = () => {
                   type="email"
                   value={signerEmail}
                   onChange={(e) => setSignerEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
@@ -554,7 +554,7 @@ export const PublicOfferSigning: React.FC = () => {
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Signature *
               </label>
-              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-800">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-none p-4 bg-white dark:bg-neutral-800">
                 <canvas
                   ref={canvasRef}
                   width={600}

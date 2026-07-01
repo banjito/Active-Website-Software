@@ -255,12 +255,12 @@ export const CustomFormTemplates: React.FC = () => {
                           {template.name}
                         </CardTitle>
                         {template.is_published ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-none">
                             <Globe className="w-4 h-4" />
                             Published
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 rounded-full">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 rounded-none">
                             <Lock className="w-3 h-3" />
                             Draft
                           </span>

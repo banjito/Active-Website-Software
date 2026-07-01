@@ -77,7 +77,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               appearance-none w-full px-4 ${sizeClasses[size]}
               bg-white dark:bg-dark-150 text-cozy-wood-900 dark:text-dark-900
               border ${error ? "border-red-500" : "border-cozy-wood-300 dark:border-dark-400"}
-              rounded-lg shadow-sm
+              rounded-none shadow-sm
               focus:outline-none focus:ring-2 focus:ring-offset-0
               ${error ? "focus:ring-red-500" : "focus:ring-cozy-terracotta-500 dark:focus:ring-cozy-terracotta-400"}
               ${icon ? "pl-10" : ""}
@@ -194,7 +194,7 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
 
   return (
     <div
-      className={`flex items-center justify-between w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 cursor-pointer text-neutral-900 dark:text-neutral-100 ${open ? "ring-2 ring-blue-500 outline-none" : ""} ${className}`}
+      className={`flex items-center justify-between w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 cursor-pointer text-neutral-900 dark:text-neutral-100 ${open ? "ring-2 ring-blue-500 outline-none" : ""} ${className}`}
       onClick={() => setOpen(!open)}
       {...props}
     >
@@ -239,7 +239,7 @@ export const SelectContent: React.FC<SelectContentProps> = ({
 
   return (
     <div
-      className={`absolute z-50 mt-1 w-full overflow-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-lg max-h-60 py-1 ${alignClasses[align]} ${className}`}
+      className={`absolute z-50 mt-1 w-full overflow-auto rounded-none border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-lg max-h-60 py-1 ${alignClasses[align]} ${className}`}
     >
       {children}
     </div>

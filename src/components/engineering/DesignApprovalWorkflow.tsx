@@ -396,7 +396,7 @@ export function DesignApprovalWorkflow({ refreshTrigger = 0 }: DesignApprovalWor
                   {design.review_comments && (
                     <div className="mt-2">
                       <span className="font-medium text-sm">Review comments:</span>
-                      <p className="text-sm mt-1 p-2 bg-muted rounded-md">{design.review_comments}</p>
+                      <p className="text-sm mt-1 p-2 bg-muted rounded-none">{design.review_comments}</p>
                     </div>
                   )}
                 </div>

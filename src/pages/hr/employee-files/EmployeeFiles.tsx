@@ -208,14 +208,14 @@ export const EmployeeFiles: React.FC = () => {
                     setSelectedEmployeeId(emp.id);
                     setActiveTab('documents'); // Reset to documents tab when selecting new employee
                   }}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  className={`w-full text-left p-3 rounded-none transition-colors ${
                     selectedEmployeeId === emp.id
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`rounded-full p-2 ${
+                    <div className={`rounded-none p-2 ${
                       selectedEmployeeId === emp.id
                         ? 'bg-primary-foreground/20'
                         : 'bg-muted'

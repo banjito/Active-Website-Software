@@ -293,7 +293,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
         </div>
         <div className="flex gap-2">
           <select
-            className="border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
+            className="border border-neutral-300 rounded-none shadow-sm px-3 py-2 text-sm"
             value={statusFilter || ""}
             onChange={(e) => setStatusFilter(e.target.value || null)}
           >
@@ -305,7 +305,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
             ))}
           </select>
           <select
-            className="border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
+            className="border border-neutral-300 rounded-none shadow-sm px-3 py-2 text-sm"
             value={categoryFilter || ""}
             onChange={(e) => setCategoryFilter(e.target.value || null)}
           >
@@ -423,7 +423,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
       {/* Form for adding/editing procedures */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-lg font-medium mb-4">
                 {editingProcedureId ? "Edit Procedure" : "Add New Procedure"}
@@ -476,7 +476,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                       value={form.status || ""}
                       onChange={handleInputChange}
                       required
-                      className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                      className="w-full border border-neutral-300 rounded-none shadow-sm px-3 py-2 text-sm"
                     >
                       {statusOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -500,7 +500,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                     value={form.category || ""}
                     onChange={handleInputChange}
                     required
-                    className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                    className="w-full border border-neutral-300 rounded-none shadow-sm px-3 py-2 text-sm"
                   >
                     {procedureCategories.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -523,7 +523,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                     value={form.description || ""}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full border border-neutral-300 rounded-md shadow-sm px-3 py-2 text-sm"
+                    className="w-full border border-neutral-300 rounded-none shadow-sm px-3 py-2 text-sm"
                   />
                 </div>
 

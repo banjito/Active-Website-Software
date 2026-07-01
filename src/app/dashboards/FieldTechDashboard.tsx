@@ -245,7 +245,7 @@ export const FieldTechDashboard: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       {error && (
-        <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">
+        <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-none text-sm">
           {error}
         </div>
       )}
@@ -257,7 +257,7 @@ export const FieldTechDashboard: React.FC = () => {
           <Link to="/field-tech/jobs" className="block p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
-                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-none mr-2 sm:mr-3 flex-shrink-0">
                   <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -278,7 +278,7 @@ export const FieldTechDashboard: React.FC = () => {
           <Link to="/field-tech/customers" className="block p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
-                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-none mr-2 sm:mr-3 flex-shrink-0">
                   <Users2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -299,7 +299,7 @@ export const FieldTechDashboard: React.FC = () => {
           <Link to="/field-tech/contacts" className="block p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
-                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-none mr-2 sm:mr-3 flex-shrink-0">
                   <Contact className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -320,7 +320,7 @@ export const FieldTechDashboard: React.FC = () => {
           <Link to="/field-tech/field-equipment" className="block p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
-                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-none mr-2 sm:mr-3 flex-shrink-0">
                   <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -359,7 +359,7 @@ export const FieldTechDashboard: React.FC = () => {
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Users2 className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -385,7 +385,7 @@ export const FieldTechDashboard: React.FC = () => {
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Contact className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -411,7 +411,7 @@ export const FieldTechDashboard: React.FC = () => {
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
+            <div className="rounded-none bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <FileText className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -432,7 +432,7 @@ export const FieldTechDashboard: React.FC = () => {
                 {counts.activeJobs}
               </p>
             </div>
-            <div className="rounded-full bg-blue-50 dark:bg-blue-500/15 p-2 flex-shrink-0">
+            <div className="rounded-none bg-blue-50 dark:bg-blue-500/15 p-2 flex-shrink-0">
               <Clock className="h-4 w-4 text-blue-600 dark:text-blue-300" />
             </div>
           </div>
@@ -448,7 +448,7 @@ export const FieldTechDashboard: React.FC = () => {
                 {counts.upcomingJobs}
               </p>
             </div>
-            <div className="rounded-full bg-amber-50 dark:bg-amber-500/15 p-2 flex-shrink-0">
+            <div className="rounded-none bg-amber-50 dark:bg-amber-500/15 p-2 flex-shrink-0">
               <CalendarIcon className="h-4 w-4 text-amber-600 dark:text-amber-300" />
             </div>
           </div>
@@ -464,7 +464,7 @@ export const FieldTechDashboard: React.FC = () => {
                 {counts.completedJobs}
               </p>
             </div>
-            <div className="rounded-full bg-green-50 dark:bg-green-500/15 p-2 flex-shrink-0">
+            <div className="rounded-none bg-green-50 dark:bg-green-500/15 p-2 flex-shrink-0">
               <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-300" />
             </div>
           </div>
@@ -476,7 +476,7 @@ export const FieldTechDashboard: React.FC = () => {
       </h2>
       <Card className="p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
-          <span className="rounded-full bg-neutral-100 dark:bg-dark-200 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-dark-400">
+          <span className="rounded-none bg-neutral-100 dark:bg-dark-200 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-dark-400">
             {recentJobs.length} {recentJobs.length === 1 ? "job" : "jobs"}
           </span>
         </div>

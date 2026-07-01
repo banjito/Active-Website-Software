@@ -798,7 +798,7 @@ export function HrCustomReports() {
       </Card>
 
       {dashboardError && (
-        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+        <div className="flex items-center gap-2 rounded-none border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span>{dashboardError}</span>
         </div>
@@ -879,7 +879,7 @@ export function HrCustomReports() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <div className="rounded-none bg-primary/10 p-2 text-primary">
                       {def.icon}
                     </div>
                     <div>
@@ -903,7 +903,7 @@ export function HrCustomReports() {
                         record(s). Active: {activeHeadcount}.
                       </p>
                       <ScrollArea
-                        className="rounded-md border"
+                        className="rounded-none border"
                         maxHeight="420px"
                       >
                         <Table>
@@ -962,7 +962,7 @@ export function HrCustomReports() {
                         record(s).
                       </p>
                       <ScrollArea
-                        className="rounded-md border"
+                        className="rounded-none border"
                         maxHeight="420px"
                       >
                         <Table>
@@ -1013,7 +1013,7 @@ export function HrCustomReports() {
                         Open: {openReqs}.
                       </p>
                       <ScrollArea
-                        className="rounded-md border"
+                        className="rounded-none border"
                         maxHeight="420px"
                       >
                         <Table>
@@ -1062,7 +1062,7 @@ export function HrCustomReports() {
                         in 90 days: {certsExpiring90}.
                       </p>
                       <ScrollArea
-                        className="rounded-md border"
+                        className="rounded-none border"
                         maxHeight="420px"
                       >
                         <Table>
@@ -1113,7 +1113,7 @@ export function HrCustomReports() {
                         data required.
                       </p>
                       <ScrollArea
-                        className="rounded-md border"
+                        className="rounded-none border"
                         maxHeight="420px"
                       >
                         <Table>

@@ -159,18 +159,18 @@ export const DocumentAcknowledgment: React.FC = () => {
   const getStatusBadge = (status: string) => {
     if (status === "signed")
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+        <span className="inline-flex items-center gap-1 rounded-none bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
           <CheckCircle className="h-3 w-3" /> Signed
         </span>
       );
     if (status === "declined")
       return (
-        <span className="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+        <span className="inline-flex rounded-none bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
           Declined
         </span>
       );
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+      <span className="inline-flex items-center gap-1 rounded-none bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
         <Clock className="h-3 w-3" /> Pending
       </span>
     );
@@ -680,7 +680,7 @@ export const DocumentAcknowledgment: React.FC = () => {
           >
             Active
             {!loading && (
-              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5">
+              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-none px-2 py-0.5">
                 {activeForms.length}
               </span>
             )}
@@ -696,7 +696,7 @@ export const DocumentAcknowledgment: React.FC = () => {
             <Archive className="h-3.5 w-3.5 inline mr-1.5" />
             Archived
             {!loading && (
-              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5">
+              <span className="ml-1.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-none px-2 py-0.5">
                 {archivedForms.length}
               </span>
             )}
@@ -836,7 +836,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                         No acknowledgments recorded yet.
                       </p>
                     ) : (
-                      <div className="overflow-x-auto border rounded-lg">
+                      <div className="overflow-x-auto border rounded-none">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b bg-muted/50">
@@ -930,7 +930,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                     form_type: e.target.value as typeof addForm.form_type,
                   }))
                 }
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
               >
                 {DOC_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -1000,14 +1000,14 @@ export const DocumentAcknowledgment: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCreateAnnouncement(!createAnnouncement)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                  className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                     createAnnouncement
                       ? "bg-[#f26722]"
                       : "bg-neutral-300 dark:bg-neutral-600"
                   }`}
                 >
                   <span
-                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                       createAnnouncement ? "translate-x-5" : "translate-x-1"
                     }`}
                   />
@@ -1037,7 +1037,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                         }))
                       }
                       placeholder={`A new document "${addForm.name || "document"}" has been uploaded and requires your acknowledgment.`}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                      className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1053,7 +1053,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                             category: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
                       >
                         {ANNOUNCEMENT_CATEGORIES.map((c) => (
                           <option key={c.value} value={c.value}>
@@ -1075,7 +1075,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                             scheduled_at: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="w-full rounded-none border border-input bg-background px-3 py-2 text-sm"
                       />
                     </div>
                   </div>
@@ -1152,7 +1152,7 @@ export const DocumentAcknowledgment: React.FC = () => {
             </DialogHeader>
             <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
               {getAttachmentUrl(formToSign) && (
-                <div className="border rounded-lg overflow-hidden flex-1 min-h-[280px] bg-neutral-100 dark:bg-neutral-900">
+                <div className="border rounded-none overflow-hidden flex-1 min-h-[280px] bg-neutral-100 dark:bg-neutral-900">
                   <iframe
                     title="Document"
                     src={getAttachmentUrl(formToSign)!}
@@ -1163,7 +1163,7 @@ export const DocumentAcknowledgment: React.FC = () => {
               )}
               <div className="space-y-2 shrink-0">
                 <label className="text-sm font-medium">Your signature</label>
-                <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
+                <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
                   <canvas
                     ref={canvasRef}
                     width={500}

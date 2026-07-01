@@ -172,15 +172,15 @@ const GoalDashboard: React.FC = () => {
             ]}
           />
 
-          <div className="flex rounded-md border border-input">
+          <div className="flex rounded-none border border-input">
             <button
-              className={`px-3 py-2 rounded-l-md ${viewType === "cards" ? "bg-primary text-white" : "bg-transparent"}`}
+              className={`px-3 py-2 rounded-none ${viewType === "cards" ? "bg-primary text-white" : "bg-transparent"}`}
               onClick={() => setViewType("cards")}
             >
               <PieChart className="h-5 w-5" />
             </button>
             <button
-              className={`px-3 py-2 rounded-r-md ${viewType === "list" ? "bg-primary text-white" : "bg-transparent"}`}
+              className={`px-3 py-2 rounded-none ${viewType === "list" ? "bg-primary text-white" : "bg-transparent"}`}
               onClick={() => setViewType("list")}
             >
               <BarChart className="h-5 w-5" />
@@ -244,9 +244,9 @@ const GoalDashboard: React.FC = () => {
             <div className="text-2xl font-bold">
               {summaryMetrics.averageProgress}%
             </div>
-            <div className="w-full bg-neutral-200 h-2 rounded-full">
+            <div className="w-full bg-neutral-200 h-2 rounded-none">
               <div
-                className="bg-blue-600 h-2 rounded-full"
+                className="bg-blue-600 h-2 rounded-none"
                 style={{ width: `${summaryMetrics.averageProgress}%` }}
               ></div>
             </div>
@@ -297,9 +297,9 @@ const GoalDashboard: React.FC = () => {
 
                       <div className="mt-4 space-y-2">
                         <div className="text-sm text-neutral-500">Progress</div>
-                        <div className="w-full bg-neutral-200 h-2 rounded-full">
+                        <div className="w-full bg-neutral-200 h-2 rounded-none">
                           <div
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="bg-blue-600 h-2 rounded-none"
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
@@ -357,9 +357,9 @@ const GoalDashboard: React.FC = () => {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <span>{progress}%</span>
-                            <div className="w-20 bg-neutral-200 h-2 rounded-full">
+                            <div className="w-20 bg-neutral-200 h-2 rounded-none">
                               <div
-                                className="bg-blue-600 h-2 rounded-full"
+                                className="bg-blue-600 h-2 rounded-none"
                                 style={{ width: `${progress}%` }}
                               ></div>
                             </div>

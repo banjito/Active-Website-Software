@@ -97,11 +97,11 @@ const EnlargedPhotoView: React.FC<{ src: string; onClose: () => void }> = ({
         <img
           src={src}
           alt="Enlarged Profile"
-          className="block max-w-full max-h-full object-contain rounded-lg shadow-xl"
+          className="block max-w-full max-h-full object-contain rounded-none shadow-xl"
         />
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-white bg-black/30 hover:bg-black/50 rounded-full p-1.5"
+          className="absolute top-2 right-2 text-white bg-black/30 hover:bg-black/50 rounded-none p-1.5"
         >
           <X className="h-5 w-5" />
         </button>
@@ -1300,7 +1300,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-dark-150 rounded-xl p-8 flex items-center gap-3">
+        <div className="bg-white dark:bg-dark-150 rounded-none p-8 flex items-center gap-3">
           <LoadingSpinner size="sm" />
         </div>
       </div>
@@ -1311,9 +1311,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   if (!profileUser) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-dark-150 rounded-xl p-8 text-center max-w-md">
+        <div className="bg-white dark:bg-dark-150 rounded-none p-8 text-center max-w-md">
           <div className="flex flex-col items-center">
-            <div className="rounded-full bg-red-100 p-3 mb-4">
+            <div className="rounded-none bg-red-100 p-3 mb-4">
               <User className="h-6 w-6 text-red-600" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
@@ -1503,14 +1503,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         aria-hidden={isEditProfileOpen}
       >
         <div
-          className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-xl shadow-2xl overflow-hidden my-auto"
+          className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-none shadow-2xl overflow-hidden my-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Sticky header with close button - always visible */}
           <div className="absolute top-3 right-3 z-20 flex-shrink-0">
             <button
               onClick={onClose}
-              className="text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 shadow-lg"
+              className="text-white bg-black/40 hover:bg-black/60 rounded-none p-1.5 shadow-lg"
             >
               <X className="h-6 w-6" />
             </button>
@@ -1541,7 +1541,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {/* Profile Image */}
               <div className="relative -mt-16 mb-4">
                 <div
-                  className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl bg-neutral-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
+                  className={`w-32 h-32 rounded-none overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl bg-neutral-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
                   onClick={(e) =>
                     profileImage && handlePhotoClick(e, profileImage)
                   }
@@ -1571,7 +1571,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       {displayName}
                     </h1>
                     {role && (
-                      <div className="mt-1 inline-flex items-center rounded-full bg-[#f26722]/10 px-2.5 py-0.5 text-xs font-medium text-[#f26722]">
+                      <div className="mt-1 inline-flex items-center rounded-none bg-[#f26722]/10 px-2.5 py-0.5 text-xs font-medium text-[#f26722]">
                         {role}
                       </div>
                     )}
@@ -1603,7 +1603,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                 {/* Profile Not Set Up Message */}
                 {!isProfileSetUp && (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-none p-4">
                     <div className="flex items-start gap-3">
                       <User className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                       <div>
@@ -2328,7 +2328,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       c ? { ...c, status: e.target.value } : null,
                     )
                   }
-                  className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:border-dark-300"
+                  className="mt-1 flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:border-dark-300"
                 >
                   <option value="active">Active</option>
                   <option value="expired">Expired</option>

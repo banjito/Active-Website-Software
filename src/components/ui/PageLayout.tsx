@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
-import { Button } from './Button';
+import React, { ReactNode } from "react";
+import { Button } from "./Button";
 
 interface PageLayoutProps {
   title: string;
@@ -25,7 +25,9 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             {breadcrumbs.map((crumb, index) => (
               <li key={crumb.label} className="flex items-center">
                 {index > 0 && (
-                  <span className="mx-2 text-dark-primary/40 dark:text-dark-secondary/40">/</span>
+                  <span className="mx-2 text-dark-primary/40 dark:text-dark-secondary/40">
+                    /
+                  </span>
                 )}
                 {crumb.to ? (
                   <a
@@ -46,7 +48,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       )}
 
       {/* Header */}
-      <header className="mb-8 bg-white dark:bg-dark-150 p-6 rounded-lg border-2 border-dark-accent/20 dark:border-dark-accent/10 shadow-sm">
+      <header className="mb-8 bg-white dark:bg-dark-150 p-6 rounded-none border-2 border-dark-accent/20 dark:border-dark-accent/10 shadow-sm">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-dark-primary dark:text-dark-secondary">
@@ -68,4 +70,4 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   );
 };
 
-export default PageLayout; 
+export default PageLayout;

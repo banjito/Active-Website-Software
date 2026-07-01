@@ -524,7 +524,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ template }) => {
   );
 
   return (
-    <div className="max-w-5xl mx-auto bg-white dark:bg-dark-150 rounded-lg shadow-lg p-8">
+    <div className="max-w-5xl mx-auto bg-white dark:bg-dark-150 rounded-none shadow-lg p-8">
       {/* Preview Header */}
       <div className="mb-6 pb-6 border-b dark:border-neutral-700">
         <div className="flex justify-between items-start">

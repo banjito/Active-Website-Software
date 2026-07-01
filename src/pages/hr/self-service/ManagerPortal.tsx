@@ -26,7 +26,7 @@ function ReportCard({
   return (
     <button
       type="button"
-      className={`group text-left rounded-xl border p-4 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+      className={`group text-left rounded-none border p-4 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
         muted
           ? 'border-slate-200/80 dark:border-slate-700/70 bg-slate-50/50 dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-600'
           : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-600'
@@ -34,7 +34,7 @@ function ReportCard({
       onClick={onOpenProfile}
     >
       <div className="flex items-start gap-4">
-        <div className="h-14 w-14 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-sm">
+        <div className="h-14 w-14 rounded-none overflow-hidden bg-slate-200 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-sm">
           {report.avatar_url ? (
             <img src={report.avatar_url} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -179,7 +179,7 @@ export const ManagerPortal: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero header */}
       <div className="mb-8">
-        <div className="rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-900/40 border border-slate-200/80 dark:border-slate-700/50 px-6 py-8 sm:px-8">
+        <div className="rounded-none bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-900/40 border border-slate-200/80 dark:border-slate-700/50 px-6 py-8 sm:px-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
             Manager Portal
           </h1>
@@ -203,7 +203,7 @@ export const ManagerPortal: React.FC = () => {
                   People who report right to you
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 <Users className="h-6 w-6 text-slate-600 dark:text-slate-300" />
               </div>
             </div>
@@ -221,7 +221,7 @@ export const ManagerPortal: React.FC = () => {
                   Report to your direct reports
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 <Users className="h-6 w-6 text-slate-600 dark:text-slate-300" />
               </div>
             </div>
@@ -236,7 +236,7 @@ export const ManagerPortal: React.FC = () => {
                   Edit reporting in HR Data → Org Chart
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 <UserPlus className="h-6 w-6 text-slate-600 dark:text-slate-300" />
               </div>
             </div>
@@ -248,7 +248,7 @@ export const ManagerPortal: React.FC = () => {
       <Card className="border-slate-200 dark:border-slate-700/50 overflow-hidden">
         <CardHeader className="border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30 px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-slate-200/80 dark:bg-slate-700 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-none bg-slate-200/80 dark:bg-slate-700 flex items-center justify-center">
               <Users className="h-5 w-5 text-slate-600 dark:text-slate-300" />
             </div>
             <div>
@@ -263,8 +263,8 @@ export const ManagerPortal: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6">
           {directReports.length === 0 ? (
-            <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-10 text-center">
-              <div className="mx-auto h-14 w-14 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-4">
+            <div className="rounded-none border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-10 text-center">
+              <div className="mx-auto h-14 w-14 rounded-none bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-4">
                 <Users className="h-7 w-7 text-slate-500 dark:text-slate-400" />
               </div>
               <h3 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -288,7 +288,7 @@ export const ManagerPortal: React.FC = () => {
       <Card className="border-slate-200 dark:border-slate-700/50 overflow-hidden mt-8">
         <CardHeader className="border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/30 dark:bg-slate-800/20 px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-none bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center">
               <Users className="h-5 w-5 text-slate-500 dark:text-slate-400" />
             </div>
             <div>

@@ -516,7 +516,7 @@ export function VehicleTracking({
             {vehicle.notes && (
               <div>
                 <h4 className="text-sm text-neutral-500 mb-1">Notes</h4>
-                <p className="text-sm border border-neutral-200 rounded-md p-2 bg-neutral-50">
+                <p className="text-sm border border-neutral-200 rounded-none p-2 bg-neutral-50">
                   {vehicle.notes}
                 </p>
               </div>
@@ -557,7 +557,7 @@ export function VehicleTracking({
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-none">
               {error}
               <button
                 className="ml-2 text-red-600"
@@ -579,7 +579,7 @@ export function VehicleTracking({
               }}
             >
               <div
-                className="bg-white rounded-lg shadow-lg w-full max-w-3xl overflow-hidden"
+                className="bg-white rounded-none shadow-lg w-full max-w-3xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -798,7 +798,7 @@ export function VehicleTracking({
                 <LoadingSpinner size="md" />
               </div>
             ) : vehicles.length === 0 ? (
-              <div className="text-center p-8 bg-neutral-50 rounded-md">
+              <div className="text-center p-8 bg-neutral-50 rounded-none">
                 <Truck className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                 <h3 className="text-lg font-medium mb-1">No Vehicles Added</h3>
                 <p className="text-neutral-600 mb-4">
@@ -823,7 +823,7 @@ export function VehicleTracking({
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-blue-100 rounded-full text-blue-700">
+                          <div className="p-2 bg-blue-100 rounded-none text-blue-700">
                             <Truck className="h-5 w-5" />
                           </div>
                           <div>

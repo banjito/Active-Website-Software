@@ -588,7 +588,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
 
   return (
     <>
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-start justify-between gap-4">
           <div>
@@ -604,7 +604,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
           <button
             type="button"
             onClick={openUploadModal}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] whitespace-nowrap"
           >
             <ImagePlus className="w-4 h-4" />
             Upload Picture
@@ -625,7 +625,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               <button
                 type="button"
                 onClick={openUploadModal}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-md"
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none"
               >
                 <ImagePlus className="w-4 h-4" />
                 Upload Picture
@@ -639,7 +639,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 return (
                   <div
                     key={pic.id}
-                    className="group bg-neutral-50 dark:bg-dark-100 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 flex flex-col"
+                    className="group bg-neutral-50 dark:bg-dark-100 rounded-none overflow-hidden border border-neutral-200 dark:border-neutral-700 flex flex-col"
                   >
                     {/* Thumbnail */}
                     <button
@@ -662,7 +662,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                         <button
                           type="button"
                           onClick={() => setProfileViewUserId(pic.user_id)}
-                          className="flex-shrink-0 h-7 w-7 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-600 dark:text-neutral-300 hover:ring-2 hover:ring-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                          className="flex-shrink-0 h-7 w-7 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-600 dark:text-neutral-300 hover:ring-2 hover:ring-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                           title="View profile"
                         >
                           {pic.user?.profileImage ? (
@@ -764,7 +764,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg w-full max-w-lg shadow-xl">
+          <div className="relative bg-white dark:bg-dark-150 rounded-none w-full max-w-lg shadow-xl">
             <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Upload Picture
@@ -786,7 +786,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-full max-h-80 object-contain rounded-md bg-neutral-100 dark:bg-dark-200"
+                    className="w-full max-h-80 object-contain rounded-none bg-neutral-100 dark:bg-dark-200"
                   />
                   <button
                     type="button"
@@ -796,7 +796,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                       setPreviewUrl(null);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-none"
                     title="Remove"
                   >
                     <X className="w-4 h-4" />
@@ -811,7 +811,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
                 >
                   <Upload className="w-8 h-8" />
                   <span className="text-sm font-medium">Choose image</span>
@@ -840,7 +840,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   rows={3}
                   placeholder="What does this picture show? (e.g., 'Main panel after removing cover during walkthrough')"
-                  className="w-full px-3 py-2 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 />
               </div>
             </div>
@@ -850,7 +850,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 type="button"
                 onClick={closeUploadModal}
                 disabled={uploading}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -858,11 +858,11 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 type="button"
                 onClick={handleUploadSubmit}
                 disabled={!selectedFile || uploading}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-none animate-spin" />
                     Uploading...
                   </>
                 ) : (
@@ -890,7 +890,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               e.stopPropagation();
               closeLightbox();
             }}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full"
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-none"
             title="Close"
           >
             <X className="w-6 h-6" />
@@ -905,7 +905,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   e.stopPropagation();
                   gotoPrev();
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-none"
                 title="Previous"
               >
                 <ChevronLeft className="w-7 h-7" />
@@ -916,7 +916,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   e.stopPropagation();
                   gotoNext();
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-none"
                 title="Next"
               >
                 <ChevronRight className="w-7 h-7" />
@@ -933,12 +933,12 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               alt={
                 lightboxPic.description || lightboxPic.file_name || "Picture"
               }
-              className="max-h-[75vh] max-w-full object-contain rounded-md shadow-2xl"
+              className="max-h-[75vh] max-w-full object-contain rounded-none shadow-2xl"
             />
 
-            <div className="mt-4 w-full max-w-3xl bg-white/5 backdrop-blur text-white rounded-md px-4 py-3">
+            <div className="mt-4 w-full max-w-3xl bg-white/5 backdrop-blur text-white rounded-none px-4 py-3">
               <div className="flex items-center gap-3 mb-2">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center text-xs font-medium">
+                <div className="flex-shrink-0 h-8 w-8 rounded-none overflow-hidden bg-white/20 flex items-center justify-center text-xs font-medium">
                   {lightboxPic.user?.profileImage ? (
                     <img
                       src={lightboxPic.user.profileImage}

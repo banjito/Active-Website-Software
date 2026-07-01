@@ -632,13 +632,13 @@ const JobHazardAnalysisForm: React.FC = () => {
 
   const readOnly = !isEditing || isLocked;
 
-  const inputClass = `w-full border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-sm ${
+  const inputClass = `w-full border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-none ${
     readOnly ? "bg-neutral-50 dark:bg-dark-200 cursor-default" : ""
   }`;
-  const textareaClass = `w-full border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-sm resize-y ${
+  const textareaClass = `w-full border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-none resize-y ${
     readOnly ? "bg-neutral-50 dark:bg-dark-200 cursor-default" : ""
   }`;
-  const selectClass = `w-full border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-sm ${
+  const selectClass = `w-full border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white rounded-none ${
     readOnly ? "bg-neutral-50 dark:bg-dark-200 cursor-default" : ""
   }`;
 
@@ -677,7 +677,7 @@ const JobHazardAnalysisForm: React.FC = () => {
               type="button"
               onClick={handleMarkReadyForReview}
               disabled={saving}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-60"
+              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 disabled:opacity-60"
             >
               Mark Ready for Review
             </button>
@@ -1105,7 +1105,7 @@ const JobHazardAnalysisForm: React.FC = () => {
               <button
                 type="button"
                 onClick={addJobStep}
-                className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
               >
                 <Plus className="h-4 w-4" /> Add Row
               </button>
@@ -1359,7 +1359,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={addAttendee}
-                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
                 >
                   <Plus className="h-4 w-4" /> Add Attendee
                 </button>
@@ -1464,7 +1464,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={addCompletedWork}
-                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
                 >
                   <Plus className="h-4 w-4" /> Add Row
                 </button>

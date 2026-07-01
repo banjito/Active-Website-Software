@@ -2573,7 +2573,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 mb-4">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-4 text-red-700 dark:text-red-300 mb-4">
             {error}
           </div>
         )}
@@ -2615,7 +2615,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               <button
                 onClick={() => handleChange("irDlroOnly", !formData.irDlroOnly)}
                 disabled={!isEditing}
-                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                className={`px-4 py-2 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   formData.irDlroOnly
                     ? "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500"
                     : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 focus:ring-neutral-400 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
@@ -3276,7 +3276,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             <option value=""></option>
                             {visualInspectionResultsOptions.map((option) => (
@@ -6614,7 +6614,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         <div className="mb-4 print:hidden flex justify-center">
           <button
             onClick={copyNameplateDataToNewReport}
-            className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
             Copy Nameplate data to new report
           </button>
@@ -6659,7 +6659,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

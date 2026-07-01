@@ -314,7 +314,7 @@ export const ITEquipmentTasks: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.pending}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[status as keyof typeof colors] || colors.pending}`}
       >
         {status.replace("_", " ")}
       </span>
@@ -330,7 +330,7 @@ export const ITEquipmentTasks: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority as keyof typeof colors] || colors.medium}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[priority as keyof typeof colors] || colors.medium}`}
       >
         {priority}
       </span>

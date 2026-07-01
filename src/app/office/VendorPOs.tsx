@@ -400,7 +400,7 @@ const VendorPOs: React.FC = () => {
                   {pos.length}
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-none">
                 <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -418,7 +418,7 @@ const VendorPOs: React.FC = () => {
                   {totalPending}
                 </p>
               </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+              <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-none">
                 <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
@@ -436,7 +436,7 @@ const VendorPOs: React.FC = () => {
                   {totalOrdered}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-none">
                 <Truck className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
@@ -454,7 +454,7 @@ const VendorPOs: React.FC = () => {
                   {formatCurrency(totalValue)}
                 </p>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-none">
                 <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -654,7 +654,7 @@ const VendorPOs: React.FC = () => {
           </DialogHeader>
 
           {/* PO Form styled like a real PO */}
-          <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-8 bg-white dark:bg-dark-150 w-full">
+          <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-none p-8 bg-white dark:bg-dark-150 w-full">
             {/* Header */}
             <div className="flex justify-between items-start border-b pb-4 mb-6">
               <div className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -1036,7 +1036,7 @@ const VendorPOs: React.FC = () => {
               </DialogHeader>
 
               {/* PO Preview styled like the image */}
-              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-6 bg-white dark:bg-dark-150 print:border-black">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-none p-6 bg-white dark:bg-dark-150 print:border-black">
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
                   <div className="text-sm text-neutral-600 dark:text-neutral-400">

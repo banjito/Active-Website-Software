@@ -175,12 +175,12 @@ export default function CalibrationJobsPage() {
       <div className="mb-8 flex justify-center">
         <Button
           onClick={() => document.getElementById('calibration-job-button')?.click()}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-8 px-12 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-200 relative animate-pulse"
+          className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-8 px-12 rounded-none shadow-xl transform hover:scale-105 transition-transform duration-200 relative animate-pulse"
           size="lg"
         >
           <span className="absolute -top-1 -right-1 flex h-6 w-6">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-6 w-6 bg-red-500 items-center justify-center text-white text-xs">+</span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-none bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-none h-6 w-6 bg-red-500 items-center justify-center text-white text-xs">+</span>
           </span>
           <Plus className="h-8 w-8 mr-4" />
           ADD NEW JOB
@@ -189,7 +189,7 @@ export default function CalibrationJobsPage() {
 
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-3">Create a New Job</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-neutral-50 dark:bg-dark-150">
+        <div className="flex flex-wrap gap-4 p-4 border rounded-none bg-neutral-50 dark:bg-dark-150">
           <div id="calibration-job-button">
             <JobCreationForm
               division="calibration"
@@ -223,7 +223,7 @@ export default function CalibrationJobsPage() {
       {/* Filter Controls */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-3">Filter Jobs</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-neutral-50 dark:bg-dark-150">
+        <div className="flex flex-wrap gap-4 p-4 border rounded-none bg-neutral-50 dark:bg-dark-150">
           <Button
             variant="outline"
             className="flex items-center bg-white dark:bg-dark-150"
@@ -236,7 +236,7 @@ export default function CalibrationJobsPage() {
           <div className="flex items-center">
             <span className="mr-2 text-sm font-medium">Show:</span>
             <select
-              className="px-4 py-2 border rounded-md shadow-sm bg-white dark:bg-dark-150"
+              className="px-4 py-2 border rounded-none shadow-sm bg-white dark:bg-dark-150"
               value={activeFilter}
               onChange={(e) =>
                 setActiveFilter(
@@ -253,7 +253,7 @@ export default function CalibrationJobsPage() {
       </div>
 
       {/* Jobs List */}
-      <Card className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-sm">
+      <Card className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-sm">
         <div className="border-b border-neutral-200 dark:border-neutral-700 p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
             NETA Technician Jobs

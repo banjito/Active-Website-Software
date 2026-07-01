@@ -242,7 +242,7 @@ const SalesGoalManagement: React.FC = () => {
                               className="flex justify-between mb-2"
                             >
                               <span>{type} Goals</span>
-                              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+                              <span className="bg-primary text-white px-2 py-1 rounded-none text-xs">
                                 {count}
                               </span>
                             </div>
@@ -266,7 +266,7 @@ const SalesGoalManagement: React.FC = () => {
                                 className="flex justify-between mb-2"
                               >
                                 <span>{period}</span>
-                                <span className="bg-secondary text-white px-2 py-1 rounded-full text-xs">
+                                <span className="bg-secondary text-white px-2 py-1 rounded-none text-xs">
                                   {count}
                                 </span>
                               </div>

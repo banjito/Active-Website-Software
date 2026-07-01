@@ -1675,7 +1675,7 @@ export const CustomFormFiller: React.FC = () => {
 
       <div className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0">
         <div className="max-w-5xl mx-auto print:max-w-none">
-          <div className="custom-form-container bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
+          <div className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
             {/* Screen-only Header with controls */}
             <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700">
               <div className="flex items-center gap-4">
@@ -1701,7 +1701,7 @@ export const CustomFormFiller: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-neutral-600 hover:bg-neutral-700 rounded-md flex items-center gap-2"
+                  className="px-4 py-2 text-sm text-white bg-neutral-600 hover:bg-neutral-700 rounded-none flex items-center gap-2"
                 >
                   <Printer className="w-4 h-4" />
                   Print Report
@@ -1711,7 +1711,7 @@ export const CustomFormFiller: React.FC = () => {
                   onClick={() =>
                     setStatus((s) => (s === "PASS" ? "FAIL" : "PASS"))
                   }
-                  className={`px-4 py-2 rounded-md text-white font-medium ${
+                  className={`px-4 py-2 rounded-none text-white font-medium ${
                     status === "PASS"
                       ? "bg-green-600 hover:bg-green-700"
                       : "bg-red-600 hover:bg-red-700"

@@ -225,7 +225,7 @@ export const PortalConfiguration: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-none dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
           <span>{error}</span>
         </div>

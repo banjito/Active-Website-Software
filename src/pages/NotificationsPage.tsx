@@ -741,7 +741,7 @@ export default function NotificationsPage() {
             <button
               type="button"
               onClick={() => setTypeFilter("all")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                 typeFilter === "all"
                   ? "bg-[#f26722] text-white"
                   : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -754,7 +754,7 @@ export default function NotificationsPage() {
                 key={status}
                 type="button"
                 onClick={() => setTypeFilter(status)}
-                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                   typeFilter === status
                     ? "bg-[#f26722] text-white"
                     : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -763,7 +763,7 @@ export default function NotificationsPage() {
                 {STATUS_LABELS[status]}
                 {summary[status].unreadCount > 0 && (
                   <span
-                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold ${
+                    className={`inline-flex h-5 w-5 items-center justify-center rounded-none text-xs font-semibold ${
                       typeFilter === status
                         ? "bg-white/25 text-white"
                         : "bg-[#f26722]/10 text-[#f26722]"
@@ -778,7 +778,7 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 onClick={() => setTypeFilter("calibration")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                   typeFilter === "calibration"
                     ? "bg-[#f26722] text-white"
                     : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -830,7 +830,7 @@ export default function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() => { setIsNotifSortOpen((p) => !p); setIsNotifFilterOpen(false); }}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                     sortDirection !== "desc"
                       ? "text-[#f26722]"
                       : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -840,7 +840,7 @@ export default function NotificationsPage() {
                   <ArrowDownWideNarrow className="h-5 w-5" />
                 </button>
                 {isNotifSortOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                     <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Order
                     </div>
@@ -852,7 +852,7 @@ export default function NotificationsPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => { setSortDirection(opt.value); setIsNotifSortOpen(false); }}
-                        className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
+                        className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
                           sortDirection === opt.value
                             ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                             : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -871,7 +871,7 @@ export default function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() => { setIsNotifFilterOpen((p) => !p); setIsNotifSortOpen(false); }}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                     filter !== "all"
                       ? "text-[#f26722]"
                       : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -881,7 +881,7 @@ export default function NotificationsPage() {
                   <Filter className="h-5 w-5" />
                 </button>
                 {isNotifFilterOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                     <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Status
                     </div>
@@ -894,7 +894,7 @@ export default function NotificationsPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => { setFilter(opt.value); setIsNotifFilterOpen(false); }}
-                        className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
+                        className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
                           filter === opt.value
                             ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                             : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"

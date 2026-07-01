@@ -524,7 +524,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
 
   return (
     <>
-      <div className="flex flex-col min-h-[700px] max-h-[calc(100vh-300px)] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="flex flex-col min-h-[700px] max-h-[calc(100vh-300px)] bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -564,7 +564,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-10 w-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
@@ -606,7 +606,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
 
                     {/* Note bubble */}
                     <div
-                      className={`rounded-lg px-4 py-3 ${
+                      className={`rounded-none px-4 py-3 ${
                         isCurrentUser
                           ? "bg-[#f26722] text-white"
                           : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
@@ -709,7 +709,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
         <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
           {/* Selected file preview */}
           {selectedFile && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-lg">
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-none">
               {getFileIcon(selectedFile.type)}
               <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {selectedFile.name}
@@ -735,7 +735,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a note..."
-                className="w-full px-4 py-3 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full px-4 py-3 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 rows={2}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -757,7 +757,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-3 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-lg transition-colors"
+              className="p-3 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-none transition-colors"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
@@ -767,11 +767,11 @@ export default function JobNotes({ jobId }: JobNotesProps) {
             <button
               type="submit"
               disabled={submitting || (!newNote.trim() && !selectedFile)}
-              className="p-3 bg-[#f26722] text-white rounded-lg hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-3 bg-[#f26722] text-white rounded-none hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Send"
             >
               {submitting ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-none animate-spin" />
               ) : (
                 <Send className="w-5 h-5" />
               )}

@@ -125,7 +125,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
               <button
                 onClick={onStatusToggle}
                 disabled={!isEditing}
-                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                className={`px-4 py-2 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   STATUS_STYLES[status] || STATUS_STYLES.PASS
                 } ${!isEditing ? "opacity-70 cursor-not-allowed" : ""}`}
               >
@@ -143,7 +143,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                 >
                   <button
                     onClick={onEdit}
-                    className="px-2 py-2 text-sm rounded-full text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="px-2 py-2 text-sm rounded-none text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     title="Edit Report"
                   >
                     <SquarePen className="w-6 h-6" />
@@ -156,7 +156,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                 >
                   <button
                     onClick={onPrint || (() => window.print())}
-                    className="px-2 py-2 text-sm rounded-full text-white bg-neutral-600 border border-neutral-600 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500"
+                    className="px-2 py-2 text-sm rounded-none text-white bg-neutral-600 border border-neutral-600 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500"
                     title="Print Report"
                   >
                     <Printer className="w-6 h-6" />
@@ -175,7 +175,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                   <button
                     onClick={onSave}
                     disabled={!isEditing || isSaving}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       justSaved
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                         : `bg-[#f26722] hover:bg-[#f26722]/90 focus:ring-[#f26722] ${!isEditing ? "hidden" : ""}`
@@ -211,7 +211,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                         })
                       }
                       disabled={!isEditing || isSaving}
-                      className="px-2 py-2 text-sm rounded-full text-white bg-[#f26722] border border-[#f26722] hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-2 py-2 text-sm rounded-none text-white bg-[#f26722] border border-[#f26722] hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Save & Close"
                     >
                       <LogOut className="w-6 h-6" />
@@ -225,7 +225,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
       </div>
       {tooltip && (
         <span
-          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-none bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
           style={{
             left: tooltip.x,
             top: tooltip.y + 14,

@@ -558,7 +558,7 @@ export const ESignForms: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}
       >
         {status}
       </span>
@@ -907,7 +907,7 @@ export const ESignForms: React.FC = () => {
                       htmlFor={`file-${index}`}
                       className={`cursor-pointer ${uploadingIndex === index ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <span className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-lg border border-dark-accent/30 hover:bg-dark-accent/10 text-dark-primary focus:ring-dark-accent dark:border-dark-700 dark:hover:bg-dark-700/20 dark:text-white">
+                      <span className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-none border border-dark-accent/30 hover:bg-dark-accent/10 text-dark-primary focus:ring-dark-accent dark:border-dark-700 dark:hover:bg-dark-700/20 dark:text-white">
                         {uploadingIndex === index ? (
                           <svg
                             className="animate-spin h-4 w-4"
@@ -1292,7 +1292,7 @@ export const ESignForms: React.FC = () => {
                       htmlFor={`file-edit-${index}`}
                       className={`cursor-pointer ${uploadingIndex === index ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <span className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-lg border border-dark-accent/30 hover:bg-dark-accent/10 text-dark-primary focus:ring-dark-accent dark:border-dark-700 dark:hover:bg-dark-700/20 dark:text-white">
+                      <span className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-none border border-dark-accent/30 hover:bg-dark-accent/10 text-dark-primary focus:ring-dark-accent dark:border-dark-700 dark:hover:bg-dark-700/20 dark:text-white">
                         {uploadingIndex === index ? (
                           <svg
                             className="animate-spin h-4 w-4"
@@ -1564,7 +1564,7 @@ export const ESignForms: React.FC = () => {
                     ).map((doc: any, index: number) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 p-3 border rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                        className="flex items-center gap-2 p-3 border rounded-none hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <FileText className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                         <span className="text-sm flex-1 font-medium">

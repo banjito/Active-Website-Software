@@ -397,7 +397,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         table { margin-bottom: 8px !important; }
         .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .status-fail { background-color: #ef4444 !important; border: 2px solid #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
         section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
         div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
         div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
@@ -1284,7 +1284,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                   type="text"
                   value={formData.jobNumber}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
@@ -1295,7 +1295,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                   type="text"
                   value={maskCustomerName(formData.customer)}
                   readOnly={true}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
@@ -1307,7 +1307,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     value={maskCustomerAddress(formData.address)}
                     readOnly={true}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div className="hidden print:flex print:items-baseline">
@@ -1348,7 +1348,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter Identifier"
                 />
               </div>
@@ -1368,7 +1368,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1385,7 +1385,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1402,7 +1402,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1416,7 +1416,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, date: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1430,7 +1430,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, user: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter User Name"
                 />
               </div>
@@ -1449,7 +1449,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditMode}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1460,7 +1460,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     type="number"
                     value={celsiusTemperature}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
@@ -1471,7 +1471,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     type="number"
                     value={tcf}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
               </div>
@@ -1692,7 +1692,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
             }
             readOnly={!isEditMode}
             rows={6}
-            className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+            className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
             placeholder="Enter comments here..."
           />
           {formData.testEquipment.comments?.trim() && (

@@ -384,19 +384,19 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
     switch (result) {
       case "PASS":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
             PASS
           </span>
         );
       case "FAIL":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
             FAIL
           </span>
         );
       case "LIMITED SERVICE":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
             LIMITED SERVICE
           </span>
         );
@@ -413,7 +413,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
 
   if (rows.length === 0) {
     return (
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8 text-center">
+      <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-8 text-center">
         <AlertTriangle className="h-8 w-8 text-neutral-400 mx-auto mb-3" />
         <p className="text-neutral-500 dark:text-neutral-400 text-sm">
           No report evaluations found for this project. Evaluations will appear
@@ -440,7 +440,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
@@ -450,14 +450,14 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
                 {counts.PASS}
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-none bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <span className="text-green-600 dark:text-green-400 text-lg font-bold">
                 &#10003;
               </span>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
@@ -467,14 +467,14 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
                 {counts.FAIL}
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-none bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
               <span className="text-red-600 dark:text-red-400 text-lg font-bold">
                 &#10007;
               </span>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-5">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
@@ -484,7 +484,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
                 {counts["LIMITED SERVICE"]}
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-none bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
               <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
@@ -503,7 +503,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
         <div className="relative">
           <button
             onClick={() => setFilterOpen(!filterOpen)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
           >
             <Filter className="h-4 w-4" />
             Filter by Result
@@ -512,7 +512,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             />
           </button>
           {filterOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-lg z-10 py-2">
+            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-lg z-10 py-2">
               <p className="px-4 py-1 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                 Select all that apply
               </p>
@@ -543,7 +543,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
       </div>
 
       {/* Results Table */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
             <thead className="bg-neutral-50 dark:bg-dark-100">
@@ -636,14 +636,14 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             <button
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               First
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -651,7 +651,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Next
               <ChevronRight className="h-4 w-4" />
@@ -659,7 +659,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
             <button
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Last
             </button>

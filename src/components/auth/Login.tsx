@@ -445,7 +445,7 @@ export default function Login() {
 
                 {error && (
                   <div
-                    className={`rounded-xl p-4 ${
+                    className={`rounded-none p-4 ${
                       error.startsWith("Success") ||
                       error.includes("created successfully") ||
                       error.includes("Verification email sent") ||
@@ -462,7 +462,7 @@ export default function Login() {
                 )}
 
                 {showResendOption && (
-                  <div className="mt-4 p-4 bg-neutral-700/50 rounded-xl border border-neutral-600">
+                  <div className="mt-4 p-4 bg-neutral-700/50 rounded-none border border-neutral-600">
                     <p className="text-sm text-neutral-300 mb-3">
                       Didn't receive the email? Check your spam folder or resend
                       it:

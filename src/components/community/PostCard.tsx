@@ -62,9 +62,9 @@ export const PostCard: React.FC<Props> = ({
   };
 
   return (
-    <article className="w-full bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-2.5">
+    <article className="w-full bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-2.5">
       <div className="flex gap-2">
-        <div className="h-8 w-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-dark-200 flex-shrink-0 flex items-center justify-center">
+        <div className="h-8 w-8 rounded-none overflow-hidden bg-neutral-200 dark:bg-dark-200 flex-shrink-0 flex items-center justify-center">
           {author.avatarUrl ? (
             <img
               src={author.avatarUrl}
@@ -90,7 +90,7 @@ export const PostCard: React.FC<Props> = ({
                 type="button"
                 onClick={() => void handleDelete()}
                 disabled={deleting}
-                className="shrink-0 inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+                className="shrink-0 inline-flex items-center gap-0.5 rounded-none px-1.5 py-0.5 text-[11px] font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
                 aria-label="Delete post"
               >
                 <Trash2 className="h-3 w-3" />
@@ -99,7 +99,7 @@ export const PostCard: React.FC<Props> = ({
             ) : null}
           </div>
           {displayBody ? (
-            <div className="mt-1.5 inline-block max-w-full rounded-2xl bg-neutral-100 dark:bg-dark-200/90 px-2.5 py-1.5">
+            <div className="mt-1.5 inline-block max-w-full rounded-none bg-neutral-100 dark:bg-dark-200/90 px-2.5 py-1.5">
               <p className="text-sm leading-snug text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap break-words">
                 {displayBody}
               </p>
@@ -122,7 +122,7 @@ export const PostCard: React.FC<Props> = ({
                       <img
                         src={url}
                         alt=""
-                        className="max-h-56 w-full rounded-md object-contain bg-transparent"
+                        className="max-h-56 w-full rounded-none object-contain bg-transparent"
                       />
                     </a>
                   );
@@ -133,7 +133,7 @@ export const PostCard: React.FC<Props> = ({
                       key={`${post.id}-m-${idx}`}
                       src={url}
                       controls
-                      className="max-h-56 w-full rounded-md bg-black"
+                      className="max-h-56 w-full rounded-none bg-black"
                     />
                   );
                 }

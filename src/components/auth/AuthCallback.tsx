@@ -148,7 +148,7 @@ export default function AuthCallback() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <div className="animate-spin rounded-none h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
         <h2 className="text-xl font-semibold mb-2">Verifying your email...</h2>
         <p className="text-neutral-600">
           Please wait while we complete the verification process.

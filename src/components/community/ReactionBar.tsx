@@ -81,7 +81,7 @@ export const ReactionBar: React.FC<Props> = ({
         type="button"
         disabled={!currentUserId || pending !== null}
         onClick={() => void toggle("like")}
-        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors ${
+        className={`inline-flex items-center gap-1 rounded-none px-2 py-1 text-xs transition-colors ${
           likeActive
             ? "bg-[#f26722]/15 text-[#f26722] ring-1 ring-[#f26722]/40"
             : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-200"
@@ -98,7 +98,7 @@ export const ReactionBar: React.FC<Props> = ({
           type="button"
           disabled={!currentUserId || pending !== null}
           onClick={() => setPickerOpen((o) => !o)}
-          className={`inline-flex items-center gap-1 rounded-full px-1.5 py-1 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-200 ${
+          className={`inline-flex items-center gap-1 rounded-none px-1.5 py-1 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-200 ${
             !currentUserId ? "opacity-50 cursor-not-allowed" : ""
           }`}
           aria-expanded={pickerOpen}
@@ -114,7 +114,7 @@ export const ReactionBar: React.FC<Props> = ({
               aria-label="Close"
               onClick={() => setPickerOpen(false)}
             />
-            <div className="absolute left-0 bottom-full z-20 mb-1 flex gap-1 rounded-lg border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-2 py-1.5 shadow-lg">
+            <div className="absolute left-0 bottom-full z-20 mb-1 flex gap-1 rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-2 py-1.5 shadow-lg">
               {ALL_REACTION_TYPES.filter((t) => t !== "like").map((type) => {
                 const active = feed.myReactions.has(type);
                 const count = feed.reactionCounts[type] || 0;
@@ -128,7 +128,7 @@ export const ReactionBar: React.FC<Props> = ({
                       void toggle(type);
                       setPickerOpen(false);
                     }}
-                    className={`rounded-md px-1.5 py-0.5 text-lg leading-none hover:bg-neutral-100 dark:hover:bg-dark-200 ${
+                    className={`rounded-none px-1.5 py-0.5 text-lg leading-none hover:bg-neutral-100 dark:hover:bg-dark-200 ${
                       active ? "ring-2 ring-[#f26722]/50" : ""
                     }`}
                   >

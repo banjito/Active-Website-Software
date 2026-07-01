@@ -277,7 +277,7 @@ export const GuideViewer: React.FC = () => {
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 min-w-0">
-            <article className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:p-10">
+            <article className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:p-10">
               {/* Guide Header */}
               <header className="mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-700">
                 <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
@@ -307,7 +307,7 @@ export const GuideViewer: React.FC = () => {
                     {guide.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-dark-100 text-neutral-600 dark:text-neutral-400 rounded-full text-sm"
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-dark-100 text-neutral-600 dark:text-neutral-400 rounded-none text-sm"
                       >
                         <Tag className="w-3 h-3" />
                         {tag}
@@ -404,7 +404,7 @@ export const GuideViewer: React.FC = () => {
                           onClick={() =>
                             navigate(`/help-center/guide/${related.id}`)
                           }
-                          className="w-full text-left p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors group"
+                          className="w-full text-left p-2 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors group"
                         >
                           <span className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2">
                             {related.title}
@@ -494,7 +494,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
           <img
             src={imgConfig.url}
             alt={imgConfig.alt || ""}
-            className="rounded-lg shadow-md w-full"
+            className="rounded-none shadow-md w-full"
           />
           {imgConfig.caption && (
             <figcaption className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-2 italic">
@@ -541,7 +541,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
       const style = calloutStyles[cConfig.type];
       return (
         <div
-          className={`mb-6 border-l-4 ${style.border} ${style.bg} p-4 rounded-r-lg`}
+          className={`mb-6 border-l-4 ${style.border} ${style.bg} p-4 rounded-none`}
         >
           <div className={`${style.text}`}>
             {cConfig.title && (
@@ -558,7 +558,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
       const sConfig = config as StepBlockConfig;
       return (
         <div className="flex gap-4 mb-6">
-          <div className="flex-shrink-0 w-12 h-12 bg-[#f26722] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md">
+          <div className="flex-shrink-0 w-12 h-12 bg-[#f26722] text-white rounded-none flex items-center justify-center font-bold text-xl shadow-md">
             {sConfig.stepNumber}
           </div>
           <div className="flex-1 pt-1">
@@ -649,7 +649,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
           <div className="aspect-video">
             <iframe
               src={embedUrl}
-              className="w-full h-full rounded-lg shadow-md"
+              className="w-full h-full rounded-none shadow-md"
               allowFullScreen
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             />
@@ -659,7 +659,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
 
     case ContentBlockType.CODE_BLOCK:
       return (
-        <pre className="mb-6 p-4 bg-neutral-900 text-neutral-100 rounded-lg overflow-x-auto">
+        <pre className="mb-6 p-4 bg-neutral-900 text-neutral-100 rounded-none overflow-x-auto">
           <code>{(config as any).code || ""}</code>
         </pre>
       );

@@ -186,9 +186,9 @@ export function GoalList() {
                           ? `$${goal.currentValue.toLocaleString()} of $${goal.targetValue.toLocaleString()}`
                           : `${goal.currentValue} of ${goal.targetValue}`}
                       </div>
-                      <div className="w-full bg-neutral-200 rounded-full h-2">
+                      <div className="w-full bg-neutral-200 rounded-none h-2">
                         <div
-                          className={`h-2 rounded-full ${
+                          className={`h-2 rounded-none ${
                             status === "On Track" || status === "Completed"
                               ? "bg-green-500"
                               : status === "At Risk"

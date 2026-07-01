@@ -397,7 +397,7 @@ export function StandardsComplianceUpdates() {
               </Card>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-none border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -494,7 +494,7 @@ export function StandardsComplianceUpdates() {
               </Card>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-none border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -612,7 +612,7 @@ export function StandardsComplianceUpdates() {
       {/* Add Standard Modal */}
       {showStandardModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-neutral-900 rounded-none max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">Add New Standard</h3>
               <Button
@@ -669,7 +669,7 @@ export function StandardsComplianceUpdates() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>
                   <select
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 border rounded-none"
                     value={newStandard.status}
                     onChange={(e) =>
                       setNewStandard({ ...newStandard, status: e.target.value })
@@ -684,7 +684,7 @@ export function StandardsComplianceUpdates() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Change Type</label>
                   <select
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 border rounded-none"
                     value={newStandard.changeType}
                     onChange={(e) =>
                       setNewStandard({
@@ -756,7 +756,7 @@ export function StandardsComplianceUpdates() {
       {/* Add Compliance Modal */}
       {showComplianceModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-neutral-900 rounded-none max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-xl font-semibold">
                 Add Compliance Requirement
@@ -820,7 +820,7 @@ export function StandardsComplianceUpdates() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-none"
                   value={newCompliance.status}
                   onChange={(e) =>
                     setNewCompliance({
@@ -839,7 +839,7 @@ export function StandardsComplianceUpdates() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Notes</label>
                 <textarea
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-none"
                   rows={3}
                   value={newCompliance.notes}
                   onChange={(e) =>

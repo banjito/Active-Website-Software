@@ -797,7 +797,7 @@ const VendorManagement: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1 min-w-0">
                       <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                           <span className="text-neutral-500 dark:text-white text-lg font-medium">
                             {vendor.company_name?.charAt(0) || "V"}
                           </span>
@@ -1449,7 +1449,7 @@ const VendorManagement: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="border dark:border-neutral-700 rounded-lg overflow-hidden">
+          <div className="border dark:border-neutral-700 rounded-none overflow-hidden">
             <div className="max-h-[400px] overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="bg-neutral-50 dark:bg-dark-200 sticky top-0">

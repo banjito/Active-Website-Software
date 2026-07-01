@@ -59,7 +59,7 @@ export function EnhancedGoalsDashboard() {
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-6">
-          <div className="bg-white dark:bg-dark-150 p-6 rounded-lg shadow-sm">
+          <div className="bg-white dark:bg-dark-150 p-6 rounded-none shadow-sm">
             <p className="text-center text-neutral-500 dark:text-white mb-4">
               This tab will contain goal management functionality - create,
               edit, and delete goals.

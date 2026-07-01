@@ -83,7 +83,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
     filter === "all" ? items : items.filter((i) => i.note_type === filter);
 
   return (
-    <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-dark-150 rounded-none shadow p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-[#f26722]" />
@@ -150,12 +150,12 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
               <div className="flex items-start relative">
                 <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                   <div
-                    className={`h-8 w-8 rounded-full ${typeBg(item.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
+                    className={`h-8 w-8 rounded-none ${typeBg(item.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
                   >
                     {typeIcon(item.note_type)}
                   </div>
                 </div>
-                <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 w-full">
+                <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 w-full">
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
                       <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
@@ -185,7 +185,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                       </p>
                     </div>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${typeBadge(item.note_type)}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium shrink-0 ${typeBadge(item.note_type)}`}
                     >
                       {interactionTypeLabel(item.note_type)}
                     </span>

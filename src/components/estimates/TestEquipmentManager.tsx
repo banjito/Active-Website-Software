@@ -180,7 +180,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -209,7 +209,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search equipment..."
-            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input
@@ -223,7 +223,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
         </div>
 
         {error && (
-          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
+          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
             <span>{error}</span>
             <button onClick={() => setError(null)} aria-label="Dismiss error">
               <X className="h-4 w-4" />
@@ -232,14 +232,14 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
         )}
 
         {successMessage && (
-          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-sm text-green-700 dark:text-green-300">
+          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-none p-3 text-sm text-green-700 dark:text-green-300">
             {successMessage}
           </div>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               {editingEquipment ? "Edit Test Equipment" : "New Test Equipment"}
@@ -263,7 +263,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g., Doble F6150"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 autoFocus
               />
             </div>
@@ -278,7 +278,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                   setForm({ ...form, description: e.target.value })
                 }
                 placeholder="Optional internal note"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
@@ -345,7 +345,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                        className={`inline-flex rounded-none px-2 py-1 text-xs font-medium ${
                           item.is_active
                             ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                             : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"

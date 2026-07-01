@@ -1413,7 +1413,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1433,7 +1433,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1448,7 +1448,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
@@ -1470,7 +1470,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1487,7 +1487,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1504,7 +1504,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
@@ -2270,7 +2270,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

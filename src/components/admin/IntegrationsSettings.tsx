@@ -184,11 +184,13 @@ export const IntegrationsSettings: React.FC = () => {
           variant="outline"
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-2"
+          className="border-none bg-neutral-100 hover:bg-cozy-moss-200 flex items-center gap-2"
+          leftIcon={
+            <RefreshCw
+              className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+            />
+          }
         >
-          <RefreshCw
-            className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-          />
           Refresh
         </Button>
       </div>
@@ -196,38 +198,35 @@ export const IntegrationsSettings: React.FC = () => {
       {/* QuickBooks Integration Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* QuickBooks Logo */}
+            <img
+              src="/img/Intuit_QuickBooks_logo.svg"
+              alt="QuickBooks"
+              className="w-12 h-12"
+            />
             <div className="flex items-center gap-3">
-              {/* QuickBooks Logo */}
-              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">QB</span>
+              <CardTitle>QuickBooks Online</CardTitle>
+              {/* Connection Status Badge */}
+              <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-none text-sm font-medium ${
+                  status.connected
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                }`}
+              >
+                {status.connected ? (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Connected
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4" />
+                    Not Connected
+                  </>
+                )}
               </div>
-              <div>
-                <CardTitle>QuickBooks Online</CardTitle>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  Sync invoices, estimates, and customers
-                </p>
-              </div>
-            </div>
-            {/* Connection Status Badge */}
-            <div
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-                status.connected
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-              }`}
-            >
-              {status.connected ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Connected
-                </>
-              ) : (
-                <>
-                  <XCircle className="h-4 w-4" />
-                  Not Connected
-                </>
-              )}
             </div>
           </div>
         </CardHeader>
@@ -236,7 +235,7 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Connection Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-none">
                   <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Building2 className="h-4 w-4" />
                     Company
@@ -265,7 +264,7 @@ export const IntegrationsSettings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-none">
                   <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Key className="h-4 w-4" />
                     Realm ID
@@ -275,7 +274,7 @@ export const IntegrationsSettings: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-none">
                   <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Clock className="h-4 w-4" />
                     Connected On
@@ -286,7 +285,7 @@ export const IntegrationsSettings: React.FC = () => {
                 </div>
 
                 <div
-                  className={`p-4 rounded-lg ${
+                  className={`p-4 rounded-none ${
                     isTokenExpired(status.integration.expires_at)
                       ? "bg-red-50 dark:bg-red-900/20"
                       : isTokenExpiringSoon(status.integration.expires_at)
@@ -354,8 +353,8 @@ export const IntegrationsSettings: React.FC = () => {
                   onClick={handleDisconnect}
                   disabled={disconnecting}
                   className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
+                  leftIcon={<Unplug className="h-4 w-4" />}
                 >
-                  <Unplug className="h-4 w-4" />
                   {disconnecting ? "Disconnecting..." : "Disconnect"}
                 </Button>
                 <a
@@ -373,20 +372,9 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Not Connected State */}
               <div className="py-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center">
-                  <XCircle className="h-8 w-8 text-neutral-400" />
-                </div>
-                <h3 className="text-lg font-medium mb-2">
-                  QuickBooks Not Connected
-                </h3>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-md mx-auto">
-                  Connect your QuickBooks Online account to sync invoices,
-                  estimates, customers, and more with your jobs.
-                </p>
-
                 <Button
                   onClick={handleConnect}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-[#2CA01C] hover:bg-[#2CA01C]/85 text-white"
                 >
                   Connect QuickBooks
                 </Button>
@@ -394,7 +382,7 @@ export const IntegrationsSettings: React.FC = () => {
 
               {/* Error Message */}
               {status.error && (
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                     <div>
@@ -421,7 +409,7 @@ export const IntegrationsSettings: React.FC = () => {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-none bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
@@ -435,7 +423,7 @@ export const IntegrationsSettings: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-none bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
@@ -449,7 +437,7 @@ export const IntegrationsSettings: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-none bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>
@@ -464,7 +452,7 @@ export const IntegrationsSettings: React.FC = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
+              <div className="w-5 h-5 rounded-none bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs">
                 ?
               </div>
               <div>

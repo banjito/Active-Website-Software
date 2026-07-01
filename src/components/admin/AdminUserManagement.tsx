@@ -580,7 +580,7 @@ export default function AdminUserManagement() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-none dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
           <span>{error}</span>
         </div>
@@ -593,14 +593,14 @@ export default function AdminUserManagement() {
           placeholder="Search users by name, email, or role..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+          className="w-full px-4 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
         />
       </div>
 
       {/* Users List (no overflow-hidden so the deactivate confirm popover
           can extend above the top row) */}
-      <div className="border border-neutral-200 dark:border-dark-300 rounded-lg shadow-sm">
-        <div className="bg-neutral-50 dark:bg-dark-150 px-6 py-3 border-b border-neutral-200 dark:border-dark-300 rounded-t-lg flex items-center justify-between">
+      <div className="border border-neutral-200 dark:border-dark-300 rounded-none shadow-sm">
+        <div className="bg-neutral-50 dark:bg-dark-150 px-6 py-3 border-b border-neutral-200 dark:border-dark-300 rounded-none flex items-center justify-between">
           <h3 className="text-base font-medium text-neutral-700 dark:text-neutral-200">
             All Users ({filteredUsers.length})
           </h3>
@@ -627,7 +627,7 @@ export default function AdminUserManagement() {
                   <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
                     {/* Profile Image/Initial */}
                     <div
-                      className={`relative h-10 w-10 rounded-full bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0 group ${
+                      className={`relative h-10 w-10 rounded-none bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0 group ${
                         canEditProfileImages ? "cursor-pointer" : ""
                       }`}
                       onClick={
@@ -657,12 +657,12 @@ export default function AdminUserManagement() {
                       )}
                       {canEditProfileImages &&
                         avatarUploadingUserId !== user.id && (
-                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Camera className="h-4 w-4 text-white" />
                           </div>
                         )}
                       {avatarUploadingUserId === user.id && (
-                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center">
                           <RefreshCw className="h-4 w-4 text-white animate-spin" />
                         </div>
                       )}
@@ -705,7 +705,7 @@ export default function AdminUserManagement() {
                         onChange={(e) =>
                           setSelectedRole(e.target.value as Role)
                         }
-                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       >
                         <option value="" disabled>
                           Select a role
@@ -741,7 +741,7 @@ export default function AdminUserManagement() {
                       <div className="mr-2">
                         {/* Role Display Badge — colors per role from roles.ts */}
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getRoleBadgeClasses(
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium whitespace-nowrap ${getRoleBadgeClasses(
                             user.user_metadata?.role,
                           )}`}
                         >
@@ -810,7 +810,7 @@ export default function AdminUserManagement() {
                                 />
                                 <div
                                   role="dialog"
-                                  className="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-lg border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-4 shadow-xl"
+                                  className="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-4 shadow-xl"
                                 >
                                   {/* caret pointing down to the button */}
                                   <div className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45 border-b border-r border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150" />
@@ -881,21 +881,21 @@ export default function AdminUserManagement() {
                 </div>
 
                 {canChangePasswords && passwordUserId === user.id && (
-                  <div className="rounded-md border border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-100 p-4">
+                  <div className="rounded-none border border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-100 p-4">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="New password"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
                       />
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">

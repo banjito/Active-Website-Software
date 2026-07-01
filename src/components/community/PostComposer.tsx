@@ -180,14 +180,14 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
   return (
     <section
       ref={sectionRef}
-      className="w-full bg-white dark:bg-dark-150 rounded-lg p-3 mb-3"
+      className="w-full bg-white dark:bg-dark-150 rounded-none p-3 mb-3"
     >
       {!expanded ? (
         <button
           type="button"
           onClick={openComposer}
           aria-label="Start a post"
-          className="flex h-9 w-full items-center rounded-md border-none bg-neutral-100 px-3 text-left text-sm text-neutral-500 shadow-sm hover:bg-neutral-50 focus:outline-none dark:border-neutral-600 dark:bg-dark-100 dark:text-neutral-400 dark:hover:bg-dark-200"
+          className="flex h-9 w-full items-center rounded-none border-none bg-neutral-100 px-3 text-left text-sm text-neutral-500 shadow-sm hover:bg-neutral-50 focus:outline-none dark:border-neutral-600 dark:bg-dark-100 dark:text-neutral-400 dark:hover:bg-dark-200"
         >
           <span className="truncate">Share an update…</span>
         </button>
@@ -201,7 +201,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
             placeholder="Share an update…"
             rows={1}
             aria-label="Post body"
-            className="mt-0 box-border w-full min-h-0 resize-none rounded-md border border-neutral-300 bg-neutral-100 px-2 py-2 text-sm leading-snug text-neutral-900 shadow-sm focus:outline-none  focus:ring-[#f26722] dark:border-neutral-600 dark:bg-dark-100 dark:text-white dark:focus:border-[#f26722]"
+            className="mt-0 box-border w-full min-h-0 resize-none rounded-none border border-neutral-300 bg-neutral-100 px-2 py-2 text-sm leading-snug text-neutral-900 shadow-sm focus:outline-none  focus:ring-[#f26722] dark:border-neutral-600 dark:bg-dark-100 dark:text-white dark:focus:border-[#f26722]"
             style={{
               height: taHeightPx,
               maxHeight: TEXTAREA_MAX_PX,
@@ -256,7 +256,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => inputRef.current?.click()}
-                className="inline-flex items-center bg-[#f26722] gap-1.5 rounded-full border-none px-2 py-2 text-white hover:bg-[#f26722]/80"
+                className="inline-flex items-center bg-[#f26722] gap-1.5 rounded-none border-none px-2 py-2 text-white hover:bg-[#f26722]/80"
               >
                 <ImagePlus className="stroke-[1.5] h-5 w-5" />
               </button>
@@ -269,7 +269,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
                 e.preventDefault();
               }}
               onClick={() => void submit()}
-              className="inline-flex items-center gap-1.5 rounded-full px-2 py-2 font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 rounded-none px-2 py-2 font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

@@ -324,7 +324,7 @@ export const ESignatures: React.FC = () => {
               {pendingSignatures.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
                     <div className="font-medium text-neutral-900 dark:text-white">
@@ -389,7 +389,7 @@ export const ESignatures: React.FC = () => {
               {signedOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
                     <div className="font-medium text-neutral-900 dark:text-white">
@@ -444,7 +444,7 @@ export const ESignatures: React.FC = () => {
                   type="text"
                   value={signerName}
                   onChange={(e) => setSignerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
@@ -456,7 +456,7 @@ export const ESignatures: React.FC = () => {
                   type="email"
                   value={signerEmail}
                   onChange={(e) => setSignerEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   required
                 />
               </div>
@@ -465,7 +465,7 @@ export const ESignatures: React.FC = () => {
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Signature *
               </label>
-              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-800">
+              <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-none p-4 bg-white dark:bg-neutral-800">
                 <canvas
                   ref={canvasRef}
                   width={600}
@@ -570,7 +570,7 @@ export const ESignatures: React.FC = () => {
                     {signatures.map((signature) => (
                       <div
                         key={signature.id}
-                        className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800"
+                        className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-none bg-neutral-50 dark:bg-neutral-800"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div>
@@ -593,7 +593,7 @@ export const ESignatures: React.FC = () => {
                           </div>
                         </div>
                         {signature.signature_image && (
-                          <div className="mt-3 border-2 border-neutral-300 dark:border-neutral-600 rounded-lg p-4 bg-white dark:bg-neutral-900">
+                          <div className="mt-3 border-2 border-neutral-300 dark:border-neutral-600 rounded-none p-4 bg-white dark:bg-neutral-900">
                             <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                               Signature:
                             </div>

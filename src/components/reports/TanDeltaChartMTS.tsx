@@ -464,7 +464,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={testDate}
                   onChange={(e) => setTestDate(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -476,7 +476,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={cableType}
                   onChange={(e) => setCableType(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -488,7 +488,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={systemVoltage}
                   onChange={(e) => setSystemVoltage(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
             </div>
@@ -539,7 +539,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={systemVoltage}
                   onChange={(e) => setSystemVoltage(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -551,7 +551,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={cableType}
                   onChange={(e) => setCableType(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -563,7 +563,7 @@ const TanDeltaChartMTS: React.FC = () => {
                   value={testDate}
                   onChange={(e) => setTestDate(e.target.value)}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
             </div>
@@ -602,7 +602,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -619,7 +619,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -636,7 +636,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -653,7 +653,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -670,7 +670,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -687,7 +687,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -704,7 +704,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -721,7 +721,7 @@ const TanDeltaChartMTS: React.FC = () => {
                     }))
                   }
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
             </div>
@@ -807,7 +807,7 @@ const TanDeltaChartMTS: React.FC = () => {
                 readOnly={!isEditing}
                 rows={8}
                 placeholder="Enter any additional comments..."
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {comments?.trim() && (
@@ -907,7 +907,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2">
@@ -927,7 +927,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2">
@@ -943,7 +943,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2">
@@ -963,7 +963,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2">
@@ -979,7 +979,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2">
@@ -999,7 +999,7 @@ const TanDeltaChartMTS: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="mt-1 block w-20 text-center rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-20 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
                       </td>
                     </tr>
@@ -1016,7 +1016,7 @@ const TanDeltaChartMTS: React.FC = () => {
               Tan Delta Chart
             </h2>
             <div
-              className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6"
+              className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-6"
               style={{ height: "400px" }}
             >
               <ResponsiveContainer>

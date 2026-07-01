@@ -145,7 +145,7 @@ export default function ReportsPage() {
               Report Approval
               {openReportFlagCount > 0 && (
                 <span
-                  className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+                  className="inline-flex h-5 min-w-5 items-center justify-center rounded-none bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
                   title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                   aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                 >
@@ -216,7 +216,7 @@ export default function ReportsPage() {
                   }}
                 />
               ) : (
-                <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm text-yellow-800 dark:text-yellow-200">
+                <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none text-sm text-yellow-800 dark:text-yellow-200">
                   You do not have permission to access the report approval
                   workflow. Please contact an administrator if you believe this
                   is an error.

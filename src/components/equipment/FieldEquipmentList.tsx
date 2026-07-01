@@ -1732,7 +1732,7 @@ export default function FieldEquipmentList() {
               onChange={(e) =>
                 setServiceFilter(e.target.value as ServiceFilter)
               }
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All equipment</option>
               <option value="in_service">In service only</option>
@@ -1745,7 +1745,7 @@ export default function FieldEquipmentList() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] min-w-[180px]"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] min-w-[180px]"
             >
               <option value="">All categories</option>
               <option value="__uncategorized__">Uncategorized</option>
@@ -1768,45 +1768,45 @@ export default function FieldEquipmentList() {
           }}
           className="mb-4"
         >
-          <TabsList className="inline-flex flex-wrap space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg">
+          <TabsList className="inline-flex flex-wrap space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
             <TabsTrigger
               value="all"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <FileText className="h-4 w-4" />
               All
             </TabsTrigger>
             <TabsTrigger
               value="in-cal"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <AlertTriangle className="h-4 w-4" />
               In Cal
             </TabsTrigger>
             <TabsTrigger
               value="out-of-cal"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <ThumbsUp className="h-4 w-4" />
               Out of Cal
             </TabsTrigger>
             <TabsTrigger
               value="assigned"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <CheckCircle className="h-4 w-4" />
               Assigned
             </TabsTrigger>
             <TabsTrigger
               value="unassigned"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <XCircle className="h-4 w-4" />
               Unassigned
             </TabsTrigger>
             <TabsTrigger
               value="category"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Tag className="h-4 w-4" />
               Category
@@ -1820,7 +1820,7 @@ export default function FieldEquipmentList() {
             <LoadingSpinner size="md" />
           </div>
         ) : (
-          <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-dark-200 overflow-hidden">
+          <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-dark-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-neutral-50 dark:bg-dark-200">
@@ -2074,7 +2074,7 @@ export default function FieldEquipmentList() {
                               }}
                             >
                               <button
-                                className="flex items-center gap-2 px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                className="flex items-center gap-2 px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                 onClick={() =>
                                   setOpenUserSelectors((prev) => ({
                                     ...prev,
@@ -2146,7 +2146,7 @@ export default function FieldEquipmentList() {
                                         : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                                     }`;
                                   return (
-                                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-lg z-50">
+                                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
                                       <div className="flex border-b border-neutral-200 dark:border-neutral-700">
                                         <button
                                           type="button"
@@ -2458,7 +2458,7 @@ export default function FieldEquipmentList() {
                                   onClick={() =>
                                     setViewingTrackingUrl(item.tracking_url)
                                   }
-                                  className="flex items-center gap-1 px-2 py-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                  className="flex items-center gap-1 px-2 py-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-none transition-colors"
                                   title="Open Tracking"
                                 >
                                   <ExternalLink className="h-4 w-4" />
@@ -2523,14 +2523,14 @@ export default function FieldEquipmentList() {
                                     [item.id]: !prev[item.id],
                                   }))
                                 }
-                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-md transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-none transition-colors"
                                 title="Actions"
                               >
                                 Actions
                                 <ChevronDown className="h-3.5 w-3.5" />
                               </button>
                               {openActionMenus[item.id] && (
-                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg z-40 py-1">
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-40 py-1">
                                   {item.checked_out_by ? (
                                     <button
                                       type="button"
@@ -2601,7 +2601,7 @@ export default function FieldEquipmentList() {
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-3xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
+            <Dialog.Panel className="mx-auto max-w-3xl w-full max-h-[90vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col">
               <div className="flex items-center justify-between p-6 pb-4 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
                   {isEditMode ? "Edit Equipment" : "Add Equipment"}
@@ -2692,7 +2692,7 @@ export default function FieldEquipmentList() {
                         placeholder="Type to search or add new category"
                       />
                       {showCategoryDropdown && (
-                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg max-h-60 overflow-y-auto">
                           {categories
                             .filter(
                               (cat) =>
@@ -2820,7 +2820,7 @@ export default function FieldEquipmentList() {
                         placeholder="Type to search or add new location"
                       />
                       {showLocationDropdown && (
-                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg max-h-60 overflow-y-auto">
                           {locations
                             .filter(
                               (loc) =>
@@ -2941,10 +2941,10 @@ export default function FieldEquipmentList() {
                   </div>
 
                   {/* Sub Components Section */}
-                  <div className="border border-neutral-200 dark:border-neutral-600 rounded-md">
+                  <div className="border border-neutral-200 dark:border-neutral-600 rounded-none">
                     <button
                       type="button"
-                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 rounded-md transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-100 rounded-none transition-colors"
                       onClick={() =>
                         setSubComponentsExpanded(!subComponentsExpanded)
                       }
@@ -3032,7 +3032,7 @@ export default function FieldEquipmentList() {
                                     className="w-full text-sm"
                                   />
                                   {activeSubComponentDropdown === index && (
-                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg max-h-40 overflow-y-auto">
                                       {subComponentItems
                                         .filter(
                                           (item) =>
@@ -3233,7 +3233,7 @@ export default function FieldEquipmentList() {
                           notes: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       rows={3}
                       placeholder="Additional notes or comments..."
                     />
@@ -3264,7 +3264,7 @@ export default function FieldEquipmentList() {
                       {isEditMode &&
                         editingEquipmentCertificate &&
                         !selectedFile && (
-                          <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-dark-200 rounded-md">
+                          <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-dark-200 rounded-none">
                             <FileText className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
                             <span className="text-sm text-neutral-600 dark:text-neutral-400 flex-1">
                               Current certificate attached
@@ -3323,7 +3323,7 @@ export default function FieldEquipmentList() {
                           </div>
                         )}
                       <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-50">
+                        <label className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-50">
                           <Upload className="h-4 w-4" />
                           {selectedFile
                             ? selectedFile.name
@@ -3442,7 +3442,7 @@ export default function FieldEquipmentList() {
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-md rounded-lg bg-white dark:bg-dark-150 p-6 shadow-xl">
+            <Dialog.Panel className="mx-auto max-w-md rounded-none bg-white dark:bg-dark-150 p-6 shadow-xl">
               <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 Confirm Delete
               </Dialog.Title>
@@ -3473,7 +3473,7 @@ export default function FieldEquipmentList() {
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-2xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
+            <Dialog.Panel className="mx-auto max-w-2xl w-full max-h-[90vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col">
               <div className="flex items-center justify-between p-6 pb-4 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-xl font-semibold text-neutral-900 dark:text-white">
                   Equipment Details
@@ -3625,7 +3625,7 @@ export default function FieldEquipmentList() {
                                 handleCheckIn(viewingEquipment.id);
                                 setViewingEquipment(null);
                               }}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50 rounded-md transition-colors"
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50 rounded-none transition-colors"
                             >
                               <CheckCircle className="h-4 w-4" />
                               Check In
@@ -3642,7 +3642,7 @@ export default function FieldEquipmentList() {
                                 handleCheckOut(viewingEquipment.id);
                                 setViewingEquipment(null);
                               }}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20 dark:bg-[#f26722]/20 dark:hover:bg-[#f26722]/30 rounded-md transition-colors"
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20 dark:bg-[#f26722]/20 dark:hover:bg-[#f26722]/30 rounded-none transition-colors"
                             >
                               <ArrowUp className="h-4 w-4" />
                               Check Out
@@ -3695,7 +3695,7 @@ export default function FieldEquipmentList() {
                               No sub components
                             </p>
                           ) : (
-                            <div className="border border-neutral-200 dark:border-dark-200 rounded-md overflow-hidden">
+                            <div className="border border-neutral-200 dark:border-dark-200 rounded-none overflow-hidden">
                               <table className="w-full">
                                 <thead className="bg-neutral-50 dark:bg-dark-200">
                                   <tr>
@@ -3791,7 +3791,7 @@ export default function FieldEquipmentList() {
                                 viewingEquipment.calibration_certificate_url,
                               )
                             }
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-none transition-colors"
                           >
                             <Eye className="h-4 w-4" />
                             View Certificate
@@ -3805,7 +3805,7 @@ export default function FieldEquipmentList() {
                               link.target = "_blank";
                               link.click();
                             }}
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-md transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-none transition-colors"
                           >
                             <Download className="h-4 w-4" />
                             Download
@@ -3870,7 +3870,7 @@ export default function FieldEquipmentList() {
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-4xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
+            <Dialog.Panel className="mx-auto max-w-4xl w-full max-h-[90vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Equipment Tracking
@@ -3926,7 +3926,7 @@ export default function FieldEquipmentList() {
             className={`fixed inset-0 flex items-center justify-center ${isFullscreen ? "p-0" : "p-4"}`}
           >
             <Dialog.Panel
-              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-lg"} bg-white dark:bg-dark-150 shadow-xl flex flex-col`}
+              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col"}`}
             >
               <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -3934,7 +3934,7 @@ export default function FieldEquipmentList() {
                 </Dialog.Title>
                 <div className="flex items-center gap-2">
                   {/* Zoom Controls */}
-                  <div className="flex items-center gap-1 border border-neutral-300 dark:border-neutral-600 rounded-md">
+                  <div className="flex items-center gap-1 border border-neutral-300 dark:border-neutral-600 rounded-none">
                     <button
                       onClick={() =>
                         setPdfZoom((prev) => Math.max(50, prev - 25))

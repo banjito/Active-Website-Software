@@ -46,7 +46,7 @@ export function Modal({
       <div
         className={cn(
           "bg-white dark:bg-dark-150 shadow-xl relative transform transition-all duration-200 ease-in-out",
-          size === "full" ? "rounded-none" : "rounded-lg",
+          size === "full" ? "rounded-none" : "rounded-none",
           size === "full" ? "w-full h-full" : "w-full mx-4 my-8",
           sizeClasses[size],
           size === "full" && "flex flex-col",

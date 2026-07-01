@@ -87,7 +87,7 @@ export function JobInfoHeader({
   console.log("JobInfoHeader: Rendering complete info", formattedInfo);
 
   return (
-    <div className="job-info-header bg-neutral-50 dark:bg-dark-800 p-4 rounded-md border border-neutral-200 dark:border-dark-600 mb-4">
+    <div className="job-info-header bg-neutral-50 dark:bg-dark-800 p-4 rounded-none border border-neutral-200 dark:border-dark-600 mb-4">
       <div className="flex flex-wrap gap-4">
         <div>
           <h3 className="text-sm font-medium text-neutral-500 dark:text-dark-400">

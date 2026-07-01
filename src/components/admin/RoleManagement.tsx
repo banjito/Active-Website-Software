@@ -350,7 +350,7 @@ export default function RoleManagement() {
         </CardHeader>
         <CardContent className="pt-4">
           {customRoles.length === 0 ? (
-            <div className="p-6 text-center text-neutral-500 border border-dashed rounded-lg">
+            <div className="p-6 text-center text-neutral-500 border border-dashed rounded-none">
               No custom roles defined. Click "Create New Role" to add one.
             </div>
           ) : (
@@ -424,7 +424,7 @@ export default function RoleManagement() {
               {ROLES[role]?.portals?.map((portal) => (
                 <span
                   key={portal}
-                  className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs rounded-full"
+                  className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs rounded-none"
                 >
                   {portal}
                 </span>
@@ -496,7 +496,7 @@ export default function RoleManagement() {
               id="parent-role"
               value={parentRole}
               onChange={(e) => setParentRole(e.target.value as Role)}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-none"
             >
               <option value="">None</option>
               {roles
@@ -593,7 +593,7 @@ export default function RoleManagement() {
         </CardHeader>
         <CardContent>
           {permissions.length === 0 ? (
-            <div className="text-center text-neutral-500 p-4 border border-dashed rounded-md">
+            <div className="text-center text-neutral-500 p-4 border border-dashed rounded-none">
               No permissions defined. Add at least one permission or use a
               Parent Role.
             </div>
@@ -608,7 +608,7 @@ export default function RoleManagement() {
                     <Label htmlFor={`resource-${index}`}>Resource</Label>
                     <select
                       id={`resource-${index}`}
-                      className="w-full p-2 border rounded-md mt-1"
+                      className="w-full p-2 border rounded-none mt-1"
                       value={permission.resource}
                       onChange={(e) =>
                         updatePermission(
@@ -630,7 +630,7 @@ export default function RoleManagement() {
                     <Label htmlFor={`action-${index}`}>Action</Label>
                     <select
                       id={`action-${index}`}
-                      className="w-full p-2 border rounded-md mt-1"
+                      className="w-full p-2 border rounded-none mt-1"
                       value={permission.action}
                       onChange={(e) =>
                         updatePermission(
@@ -652,7 +652,7 @@ export default function RoleManagement() {
                     <Label htmlFor={`scope-${index}`}>Scope</Label>
                     <select
                       id={`scope-${index}`}
-                      className="w-full p-2 border rounded-md mt-1"
+                      className="w-full p-2 border rounded-none mt-1"
                       value={permission.scope}
                       onChange={(e) =>
                         updatePermission(index, "scope", e.target.value)

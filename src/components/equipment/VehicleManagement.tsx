@@ -22,7 +22,7 @@ export default function VehicleManagement({
               This module is under development. Soon, you'll be able to manage
               vehicles, track maintenance, and assign vehicles to technicians.
             </p>
-            <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="p-6 bg-blue-50 rounded-none border border-blue-100">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <svg

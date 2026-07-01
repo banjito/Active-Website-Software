@@ -1582,7 +1582,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.manufacturer", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1596,7 +1596,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.catalogNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1610,7 +1610,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.serialNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1629,7 +1629,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.kvaBase", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-20 rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="text-neutral-500">/</span>
                   <input
@@ -1639,7 +1639,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.kvaCooling", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-20 rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1654,7 +1654,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.tempRise", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1668,7 +1668,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.impedance", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -1701,7 +1701,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.voltsPrimary", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="text-neutral-500">/</span>
                 <input
@@ -1714,7 +1714,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/* Connections */}
@@ -1783,7 +1783,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     handleChange("nameplate.voltsSecondary", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="text-neutral-500">/</span>
                 <input
@@ -1796,7 +1796,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               {/* Connections */}
@@ -1870,7 +1870,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.tapVoltages", newVoltages);
                       }}
                       readOnly={!isEditing}
-                      className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   ))}
                 </div>
@@ -1907,14 +1907,14 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       handleChange("nameplate.tapPosition", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="text-neutral-500">/</span>
                   <input
                     type="text"
                     value={formData.nameplate.tapPosition}
                     readOnly
-                    className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white bg-neutral-100 dark:bg-dark-150`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white bg-neutral-100 dark:bg-dark-150`}
                   />
                 </div>
                 {/* Separate Volts input */}
@@ -1932,7 +1932,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 {/* Separate Percent input */}
@@ -1950,7 +1950,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -3199,7 +3199,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

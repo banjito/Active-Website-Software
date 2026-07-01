@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="mr-4 p-2 bg-purple-50 rounded-full">
+                  <div className="mr-4 p-2 bg-purple-50 rounded-none">
                     <ShieldCheck className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>

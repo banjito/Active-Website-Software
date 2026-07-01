@@ -31,7 +31,7 @@ export default function CalibrationDashboard() {
       <JobCreationForm division="calibration" />
 
       {/* Add Job List Link */}
-      <Card className="p-4 mb-6 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-sm">
+      <Card className="p-4 mb-6 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-sm">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">

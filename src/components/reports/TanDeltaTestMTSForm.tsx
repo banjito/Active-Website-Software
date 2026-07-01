@@ -493,7 +493,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                 value={systemVoltage}
                 onChange={(e) => setSystemVoltage(e.target.value)}
                 disabled={!isEditing}
-                className="mt-1 block w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                className="mt-1 block w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
               />
             </div>
 
@@ -523,7 +523,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
             <div className="flex justify-end mb-2 print:hidden">
               <button
                 onClick={toggleEditMode}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md ${editingData ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-none ${editingData ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
               >
                 {editingData ? "Lock Data" : "Edit Data"}
               </button>
@@ -596,7 +596,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -614,7 +614,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "kV", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -632,7 +632,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseA", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -656,7 +656,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -676,7 +676,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseB", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -700,7 +700,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -720,7 +720,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseC", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -744,7 +744,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -1137,7 +1137,7 @@ if (typeof document !== "undefined") {
       .mb-6 > h2 { border-bottom: 1px solid black !important; padding-bottom: 2px !important; margin-bottom: 6px !important; font-size: 12px !important; }
 
       /* Remove card/shadow visuals */
-      .shadow, .shadow-md, .shadow-lg, .rounded, .rounded-lg, .border, .border-neutral-200, .dark\\:border-neutral-700, .bg-white, .dark\\:bg-dark-150 { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+      .shadow, .shadow-md, .shadow-lg, .rounded, .rounded-none, .border, .border-neutral-200, .dark\\:border-neutral-700, .bg-white, .dark\\:bg-dark-150 { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
 
       /* Print header spacing */
       .print\\:flex { margin-bottom: 8px !important; }

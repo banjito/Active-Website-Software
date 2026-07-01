@@ -99,10 +99,10 @@ function FeedSkeleton() {
       {[1, 2, 3].map((k) => (
         <div
           key={k}
-          className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-2.5 bg-neutral-50 dark:bg-dark-200/50"
+          className="rounded-none border border-neutral-200 dark:border-neutral-700 p-2.5 bg-neutral-50 dark:bg-dark-200/50"
         >
           <div className="flex gap-2">
-            <div className="h-8 w-8 rounded-full bg-neutral-200 dark:bg-dark-200" />
+            <div className="h-8 w-8 rounded-none bg-neutral-200 dark:bg-dark-200" />
             <div className="flex-1 space-y-2">
               <div className="h-2.5 w-28 bg-neutral-200 dark:bg-dark-200 rounded" />
               <div className="h-2 w-full bg-neutral-100 dark:bg-dark-200 rounded" />
@@ -317,7 +317,7 @@ export function CommunityBoardPanel() {
           {user ? <PostComposer user={user} onPosted={onPosted} /> : null}
 
           {error && (
-            <div className="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-3 py-2 text-xs text-red-800 dark:text-red-200">
+            <div className="rounded-none border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-3 py-2 text-xs text-red-800 dark:text-red-200">
               <p className="font-medium">Could not load feed</p>
               <p className="mt-1 opacity-90">{error}</p>
             </div>
@@ -326,7 +326,7 @@ export function CommunityBoardPanel() {
           {loading ? <FeedSkeleton /> : null}
 
           {!loading && !error && posts.length === 0 && (
-            <div className="rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 px-4 py-8 text-center text-sm text-neutral-600 dark:text-neutral-300">
+            <div className="rounded-none border border-dashed border-neutral-300 dark:border-neutral-600 px-4 py-8 text-center text-sm text-neutral-600 dark:text-neutral-300">
               No posts yet — be the first to share something!
             </div>
           )}
@@ -351,7 +351,7 @@ export function CommunityBoardPanel() {
                 type="button"
                 onClick={() => loadMore()}
                 disabled={loadingMore}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
+                className="px-3 py-1.5 text-xs font-medium rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50"
               >
                 {loadingMore ? <LoadingSpinner size="xs" /> : "Load more"}
               </button>

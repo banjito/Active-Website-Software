@@ -134,7 +134,7 @@ const SalesRepAssignment: React.FC<SalesRepAssignmentProps> = ({ territory, onUp
                         <img 
                           src={rep.profileImage} 
                           alt={rep.name} 
-                          className="rounded-circle mr-2" 
+                          className="rounded-none mr-2" 
                           style={{ width: '32px', height: '32px' }} 
                         />
                       )}

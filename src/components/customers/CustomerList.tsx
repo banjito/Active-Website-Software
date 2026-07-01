@@ -266,7 +266,7 @@ export default function CustomerList() {
                 setValue(checked ? null : option.value);
                 setPage(1);
               }}
-              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -604,7 +604,7 @@ export default function CustomerList() {
             setLoading(true);
             fetchData();
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md"
+          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none"
         >
           Try Again
         </button>
@@ -642,7 +642,7 @@ export default function CustomerList() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search customers by name, company, email"
-            className="w-72 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            className="w-72 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
           <div className="relative">
             <input
@@ -653,7 +653,7 @@ export default function CustomerList() {
                 setPage(1);
               }}
               placeholder="Starts with..."
-              className="w-32 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="w-32 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             />
             {startsWithFilter && (
               <button
@@ -677,7 +677,7 @@ export default function CustomerList() {
             <button
               type="button"
               onClick={() => setIsSortMenuOpen((prev) => !prev)}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 sortOrder
                   ? "text-[#f26722]"
                   : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -689,12 +689,12 @@ export default function CustomerList() {
               <ArrowDownWideNarrow className="h-5 w-5" />
             </button>
             {isSortMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+              <div className="absolute right-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                 <div>
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Sort by
                   </div>
-                  <div className="rounded-md bg-orange-50 px-2.5 py-1.5 text-sm text-[#f26722] dark:bg-orange-900/20">
+                  <div className="rounded-none bg-orange-50 px-2.5 py-1.5 text-sm text-[#f26722] dark:bg-orange-900/20">
                     Company Name
                   </div>
                 </div>
@@ -718,7 +718,7 @@ export default function CustomerList() {
             <button
               type="button"
               onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 activeFilterCount > 0
                   ? "text-[#f26722]"
                   : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -730,7 +730,7 @@ export default function CustomerList() {
               <Filter className="h-5 w-5" />
             </button>
             {isFilterMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+              <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                 <div className="">
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Status
@@ -745,7 +745,7 @@ export default function CustomerList() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="mt-3 w-full rounded-md border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     Clear filters
                   </button>
@@ -761,7 +761,7 @@ export default function CustomerList() {
               setFormData(initialFormData);
               setIsOpen(true);
             }}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+            className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add customer
@@ -774,7 +774,7 @@ export default function CustomerList() {
         <button
           type="button"
           onClick={clearDivisionTabs}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
               ? "bg-[#f26722] text-white"
               : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -787,7 +787,7 @@ export default function CustomerList() {
             key={div.value}
             type="button"
             onClick={() => toggleDivisionTab(div.value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
                 ? "bg-[#f26722] text-white"
                 : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -810,7 +810,7 @@ export default function CustomerList() {
               type="button"
               onClick={openMergeModal}
               title="Merge selected customers"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-[#f26722] text-white hover:bg-[#f26722]/90"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-none text-sm font-medium transition-colors bg-[#f26722] text-white hover:bg-[#f26722]/90"
             >
               <Blend className="h-4 w-4" />
               Merge customers ({selectedForMerge.size})
@@ -828,14 +828,14 @@ export default function CustomerList() {
 
       {/* Active Filters */}
       {Object.keys(activeFilters).length > 0 && (
-        <div className="mb-4 bg-neutral-50 dark:bg-dark-150 p-3 rounded-md">
+        <div className="mb-4 bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-neutral-500 dark:text-white">
               Active filters:
             </span>
 
             {activeFilters.status && (
-              <div className="flex items-center bg-white dark:bg-neutral-800 rounded-full px-3 py-1 text-sm">
+              <div className="flex items-center bg-white dark:bg-neutral-800 rounded-none px-3 py-1 text-sm">
                 <span className="mr-1">Status: {activeFilters.status}</span>
                 <button
                   onClick={() => handleFilterChange("status", null)}
@@ -856,12 +856,12 @@ export default function CustomerList() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-150 shadow overflow-hidden sm:rounded-md">
+      <div className="bg-white dark:bg-dark-150 shadow overflow-hidden sm:rounded-none">
         <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
           {customers.length === 0 ? (
             <li className="px-6 py-4">
               <div className="text-center py-8">
-                <div className="mx-auto h-12 w-12 text-neutral-400 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-dark-150 mb-4">
+                <div className="mx-auto h-12 w-12 text-neutral-400 flex items-center justify-center rounded-none bg-neutral-100 dark:bg-dark-150 mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
@@ -893,7 +893,7 @@ export default function CustomerList() {
                       setFormData(initialFormData);
                       setIsOpen(true);
                     }}
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+                    className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
                   >
                     Add your first customer
                   </button>
@@ -918,7 +918,7 @@ export default function CustomerList() {
                       className="mr-4 h-4 w-4 shrink-0 accent-[#f26722] cursor-pointer"
                     />
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                         <span className="text-neutral-500 dark:text-white text-lg font-medium">
                           {maskCustomerName(customer.company_name)?.charAt(0) ||
                             "C"}
@@ -938,7 +938,7 @@ export default function CustomerList() {
                             return divOption ? (
                               <span
                                 key={d}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722]"
+                                className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722]"
                               >
                                 {divOption.label}
                               </span>
@@ -953,7 +953,7 @@ export default function CustomerList() {
                   </div>
                   <div className="flex items-center space-x-4">
                     <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                      className={`inline-flex rounded-none px-2 py-0.5 text-xs font-medium ${
                         customer.status === "active"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : customer.status === "inactive"
@@ -1055,7 +1055,7 @@ export default function CustomerList() {
                   onChange={(e) =>
                     handleFilterChange("status", e.target.value || null)
                   }
-                  className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                  className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                 >
                   <option value="">All Statuses</option>
                   {statusOptions.map((status) => (
@@ -1071,14 +1071,14 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Clear All
               </button>
               <button
                 type="button"
                 onClick={() => setFilterOpen(false)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Apply Filters
               </button>
@@ -1125,7 +1125,7 @@ export default function CustomerList() {
                     value={formData.company_name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -1142,7 +1142,7 @@ export default function CustomerList() {
                     id="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -1159,7 +1159,7 @@ export default function CustomerList() {
                     id="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -1176,7 +1176,7 @@ export default function CustomerList() {
                     id="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -1197,7 +1197,7 @@ export default function CustomerList() {
                               : [...prev.divisions, div.value],
                           }));
                         }}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                           formData.divisions.includes(div.value)
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -1214,13 +1214,13 @@ export default function CustomerList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex justify-center rounded-none border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                   disabled={formLoading}
                 >
                   {formLoading ? (
@@ -1279,7 +1279,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
@@ -1288,7 +1288,7 @@ export default function CustomerList() {
                 onClick={() =>
                   customerToDelete && handleDelete(customerToDelete)
                 }
-                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 Delete
               </button>
@@ -1327,7 +1327,7 @@ export default function CustomerList() {
                 value={mergeName}
                 onChange={(e) => setMergeName(e.target.value)}
                 placeholder="Company name to keep"
-                className="mt-1 block w-full rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:bg-dark-150 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:bg-dark-150 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
               <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                 Defaults to the kept customer's name. Edit it to use any name.
@@ -1338,7 +1338,7 @@ export default function CustomerList() {
               {selectedCustomers.map((c) => (
                 <label
                   key={c.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-none border p-3 transition-colors ${
                     mergePrimaryId === c.id
                       ? "border-[#f26722] bg-[#f26722]/5"
                       : "border-neutral-200 dark:border-neutral-600 hover:border-[#f26722]/50"
@@ -1355,7 +1355,7 @@ export default function CustomerList() {
                     <div className="truncate text-sm font-medium text-neutral-900 dark:text-white">
                       {maskCustomerName(c.company_name) || "No Company Name"}
                       {mergePrimaryId === c.id && (
-                        <span className="ml-2 rounded-full bg-[#f26722] px-2 py-0.5 text-xs font-medium text-white">
+                        <span className="ml-2 rounded-none bg-[#f26722] px-2 py-0.5 text-xs font-medium text-white">
                           Keep
                         </span>
                       )}
@@ -1375,7 +1375,7 @@ export default function CustomerList() {
                 type="button"
                 onClick={() => setMergeModalOpen(false)}
                 disabled={isMerging}
-                className="inline-flex justify-center rounded-md border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50"
+                className="inline-flex justify-center rounded-none border border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1383,7 +1383,7 @@ export default function CustomerList() {
                 type="button"
                 onClick={handleConfirmMerge}
                 disabled={isMerging || !mergePrimaryId}
-                className="inline-flex items-center gap-1.5 justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 disabled:opacity-50"
               >
                 <Blend className="h-4 w-4" />
                 {isMerging ? "Merging..." : "Merge"}
@@ -1401,7 +1401,7 @@ export default function CustomerList() {
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
+          <Dialog.Panel className="w-full max-w-md rounded-none bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white flex items-center">
                 <Users className="h-5 w-5 text-[#f26722] mr-2" />
@@ -1438,11 +1438,11 @@ export default function CustomerList() {
                 {contactsPopupData.map((contact) => (
                   <div
                     key={contact.id}
-                    className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <div className="h-9 w-9 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center mr-3">
+                        <div className="h-9 w-9 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center mr-3">
                           <span className="text-neutral-500 dark:text-white text-sm font-medium">
                             {contact.first_name?.charAt(0)}
                             {contact.last_name?.charAt(0)}
@@ -1460,7 +1460,7 @@ export default function CustomerList() {
                         </div>
                       </div>
                       {contact.is_primary && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                           Primary
                         </span>
                       )}
@@ -1496,7 +1496,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={() => setContactsPopupOpen(false)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Close
               </button>

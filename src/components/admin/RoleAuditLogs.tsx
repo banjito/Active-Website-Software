@@ -99,7 +99,7 @@ export default function RoleAuditLogs({
 
     if (logs.length === 0) {
       return (
-        <div className="text-center p-6 text-neutral-500 border border-dashed rounded-md">
+        <div className="text-center p-6 text-neutral-500 border border-dashed rounded-none">
           No audit logs found {roleName ? `for role "${roleName}"` : ""}.
         </div>
       );
@@ -165,7 +165,7 @@ export default function RoleAuditLogs({
             <h3 className="text-sm font-medium text-neutral-500 mb-1">
               New Configuration:
             </h3>
-            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-none overflow-auto max-h-96">
               {JSON.stringify(new_config, null, 2)}
             </pre>
           </div>
@@ -181,7 +181,7 @@ export default function RoleAuditLogs({
             <h3 className="text-sm font-medium text-neutral-500 mb-1">
               Deleted Configuration:
             </h3>
-            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-none overflow-auto max-h-96">
               {JSON.stringify(previous_config, null, 2)}
             </pre>
           </div>
@@ -197,7 +197,7 @@ export default function RoleAuditLogs({
             <h3 className="text-sm font-medium text-neutral-500 mb-1">
               Previous Configuration:
             </h3>
-            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-none overflow-auto max-h-96">
               {JSON.stringify(previous_config, null, 2)}
             </pre>
           </div>
@@ -205,7 +205,7 @@ export default function RoleAuditLogs({
             <h3 className="text-sm font-medium text-neutral-500 mb-1">
               New Configuration:
             </h3>
-            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-md overflow-auto max-h-96">
+            <pre className="text-xs bg-neutral-50 dark:bg-dark-150 p-3 rounded-none overflow-auto max-h-96">
               {JSON.stringify(new_config, null, 2)}
             </pre>
           </div>
@@ -220,7 +220,7 @@ export default function RoleAuditLogs({
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="w-full max-w-4xl mx-4 bg-white dark:bg-neutral-900 rounded-lg shadow-xl">
+        <div className="w-full max-w-4xl mx-4 bg-white dark:bg-neutral-900 rounded-none shadow-xl">
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-medium">
               {formatAction(activeLog.action)} Role: {activeLog.role_name}

@@ -21,7 +21,7 @@ import {
 } from "@/services/interactionsService";
 
 const iconButtonClass =
-  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
 const iconButtonActiveClass =
   "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
 
@@ -309,7 +309,7 @@ export const QuickLogInteraction: React.FC = () => {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-[360px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+        <div className="absolute top-full right-0 mt-2 w-[360px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
           <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
             <div className="font-medium text-neutral-900 dark:text-white">
               Log interaction
@@ -330,7 +330,7 @@ export const QuickLogInteraction: React.FC = () => {
                 Customer
               </label>
               {selectedCustomer ? (
-                <div className="flex items-center justify-between rounded-md border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-200 px-3 py-2">
+                <div className="flex items-center justify-between rounded-none border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-200 px-3 py-2">
                   <span className="text-sm text-neutral-900 dark:text-white truncate">
                     {selectedCustomer.company_name || selectedCustomer.name}
                   </span>
@@ -363,10 +363,10 @@ export const QuickLogInteraction: React.FC = () => {
                     value={customerTerm}
                     onChange={(e) => setCustomerTerm(e.target.value)}
                     placeholder="Search customers..."
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                   />
                   {customerTerm.trim() && (
-                    <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 shadow-lg">
+                    <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 shadow-lg">
                       {searching ? (
                         <div className="px-3 py-2 text-xs text-neutral-500">
                           Hmm...
@@ -417,7 +417,7 @@ export const QuickLogInteraction: React.FC = () => {
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
                 disabled={!selectedCustomer || contactsLoading}
-                className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
               >
                 {!selectedCustomer ? (
                   <option value="">Select a customer first</option>
@@ -438,21 +438,21 @@ export const QuickLogInteraction: React.FC = () => {
               {selectedCustomer && !contactsLoading && (
                 <div className="mt-1.5">
                   {showNewContact ? (
-                    <div className="rounded-md border border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-200 p-2 space-y-2">
+                    <div className="rounded-none border border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-200 p-2 space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
                           value={newContactFirst}
                           onChange={(e) => setNewContactFirst(e.target.value)}
                           placeholder="First name"
-                          className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                         />
                         <input
                           type="text"
                           value={newContactLast}
                           onChange={(e) => setNewContactLast(e.target.value)}
                           placeholder="Last name"
-                          className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                         />
                       </div>
                       <input
@@ -461,7 +461,7 @@ export const QuickLogInteraction: React.FC = () => {
                         value={newContactPhone}
                         onChange={(e) => setNewContactPhone(e.target.value)}
                         placeholder="Phone (optional)"
-                        className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                       />
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -511,7 +511,7 @@ export const QuickLogInteraction: React.FC = () => {
                   <button
                     key={t.value}
                     onClick={() => setNoteType(t.value)}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-md border py-2 text-xs font-medium transition-colors ${
+                    className={`flex flex-col items-center justify-center gap-1 rounded-none border py-2 text-xs font-medium transition-colors ${
                       noteType === t.value
                         ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
                         : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-600 dark:text-neutral-300"
@@ -533,7 +533,7 @@ export const QuickLogInteraction: React.FC = () => {
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="What happened during this interaction..."
-                className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
 

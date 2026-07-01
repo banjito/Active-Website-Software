@@ -200,7 +200,7 @@ export const ReviewShortcutsDropdown: React.FC<
   };
 
   return (
-    <div className="w-[min(24rem,calc(100vw-1.5rem))] rounded-lg bg-white dark:bg-dark-150 shadow-xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
+    <div className="w-[min(24rem,calc(100vw-1.5rem))] rounded-none bg-white dark:bg-dark-150 shadow-xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
       <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-[#f26722]" />
@@ -259,7 +259,7 @@ export const ReviewShortcutsDropdown: React.FC<
                     </p>
                     {!!job.openFlagCount && job.openFlagCount > 0 && (
                       <span
-                        className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
+                        className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-none bg-yellow-400 px-1.5 text-[11px] font-bold leading-none text-yellow-950 shadow-sm"
                         title={`${job.openFlagCount} open customer flag${job.openFlagCount === 1 ? "" : "s"} on this job`}
                         aria-label={`${job.openFlagCount} open customer flag${job.openFlagCount === 1 ? "" : "s"} on this job`}
                       >

@@ -84,7 +84,7 @@ const ToastContainer: React.FC<ToastProps> = ({
         transform transition-all duration-300 ease-in-out
         ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}
         ${getVariantStyles()}
-        border rounded-lg shadow-md p-4
+        border rounded-none shadow-md p-4
       `}
       role="alert"
     >
@@ -102,7 +102,7 @@ const ToastContainer: React.FC<ToastProps> = ({
           {action && (
             <button
               type="button"
-              className="mt-2 inline-flex items-center rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="mt-2 inline-flex items-center rounded-none bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
               onClick={() => {
                 action.onClick();
                 dismiss();

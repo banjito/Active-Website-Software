@@ -135,7 +135,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Ruler className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <BarChart className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <AlertCircle className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Truck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Wrench className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Users className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   <CardTitle className="text-lg">
                     Report Approval Rate
                   </CardTitle>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <FileCheck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   <CardTitle className="text-lg">
                     Report Approval Status
                   </CardTitle>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <FileCheck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                 ) : (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-neutral-50 dark:bg-dark-150 rounded-lg">
+                      <div className="text-center p-4 bg-neutral-50 dark:bg-dark-150 rounded-none">
                         <p className="text-3xl font-bold text-neutral-900 dark:text-white">
                           {reportApprovalMetrics.total}
                         </p>
@@ -356,7 +356,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                           Total Reports
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
                         <p className="text-3xl font-bold text-green-600">
                           {reportApprovalMetrics.approved}
                         </p>
@@ -374,7 +374,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                           %
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-none">
                         <p className="text-3xl font-bold text-yellow-600">
                           {reportApprovalMetrics.pending}
                         </p>
@@ -392,7 +392,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                           %
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-none">
                         <p className="text-3xl font-bold text-red-600">
                           {reportApprovalMetrics.rejected}
                         </p>

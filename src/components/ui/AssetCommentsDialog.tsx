@@ -252,7 +252,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center">
@@ -304,7 +304,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
               {comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-dark-150"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 bg-neutral-50 dark:bg-dark-150"
                 >
                   {/* Comment Header */}
                   <div className="flex items-start justify-between mb-3">
@@ -341,7 +341,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
                   </div>
 
                   {/* Comment Content */}
-                  <div className="bg-white dark:bg-dark-150 rounded-md p-3 border border-neutral-200 dark:border-neutral-600">
+                  <div className="bg-white dark:bg-dark-150 rounded-none p-3 border border-neutral-200 dark:border-neutral-600">
                     <div className="flex items-start gap-2">
                       <User className="h-4 w-4 text-neutral-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">

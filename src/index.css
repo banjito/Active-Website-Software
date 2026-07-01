@@ -380,7 +380,7 @@
         @apply mt-1 block w-full p-2
       bg-neutral-100 dark:bg-dark-100
       border border-neutral-300 dark:border-neutral-600
-      rounded-md shadow-sm
+      rounded-none shadow-sm
       focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
       text-neutral-900 dark:text-white;
     }

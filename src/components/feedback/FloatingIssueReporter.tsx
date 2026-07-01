@@ -208,7 +208,7 @@ export const FloatingIssueReporter: React.FC = () => {
         <button
           onClick={() => setOpen(true)}
           aria-label="Issue / Feature Report"
-          className="group relative inline-flex h-14 w-14 items-center justify-center bg-[#f26722] hover:w-[240px] hover:bg-[#e55611] focus-visible:w-[240px] text-white shadow-lg rounded-xl font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
+          className="group relative inline-flex h-14 w-14 items-center justify-center bg-[#f26722] hover:w-[240px] hover:bg-[#e55611] focus-visible:w-[240px] text-white shadow-lg rounded-none font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
         >
           <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
             <OctagonAlert className="h-6 w-6" aria-hidden />
@@ -221,7 +221,7 @@ export const FloatingIssueReporter: React.FC = () => {
       )}
 
       {open && (
-        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-2xl p-4">
+        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               {type === "issue" ? "Report an Issue" : "Request a Feature"}
@@ -299,7 +299,7 @@ export const FloatingIssueReporter: React.FC = () => {
                   placeholder="Search by name..."
                 />
                 {showPartyDropdown && partySearch.trim() && (
-                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-32 overflow-y-auto">
+                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg max-h-32 overflow-y-auto">
                     {allUsers
                       .filter(
                         (u) =>
@@ -346,7 +346,7 @@ export const FloatingIssueReporter: React.FC = () => {
                     return (
                       <span
                         key={uid}
-                        className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-xs px-2 py-1 rounded-full"
+                        className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-xs px-2 py-1 rounded-none"
                       >
                         {u?.name || "User"}
                         <button
@@ -397,7 +397,7 @@ export const FloatingIssueReporter: React.FC = () => {
                       )}
                       <button
                         onClick={() => removeFile(idx)}
-                        className="absolute -top-2 -right-2 bg-black/70 text-white rounded-full w-6 h-6 text-xs opacity-0 group-hover:opacity-100"
+                        className="absolute -top-2 -right-2 bg-black/70 text-white rounded-none w-6 h-6 text-xs opacity-0 group-hover:opacity-100"
                         aria-label="Remove"
                       >
                         ✕

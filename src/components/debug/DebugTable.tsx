@@ -163,7 +163,7 @@ export default function DebugTableCheck() {
 
       {loading ? (
         <div className="flex items-center justify-center p-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-900"></div>
+          <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-neutral-900"></div>
         </div>
       ) : error ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

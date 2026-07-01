@@ -460,7 +460,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
         section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
         div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
         div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
@@ -1576,7 +1576,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     type="text"
                     value={formData.jobNumber}
                     readOnly={true}
-                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
@@ -1587,7 +1587,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     type="text"
                     value={maskCustomerName(formData.customerName)}
                     readOnly={true}
-                    className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                   />
                 </div>
                 <div>
@@ -1599,7 +1599,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       value={maskCustomerAddress(formData.customerAddress)}
                       readOnly={true}
                       rows={3}
-                      className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                      className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                     />
                   </div>
                   <div className="hidden print:flex print:items-baseline">
@@ -1635,7 +1635,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.identifier}
                     onChange={(e) => handleChange("identifier", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter Identifier"
                   />
                 </div>
@@ -1652,7 +1652,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("technicians", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1664,7 +1664,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.substation}
                     onChange={(e) => handleChange("substation", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 {/* Neutralized old print-only block (kept non-printing) */}
@@ -1698,7 +1698,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("eqptLocation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1710,7 +1710,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => handleChange("date", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1722,7 +1722,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.userName}
                     onChange={(e) => handleChange("userName", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter User Name"
                   />
                 </div>
@@ -1739,7 +1739,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleFahrenheitChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -1753,7 +1753,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleCelsiusChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -1764,7 +1764,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       type="number"
                       value={formData.temperature.tcf}
                       readOnly
-                      className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                      className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
                     />
                   </div>
                 </div>
@@ -2120,7 +2120,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         formData.electricalTests.ratioPolarity.length >=
                         MAX_RATIO_POLARITY_ROWS
                       }
-                      className="px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Add Row
                     </button>
@@ -2130,7 +2130,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       disabled={
                         formData.electricalTests.ratioPolarity.length <= 1
                       }
-                      className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-none hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Remove Row
                     </button>
@@ -3019,7 +3019,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   );
                 }
               }}
-              className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Mark Ready to Review
             </button>

@@ -267,9 +267,9 @@ export default function JobDiagnostics() {
             Job Diagnostics
           </h1>
         </div>
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-none p-6">
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+            <div className="animate-spin rounded-none h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
             <span className="ml-3 text-neutral-600">
               Running diagnostics...
             </span>
@@ -294,7 +294,7 @@ export default function JobDiagnostics() {
         </h1>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden mb-6">
+      <div className="bg-white shadow rounded-none overflow-hidden mb-6">
         <div className="p-6">
           <div className="mb-4">
             <h2 className="text-lg font-medium text-neutral-900">
@@ -392,7 +392,7 @@ export default function JobDiagnostics() {
             <button
               onClick={runDiagnostics}
               disabled={refreshing}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Re-run Diagnostics
@@ -402,7 +402,7 @@ export default function JobDiagnostics() {
               <button
                 onClick={fixJobNumber}
                 disabled={refreshing}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:bg-amber-400"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:bg-amber-400"
               >
                 Fix Missing Job Number
               </button>
@@ -412,7 +412,7 @@ export default function JobDiagnostics() {
               <button
                 onClick={fixJobCustomerRelationship}
                 disabled={refreshing}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-400"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-400"
               >
                 Repair Customer Relationship
               </button>
@@ -421,14 +421,14 @@ export default function JobDiagnostics() {
         </div>
       </div>
 
-      <div className="bg-black rounded-lg overflow-hidden">
+      <div className="bg-black rounded-none overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2 bg-neutral-800">
           <div className="flex items-center">
             <Database className="h-4 w-4 text-green-400 mr-2" />
             <h3 className="text-sm font-medium text-white">Diagnostic Log</h3>
           </div>
           {error && (
-            <span className="text-xs px-2 py-1 rounded-full bg-red-900 text-red-300">
+            <span className="text-xs px-2 py-1 rounded-none bg-red-900 text-red-300">
               Error Detected
             </span>
           )}

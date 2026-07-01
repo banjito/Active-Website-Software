@@ -166,7 +166,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
   if (error) {
     return (
       <div className="p-6">
-        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+        <div className="flex items-start gap-3 rounded-none border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
           <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
@@ -457,7 +457,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+          className="inline-flex items-center gap-1.5 rounded-none border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
         >
           <Settings className="h-4 w-4" />
           Settings
@@ -469,7 +469,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className={`rounded-lg border p-4 ${
+            className={`rounded-none border p-4 ${
               card.highlight === 'green'
                 ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950'
                 : card.highlight === 'red'
@@ -496,7 +496,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
       {/* Quote vs Actuals side-by-side */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* QUOTE / Budget */}
-        <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="overflow-hidden rounded-none border border-neutral-200 dark:border-neutral-700">
           <div className="bg-[#1F3864] px-4 py-3">
             <h3 className="text-sm font-semibold text-white">QUOTE / Budget</h3>
           </div>
@@ -547,7 +547,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
         </div>
 
         {/* ACTUALS */}
-        <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="overflow-hidden rounded-none border border-neutral-200 dark:border-neutral-700">
           <div className="bg-[#E8742C] px-4 py-3">
             <h3 className="text-sm font-semibold text-white">ACTUALS (to date)</h3>
           </div>
@@ -602,7 +602,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
 
       {/* Monthly Chart */}
       {chartData.length > 0 && (
-        <div className="rounded-lg border border-neutral-200 p-5 dark:border-neutral-700">
+        <div className="rounded-none border border-neutral-200 p-5 dark:border-neutral-700">
           <h3 className="mb-4 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
             Monthly Cost vs Billed
           </h3>
@@ -662,19 +662,19 @@ export default function JobProfitabilityDashboard({ job }: Props) {
                 max="100"
                 value={draftRate}
                 onChange={(e) => setDraftRate(e.target.value)}
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-none border border-neutral-300 px-3 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               />
             </div>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowSettings(false)}
-                className="rounded-md border border-neutral-300 px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                className="rounded-none border border-neutral-300 px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveSettings}
-                className="rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#d95e1e]"
+                className="rounded-none bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#d95e1e]"
               >
                 Save
               </button>

@@ -667,7 +667,7 @@ const BidsOverview: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/50">
+                  <div className="p-2 rounded-none bg-blue-50 dark:bg-blue-900/50">
                     <Calendar className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                   </div>
                   <div>
@@ -682,7 +682,7 @@ const BidsOverview: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-green-50 dark:bg-green-900/50">
+                  <div className="p-2 rounded-none bg-green-50 dark:bg-green-900/50">
                     <DollarSign className="h-4 w-4 text-green-500 dark:text-green-400" />
                   </div>
                   <div>
@@ -710,7 +710,7 @@ const BidsOverview: React.FC = () => {
                             className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-dark-200"
                           >
                             <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(type)}`}
+                              className={`text-xs px-2 py-0.5 rounded-none ${getTypeColor(type)}`}
                             >
                               {formatOpportunityType(type)}
                             </span>
@@ -736,7 +736,7 @@ const BidsOverview: React.FC = () => {
                           {b.title}
                         </p>
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded-full ${getTypeColor(b.opportunity_type)}`}
+                          className={`text-xs px-1.5 py-0.5 rounded-none ${getTypeColor(b.opportunity_type)}`}
                         >
                           {
                             formatOpportunityType(b.opportunity_type).split(
@@ -798,7 +798,7 @@ const BidsOverview: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-purple-50 dark:bg-purple-900/50">
+                  <div className="p-2 rounded-none bg-purple-50 dark:bg-purple-900/50">
                     <Calendar className="h-4 w-4 text-purple-500 dark:text-purple-400" />
                   </div>
                   <div>
@@ -813,7 +813,7 @@ const BidsOverview: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-orange-50 dark:bg-orange-900/50">
+                  <div className="p-2 rounded-none bg-orange-50 dark:bg-orange-900/50">
                     <DollarSign className="h-4 w-4 text-orange-500 dark:text-orange-400" />
                   </div>
                   <div>
@@ -841,7 +841,7 @@ const BidsOverview: React.FC = () => {
                             className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-dark-200"
                           >
                             <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(type)}`}
+                              className={`text-xs px-2 py-0.5 rounded-none ${getTypeColor(type)}`}
                             >
                               {formatOpportunityType(type)}
                             </span>
@@ -867,7 +867,7 @@ const BidsOverview: React.FC = () => {
                           {b.title}
                         </p>
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded-full ${getTypeColor(b.opportunity_type)}`}
+                          className={`text-xs px-1.5 py-0.5 rounded-none ${getTypeColor(b.opportunity_type)}`}
                         >
                           {
                             formatOpportunityType(b.opportunity_type).split(
@@ -922,7 +922,7 @@ const BidsOverview: React.FC = () => {
               setShowAllWeeks((v) => !v);
             }
           }}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-neutral-100 dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-white hover:bg-neutral-200 dark:hover:bg-dark-200"
+          className="px-3 py-1.5 text-sm font-medium rounded-none bg-neutral-100 dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-white hover:bg-neutral-200 dark:hover:bg-dark-200"
         >
           {showAllWeeks ? (
             "Hide History"
@@ -952,7 +952,7 @@ const BidsOverview: React.FC = () => {
                 <button
                   onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
                   disabled={historyPage === 0}
-                  className={`px-2 py-1 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 ${historyPage === 0 ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
+                  className={`px-2 py-1 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 ${historyPage === 0 ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
                 >
                   Prev 4 weeks
                 </button>
@@ -963,7 +963,7 @@ const BidsOverview: React.FC = () => {
                     )
                   }
                   disabled={(historyPage + 1) * weeksPerPage >= allWeeks.length}
-                  className={`px-2 py-1 text-sm rounded-md border border-neutral-300 dark:border-neutral-600 ${(historyPage + 1) * weeksPerPage >= allWeeks.length ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
+                  className={`px-2 py-1 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 ${(historyPage + 1) * weeksPerPage >= allWeeks.length ? "opacity-50 cursor-not-allowed" : "bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-dark-200"} text-neutral-800 dark:text-white`}
                 >
                   Next 4 weeks
                 </button>
@@ -997,7 +997,7 @@ const BidsOverview: React.FC = () => {
                           total > 0 && (
                             <span
                               key={type}
-                              className={`text-xs px-2 py-1 rounded-full ${getTypeColor(type)}`}
+                              className={`text-xs px-2 py-1 rounded-none ${getTypeColor(type)}`}
                             >
                               {formatOpportunityType(type)}:{" "}
                               {formatCurrency(total)}
@@ -1017,7 +1017,7 @@ const BidsOverview: React.FC = () => {
                                 {b.title}
                               </p>
                               <span
-                                className={`text-xs px-1.5 py-0.5 rounded-full ${getTypeColor(b.opportunity_type)}`}
+                                className={`text-xs px-1.5 py-0.5 rounded-none ${getTypeColor(b.opportunity_type)}`}
                               >
                                 {
                                   formatOpportunityType(

@@ -850,7 +850,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         @apply block text-sm font-medium text-neutral-700 dark:text-white;
       }
       .form-input, .form-select, .form-textarea {
-        @apply mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 dark:bg-dark-150 dark:text-white;
+        @apply mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 dark:bg-dark-150 dark:text-white;
       }
       .form-input-table {
         @apply w-full p-1 border-none bg-transparent text-center dark:text-white focus:ring-0 focus:outline-none;
@@ -1420,7 +1420,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               <button
                 type="button"
                 onClick={addBusSection}
-                className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-md"
+                className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none"
               >
                 + Add Bus Section
               </button>
@@ -1428,7 +1428,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 type="button"
                 onClick={removeBusSection}
                 disabled={formData.measuredInsulationResistance.length <= 1}
-                className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 - Remove Last Section
               </button>
@@ -1880,7 +1880,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   <button
                     onClick={fillEmptyFieldsWithNA}
                     disabled={!isEditing}
-                    className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     Fill Empty Fields with N/A
                   </button>
@@ -1898,7 +1898,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     <option value="">Select...</option>
                     {INSULATION_RESISTANCE_TEST_VOLTAGES.map((opt) => (
@@ -1981,7 +1981,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                             type="text"
                             value={test.busSection}
                             readOnly
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-left">
@@ -2015,7 +2015,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2034,7 +2034,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2136,7 +2136,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               type="text"
                               value={test.busSection}
                               readOnly
-                              className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                              className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2160,7 +2160,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 type="text"
                                 value={test[key]}
                                 readOnly
-                                className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                                className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                               />
                             </div>
                             <div className="hidden print:block text-center">
@@ -2174,7 +2174,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               type="text"
                               value={formData.insulationResistanceUnit}
                               readOnly
-                              className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                              className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2262,7 +2262,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2287,7 +2287,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                   }));
                                 }}
                                 readOnly={!isEditing}
-                                className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </div>
                             <div className="hidden print:block text-center">
@@ -2307,7 +2307,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {CONTACT_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2351,7 +2351,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {DIELECTRIC_WITHSTAND_TEST_VOLTAGES.map((opt) => (
                     <option key={opt} value={opt}>
@@ -2408,7 +2408,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                             type="text"
                             value={test.busSection}
                             readOnly
-                            className="block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2432,7 +2432,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2451,7 +2451,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {DIELECTRIC_WITHSTAND_UNITS.map((unit) => (
                               <option
@@ -2913,7 +2913,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

@@ -164,7 +164,7 @@ export const CommentThread: React.FC<Props> = ({
                 {visible.map((c) => (
                   <li
                     key={c.id}
-                    className="rounded-md bg-neutral-50 dark:bg-dark-200/80 px-3 py-2"
+                    className="rounded-none bg-neutral-50 dark:bg-dark-200/80 px-3 py-2"
                   >
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -205,7 +205,7 @@ export const CommentThread: React.FC<Props> = ({
                 type="button"
                 disabled={!text.trim() || submitting}
                 onClick={() => void submit()}
-                className="self-end px-3 py-1.5 rounded-md text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="self-end px-3 py-1.5 rounded-none text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? "Posting…" : "Reply"}
               </button>

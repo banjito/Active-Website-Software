@@ -43,10 +43,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-blue-100 dark:bg-blue-900/20 p-2 rounded-md">
+              <div className="bg-blue-100 dark:bg-blue-900/20 p-2 rounded-none">
                 <Users size={20} className="text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -73,10 +73,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-green-100 dark:bg-green-900/20 p-2 rounded-md">
+              <div className="bg-green-100 dark:bg-green-900/20 p-2 rounded-none">
                 <Briefcase
                   size={20}
                   className="text-green-600 dark:text-green-400"
@@ -105,10 +105,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-purple-100 dark:bg-purple-900/20 p-2 rounded-md">
+              <div className="bg-purple-100 dark:bg-purple-900/20 p-2 rounded-none">
                 <User
                   size={20}
                   className="text-purple-600 dark:text-purple-400"
@@ -135,10 +135,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-amber-100 dark:bg-amber-900/20 p-2 rounded-md">
+              <div className="bg-amber-100 dark:bg-amber-900/20 p-2 rounded-none">
                 <FileText
                   size={20}
                   className="text-amber-600 dark:text-amber-400"
@@ -165,10 +165,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-teal-100 dark:bg-teal-900/20 p-2 rounded-md">
+              <div className="bg-teal-100 dark:bg-teal-900/20 p-2 rounded-none">
                 <Package
                   size={20}
                   className="text-teal-600 dark:text-teal-400"
@@ -195,10 +195,10 @@ const SearchResultCard = ({
         return (
           <div
             onClick={handleClick}
-            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-md cursor-pointer"
+            className="flex items-start p-4 hover:bg-neutral-50 dark:hover:bg-dark-200 rounded-none cursor-pointer"
           >
             <div className="flex-shrink-0 mr-4">
-              <div className="bg-red-100 dark:bg-red-900/20 p-2 rounded-md">
+              <div className="bg-red-100 dark:bg-red-900/20 p-2 rounded-none">
                 <FileBarChart
                   size={20}
                   className="text-red-600 dark:text-red-400"
@@ -291,7 +291,7 @@ export const SearchResults: React.FC = () => {
   // If no results are found and we're not loading
   if (!loading && hasSearched && searchResults.length === 0) {
     return (
-      <div className="mt-4 p-6 text-center bg-white dark:bg-dark-150 rounded-md shadow-sm border border-neutral-200 dark:border-dark-300">
+      <div className="mt-4 p-6 text-center bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-dark-300">
         <div className="text-neutral-400 dark:text-dark-500 mb-2">
           <svg
             className="mx-auto h-12 w-12"
@@ -337,7 +337,7 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="mt-4">
-      <div className="bg-white dark:bg-dark-150 rounded-md shadow-sm border border-neutral-200 dark:border-dark-300 overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-dark-300 overflow-hidden">
         <div className="p-4 border-b border-neutral-200 dark:border-dark-300">
           <h2 className="text-lg font-medium text-neutral-900 dark:text-dark-900">
             Search Results

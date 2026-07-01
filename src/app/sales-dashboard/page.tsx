@@ -47,7 +47,7 @@ export default function SalesDashboard() {
           >
             <CardHeader className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-full bg-emerald-50 dark:bg-emerald-900/50">
+                <div className="p-2.5 rounded-none bg-emerald-50 dark:bg-emerald-900/50">
                   <TrendingUp className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -68,7 +68,7 @@ export default function SalesDashboard() {
           >
             <CardHeader className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-full bg-blue-50 dark:bg-blue-900/50">
+                <div className="p-2.5 rounded-none bg-blue-50 dark:bg-blue-900/50">
                   <Users className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                 </div>
                 <div>
@@ -89,7 +89,7 @@ export default function SalesDashboard() {
           >
             <CardHeader className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-900/50">
+                <div className="p-2.5 rounded-none bg-rose-50 dark:bg-rose-900/50">
                   <Users className="h-5 w-5 text-rose-500 dark:text-rose-400" />
                 </div>
                 <div>

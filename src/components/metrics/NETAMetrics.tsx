@@ -114,22 +114,22 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-3 space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
             <TabsTrigger
               value="overview"
-              className="px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="divisions"
-              className="px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Division Comparison
             </TabsTrigger>
             <TabsTrigger
               value="reports"
-              className="px-3 py-2 text-sm font-medium rounded-md transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Report Approval
             </TabsTrigger>
@@ -152,7 +152,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Truck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Wrench className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -194,7 +194,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <Users className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -207,7 +207,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                   <CardTitle className="text-lg">
                     Report Approval Rate
                   </CardTitle>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <FileCheck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -281,7 +281,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                   <CardTitle className="text-lg">
                     Division Resources Comparison
                   </CardTitle>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <PieChart className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -312,7 +312,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                   <CardTitle className="text-lg">
                     Report Approval Status
                   </CardTitle>
-                  <div className="rounded-md bg-black/5 p-2">
+                  <div className="rounded-none bg-black/5 p-2">
                     <FileCheck className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                 ) : (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-neutral-50 dark:bg-dark-150 rounded-lg">
+                      <div className="text-center p-4 bg-neutral-50 dark:bg-dark-150 rounded-none">
                         <p className="text-3xl font-bold text-neutral-900 dark:text-white">
                           {reportApprovalMetrics.total}
                         </p>
@@ -343,7 +343,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                           Total Reports
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
                         <p className="text-3xl font-bold text-green-600">
                           {reportApprovalMetrics.approved}
                         </p>
@@ -361,7 +361,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                           %
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-none">
                         <p className="text-3xl font-bold text-yellow-600">
                           {reportApprovalMetrics.pending}
                         </p>
@@ -379,7 +379,7 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                           %
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                      <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-none">
                         <p className="text-3xl font-bold text-red-600">
                           {reportApprovalMetrics.rejected}
                         </p>

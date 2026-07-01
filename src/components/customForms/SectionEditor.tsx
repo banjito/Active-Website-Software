@@ -383,7 +383,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Job Details: prominent TCF callout so users know they can reference it */}
         {section.componentType === ComponentType.JOB_INFO && (
-          <div className="rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3">
+          <div className="rounded-none border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3">
             <p className="text-xs font-semibold text-amber-900 dark:text-amber-100 mb-1">
               Use in formulas on this sheet
             </p>
@@ -1327,7 +1327,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   Layout
                 </label>
                 {section.componentType === ComponentType.JOB_INFO ? (
-                  <div className="px-3 py-2 rounded-md bg-neutral-100 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300 text-sm border border-neutral-200 dark:border-neutral-600">
+                  <div className="px-3 py-2 rounded-none bg-neutral-100 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300 text-sm border border-neutral-200 dark:border-neutral-600">
                     5 columns, 2 rows (fixed for Job Details)
                   </div>
                 ) : (
@@ -1336,7 +1336,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     onChange={(e) =>
                       onUpdate({ layout: e.target.value as any })
                     }
-                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-sm"
                   >
                     <option value="single-column">Single Column</option>
                     <option value="two-column">Two Columns</option>
@@ -1896,7 +1896,7 @@ const ColumnEditor: React.FC<{
                       }
                       onUpdate({ field: { ...field, ...updates } });
                     }}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
                   >
                     <option value={FieldType.TEXT}>Text</option>
                     <option value={FieldType.NUMBER}>Number</option>
@@ -1989,7 +1989,7 @@ const ColumnEditor: React.FC<{
                   <select
                     value={getPopulateFromValue()}
                     onChange={(e) => handlePopulateFromSelect(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
                   >
                     <option value="">— Select a field —</option>
                     {Array.from(
@@ -2072,7 +2072,7 @@ const ColumnEditor: React.FC<{
                     )}
                   </div>
                   <select
-                    className="w-full mt-1 px-2 py-1 text-xs font-mono bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md"
+                    className="w-full mt-1 px-2 py-1 text-xs font-mono bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none"
                     onChange={(e) => {
                       const token = e.target.value;
                       if (!token) return;
@@ -2201,7 +2201,7 @@ const FieldEditor: React.FC<{
               }
               onUpdate(updates);
             }}
-            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-xs"
+            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-xs"
           >
             <option value={FieldType.TEXT}>Text</option>
             <option value={FieldType.NUMBER}>Number</option>

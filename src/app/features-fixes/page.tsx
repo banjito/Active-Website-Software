@@ -495,7 +495,7 @@ const FeaturesFixesPage: React.FC = () => {
                 setValue(option.value);
                 setCurrentPage(1);
               }}
-              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -1090,7 +1090,7 @@ const FeaturesFixesPage: React.FC = () => {
           {!loading && issues.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
               {/* Top Contributors */}
-              <div className="bg-white dark:bg-dark-150 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
+              <div className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-[#f26722]" />
@@ -1134,9 +1134,9 @@ const FeaturesFixesPage: React.FC = () => {
                             {r.count}
                           </span>
                         </div>
-                        <div className="w-full bg-neutral-100 dark:bg-dark-200 rounded-full h-1.5">
+                        <div className="w-full bg-neutral-100 dark:bg-dark-200 rounded-none h-1.5">
                           <div
-                            className="h-1.5 rounded-full transition-all"
+                            className="h-1.5 rounded-none transition-all"
                             style={{
                               width: `${barPct}%`,
                               backgroundColor:
@@ -1162,7 +1162,7 @@ const FeaturesFixesPage: React.FC = () => {
               </div>
 
               {/* Avg Times by Priority */}
-              <div className="lg:col-span-2 bg-white dark:bg-dark-150 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
+              <div className="lg:col-span-2 bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-[#f26722]" />
@@ -1262,7 +1262,7 @@ const FeaturesFixesPage: React.FC = () => {
                 {/* Summary row */}
                 <div className="flex items-center gap-6 mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-none bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                       <Bug className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
@@ -1275,7 +1275,7 @@ const FeaturesFixesPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-none bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                       <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
@@ -1288,7 +1288,7 @@ const FeaturesFixesPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-none bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                       <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
@@ -1301,7 +1301,7 @@ const FeaturesFixesPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-neutral-100 dark:bg-dark-200 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-none bg-neutral-100 dark:bg-dark-200 flex items-center justify-center">
                       <BarChart3 className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                     </div>
                     <div>
@@ -1326,7 +1326,7 @@ const FeaturesFixesPage: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className={`w-64 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                className={`w-64 rounded-none border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                   search
                     ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
                     : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-dark-150"
@@ -1336,7 +1336,7 @@ const FeaturesFixesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                     activeFilterCount > 0
                       ? "text-[#f26722]"
                       : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -1348,7 +1348,7 @@ const FeaturesFixesPage: React.FC = () => {
                   <Filter className="h-5 w-5" />
                 </button>
                 {isFilterMenuOpen && (
-                  <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                  <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-none border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                     <div>
                       <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                         Type
@@ -1377,7 +1377,7 @@ const FeaturesFixesPage: React.FC = () => {
                           setStatusFilter("all");
                           setCurrentPage(1);
                         }}
-                        className="mt-3 w-full rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:text-white dark:hover:bg-dark-100"
+                        className="mt-3 w-full rounded-none border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:text-white dark:hover:bg-dark-100"
                       >
                         Clear filters
                       </button>
@@ -1389,7 +1389,7 @@ const FeaturesFixesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsSortMenuOpen((prev) => !prev)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
                   aria-expanded={isSortMenuOpen}
                   aria-label="Sort features and fixes"
                   title="Sort"
@@ -1397,7 +1397,7 @@ const FeaturesFixesPage: React.FC = () => {
                   <ArrowDownWideNarrow className="h-5 w-5" />
                 </button>
                 {isSortMenuOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150">
+                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150">
                     <div>
                       <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                         Sort by
@@ -1416,14 +1416,14 @@ const FeaturesFixesPage: React.FC = () => {
                 onClick={handleDownloadCsv}
                 disabled={loading || filtered.length === 0}
                 title="Download the current filtered list as a CSV file"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
               >
                 <Download className="h-5 w-5 hover:text-[#f26722]" />
               </button>
             </div>
           </div>
 
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-4">
+          <section className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4">
             {loading ? (
               <div className="flex min-h-[240px] items-center justify-center">
                 <LoadingSpinner size="md" />
@@ -1542,7 +1542,7 @@ const FeaturesFixesPage: React.FC = () => {
                                   e.stopPropagation();
                                   toggleExcludeFromStats(issue);
                                 }}
-                                className={`p-1.5 rounded-md transition-colors ${
+                                className={`p-1.5 rounded-none transition-colors ${
                                   isExcluded
                                     ? "text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                                     : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -1581,7 +1581,7 @@ const FeaturesFixesPage: React.FC = () => {
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
@@ -1593,7 +1593,7 @@ const FeaturesFixesPage: React.FC = () => {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm font-medium rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -1612,7 +1612,7 @@ const FeaturesFixesPage: React.FC = () => {
               ></div>
 
               {/* Modal Content */}
-              <div className="relative bg-white dark:bg-dark-150 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto z-50">
+              <div className="relative bg-white dark:bg-dark-150 rounded-none shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto z-50">
                 {/* Header */}
                 <div className="sticky top-0 bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 px-6 py-4">
                   <div className="flex justify-between items-start mb-3">
@@ -1636,7 +1636,7 @@ const FeaturesFixesPage: React.FC = () => {
                         !isEditMode && (
                           <button
                             onClick={handleStartEdit}
-                            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-none"
                           >
                             Edit
                           </button>
@@ -1645,13 +1645,13 @@ const FeaturesFixesPage: React.FC = () => {
                         <>
                           <button
                             onClick={handleSaveEdit}
-                            className="px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md"
+                            className="px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white rounded-none"
                           >
                             Save
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-md"
+                            className="px-3 py-1 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-none"
                           >
                             Cancel
                           </button>
@@ -1839,7 +1839,7 @@ const FeaturesFixesPage: React.FC = () => {
                             placeholder="Search by name to add..."
                           />
                           {showIpDropdown && ipSearch.trim() && (
-                            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                            <div className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg max-h-40 overflow-y-auto">
                               {allUsers
                                 .filter(
                                   (u) =>
@@ -1896,7 +1896,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <span
                                   key={uid}
-                                  className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-none"
                                 >
                                   {u?.name || "User"}
                                   <button
@@ -1937,7 +1937,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <span
                                   key={uid}
-                                  className="inline-flex items-center bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center bg-neutral-100 dark:bg-dark-100 text-neutral-800 dark:text-neutral-200 text-sm px-2.5 py-1 rounded-none"
                                 >
                                   {u?.name || "User"}
                                 </span>
@@ -1984,7 +1984,7 @@ const FeaturesFixesPage: React.FC = () => {
                               return (
                                 <div
                                   key={attachment.id}
-                                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden"
+                                  className="border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden"
                                 >
                                   {attachment.file_url && isImage ? (
                                     <a
@@ -2246,7 +2246,7 @@ const FeaturesFixesPage: React.FC = () => {
                           handleMarkInProgress(selectedIssue);
                           closeModal();
                         }}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-medium"
                       >
                         Mark In Progress
                       </button>
@@ -2258,7 +2258,7 @@ const FeaturesFixesPage: React.FC = () => {
                             handlePause(selectedIssue);
                             closeModal();
                           }}
-                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-medium"
+                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-none font-medium"
                         >
                           ⏸ Pause
                         </button>
@@ -2269,7 +2269,7 @@ const FeaturesFixesPage: React.FC = () => {
                           handleResume(selectedIssue);
                           closeModal();
                         }}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-medium"
                       >
                         ▶ Resume
                       </button>
@@ -2282,7 +2282,7 @@ const FeaturesFixesPage: React.FC = () => {
                           onClick={() => {
                             openResolveModal(selectedIssue);
                           }}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-none font-medium"
                         >
                           Mark Resolved
                         </button>
@@ -2292,7 +2292,7 @@ const FeaturesFixesPage: React.FC = () => {
                     {selectedIssue.reporter_id === user?.id && (
                       <button
                         onClick={() => handleDeleteIssue(selectedIssue)}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium"
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-none font-medium"
                       >
                         Delete
                       </button>
@@ -2314,7 +2314,7 @@ const FeaturesFixesPage: React.FC = () => {
                   e.preventDefault();
                   handleConfirmResolve();
                 }}
-                className="relative z-[61] w-full max-w-lg mx-4 bg-white dark:bg-dark-150 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700"
+                className="relative z-[61] w-full max-w-lg mx-4 bg-white dark:bg-dark-150 rounded-none shadow-xl border border-neutral-200 dark:border-neutral-700"
               >
                 <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-start justify-between gap-4">
                   <div>
@@ -2353,14 +2353,14 @@ const FeaturesFixesPage: React.FC = () => {
                     type="button"
                     onClick={closeResolveModal}
                     disabled={isResolving}
-                    className="px-4 py-2 bg-neutral-200 dark:bg-dark-200 text-neutral-900 dark:text-white rounded-md hover:bg-neutral-300 dark:hover:bg-dark-100 disabled:opacity-60"
+                    className="px-4 py-2 bg-neutral-200 dark:bg-dark-200 text-neutral-900 dark:text-white rounded-none hover:bg-neutral-300 dark:hover:bg-dark-100 disabled:opacity-60"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isResolving}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-60"
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-none font-medium disabled:opacity-60"
                   >
                     {isResolving ? "Resolving..." : "Resolve"}
                   </button>

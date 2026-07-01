@@ -293,9 +293,9 @@ function CategoryTag({ category }: { category: Category }) {
 
 function ProgressBar({ percent }: { percent: number }) {
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+    <div className="h-2 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-800">
       <div
-        className="h-full rounded-full transition-all"
+        className="h-full rounded-none transition-all"
         style={{ width: `${Math.round(percent)}%`, backgroundColor: BRAND }}
       />
     </div>
@@ -547,7 +547,7 @@ function AmpuHeader({
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <button onClick={onHome} className="flex items-center gap-2 text-left">
           <span
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-lg font-bold text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-none text-lg font-bold text-white"
             style={{ backgroundColor: BRAND }}
           >
             u
@@ -634,14 +634,14 @@ function Catalog({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search courses…"
-          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[#f26722] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:max-w-xs"
+          className="w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[#f26722] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:max-w-xs"
         />
         <div className="flex flex-wrap gap-1">
           {categories.map((c) => (
             <button
               key={c}
               onClick={() => setCategory(c)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-none px-3 py-1 text-xs font-medium transition-colors ${
                 category === c
                   ? "text-white"
                   : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-300"
@@ -655,7 +655,7 @@ function Catalog({
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-          className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          className="rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
         >
           <option value="ALL">All statuses</option>
           <option value="not_started">Not started</option>
@@ -813,7 +813,7 @@ function CourseDetail({
                     onClick={() => onOpenLesson(lesson.id)}
                     className="flex w-full items-center gap-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm dark:bg-neutral-800">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-neutral-100 text-sm dark:bg-neutral-800">
                       {status === "completed"
                         ? "✅"
                         : !unlocked
@@ -944,7 +944,7 @@ function LessonView({
                     <button
                       disabled={!unlocked}
                       onClick={() => onOpenLesson(l.id)}
-                      className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
+                      className={`flex w-full items-center gap-2 rounded-none px-2 py-2 text-left text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
                         isCurrent
                           ? "bg-neutral-100 font-medium dark:bg-neutral-800"
                           : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -1114,7 +1114,7 @@ function VideoLesson({
         <h2 className="mb-3 text-xl font-bold text-neutral-900 dark:text-white">
           {lesson.title}
         </h2>
-        <div className="overflow-hidden rounded-lg bg-black">
+        <div className="overflow-hidden rounded-none bg-black">
           {lesson.youtubeId ? (
             <YouTubePlayer
               videoId={lesson.youtubeId}
@@ -1293,7 +1293,7 @@ function QuizLesson({
               return (
                 <div
                   key={q.id}
-                  className="flex items-start gap-2 rounded-md border border-neutral-200 p-3 text-sm dark:border-neutral-800"
+                  className="flex items-start gap-2 rounded-none border border-neutral-200 p-3 text-sm dark:border-neutral-800"
                 >
                   <span>{ok ? "✅" : "❌"}</span>
                   <div className="flex-1">
@@ -1363,7 +1363,7 @@ function QuizLesson({
                       <button
                         key={choice.id}
                         onClick={() => toggle(q.id, choice.id, multi)}
-                        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                        className={`flex w-full items-center gap-3 rounded-none border px-3 py-2 text-left text-sm transition-colors ${
                           selected
                             ? "bg-[#f26722]/10"
                             : "border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/50"
@@ -1372,7 +1372,7 @@ function QuizLesson({
                       >
                         <span
                           className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
-                            multi ? "rounded" : "rounded-full"
+                            multi ? "rounded" : "rounded-none"
                           }`}
                           style={
                             selected

@@ -36,7 +36,7 @@ export default function EquipmentDetailsModal({
       title={`Equipment Details: ${equipment.name}`}
     >
       <div className="space-y-6">
-        <div className="bg-neutral-50 p-4 rounded-lg">
+        <div className="bg-neutral-50 p-4 rounded-none">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-medium text-neutral-500">
@@ -78,7 +78,7 @@ export default function EquipmentDetailsModal({
               <h3 className="text-sm font-medium text-neutral-500">Status</h3>
               <p className="mt-1">
                 <span
-                  className={`px-2 py-1 rounded-full text-xs ${
+                  className={`px-2 py-1 rounded-none text-xs ${
                     equipment.status === "available"
                       ? "bg-green-100 text-green-800"
                       : equipment.status === "assigned"
@@ -102,7 +102,7 @@ export default function EquipmentDetailsModal({
         </div>
 
         {/* Customer and Asset Information */}
-        <div className="bg-neutral-50 p-4 rounded-lg">
+        <div className="bg-neutral-50 p-4 rounded-none">
           <h3 className="text-sm font-medium text-neutral-500 mb-3">
             Related Information
           </h3>
@@ -130,7 +130,7 @@ export default function EquipmentDetailsModal({
           </div>
         </div>
 
-        <div className="bg-neutral-50 p-4 rounded-lg">
+        <div className="bg-neutral-50 p-4 rounded-none">
           <h3 className="text-sm font-medium text-neutral-500 mb-3">Dates</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -169,7 +169,7 @@ export default function EquipmentDetailsModal({
         </div>
 
         {equipment.notes && (
-          <div className="bg-neutral-50 p-4 rounded-lg">
+          <div className="bg-neutral-50 p-4 rounded-none">
             <h3 className="text-sm font-medium text-neutral-500 mb-2">Notes</h3>
             <p className="text-sm text-neutral-900 whitespace-pre-line">
               {equipment.notes}

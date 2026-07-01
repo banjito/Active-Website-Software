@@ -287,7 +287,7 @@ export const CompPositionDetails: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
                     <div className="font-medium text-neutral-900 dark:text-white">

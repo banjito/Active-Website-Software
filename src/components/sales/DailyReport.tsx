@@ -158,7 +158,7 @@ const DailyReport: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
           />
         </div>
       </div>
@@ -212,7 +212,7 @@ const DailyReport: React.FC = () => {
                               `/sales-dashboard/opportunities/${item.id}`,
                             )
                           }
-                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-green-50/50 dark:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors group"
+                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-none border border-neutral-200 dark:border-neutral-600 bg-green-50/50 dark:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors group"
                         >
                           <div className="min-w-0 flex-1 flex items-center gap-2">
                             <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
@@ -234,7 +234,7 @@ const DailyReport: React.FC = () => {
                                   {formatCurrency(Number(item.quoted_amount))}
                                 </span>
                               )}
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                            <span className="text-xs px-2 py-0.5 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
                               Sent
                             </span>
                           </div>
@@ -260,7 +260,7 @@ const DailyReport: React.FC = () => {
                               `/sales-dashboard/opportunities/${item.id}`,
                             )
                           }
-                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-amber-50/50 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors group"
+                          className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-none border border-neutral-200 dark:border-neutral-600 bg-amber-50/50 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors group"
                         >
                           <div className="min-w-0 flex-1 flex items-center gap-2">
                             <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
@@ -282,7 +282,7 @@ const DailyReport: React.FC = () => {
                                   {formatCurrency(Number(item.quoted_amount))}
                                 </span>
                               )}
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
+                            <span className="text-xs px-2 py-0.5 rounded-none bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
                               {item.estimateStatus
                                 ? item.estimateStatus.replace(/_/g, " ")
                                 : "No estimate"}

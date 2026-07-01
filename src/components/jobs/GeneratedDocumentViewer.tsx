@@ -237,18 +237,18 @@ export default function GeneratedDocumentViewer() {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="Document Name (optional)"
-                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                   autoFocus
                 />
                 <button
                   onClick={handleSaveName}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-none font-medium"
                 >
                   Save
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-dark-100 dark:hover:bg-dark-200 text-neutral-900 dark:text-white rounded-md font-medium"
+                  className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-dark-100 dark:hover:bg-dark-200 text-neutral-900 dark:text-white rounded-none font-medium"
                 >
                   Cancel
                 </button>
@@ -260,7 +260,7 @@ export default function GeneratedDocumentViewer() {
                 </h1>
                 <button
                   onClick={() => setIsEditingName(true)}
-                  className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white rounded-md font-medium flex items-center gap-2"
+                  className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white rounded-none font-medium flex items-center gap-2"
                 >
                   <svg
                     className="w-4 h-4"

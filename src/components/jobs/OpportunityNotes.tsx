@@ -400,7 +400,7 @@ export default function OpportunityNotes({
 
   return (
     <>
-      <div className="flex flex-col min-h-[400px] max-h-[calc(100vh-320px)] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="flex flex-col min-h-[400px] max-h-[calc(100vh-320px)] bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-[#f26722]" />
@@ -428,7 +428,7 @@ export default function OpportunityNotes({
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-10 w-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
@@ -461,7 +461,7 @@ export default function OpportunityNotes({
                       </span>
                     </div>
                     <div
-                      className={`rounded-lg px-4 py-3 ${
+                      className={`rounded-none px-4 py-3 ${
                         isCurrentUser
                           ? "bg-[#f26722] text-white"
                           : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
@@ -560,7 +560,7 @@ export default function OpportunityNotes({
 
         <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-1.5">
           {selectedFile && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-lg">
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-dark-100 rounded-none">
               {getFileIcon(selectedFile.type)}
               <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {selectedFile.name}
@@ -622,7 +622,7 @@ export default function OpportunityNotes({
               title="Send"
             >
               {submitting ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-none animate-spin" />
               ) : (
                 <Send className="w-4 h-4" />
               )}

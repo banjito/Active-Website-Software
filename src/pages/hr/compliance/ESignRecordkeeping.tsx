@@ -504,7 +504,7 @@ export const ESignRecordkeeping: React.FC = () => {
               Onboarding E-Sign Forms, Document Acknowledgment, or Offers.
             </div>
           ) : (
-            <div className="overflow-x-auto border rounded-lg">
+            <div className="overflow-x-auto border rounded-none">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
@@ -527,7 +527,7 @@ export const ESignRecordkeeping: React.FC = () => {
                     >
                       <td className="p-3">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                          className={`inline-flex rounded-none px-2 py-0.5 text-xs font-medium ${
                             r.source === "offers"
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                               : "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
@@ -611,7 +611,7 @@ export const ESignRecordkeeping: React.FC = () => {
                   Document
                 </h3>
                 {detail.documentUrl ? (
-                  <div className="border rounded-lg overflow-hidden bg-muted/30 min-h-[320px]">
+                  <div className="border rounded-none overflow-hidden bg-muted/30 min-h-[320px]">
                     <iframe
                       src={detail.documentUrl}
                       title={detail.documentName}
@@ -620,7 +620,7 @@ export const ESignRecordkeeping: React.FC = () => {
                   </div>
                 ) : detail.documentHtml ? (
                   <div
-                    className="border rounded-lg p-4 bg-white dark:bg-neutral-900 max-h-[420px] overflow-auto prose prose-sm dark:prose-invert max-w-none"
+                    className="border rounded-none p-4 bg-white dark:bg-neutral-900 max-h-[420px] overflow-auto prose prose-sm dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: detail.documentHtml }}
                   />
                 ) : (
@@ -641,7 +641,7 @@ export const ESignRecordkeeping: React.FC = () => {
                       sig.signature_image ? (
                         <div
                           key={idx}
-                          className="border rounded-lg p-3 bg-white dark:bg-neutral-900"
+                          className="border rounded-none p-3 bg-white dark:bg-neutral-900"
                         >
                           {sig.field_name && (
                             <p className="text-xs text-muted-foreground mb-1">

@@ -236,7 +236,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-block px-2 py-1 rounded-none text-xs font-medium ${
                             t.status === "completed"
                               ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                               : t.status === "in_progress"

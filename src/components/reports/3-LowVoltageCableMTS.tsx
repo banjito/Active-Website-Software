@@ -658,7 +658,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       }
 
         /* Remove all card styling and shadows */
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow {
           background: white !important;
           box-shadow: none !important;
           border-radius: 0 !important;
@@ -2637,7 +2637,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                               handleInspectionChange(section, e.target.value)
                             }
                             disabled={!isEditMode}
-                            className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSPECTION_RESULTS_OPTIONS.map((option) => (
                               <option key={option} value={option}>
@@ -2759,7 +2759,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                     };
                   });
                 }}
-                className="self-end h-9 px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                className="self-end h-9 px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-none"
               >
                 Add Row
               </button>
@@ -2880,7 +2880,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                               onClick={() => handleRemoveTestSet(set.id)}
                               aria-label={`Remove row ${set.id}`}
                               title="Remove row"
-                              className="print:hidden absolute left-1 top-1 z-10 text-red-600 hover:text-red-800 font-bold bg-white dark:bg-dark-150 rounded-full w-4 h-4 leading-4 text-center border border-red-600 opacity-80 hover:opacity-100"
+                              className="print:hidden absolute left-1 top-1 z-10 text-red-600 hover:text-red-800 font-bold bg-white dark:bg-dark-150 rounded-none w-4 h-4 leading-4 text-center border border-red-600 opacity-80 hover:opacity-100"
                             >
                               ×
                             </button>
@@ -3398,7 +3398,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 };
               });
             }}
-            className="mt-2 px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            className="mt-2 px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-none"
           >
             Add Row
           </button>

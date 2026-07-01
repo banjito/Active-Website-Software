@@ -49,7 +49,7 @@ const ReportDetail: React.FC = () => {
         </button>
       )}
       
-      <div className="bg-white dark:bg-dark-150 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-dark-150 shadow rounded-none p-6">
         {/* ... existing code ... */}
       </div>
     </div>

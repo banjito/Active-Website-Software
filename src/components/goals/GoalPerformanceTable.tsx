@@ -339,9 +339,9 @@ export const GoalPerformanceTable: React.FC<GoalPerformanceTableProps> = ({
                   <TableCell>{team.goals.length}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <div className="w-32 bg-neutral-200 rounded-full h-2.5">
+                      <div className="w-32 bg-neutral-200 rounded-none h-2.5">
                         <div
-                          className="bg-blue-600 h-2.5 rounded-full"
+                          className="bg-blue-600 h-2.5 rounded-none"
                           style={{ width: `${team.averageCompletion}%` }}
                         ></div>
                       </div>
@@ -417,9 +417,9 @@ export const GoalPerformanceTable: React.FC<GoalPerformanceTableProps> = ({
                       <TableCell>{memberGoals.length} goals</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <div className="w-32 bg-neutral-200 rounded-full h-2.5">
+                          <div className="w-32 bg-neutral-200 rounded-none h-2.5">
                             <div
-                              className="bg-blue-600 h-2.5 rounded-full"
+                              className="bg-blue-600 h-2.5 rounded-none"
                               style={{ width: `${avgCompletion}%` }}
                             ></div>
                           </div>

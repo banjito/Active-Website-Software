@@ -579,7 +579,7 @@ const FlowchartNode: React.FC<{
       {/* Avatar circle above root node */}
       {isRoot && (
         <div className="mb-2 pointer-events-none">
-          <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-pink-300 shadow-lg">
+          <div className="w-16 h-16 rounded-none overflow-hidden ring-4 ring-pink-300 shadow-lg">
             {node.avatar_url ? (
               <img
                 src={node.avatar_url}
@@ -607,7 +607,7 @@ const FlowchartNode: React.FC<{
         style={{ userSelect: "none" }}
         className={`
           relative group border-2 shadow-sm select-none
-          ${inManagerCluster ? "rounded-none" : "rounded-lg"}
+          ${inManagerCluster ? "rounded-none" : "rounded-none"}
           transition-all duration-200
           ${colors.bg} ${colors.border}
           min-w-[160px] max-w-[200px]
@@ -641,7 +641,7 @@ const FlowchartNode: React.FC<{
                 e.preventDefault();
                 onEdit(node);
               }}
-              className="p-1.5 rounded-full bg-white shadow-md border border-neutral-200 hover:bg-blue-50"
+              className="p-1.5 rounded-none bg-white shadow-md border border-neutral-200 hover:bg-blue-50"
               title="Edit title"
             >
               <Edit2 className="h-3 w-3 text-neutral-600 hover:text-blue-500" />
@@ -654,7 +654,7 @@ const FlowchartNode: React.FC<{
                 e.preventDefault();
                 onDelete(node.id);
               }}
-              className="p-1.5 rounded-full bg-white shadow-md border border-neutral-200 hover:bg-red-50"
+              className="p-1.5 rounded-none bg-white shadow-md border border-neutral-200 hover:bg-red-50"
               title="Remove from chart"
             >
               <Trash2 className="h-3 w-3 text-neutral-600 hover:text-red-500" />
@@ -664,7 +664,7 @@ const FlowchartNode: React.FC<{
 
         {/* Drop indicator */}
         {isDragOver && isValidDropTarget && (
-          <div className="absolute inset-0 bg-[#f26722]/20 rounded-lg flex items-center justify-center pointer-events-none z-20">
+          <div className="absolute inset-0 bg-[#f26722]/20 rounded-none flex items-center justify-center pointer-events-none z-20">
             <span className="text-xs font-medium text-[#f26722] bg-white px-2 py-1 rounded shadow">
               Drop here
             </span>
@@ -675,7 +675,7 @@ const FlowchartNode: React.FC<{
         <div className="px-4 py-3 text-center pointer-events-none">
           {!isRoot && (
             <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 ring-2 ring-white dark:ring-neutral-600">
+              <div className="w-10 h-10 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 ring-2 ring-white dark:ring-neutral-600">
                 {node.avatar_url ? (
                   <img
                     src={node.avatar_url}
@@ -741,7 +741,7 @@ const FlowchartNode: React.FC<{
               e.preventDefault();
               onUngroup(node.id);
             }}
-            className="absolute -bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-white shadow border border-neutral-200 hover:bg-neutral-50 pointer-events-auto z-10"
+            className="absolute -bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded-none bg-white shadow border border-neutral-200 hover:bg-neutral-50 pointer-events-auto z-10"
             title="Remove from manager group"
           >
             Ungroup
@@ -758,7 +758,7 @@ const FlowchartNode: React.FC<{
               e.preventDefault();
               toggleCollapse(node.id);
             }}
-            className="absolute -bottom-3 left-1/2 -translate-x-1/2 p-0.5 rounded-full bg-white shadow border border-neutral-200 hover:bg-neutral-50 z-10 pointer-events-auto"
+            className="absolute -bottom-3 left-1/2 -translate-x-1/2 p-0.5 rounded-none bg-white shadow border border-neutral-200 hover:bg-neutral-50 z-10 pointer-events-auto"
           >
             {isCollapsed ? (
               <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
@@ -787,7 +787,7 @@ const FlowchartNode: React.FC<{
 
       {/* Connector line down from parent to horizontal bus (own subtree only) */}
       {showOwnSubtree && (
-        <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
+        <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
       )}
 
       {/* Children row — group peers in the same manager group side by side with shared lines */}
@@ -841,7 +841,7 @@ const FlowchartNode: React.FC<{
                           </>
                         )}
                       </div>
-                      <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
+                      <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
                       <FlowchartNode
                         node={child}
                         orgTree={orgTree}
@@ -928,7 +928,7 @@ const FlowchartNode: React.FC<{
                             key={child.id}
                             className="flex w-[200px] min-w-[160px] max-w-[200px] shrink-0 flex-col items-center"
                           >
-                            <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
+                            <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
                             <FlowchartNode
                               node={child}
                               orgTree={orgTree}
@@ -954,7 +954,7 @@ const FlowchartNode: React.FC<{
                               canEdit={canEdit}
                             />
                             {mergedDirects.length > 0 && !mergeCollapsed && (
-                              <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
+                              <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
                             )}
                           </div>
                         ))}
@@ -978,7 +978,7 @@ const FlowchartNode: React.FC<{
                             e.preventDefault();
                             toggleCollapse(mergeCollapseKey);
                           }}
-                          className="absolute -top-1 right-0 z-20 rounded-full border border-neutral-200 bg-white p-0.5 shadow hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800"
+                          className="absolute -top-1 right-0 z-20 rounded-none border border-neutral-200 bg-white p-0.5 shadow hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800"
                           title={
                             mergeCollapsed ? "Expand team" : "Collapse team"
                           }
@@ -1007,7 +1007,7 @@ const FlowchartNode: React.FC<{
                                     key={`${sub.id}-${dataVersion}-mg`}
                                     className="flex min-w-0 flex-col items-center px-1.5"
                                   >
-                                    <div className="h-4 w-[2px] shrink-0 rounded-sm bg-neutral-500 dark:bg-neutral-400" />
+                                    <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
                                     <FlowchartNode
                                       node={sub}
                                       orgTree={orgTree}
@@ -1109,7 +1109,7 @@ const ManagerPicker: React.FC<{
           {selected.map((p) => (
             <span
               key={p.id}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/40 rounded-full"
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/40 rounded-none"
             >
               {p.full_name}
               <button
@@ -1140,7 +1140,7 @@ const ManagerPicker: React.FC<{
         />
       </div>
       {isOpen && (
-        <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 shadow-lg divide-y divide-neutral-100 dark:divide-neutral-700">
+        <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 shadow-lg divide-y divide-neutral-100 dark:divide-neutral-700">
           {filtered.length === 0 ? (
             <p className="p-3 text-sm text-neutral-500">
               {query
@@ -1160,7 +1160,7 @@ const ManagerPicker: React.FC<{
                 }}
                 className="w-full flex items-center gap-2 p-2 text-sm text-left hover:bg-neutral-50 dark:hover:bg-neutral-700"
               >
-                <div className="w-7 h-7 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
+                <div className="w-7 h-7 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                   {p.avatar_url ? (
                     <img
                       src={p.avatar_url}
@@ -2469,7 +2469,7 @@ export const OrgChart: React.FC = () => {
             onDragLeave={handleTopLevelDragLeave}
             onDrop={handleTopLevelDrop}
             className={`
-              mx-4 mt-4 p-4 border-2 border-dashed rounded-lg text-center transition-all
+              mx-4 mt-4 p-4 border-2 border-dashed rounded-none text-center transition-all
               ${
                 isTopLevelDropOver
                   ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
@@ -2503,7 +2503,7 @@ export const OrgChart: React.FC = () => {
             </div>
           ) : people.length === 0 ? (
             <div className="text-center py-20">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-none bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
                 <UserPlus className="h-10 w-10 text-neutral-400" />
               </div>
               <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
@@ -2589,7 +2589,7 @@ export const OrgChart: React.FC = () => {
               <Label>
                 Select a person ({availableEmployees.length} available)
               </Label>
-              <div className="mt-1.5 max-h-72 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-100 dark:divide-neutral-800">
+              <div className="mt-1.5 max-h-72 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none divide-y divide-neutral-100 dark:divide-neutral-800">
                 {availableEmployees.length === 0 ? (
                   <p className="p-4 text-sm text-neutral-500 text-center">
                     {search
@@ -2618,7 +2618,7 @@ export const OrgChart: React.FC = () => {
                             : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                           {emp.avatar_url ? (
                             <img
                               src={emp.avatar_url}
@@ -2675,7 +2675,7 @@ export const OrgChart: React.FC = () => {
                 <select
                   value={addLevelId ?? ""}
                   onChange={(e) => setAddLevelId(e.target.value || null)}
-                  className="mt-1.5 w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                  className="mt-1.5 w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   <option value="">No level</option>
                   {orgLevels.map((level) => (
@@ -2691,7 +2691,7 @@ export const OrgChart: React.FC = () => {
               <select
                 value={addRole}
                 onChange={(e) => setAddRole(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                className="mt-1.5 w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
               >
                 <option value="">No Role</option>
                 {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -2727,8 +2727,8 @@ export const OrgChart: React.FC = () => {
           </DialogHeader>
           {editingPerson && (
             <div className="space-y-4 py-4">
-              <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-none">
+                <div className="w-12 h-12 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                   {editingPerson.avatar_url ? (
                     <img
                       src={editingPerson.avatar_url}
@@ -2777,7 +2777,7 @@ export const OrgChart: React.FC = () => {
                     id="level"
                     value={editLevelId || ""}
                     onChange={(e) => setEditLevelId(e.target.value || null)}
-                    className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     <option value="">No level</option>
                     {orgLevels.map((level) => (
@@ -2794,7 +2794,7 @@ export const OrgChart: React.FC = () => {
                   id="role"
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 >
                   <option value="">No Role</option>
                   {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -2851,7 +2851,7 @@ export const OrgChart: React.FC = () => {
                     return (
                       <div
                         key={level.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${colorStyle.bg} ${colorStyle.border}`}
+                        className={`flex items-center justify-between p-3 rounded-none border ${colorStyle.bg} ${colorStyle.border}`}
                       >
                         <span className={`font-medium ${colorStyle.text}`}>
                           {level.label}
@@ -2865,7 +2865,7 @@ export const OrgChart: React.FC = () => {
                                 onClick={() =>
                                   handleUpdateLevelColor(level.id, c.name)
                                 }
-                                className={`w-5 h-5 rounded-full ${c.preview} ${level.color === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
+                                className={`w-5 h-5 rounded-none ${c.preview} ${level.color === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
                                 title={c.name}
                               />
                             ))}
@@ -2901,7 +2901,7 @@ export const OrgChart: React.FC = () => {
                     <button
                       key={c.name}
                       onClick={() => setNewLevelColor(c.name)}
-                      className={`w-6 h-6 rounded-full ${c.preview} ${newLevelColor === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
+                      className={`w-6 h-6 rounded-none ${c.preview} ${newLevelColor === c.name ? "ring-2 ring-offset-1 ring-neutral-800" : ""}`}
                       title={c.name}
                     />
                   ))}
@@ -2941,7 +2941,7 @@ export const OrgChart: React.FC = () => {
                     return (
                       <div
                         key={role.id || role.value}
-                        className={`flex items-center gap-2 p-2 rounded-md border ${colorStyle.border} ${colorStyle.bg}`}
+                        className={`flex items-center gap-2 p-2 rounded-none border ${colorStyle.border} ${colorStyle.bg}`}
                       >
                         <div className="flex items-center gap-2">
                           <div className="flex gap-1">
@@ -2953,7 +2953,7 @@ export const OrgChart: React.FC = () => {
                                     ? handleUpdateRoleColor(role.id, c.name)
                                     : null
                                 }
-                                className={`w-4 h-4 rounded-full ${c.preview} ${role.color === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
+                                className={`w-4 h-4 rounded-none ${c.preview} ${role.color === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
                                 title={c.name}
                                 disabled={orgRoles.length === 0}
                               />
@@ -2997,7 +2997,7 @@ export const OrgChart: React.FC = () => {
                     <button
                       key={c.name}
                       onClick={() => setNewRoleColor(c.name)}
-                      className={`w-5 h-5 rounded-full ${c.preview} ${newRoleColor === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
+                      className={`w-5 h-5 rounded-none ${c.preview} ${newRoleColor === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
                     />
                   ))}
                 </div>
@@ -3075,7 +3075,7 @@ export const OrgChart: React.FC = () => {
                       setDropDialogOpen(false);
                       setPendingDrop(null);
                     }}
-                    className="w-full text-left p-3 rounded-lg border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
+                    className="w-full text-left p-3 rounded-none border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
                   >
                     <p className="font-medium text-neutral-900 dark:text-white">
                       Move Under
@@ -3100,7 +3100,7 @@ export const OrgChart: React.FC = () => {
                       setDropDialogOpen(false);
                       setPendingDrop(null);
                     }}
-                    className={`w-full text-left p-3 rounded-lg border border-neutral-300 dark:border-neutral-600 ${
+                    className={`w-full text-left p-3 rounded-none border border-neutral-300 dark:border-neutral-600 ${
                       managerGroupsSupported
                         ? "hover:border-[#f26722] hover:bg-[#f26722]/5"
                         : "opacity-50 cursor-not-allowed"

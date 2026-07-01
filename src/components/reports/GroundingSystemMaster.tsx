@@ -1214,7 +1214,7 @@ const GroundingSystemMaster: React.FC = () => {
                           <div className="flex gap-1">
                             <button
                               type="button"
-                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
+                              className={`px-2 py-1 text-xs font-bold rounded-none focus:outline-none ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
                               onClick={() =>
                                 setRows((rs) => {
                                   const c = [...rs];
@@ -1227,7 +1227,7 @@ const GroundingSystemMaster: React.FC = () => {
                             </button>
                             <button
                               type="button"
-                              className={`px-2 py-1 text-xs font-bold rounded-md focus:outline-none ${r.status === "FAIL" ? "bg-red-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
+                              className={`px-2 py-1 text-xs font-bold rounded-none focus:outline-none ${r.status === "FAIL" ? "bg-red-600 text-white" : "bg-neutral-200 text-neutral-700 dark:bg-dark-100 dark:text-white"}`}
                               onClick={() =>
                                 setRows((rs) => {
                                   const c = [...rs];
@@ -1241,7 +1241,7 @@ const GroundingSystemMaster: React.FC = () => {
                           </div>
                         ) : (
                           <span
-                            className={`inline-block px-3 py-1 text-xs font-bold rounded-md ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}
+                            className={`inline-block px-3 py-1 text-xs font-bold rounded-none ${r.status === "PASS" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}
                           >
                             {r.status}
                           </span>
@@ -2079,7 +2079,7 @@ const GroundingSystemMaster: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

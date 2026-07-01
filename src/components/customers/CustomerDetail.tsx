@@ -900,7 +900,7 @@ export default function CustomerDetail() {
                 disabled={!prevId}
                 title="Previous customer (A-Z)"
                 aria-label="Previous customer"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -909,7 +909,7 @@ export default function CustomerDetail() {
                 disabled={!nextId}
                 title="Next customer (A-Z)"
                 aria-label="Next customer"
-                className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+                className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -932,13 +932,13 @@ export default function CustomerDetail() {
           <div className="flex items-center gap-3">
             <button
               onClick={openPortalInvite}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[#f26722] px-3 py-1.5 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-none border border-[#f26722] px-3 py-1.5 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
             >
               <Mail className="h-4 w-4" />
               Invite to Customer Portal
             </button>
             <span
-              className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
+              className={`inline-flex rounded-none px-3 py-1 text-sm font-semibold ${
                 customer.status === "active"
                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                   : "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-200"
@@ -952,14 +952,14 @@ export default function CustomerDetail() {
         {/* Customer Information and Contacts in one row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Customer Information Card */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
+          <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
                 Customer Information
               </h2>
               <button
                 onClick={() => setIsCustomerEditOpen(true)}
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Edit
               </button>
@@ -982,7 +982,7 @@ export default function CustomerDetail() {
                   {category ? (
                     <div className="flex items-center">
                       <div
-                        className="w-4 h-4 rounded-full mr-2"
+                        className="w-4 h-4 rounded-none mr-2"
                         style={{ backgroundColor: category.color }}
                       ></div>
                       <span className="text-sm text-neutral-900 dark:text-white">
@@ -1012,7 +1012,7 @@ export default function CustomerDetail() {
                         type="button"
                         onClick={() => handleToggleDivision(div.value)}
                         disabled={isSavingDivisions}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
+                        className={`px-3 py-1 rounded-none text-xs font-medium transition-colors disabled:opacity-50 ${
                           isActive
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -1082,14 +1082,14 @@ export default function CustomerDetail() {
           </div>
 
           {/* Contacts Card */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
+          <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
                 Contacts
               </h2>
               <button
                 onClick={handleAddContact}
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -1099,10 +1099,10 @@ export default function CustomerDetail() {
               {contacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-lg"
+                  className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-none"
                   onClick={() => handleContactClick(contact)}
                 >
-                  <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                     <span className="text-neutral-500 dark:text-white text-lg font-medium">
                       {contact.first_name?.charAt(0) || "C"}
                     </span>
@@ -1111,7 +1111,7 @@ export default function CustomerDetail() {
                     <p className="text-sm font-medium text-neutral-900 dark:text-white flex items-center">
                       {contact.first_name} {contact.last_name}
                       {contact.is_primary && (
-                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                           Primary
                         </span>
                       )}
@@ -1234,7 +1234,7 @@ export default function CustomerDetail() {
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Jobs section */}
-              <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1268,7 +1268,7 @@ export default function CustomerDetail() {
                             </p>
                             <div className="flex items-center mt-1 space-x-2">
                               <span
-                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${
                                   job.status === "completed"
                                     ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                     : job.status === "in_progress"
@@ -1279,7 +1279,7 @@ export default function CustomerDetail() {
                                 {formatStatusLabel(job.status)}
                               </span>
                               <span
-                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${
                                   job.priority === "high"
                                     ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                     : job.priority === "medium"
@@ -1315,7 +1315,7 @@ export default function CustomerDetail() {
               {/* Two-column layout for Contacts and Documents */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contacts section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1334,10 +1334,10 @@ export default function CustomerDetail() {
                     {contacts.slice(0, 2).map((contact) => (
                       <div
                         key={contact.id}
-                        className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-lg"
+                        className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-none"
                         onClick={() => handleContactClick(contact)}
                       >
-                        <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                           <span className="text-neutral-500 dark:text-white text-lg font-medium">
                             {contact.first_name?.charAt(0) || "C"}
                           </span>
@@ -1346,7 +1346,7 @@ export default function CustomerDetail() {
                           <p className="text-sm font-medium text-neutral-900 dark:text-white flex items-center">
                             {contact.first_name} {contact.last_name}
                             {contact.is_primary && (
-                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                 Primary
                               </span>
                             )}
@@ -1395,10 +1395,10 @@ export default function CustomerDetail() {
                         {contacts.slice(2).map((contact) => (
                           <div
                             key={contact.id}
-                            className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-lg"
+                            className="flex items-start cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 p-2 rounded-none"
                             onClick={() => handleContactClick(contact)}
                           >
-                            <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
                               <span className="text-neutral-500 dark:text-white text-lg font-medium">
                                 {contact.first_name?.charAt(0) || "C"}
                               </span>
@@ -1407,7 +1407,7 @@ export default function CustomerDetail() {
                               <p className="text-sm font-medium text-neutral-900 dark:text-white flex items-center">
                                 {contact.first_name} {contact.last_name}
                                 {contact.is_primary && (
-                                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                     Primary
                                   </span>
                                 )}
@@ -1438,7 +1438,7 @@ export default function CustomerDetail() {
                 </div>
 
                 {/* Documents section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1460,7 +1460,7 @@ export default function CustomerDetail() {
                     {/* This is a placeholder - we would fetch actual documents in a real implementation */}
                     <div className="flex flex-col space-y-4">
                       <div className="flex items-center">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mr-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-none flex items-center justify-center mr-3">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-5 w-5 text-blue-700 dark:text-blue-300"
@@ -1486,7 +1486,7 @@ export default function CustomerDetail() {
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mr-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded-none flex items-center justify-center mr-3">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-5 w-5 text-green-700 dark:text-green-300"
@@ -1532,7 +1532,7 @@ export default function CustomerDetail() {
               {/* Two-column layout for Interactions and Health */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Interactions section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
                   <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1579,7 +1579,7 @@ export default function CustomerDetail() {
                           <div key={note.id} className="flex items-start">
                             <div className="relative flex-shrink-0">
                               <div
-                                className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                                className={`h-8 w-8 rounded-none flex items-center justify-center ${
                                   note.note_type === "call"
                                     ? "bg-[#f26722]/10"
                                     : note.note_type === "email"
@@ -1606,7 +1606,7 @@ export default function CustomerDetail() {
                                       : "In Person"}
                                 </h3>
                                 <span
-                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                                     note.note_type === "call"
                                       ? "bg-[#f26722]/10 text-[#f26722]"
                                       : note.note_type === "email"
@@ -1652,17 +1652,17 @@ export default function CustomerDetail() {
                 </div>
 
                 {/* Health metrics section */}
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
                   <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-6">
                     Customer Health Dashboard
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
+                    <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
                       <div className="text-xs text-neutral-500 dark:text-white mb-2">
                         Overall Health
                       </div>
-                      <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
+                      <div className="w-20 h-20 rounded-none bg-green-500 flex items-center justify-center mb-2">
                         <span className="text-white text-2xl font-bold">
                           85
                         </span>
@@ -1672,7 +1672,7 @@ export default function CustomerDetail() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Engagement
                       </div>
@@ -1684,15 +1684,15 @@ export default function CustomerDetail() {
                           ▲ 5%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                         <div
-                          className="h-full bg-green-500 rounded-full"
+                          className="h-full bg-green-500 rounded-none"
                           style={{ width: "85%" }}
                         ></div>
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Satisfaction
                       </div>
@@ -1704,15 +1704,15 @@ export default function CustomerDetail() {
                           ▲ 3%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                         <div
-                          className="h-full bg-green-500 rounded-full"
+                          className="h-full bg-green-500 rounded-none"
                           style={{ width: "92%" }}
                         ></div>
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                    <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                       <div className="text-xs text-neutral-500 dark:text-white">
                         Response Time
                       </div>
@@ -1724,9 +1724,9 @@ export default function CustomerDetail() {
                           ▼ 2%
                         </div>
                       </div>
-                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                      <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                         <div
-                          className="h-full bg-yellow-500 rounded-full"
+                          className="h-full bg-yellow-500 rounded-none"
                           style={{ width: "78%" }}
                         ></div>
                       </div>
@@ -1734,7 +1734,7 @@ export default function CustomerDetail() {
                   </div>
 
                   <div className="mt-8 flex justify-end">
-                    <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                    <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
                       Generate Health Report
                     </button>
                   </div>
@@ -1744,7 +1744,7 @@ export default function CustomerDetail() {
           )}
 
           {activeTab === "jobs" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1752,7 +1752,7 @@ export default function CustomerDetail() {
                   </h2>
                   <Link
                     to="/jobs/new"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add
@@ -1775,7 +1775,7 @@ export default function CustomerDetail() {
                           </p>
                           <div className="flex items-center mt-1 space-x-2">
                             <span
-                              className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                              className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${
                                 job.status === "completed"
                                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                   : job.status === "in_progress"
@@ -1786,7 +1786,7 @@ export default function CustomerDetail() {
                               {formatStatusLabel(job.status)}
                             </span>
                             <span
-                              className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                              className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${
                                 job.priority === "high"
                                   ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                   : job.priority === "medium"
@@ -1821,7 +1821,7 @@ export default function CustomerDetail() {
           )}
 
           {activeTab === "documents" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
@@ -1876,7 +1876,7 @@ export default function CustomerDetail() {
                 return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
               };
               return (
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
                       Customer Interactions
@@ -1892,7 +1892,7 @@ export default function CustomerDetail() {
                           occurred_at: "",
                         });
                       }}
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                      className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                     >
                       <Feather className="h-4 w-4 mr-1" />
                       Log Interaction
@@ -1901,9 +1901,9 @@ export default function CustomerDetail() {
 
                   {/* Stats */}
                   <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-[#f26722]/10 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-none bg-[#f26722]/10 flex items-center justify-center">
                           <Phone className="h-5 w-5 text-[#f26722]" />
                         </div>
                         <div className="ml-3">
@@ -1914,9 +1914,9 @@ export default function CustomerDetail() {
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-none bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                           <Mail className="h-5 w-5 text-blue-600 dark:text-blue-300" />
                         </div>
                         <div className="ml-3">
@@ -1927,9 +1927,9 @@ export default function CustomerDetail() {
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-none bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
                           <UserIcon className="h-5 w-5 text-purple-600 dark:text-purple-300" />
                         </div>
                         <div className="ml-3">
@@ -1965,7 +1965,7 @@ export default function CustomerDetail() {
 
                   {/* Log form */}
                   {showNoteForm && (
-                    <div className="mb-6 bg-neutral-50 dark:bg-dark-200 rounded-lg p-4 border border-neutral-200 dark:border-neutral-600">
+                    <div className="mb-6 bg-neutral-50 dark:bg-dark-200 rounded-none p-4 border border-neutral-200 dark:border-neutral-600">
                       <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
                         {editingNoteId ? "Edit Interaction" : "Log Interaction"}
                       </h3>
@@ -1982,7 +1982,7 @@ export default function CustomerDetail() {
                                 contact_id: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           >
                             <option value="">Select contact...</option>
                             {contacts.map((c) => (
@@ -2004,7 +2004,7 @@ export default function CustomerDetail() {
                                 note_type: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           >
                             <option value="call">Call</option>
                             <option value="email">Email</option>
@@ -2024,7 +2024,7 @@ export default function CustomerDetail() {
                                 occurred_at: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                           />
                         </div>
                       </div>
@@ -2042,7 +2042,7 @@ export default function CustomerDetail() {
                             }))
                           }
                           placeholder="What happened during this interaction..."
-                          className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                         />
                       </div>
                       <div className="flex justify-end gap-2">
@@ -2092,12 +2092,12 @@ export default function CustomerDetail() {
                           <div className="flex items-start relative">
                             <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                               <div
-                                className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
+                                className={`h-8 w-8 rounded-none ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
                               >
                                 {noteTypeIcon(note.note_type)}
                               </div>
                             </div>
-                            <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 w-full">
+                            <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 w-full">
                               <div className="flex justify-between items-start">
                                 <div>
                                   <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -2112,7 +2112,7 @@ export default function CustomerDetail() {
                                   </p>
                                 </div>
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${noteTypeBadge(note.note_type)}`}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium ${noteTypeBadge(note.note_type)}`}
                                 >
                                   {noteTypeLabel(note.note_type)}
                                 </span>
@@ -2177,17 +2177,17 @@ export default function CustomerDetail() {
             })()}
 
           {activeTab === "health" && (
-            <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 shadow-sm p-6">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-6">
                 Customer Health Dashboard
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4 flex flex-col items-center">
                   <div className="text-xs text-neutral-500 dark:text-white mb-2">
                     Overall Health
                   </div>
-                  <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
+                  <div className="w-20 h-20 rounded-none bg-green-500 flex items-center justify-center mb-2">
                     <span className="text-white text-2xl font-bold">85</span>
                   </div>
                   <div className="font-medium text-green-600 dark:text-green-400">
@@ -2195,7 +2195,7 @@ export default function CustomerDetail() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Engagement
                   </div>
@@ -2207,15 +2207,15 @@ export default function CustomerDetail() {
                       ▲ 5%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                     <div
-                      className="h-full bg-green-500 rounded-full"
+                      className="h-full bg-green-500 rounded-none"
                       style={{ width: "85%" }}
                     ></div>
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Satisfaction
                   </div>
@@ -2227,15 +2227,15 @@ export default function CustomerDetail() {
                       ▲ 3%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                     <div
-                      className="h-full bg-green-500 rounded-full"
+                      className="h-full bg-green-500 rounded-none"
                       style={{ width: "92%" }}
                     ></div>
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="text-xs text-neutral-500 dark:text-white">
                     Response Time
                   </div>
@@ -2247,9 +2247,9 @@ export default function CustomerDetail() {
                       ▼ 2%
                     </div>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+                  <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
                     <div
-                      className="h-full bg-yellow-500 rounded-full"
+                      className="h-full bg-yellow-500 rounded-none"
                       style={{ width: "78%" }}
                     ></div>
                   </div>
@@ -2257,7 +2257,7 @@ export default function CustomerDetail() {
               </div>
 
               <div className="mt-8 flex justify-end">
-                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
                   Generate Health Report
                 </button>
               </div>
@@ -2306,7 +2306,7 @@ export default function CustomerDetail() {
                       first_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2328,7 +2328,7 @@ export default function CustomerDetail() {
                       last_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2350,7 +2350,7 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2371,7 +2371,7 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2392,7 +2392,7 @@ export default function CustomerDetail() {
                       position: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -2437,7 +2437,7 @@ export default function CustomerDetail() {
                               : [...prev.divisions, div.value],
                           }));
                         }}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                           isActive
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -2453,14 +2453,14 @@ export default function CustomerDetail() {
                 <button
                   type="submit"
                   disabled={isSubmittingContact}
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmittingContact ? "Adding..." : "Add Contact"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsContactFormOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2515,7 +2515,7 @@ export default function CustomerDetail() {
                   placeholder="customer@company.com"
                   autoFocus
                   disabled={portalInviteAll}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-dark-100"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-dark-100"
                 />
               </div>
               {(() => {
@@ -2544,14 +2544,14 @@ export default function CustomerDetail() {
                   type="button"
                   onClick={() => setPortalInviteOpen(false)}
                   disabled={portalInviteSending}
-                  className="rounded-md border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-50"
+                  className="rounded-none border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={portalInviteSending}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
                 >
                   <Mail className="h-4 w-4" />
                   {portalInviteSending
@@ -2603,7 +2603,7 @@ export default function CustomerDetail() {
                       company_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2623,7 +2623,7 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2642,7 +2642,7 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2661,7 +2661,7 @@ export default function CustomerDetail() {
                       address: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2680,7 +2680,7 @@ export default function CustomerDetail() {
                       status: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="active">active</option>
                   <option value="inactive">inactive</option>
@@ -2703,7 +2703,7 @@ export default function CustomerDetail() {
                             : [...prev.divisions, div.value],
                         }));
                       }}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                         customerEditForm.divisions.includes(div.value)
                           ? "bg-[#f26722] text-white"
                           : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -2759,7 +2759,7 @@ export default function CustomerDetail() {
                   <div className="min-w-0 flex-1">
                     <label
                       htmlFor="customer_logo"
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-[#f26722]/50 bg-[#f26722]/5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-none border border-dashed border-[#f26722]/50 bg-[#f26722]/5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10"
                     >
                       <Upload className="h-4 w-4" />
                       {logoFile ? logoFile.name : "Upload logo"}
@@ -2810,7 +2810,7 @@ export default function CustomerDetail() {
                               }))
                             }
                             title={color}
-                            className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                            className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs font-medium transition-colors ${
                               selected
                                 ? "border-[#f26722] ring-2 ring-[#f26722]/40 text-neutral-900 dark:text-white"
                                 : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-[#f26722]/50"
@@ -2852,7 +2852,7 @@ export default function CustomerDetail() {
                         }))
                       }
                       placeholder="#F26722"
-                      className="flex-1 p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="flex-1 p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
                 </div>
@@ -2862,14 +2862,14 @@ export default function CustomerDetail() {
                 <button
                   type="submit"
                   disabled={isSavingCustomer || extractingColors}
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50"
                 >
                   {isSavingCustomer ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsCustomerEditOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2905,7 +2905,7 @@ export default function CustomerDetail() {
                 type="button"
                 onClick={handleDeleteContact}
                 disabled={isDeletingContact}
-                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 dark:bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex justify-center rounded-none border border-transparent bg-red-600 dark:bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isDeletingContact ? "Removing..." : "Remove"}
               </button>
@@ -2913,7 +2913,7 @@ export default function CustomerDetail() {
                 type="button"
                 onClick={() => setContactToDelete(null)}
                 disabled={isDeletingContact}
-                className="inline-flex justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-60"
+                className="inline-flex justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -2930,12 +2930,12 @@ export default function CustomerDetail() {
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
+          <Dialog.Panel className="w-full max-w-md rounded-none bg-white dark:bg-neutral-900 p-6 shadow-xl">
             {selectedContact && (
               <>
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
-                    <div className="h-12 w-12 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center mr-3">
+                    <div className="h-12 w-12 rounded-none bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center mr-3">
                       <span className="text-neutral-500 dark:text-white text-lg font-medium">
                         {selectedContact.first_name?.charAt(0)}
                         {selectedContact.last_name?.charAt(0)}
@@ -2954,7 +2954,7 @@ export default function CustomerDetail() {
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedContact.is_primary && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         Primary
                       </span>
                     )}
@@ -3012,7 +3012,7 @@ export default function CustomerDetail() {
                   <button
                     type="button"
                     onClick={() => setContactPopupOpen(false)}
-                    className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                   >
                     Close
                   </button>
@@ -3048,7 +3048,7 @@ export default function CustomerDetail() {
             <div className="mt-4 space-y-4">
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={`w-full text-left py-2 px-3 rounded-md flex items-center ${
+                className={`w-full text-left py-2 px-3 rounded-none flex items-center ${
                   selectedCategoryId === null
                     ? "bg-neutral-100 dark:bg-dark-150"
                     : "hover:bg-neutral-50 dark:hover:bg-neutral-700"
@@ -3063,14 +3063,14 @@ export default function CustomerDetail() {
                 <button
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id)}
-                  className={`w-full text-left py-2 px-3 rounded-md flex items-center ${
+                  className={`w-full text-left py-2 px-3 rounded-none flex items-center ${
                     selectedCategoryId === category.id
                       ? "bg-neutral-100 dark:bg-dark-150"
                       : "hover:bg-neutral-50 dark:hover:bg-neutral-700"
                   }`}
                 >
                   <div
-                    className="w-4 h-4 rounded-full mr-3"
+                    className="w-4 h-4 rounded-none mr-3"
                     style={{ backgroundColor: category.color }}
                   ></div>
                   <div>
@@ -3095,7 +3095,7 @@ export default function CustomerDetail() {
               <button
                 type="button"
                 onClick={() => setIsCategorySelectOpen(false)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 Close
               </button>

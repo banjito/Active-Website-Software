@@ -508,7 +508,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       { id: "north_alabama", label: "Decatur", path: "/north_alabama/jobs" },
       { id: "tennessee", label: "Nashville", path: "/tennessee/jobs" },
       { id: "georgia", label: "Atlanta", path: "/georgia/jobs" },
-      { id: "international", label: "International", path: "/international/jobs" },
+      {
+        id: "international",
+        label: "International",
+        path: "/international/jobs",
+      },
     ];
     const showCitySwitcher = fieldTechCities.some((c) => c.id === division);
 
@@ -532,7 +536,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   key={city.id}
                   variant="ghost"
                   onClick={() => handleCityClick(city.id, city.path)}
-                  className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                     division === city.id ? "bg-black/5 dark:bg-dark-50" : ""
                   }`}
                 >
@@ -553,7 +557,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/office/vendors"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -565,7 +569,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/office"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -584,7 +588,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             leftIcon={<Users className="h-4 w-4" />}
-            className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
               location.pathname.endsWith("/customers")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -600,7 +604,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             leftIcon={<Contact className="h-4 w-4" />}
-            className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
               location.pathname.endsWith("/contacts")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -620,7 +624,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<Briefcase className="h-4 w-4" />}
-                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname === "/all-jobs" ||
                   location.pathname.endsWith("/jobs")
                     ? "bg-black/5 dark:bg-dark-50"
@@ -637,7 +641,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<CalendarDays className="h-4 w-4" />}
-                className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                   location.pathname.endsWith("/scheduling")
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -663,7 +667,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   leftIcon={<Wrench className="h-4 w-4" />}
-                  className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                     location.pathname.endsWith("/field-equipment")
                       ? "bg-black/5 dark:bg-dark-50"
                       : ""
@@ -683,7 +687,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-3 my-0.5 rounded-md text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+              className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
                 location.pathname.startsWith("/custom-forms")
                   ? "bg-black/5 dark:bg-dark-50"
                   : ""
@@ -721,7 +725,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex h-12 items-center justify-end border-b border-black/10 dark:border-dark-200 px-4 lg:hidden">
           <button
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
+            className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
           >
             <X className="h-5 w-5 text-neutral-600 dark:text-white" />
           </button>
@@ -737,7 +741,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
           <button
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="ml-auto lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
+            className="ml-auto lg:hidden p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
           >
             <X className="h-5 w-5 text-neutral-600 dark:text-white" />
           </button>
@@ -753,7 +757,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto">
       {isReportLocked && (
         <div
-          className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg flex items-center gap-3"
+          className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-none flex items-center gap-3"
           aria-hidden="true"
         >
           <svg
@@ -795,7 +799,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {!isMeetingsPage && (
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100 flex-shrink-0"
+                className="lg:hidden p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100 flex-shrink-0"
               >
                 <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
               </button>
@@ -826,7 +830,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full w-8 h-8 lg:w-10 lg:h-10 hover:bg-neutral-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
+                className="rounded-none w-8 h-8 lg:w-10 lg:h-10 hover:bg-neutral-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
                 onClick={() => {
                   const next = !isProfileMenuOpen;
                   setIsProfileMenuOpen(next);
@@ -837,7 +841,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <img
                     src={user.user_metadata.profileImage}
                     alt="Profile"
-                    className="h-8 w-8 lg:h-10 lg:w-10 rounded-full object-cover"
+                    className="h-8 w-8 lg:h-10 lg:w-10 rounded-none object-cover"
                   />
                 ) : (
                   <UserIcon className="h-4 w-4 lg:h-5 lg:w-5 text-neutral-600 dark:text-dark-400" />
@@ -860,7 +864,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         />
                       </div>
                     )}
-                    <div className="rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-neutral-200 dark:border-dark-200">
                           <p className="text-sm font-medium text-neutral-900 dark:text-dark-900">
@@ -956,7 +960,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <button
                 type="button"
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100"
+                className="lg:hidden p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
@@ -1016,7 +1020,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClick={() => setPreviewUrl(null)}
         >
           <div
-            className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl dark:bg-dark-150"
+            className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-none bg-white shadow-xl dark:bg-dark-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2 dark:border-dark-200">
@@ -1036,7 +1040,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <button
                   type="button"
                   onClick={() => setPreviewUrl(null)}
-                  className="rounded-md p-1.5 text-neutral-600 hover:bg-neutral-100 dark:text-white dark:hover:bg-dark-100"
+                  className="rounded-none p-1.5 text-neutral-600 hover:bg-neutral-100 dark:text-white dark:hover:bg-dark-100"
                   aria-label="Close preview"
                 >
                   <X className="h-5 w-5" />

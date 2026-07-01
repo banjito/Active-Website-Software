@@ -494,7 +494,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
           ) : (
             <>
               {filteredCertificates.length === 0 ? (
-                <div className="text-center py-10 border rounded-md">
+                <div className="text-center py-10 border rounded-none">
                   <FileText className="mx-auto h-10 w-10 text-neutral-400" />
                   <h3 className="mt-2 text-sm font-medium text-neutral-900">
                     No certificates found
@@ -841,7 +841,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
           <DialogHeader>
             <DialogTitle>Certificate Preview</DialogTitle>
           </DialogHeader>
-          <div className="p-4 border rounded-md bg-white">
+          <div className="p-4 border rounded-none bg-white">
             {selectedCertificate && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b pb-4">

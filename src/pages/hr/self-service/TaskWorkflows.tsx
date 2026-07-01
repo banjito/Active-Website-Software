@@ -114,7 +114,7 @@ export const TaskWorkflows: React.FC = () => {
             <Bell className="h-5 w-5 text-muted-foreground" />
             <CardTitle>Reminders</CardTitle>
             {reminders.length > 0 && (
-              <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-medium px-2 py-0.5">
+              <span className="rounded-none bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-medium px-2 py-0.5">
                 {reminders.length}
               </span>
             )}
@@ -131,7 +131,7 @@ export const TaskWorkflows: React.FC = () => {
               {reminders.map((t) => (
                 <li
                   key={t.id}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-border dark:border-dark-200 p-3 bg-muted/30 dark:bg-dark-150"
+                  className="flex items-center justify-between gap-4 rounded-none border border-border dark:border-dark-200 p-3 bg-muted/30 dark:bg-dark-150"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground dark:text-dark-foreground truncate">{t.name}</p>

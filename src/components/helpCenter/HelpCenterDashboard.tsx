@@ -364,7 +364,7 @@ export const HelpCenterDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#f26722] to-[#ff8c4a] rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#f26722] to-[#ff8c4a] rounded-none flex items-center justify-center shadow-lg">
                 <HelpCircle className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -380,14 +380,14 @@ export const HelpCenterDashboard: React.FC = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowUploadModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all"
                 >
                   <Upload className="w-5 h-5" />
                   Upload PDF or Video
                 </button>
                 <button
                   onClick={() => navigate("/help-center/builder")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all"
                 >
                   <Plus className="w-5 h-5" />
                   Create Guide
@@ -404,7 +404,7 @@ export const HelpCenterDashboard: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search guides, topics, or keywords..."
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             />
           </div>
         </div>
@@ -413,7 +413,7 @@ export const HelpCenterDashboard: React.FC = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         {/* Filters Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-dark-150 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-dark-150 rounded-none p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
             <Filter className="w-4 h-4 text-neutral-400" />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -424,7 +424,7 @@ export const HelpCenterDashboard: React.FC = () => {
               onChange={(e) =>
                 setSelectedCategory(e.target.value as PortalCategory | "all")
               }
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             >
               <option value="all">All Categories</option>
               {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
@@ -434,10 +434,10 @@ export const HelpCenterDashboard: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-dark-100 rounded-none p-1">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-none transition-colors ${
                 viewMode === "grid"
                   ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
                   : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -448,7 +448,7 @@ export const HelpCenterDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-none transition-colors ${
                 viewMode === "list"
                   ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
                   : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -466,26 +466,26 @@ export const HelpCenterDashboard: React.FC = () => {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden animate-pulse"
+                className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden animate-pulse"
               >
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-neutral-200 dark:bg-dark-100 rounded-xl" />
+                    <div className="w-12 h-12 bg-neutral-200 dark:bg-dark-100 rounded-none" />
                     <div>
                       <div className="h-5 w-40 bg-neutral-200 dark:bg-dark-100 rounded mb-2" />
                       <div className="h-4 w-24 bg-neutral-100 dark:bg-dark-200 rounded" />
                     </div>
                   </div>
-                  <div className="w-8 h-8 bg-neutral-100 dark:bg-dark-100 rounded-full" />
+                  <div className="w-8 h-8 bg-neutral-100 dark:bg-dark-100 rounded-none" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredGuides.length === 0 && searchQuery === "" ? (
           /* Empty State */
-          <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-neutral-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-neutral-100 dark:bg-dark-100 rounded-none flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-10 h-10 text-neutral-400 dark:text-neutral-500" />
               </div>
               <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
@@ -502,7 +502,7 @@ export const HelpCenterDashboard: React.FC = () => {
                 <>
                   <button
                     onClick={() => navigate("/help-center/builder")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all text-lg"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all text-lg"
                   >
                     <Plus className="w-5 h-5" />
                     Create Your First Guide
@@ -531,7 +531,7 @@ export const HelpCenterDashboard: React.FC = () => {
                 return (
                   <div
                     key={category}
-                    className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+                    className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
                   >
                     <button
                       onClick={() => toggleCategory(category as PortalCategory)}
@@ -539,7 +539,7 @@ export const HelpCenterDashboard: React.FC = () => {
                     >
                       <div className="flex items-center gap-4">
                         <div
-                          className={`w-12 h-12 ${PORTAL_COLORS[category as PortalCategory]} text-white rounded-xl flex items-center justify-center shadow-sm`}
+                          className={`w-12 h-12 ${PORTAL_COLORS[category as PortalCategory]} text-white rounded-none flex items-center justify-center shadow-sm`}
                         >
                           {PORTAL_ICONS[category as PortalCategory]}
                         </div>
@@ -561,7 +561,7 @@ export const HelpCenterDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? "bg-[#f26722]/10" : "bg-neutral-100 dark:bg-dark-100"}`}
+                        className={`w-8 h-8 rounded-none flex items-center justify-center transition-colors ${isExpanded ? "bg-[#f26722]/10" : "bg-neutral-100 dark:bg-dark-100"}`}
                       >
                         {isExpanded ? (
                           <ChevronDown className="w-5 h-5 text-[#f26722]" />
@@ -671,8 +671,8 @@ export const HelpCenterDashboard: React.FC = () => {
             {filteredGuides.length === 0 &&
               filteredDocuments.length === 0 &&
               searchQuery !== "" && (
-                <div className="bg-white dark:bg-dark-150 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-12 text-center">
-                  <div className="w-16 h-16 bg-neutral-100 dark:bg-dark-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+                  <div className="w-16 h-16 bg-neutral-100 dark:bg-dark-100 rounded-none flex items-center justify-center mx-auto mb-4">
                     <Search className="w-8 h-8 text-neutral-400" />
                   </div>
                   <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
@@ -687,7 +687,7 @@ export const HelpCenterDashboard: React.FC = () => {
                   </p>
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="mt-4 px-4 py-2 text-[#f26722] hover:bg-[#f26722]/10 rounded-lg font-medium transition-colors"
+                    className="mt-4 px-4 py-2 text-[#f26722] hover:bg-[#f26722]/10 rounded-none font-medium transition-colors"
                   >
                     Clear search
                   </button>
@@ -737,7 +737,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+    className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
   >
     {/* Admin actions */}
     {isAdmin && (
@@ -747,7 +747,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
             e.stopPropagation();
             onEdit();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
           title="Edit"
         >
           <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -757,7 +757,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
             e.stopPropagation();
             onDelete();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
           title="Delete"
         >
           <Trash2 className="w-4 h-4 text-red-500" />
@@ -767,7 +767,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
 
     {/* Icon */}
     <div
-      className={`w-12 h-12 ${PORTAL_COLORS[guide.category]} text-white rounded-xl flex items-center justify-center shadow-md mb-4`}
+      className={`w-12 h-12 ${PORTAL_COLORS[guide.category]} text-white rounded-none flex items-center justify-center shadow-md mb-4`}
     >
       <BookOpen className="w-6 h-6" />
     </div>
@@ -790,7 +790,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
         {guide.tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="px-2.5 py-1 bg-[#f26722]/10 text-[#f26722] rounded-full text-xs font-medium"
+            className="px-2.5 py-1 bg-[#f26722]/10 text-[#f26722] rounded-none text-xs font-medium"
           >
             {tag}
           </span>
@@ -841,10 +841,10 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+    className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
   >
     <div
-      className={`w-11 h-11 ${PORTAL_COLORS[guide.category]} text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}
+      className={`w-11 h-11 ${PORTAL_COLORS[guide.category]} text-white rounded-none flex items-center justify-center flex-shrink-0 shadow-sm`}
     >
       <BookOpen className="w-5 h-5" />
     </div>
@@ -871,7 +871,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
                 e.stopPropagation();
                 onEdit();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Edit"
             >
               <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -881,7 +881,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Delete"
             >
               <Trash2 className="w-4 h-4 text-red-500" />
@@ -893,7 +893,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
             e.stopPropagation();
             onView();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
           title="View"
         >
           <ExternalLink className="w-4 h-4 text-[#f26722]" />
@@ -921,7 +921,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   return (
     <div
       onClick={onView}
-      className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+      className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
     >
       {/* Admin actions */}
       {isAdmin && (
@@ -931,7 +931,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+            className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
             title="Delete"
           >
             <Trash2 className="w-4 h-4 text-red-500" />
@@ -941,7 +941,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
 
       {/* Icon */}
       <div
-        className={`w-12 h-12 ${PORTAL_COLORS[document.category]} text-white rounded-xl flex items-center justify-center shadow-md mb-4`}
+        className={`w-12 h-12 ${PORTAL_COLORS[document.category]} text-white rounded-none flex items-center justify-center shadow-md mb-4`}
       >
         {isVideo ? (
           <Video className="w-6 h-6" />
@@ -1001,10 +1001,10 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
   return (
     <div
       onClick={onView}
-      className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-xl hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+      className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
     >
       <div
-        className={`w-11 h-11 ${PORTAL_COLORS[document.category]} text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}
+        className={`w-11 h-11 ${PORTAL_COLORS[document.category]} text-white rounded-none flex items-center justify-center flex-shrink-0 shadow-sm`}
       >
         {isVideo ? (
           <Video className="w-5 h-5" />
@@ -1033,7 +1033,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
+              className="p-2 bg-white dark:bg-dark-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600 opacity-80 hover:opacity-100 transition-opacity"
               title="Delete"
             >
               <Trash2 className="w-4 h-4 text-red-500" />
@@ -1044,7 +1044,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
               e.stopPropagation();
               onView();
             }}
-            className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600"
+            className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
             title="View"
           >
             <ExternalLink className="w-4 h-4 text-[#f26722]" />

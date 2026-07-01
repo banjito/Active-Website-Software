@@ -2461,14 +2461,14 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <button
                     onClick={addDeviceRow}
-                    className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-md"
+                    className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none"
                   >
                     + Add Device Row
                   </button>
                   <button
                     onClick={removeDeviceRow}
                     disabled={formData.switches.length <= 1}
-                    className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     - Remove Last Row
                   </button>
@@ -2662,7 +2662,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               handleVisualMechanicalChange(idx, e.target.value)
                             }
                             disabled={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                           >
                             {visualMechanicalOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2844,7 +2844,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             placeholder="Auto-populates to other tables"
                             title="Position auto-populates to Fuse, IR, and Contact tables"
                           />
@@ -2859,7 +2859,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2872,7 +2872,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2885,7 +2885,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2898,7 +2898,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2911,7 +2911,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -2924,7 +2924,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("switches", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -2978,7 +2978,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150"
+                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150"
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -2992,7 +2992,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3005,7 +3005,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3018,7 +3018,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3031,7 +3031,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3044,7 +3044,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="px-2 py-1 border">
@@ -3057,7 +3057,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("fuses", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -3083,7 +3083,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         setField("irTestVoltage", e.target.value)
                       }
                       disabled={!isEditing}
-                      className={`w-28 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-28 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     >
                       {[
                         "250V",
@@ -3105,7 +3105,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       value={formData.irUnits}
                       onChange={(e) => setField("irUnits", e.target.value)}
                       disabled={!isEditing}
-                      className={`w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     >
                       {["MΩ", "GΩ", "TΩ"].map((u) => (
                         <option key={u} value={u}>
@@ -3124,7 +3124,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setApplyIrReading(null)}
-                            className="px-2 py-1 rounded-md border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-sm"
+                            className="px-2 py-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-sm"
                           >
                             Done
                           </button>
@@ -3133,7 +3133,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setApplyIrReading(">2200")}
-                          className="px-3 py-1.5 rounded-md border border-[#f26722] bg-[#f26722] text-white hover:bg-[#e55c1a] text-sm font-medium"
+                          className="px-3 py-1.5 rounded-none border border-[#f26722] bg-[#f26722] text-white hover:bg-[#e55c1a] text-sm font-medium"
                         >
                           Add &gt;2200
                         </button>
@@ -3231,7 +3231,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 0)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-sm ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-sm ${applyIrReading ? "pointer-events-none" : ""}`}
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -3251,7 +3251,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 1)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3270,7 +3270,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 2)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3289,7 +3289,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 3)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3308,7 +3308,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 4)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3327,7 +3327,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 5)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3346,7 +3346,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 6)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3365,7 +3365,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 7)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3384,7 +3384,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 8)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3403,7 +3403,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 9)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3422,7 +3422,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 10)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3441,7 +3441,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 11)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3460,7 +3460,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 12)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         <td
@@ -3479,7 +3479,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             onKeyDown={(e) =>
                               handleIrMeasuredKeyDown(e, idx, 13)
                             }
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${applyIrReading ? "pointer-events-none" : ""}`}
                           />
                         </td>
                         {applyIrReading && (
@@ -3596,7 +3596,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-sm"
+                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150 text-sm"
                           />
                         </td>
                         <td className="border px-1 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-sm">
@@ -3658,7 +3658,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     value={formData.contactUnits}
                     onChange={(e) => setField("contactUnits", e.target.value)}
                     disabled={!isEditing}
-                    className={`w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {["mΩ", "µΩ"].map((u) => (
                       <option key={u} value={u}>
@@ -3705,7 +3705,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                             type="text"
                             value={row.position}
                             readOnly
-                            className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150"
+                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm bg-neutral-100 dark:bg-dark-150"
                             title="Auto-populated from Switch Data"
                           />
                         </td>
@@ -3719,7 +3719,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3732,7 +3732,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3745,7 +3745,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3758,7 +3758,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3771,7 +3771,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3784,7 +3784,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3797,7 +3797,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3810,7 +3810,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border px-2 py-1">
@@ -3823,7 +3823,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               setField("contact", next);
                             }}
                             readOnly={!isEditing}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -3998,7 +3998,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => setField("comments", e.target.value)}
                 readOnly={!isEditing}
                 rows={4}
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
               />
             </section>
           </div>

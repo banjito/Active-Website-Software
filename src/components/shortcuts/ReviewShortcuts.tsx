@@ -143,7 +143,7 @@ export const ReviewShortcuts: React.FC = () => {
           <div
             key={job.id}
             onClick={() => handleJobClick(job.id)}
-            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
+            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none p-4 hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">

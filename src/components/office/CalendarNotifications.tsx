@@ -309,7 +309,7 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
               <Button variant="outline" size="sm" className="relative">
                 <Bell className="h-4 w-4" />
                 {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-none h-4 w-4 flex items-center justify-center">
                     {notificationCount}
                   </span>
                 )}

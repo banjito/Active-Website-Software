@@ -27,7 +27,7 @@ const TerritoryMap: React.FC<TerritoryMapProps> = ({ territory }) => {
 
   return (
     <div
-      className="border rounded-md overflow-hidden"
+      className="border rounded-none overflow-hidden"
       style={{ height: "200px" }}
     >
       <div className="h-full w-full flex items-center justify-center bg-neutral-100 relative">

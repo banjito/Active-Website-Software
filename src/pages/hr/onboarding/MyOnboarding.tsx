@@ -652,7 +652,7 @@ export const MyOnboarding: React.FC = () => {
                   return (
                     <li
                       key={p.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                      className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                     >
                       <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2 min-w-0">
                         <Folder className="h-4 w-4 text-neutral-500 flex-shrink-0" />
@@ -688,7 +688,7 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_forms!.map((f) => (
                   <li
                     key={f.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
                     <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2 min-w-0">
                       <FileSignature className="h-4 w-4 text-neutral-500 flex-shrink-0" />
@@ -733,7 +733,7 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_checklists!.map((c) => (
                   <li
                     key={c.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
                     <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       <CheckSquare className="h-4 w-4 text-neutral-500" />
@@ -763,14 +763,14 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_it_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
                     <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       <Laptop className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${
+                      className={`text-xs font-medium px-2 py-1 rounded-none shrink-0 ${
                         t.status === "completed"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
@@ -800,14 +800,14 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_office_admin_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
                     <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       <Briefcase className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${
+                      className={`text-xs font-medium px-2 py-1 rounded-none shrink-0 ${
                         t.status === "completed"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
@@ -837,14 +837,14 @@ export const MyOnboarding: React.FC = () => {
                 {record.assigned_hr_tasks!.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                    className="flex items-center justify-between p-3 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                   >
                     <span className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       <Users className="h-4 w-4 text-neutral-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${
+                      className={`text-xs font-medium px-2 py-1 rounded-none shrink-0 ${
                         t.status === "completed"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : t.status === "in_progress"
@@ -940,7 +940,7 @@ export const MyOnboarding: React.FC = () => {
                             toggleChecklistItem(item.id);
                           }
                         }}
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:opacity-90 ${
+                        className={`flex items-start gap-3 p-3 rounded-none border transition-colors cursor-pointer hover:opacity-90 ${
                           isChecked
                             ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
                             : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700"
@@ -1058,7 +1058,7 @@ export const MyOnboarding: React.FC = () => {
                       {docs.map((doc: DocItem, index: number) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 p-3 border rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                          className="flex items-center gap-2 p-3 border rounded-none hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                         >
                           <FileText className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                           <span className="text-sm flex-1 font-medium">
@@ -1243,7 +1243,7 @@ export const MyOnboarding: React.FC = () => {
                       {!signatureSectionCollapsed && (
                         <div className="px-4 pb-4">
                           <div className="max-w-md">
-                            <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden">
+                            <div className="border-2 border-neutral-300 dark:border-neutral-600 rounded-none overflow-hidden">
                               <canvas
                                 ref={signatureCanvasRef}
                                 width={400}

@@ -29,7 +29,7 @@ function OilAnalysisReport() {
       <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
         Oil Analysis Report
       </h1>
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
         <p>Oil Analysis Report implementation coming soon...</p>
       </div>
     </div>

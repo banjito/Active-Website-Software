@@ -736,7 +736,7 @@ export default function AssetTracking() {
             )}
 
             {selectedAsset && (
-              <div className="p-3 bg-neutral-50 dark:bg-dark-150 rounded-md">
+              <div className="p-3 bg-neutral-50 dark:bg-dark-150 rounded-none">
                 <h3 className="font-medium">{selectedAsset.name}</h3>
                 <p className="text-sm text-neutral-500">
                   Type:{" "}

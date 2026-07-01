@@ -153,7 +153,7 @@ export default function EquipmentAssignmentModal({
       title={`Assign Equipment: ${equipment.name}`}
     >
       <div className="space-y-4">
-        <div className="bg-neutral-50 p-4 rounded-lg mb-4">
+        <div className="bg-neutral-50 p-4 rounded-none mb-4">
           <h3 className="text-sm font-medium text-neutral-500 mb-2">
             Equipment Information
           </h3>

@@ -141,7 +141,7 @@ export const SignatureSectionsManager: React.FC<
           {sections.map((section, sectionIndex) => (
             <div
               key={sectionIndex}
-              className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 space-y-4"
+              className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 space-y-4"
             >
               <div className="flex items-center gap-2">
                 <Input

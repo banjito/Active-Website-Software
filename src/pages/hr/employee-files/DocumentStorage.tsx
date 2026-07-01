@@ -719,7 +719,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                   {folders.map((folder) => (
                     <div
                       key={folder.id}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
+                      className={`flex items-center gap-2 px-4 py-3 rounded-none border transition-colors ${
                         folderFilter === folder.id
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-neutral-200 dark:border-neutral-700 hover:bg-muted/50"
@@ -813,7 +813,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
+                      className={`flex items-center justify-between p-4 border rounded-none hover:bg-muted/50 transition-colors cursor-pointer ${
                         doc.archived ? "opacity-60" : ""
                       } ${doc.is_expired ? "border-orange-500 bg-orange-50 dark:bg-orange-950" : ""}`}
                     >

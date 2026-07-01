@@ -204,7 +204,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           readOnly={readOnly}
           autoComplete="off"
           spellCheck={false}
-          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button
@@ -236,7 +236,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
               width: dropdownPos.width,
               zIndex: 99999,
             }}
-            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-none shadow-lg max-h-60 overflow-y-auto"
           >
             {loading && (
               <div className="p-3 text-center text-sm text-neutral-500 dark:text-neutral-400">

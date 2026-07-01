@@ -185,7 +185,7 @@ export default function SchedulingPage() {
             {selectedAssignment && (
               <div className="space-y-4">
                 {/* Job Information */}
-                <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
                   <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     Job Information
                   </h3>
@@ -210,7 +210,7 @@ export default function SchedulingPage() {
                 </div>
 
                 {/* Assignment Information */}
-                <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
                   <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     Assignment Details
                   </h3>
@@ -271,7 +271,7 @@ export default function SchedulingPage() {
 
                 {/* Notes */}
                 {selectedAssignment.notes && (
-                  <div className="bg-neutral-50 dark:bg-dark-200 rounded-lg p-4">
+                  <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
                     <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                       Notes
                     </h3>

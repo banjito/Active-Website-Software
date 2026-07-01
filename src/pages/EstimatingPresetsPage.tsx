@@ -63,7 +63,7 @@ const CurrencyInput: React.FC<{
           min="0"
           value={value || ""}
           onChange={handleChange}
-          className="block w-full pl-8 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
+          className="block w-full pl-8 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
         />
@@ -111,7 +111,7 @@ const NumberInput: React.FC<{
             min={min}
             value={value || ""}
             onChange={handleChange}
-            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
+            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
@@ -163,7 +163,7 @@ const FactorInput: React.FC<{
             min="0"
             value={value || ""}
             onChange={handleChange}
-            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm
+            className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
                      focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
@@ -302,7 +302,7 @@ export default function EstimatingPresetsPage() {
   if (!presets) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-4">
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
             <AlertCircle className="h-5 w-5" />
             <span>
@@ -331,7 +331,7 @@ export default function EstimatingPresetsPage() {
                 onClick={handleReset}
                 disabled={saving}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300
-                           bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md
+                           bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none
                            hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50 transition-colors"
               >
                 <RotateCcw className="h-4 w-4" />
@@ -341,7 +341,7 @@ export default function EstimatingPresetsPage() {
                 onClick={handleSave}
                 disabled={saving || !hasChanges}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
-                           bg-[#f26722] hover:bg-[#e55611] rounded-md shadow-sm
+                           bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-sm
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="h-4 w-4" />
@@ -353,7 +353,7 @@ export default function EstimatingPresetsPage() {
 
         {/* Status Messages */}
         {error && (
-          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-4">
             <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertCircle className="h-5 w-5 flex-shrink-0" />
               <span>{error}</span>
@@ -362,7 +362,7 @@ export default function EstimatingPresetsPage() {
         )}
 
         {successMessage && (
-          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-none p-4">
             <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
               <CheckCircle className="h-5 w-5 flex-shrink-0" />
               <span>{successMessage}</span>
@@ -371,7 +371,7 @@ export default function EstimatingPresetsPage() {
         )}
 
         {hasChanges && !successMessage && activeTab === "presets" && (
-          <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none p-4">
             <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
               <AlertCircle className="h-5 w-5 flex-shrink-0" />
               <span>You have unsaved changes.</span>
@@ -428,7 +428,7 @@ export default function EstimatingPresetsPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* General Estimating Variables */}
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                 <DollarSign className="h-5 w-5 text-[#f26722]" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -503,7 +503,7 @@ export default function EstimatingPresetsPage() {
             </div>
 
             {/* Vehicle Travel Variables */}
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                 <Truck className="h-5 w-5 text-[#f26722]" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -552,7 +552,7 @@ export default function EstimatingPresetsPage() {
             </div>
 
             {/* Per Diem & Lodging Variables */}
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                 <Users className="h-5 w-5 text-[#f26722]" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -580,7 +580,7 @@ export default function EstimatingPresetsPage() {
             </div>
 
             {/* Flight Travel Variables */}
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                 <Plane className="h-5 w-5 text-[#f26722]" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -617,7 +617,7 @@ export default function EstimatingPresetsPage() {
             </div>
 
             {/* Rental Car Variables */}
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:col-span-2">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:col-span-2">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                 <Clock className="h-5 w-5 text-[#f26722]" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">

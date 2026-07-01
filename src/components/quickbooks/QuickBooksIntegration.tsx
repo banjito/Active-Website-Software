@@ -85,7 +85,7 @@ export default function QuickBooksIntegration({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-none h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
         <span className="ml-2 text-neutral-600">
           <LoadingSpinner size="md" />
         </span>
@@ -94,7 +94,7 @@ export default function QuickBooksIntegration({
   }
 
   return (
-    <div className="border rounded-lg p-6">
+    <div className="border rounded-none p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">QuickBooks Integration</h3>

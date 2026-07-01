@@ -424,7 +424,7 @@ export default function ContactDetail() {
         </div>
         <div className="flex items-center gap-2">
           {contact.is_primary && (
-            <span className="inline-flex rounded-full px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <span className="inline-flex rounded-none px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               Primary Contact
             </span>
           )}
@@ -463,7 +463,7 @@ export default function ContactDetail() {
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-dark-150 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-dark-150 rounded-none p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
               Delete Contact
             </h3>
@@ -493,7 +493,7 @@ export default function ContactDetail() {
       <div className="flex space-x-1 mb-6 border-b border-neutral-200 dark:border-neutral-700">
         <button
           onClick={() => setActiveTab("info")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "info" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "info" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <Users className="h-4 w-4" /> Info
@@ -501,12 +501,12 @@ export default function ContactDetail() {
         </button>
         <button
           onClick={() => setActiveTab("interactions")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors ${activeTab === "interactions" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "interactions" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <MessageSquare className="h-4 w-4" /> Interactions{" "}
             {notes.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300">
+              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-none bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300">
                 {notes.length}
               </span>
             )}
@@ -517,7 +517,7 @@ export default function ContactDetail() {
       {activeTab === "info" && (
         <>
           {isEditing ? (
-            <div className="bg-white dark:bg-dark-150 rounded-lg p-6 mb-8">
+            <div className="bg-white dark:bg-dark-150 rounded-none p-6 mb-8">
               <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                 Edit Contact Information
               </h2>
@@ -542,7 +542,7 @@ export default function ContactDetail() {
                           first_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
@@ -559,7 +559,7 @@ export default function ContactDetail() {
                           last_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
@@ -576,7 +576,7 @@ export default function ContactDetail() {
                           email: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       required
                     />
                   </div>
@@ -593,7 +593,7 @@ export default function ContactDetail() {
                           phone: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div>
@@ -609,7 +609,7 @@ export default function ContactDetail() {
                           position: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div className="flex items-center">
@@ -655,7 +655,7 @@ export default function ContactDetail() {
                                   : [...prev.divisions, div.value],
                               }));
                             }}
-                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                            className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                               isActive
                                 ? "bg-[#f26722] text-white"
                                 : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -706,7 +706,7 @@ export default function ContactDetail() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white dark:bg-dark-150 border border-neutral-200 rounded-lg p-6">
+              <div className="bg-white dark:bg-dark-150 border border-neutral-200 rounded-none p-6">
                 <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                   Contact Information
                 </h2>
@@ -782,7 +782,7 @@ export default function ContactDetail() {
                             return (
                               <span
                                 key={divValue}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
+                                className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
                               >
                                 {label}
                               </span>
@@ -795,7 +795,7 @@ export default function ContactDetail() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-dark-150 border border-neutral-200 rounded-lg p-6">
+              <div className="bg-white dark:bg-dark-150 border border-neutral-200 rounded-none p-6">
                 <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
                   Company Information
                 </h2>
@@ -816,7 +816,7 @@ export default function ContactDetail() {
                     return (
                       <Link
                         to={toPath}
-                        className="block hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                        className="block hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-none transition-colors"
                       >
                         <div className="space-y-4">
                           <div className="flex items-start">
@@ -880,7 +880,7 @@ export default function ContactDetail() {
             return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
           };
           return (
-            <div className="bg-white dark:bg-dark-150 rounded-lg p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
                   Interactions
@@ -895,7 +895,7 @@ export default function ContactDetail() {
                       occurred_at: "",
                     });
                   }}
-                  className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90"
+                  className="inline-flex items-center justify-center rounded-none bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90"
                 >
                   <Feather className="h-4 w-4 mr-1" />
                   Log Interaction
@@ -923,7 +923,7 @@ export default function ContactDetail() {
 
               {/* Log form */}
               {showNoteForm && (
-                <div className="mb-6 bg-neutral-50 dark:bg-dark-200 rounded-lg p-4 border border-neutral-200 dark:border-neutral-600">
+                <div className="mb-6 bg-neutral-50 dark:bg-dark-200 rounded-none p-4 border border-neutral-200 dark:border-neutral-600">
                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
                     {editingNoteId ? "Edit Interaction" : "Log Interaction"}
                   </h3>
@@ -940,7 +940,7 @@ export default function ContactDetail() {
                             note_type: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                       >
                         <option value="call">Call</option>
                         <option value="email">Email</option>
@@ -960,7 +960,7 @@ export default function ContactDetail() {
                             occurred_at: e.target.value,
                           }))
                         }
-                        className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                       />
                     </div>
                   </div>
@@ -978,7 +978,7 @@ export default function ContactDetail() {
                         }))
                       }
                       placeholder="What happened during this interaction..."
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
                     />
                   </div>
                   <div className="flex justify-end gap-2">
@@ -1028,12 +1028,12 @@ export default function ContactDetail() {
                       <div className="flex items-start relative">
                         <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
                           <div
-                            className={`h-8 w-8 rounded-full ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
+                            className={`h-8 w-8 rounded-none ${noteTypeBg(note.note_type)} flex items-center justify-center border-4 border-white dark:border-neutral-800`}
                           >
                             {noteTypeIcon(note.note_type)}
                           </div>
                         </div>
-                        <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-lg border border-neutral-200 dark:border-neutral-600 w-full">
+                        <div className="ml-16 bg-white dark:bg-dark-150 p-4 rounded-none border border-neutral-200 dark:border-neutral-600 w-full">
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -1047,7 +1047,7 @@ export default function ContactDetail() {
                               </p>
                             </div>
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${noteTypeBadge(note.note_type)}`}
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium ${noteTypeBadge(note.note_type)}`}
                             >
                               {noteTypeLabel(note.note_type)}
                             </span>

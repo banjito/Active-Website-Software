@@ -186,7 +186,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div
-      className={`border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden ${className}`}
+      className={`border border-neutral-300 dark:border-neutral-600 rounded-none overflow-hidden ${className}`}
     >
       {/* Toolbar */}
       {!readOnly && (
@@ -223,7 +223,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               <span className="text-xs">Font</span>
             </button>
             {showFontFamilyMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10 min-w-[160px]">
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg z-10 min-w-[160px]">
                 {FONT_FAMILIES.map((font) => (
                   <button
                     key={font.value}
@@ -258,7 +258,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               <span className="text-xs">Size</span>
             </button>
             {showFontSizeMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg z-10">
                 {FONT_SIZES.map((size) => (
                   <button
                     key={size.value}
@@ -327,7 +327,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               <Palette className="w-4 h-4" />
             </button>
             {showTextColorMenu && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg z-10">
                 <div className="grid grid-cols-6 gap-1">
                   {TEXT_COLORS.map((color) => (
                     <button
@@ -363,7 +363,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               <Highlighter className="w-4 h-4" />
             </button>
             {showHighlightMenu && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg z-10">
                 <div className="grid grid-cols-6 gap-1">
                   {HIGHLIGHT_COLORS.map((color) => (
                     <button
@@ -449,7 +449,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               title="Insert Link"
             />
             {showLinkInput && (
-              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg z-10 flex gap-2">
+              <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-lg z-10 flex gap-2">
                 <input
                   type="url"
                   value={linkUrl}

@@ -18,7 +18,7 @@ export const Switch: React.FC<SwitchProps> = ({
 }) => {
   return (
     <div
-      className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-none transition-colors
         ${checked ? checkedClassName : "bg-neutral-200 dark:bg-dark-150"}
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         ${className}`}
@@ -31,7 +31,7 @@ export const Switch: React.FC<SwitchProps> = ({
       <span
         className={`${
           checked ? "translate-x-6" : "translate-x-1"
-        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+        } inline-block h-4 w-4 transform rounded-none bg-white transition-transform`}
       />
     </div>
   );

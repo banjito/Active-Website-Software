@@ -99,7 +99,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white dark:bg-dark-150 border-2 rounded-lg transition-all ${
+      className={`bg-white dark:bg-dark-150 border-2 rounded-none transition-all ${
         isSelected
           ? "border-[#f26722] shadow-lg"
           : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"

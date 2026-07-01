@@ -674,7 +674,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
           ) : (
             <>
               {filteredMetrics.length === 0 ? (
-                <div className="text-center py-10 border rounded-md">
+                <div className="text-center py-10 border rounded-none">
                   <BarChart className="mx-auto h-10 w-10 text-neutral-400" />
                   <h3 className="mt-2 text-sm font-medium text-neutral-900">
                     No quality metrics found
@@ -1089,7 +1089,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                   onChange={() => setAlertsEnabled(!alertsEnabled)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-none peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-none after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
 

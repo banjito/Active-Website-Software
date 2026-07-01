@@ -490,7 +490,7 @@ export function JobAssignmentManagement({
         <div className="mt-6">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
+              <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
               <div className="flex justify-center py-6">
                 <LoadingSpinner size="md" />
               </div>
@@ -703,7 +703,7 @@ export function JobAssignmentManagement({
                 <label className="block text-sm font-medium mb-1">
                   Required Skills
                 </label>
-                <div className="bg-neutral-50 p-3 rounded-md text-sm">
+                <div className="bg-neutral-50 p-3 rounded-none text-sm">
                   {skillRequirements.map((skill) => (
                     <div key={skill.id} className="flex items-center mb-1">
                       <span className={skill.is_required ? "font-medium" : ""}>

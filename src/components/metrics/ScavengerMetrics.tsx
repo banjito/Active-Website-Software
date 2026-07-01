@@ -74,7 +74,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                 {equipmentRequests}
               </p>
             </div>
-            <div className="rounded-md bg-black/5 p-2">
+            <div className="rounded-none bg-black/5 p-2">
               <ClipboardList className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -93,7 +93,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                 </span>
               </p>
             </div>
-            <div className="rounded-md bg-black/5 p-2">
+            <div className="rounded-none bg-black/5 p-2">
               <Search className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -112,7 +112,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                 </span>
               </p>
             </div>
-            <div className="rounded-md bg-black/5 p-2">
+            <div className="rounded-none bg-black/5 p-2">
               <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>

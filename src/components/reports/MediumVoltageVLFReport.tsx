@@ -1723,7 +1723,7 @@ const MediumVoltageVLFReport: React.FC = () => {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => navigate(`/jobs/${jobId || ""}?tab=assets`)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-none"
             >
               Return to Job
             </button>
@@ -1735,7 +1735,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                   // Force reload of the data
                   setTimeout(() => window.location.reload(), 500);
                 }}
-                className="px-4 py-2 mt-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-md"
+                className="px-4 py-2 mt-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none"
               >
                 Retry Connection
               </button>
@@ -2151,7 +2151,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2171,7 +2171,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2188,7 +2188,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2205,7 +2205,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2217,7 +2217,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     value={formData.cableType || ""}
                     onChange={(e) => handleChange("cableType", e.target.value)}
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2231,7 +2231,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       handleChange("cableLength", e.target.value)
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2248,7 +2248,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2265,7 +2265,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2282,7 +2282,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2299,7 +2299,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
@@ -2317,7 +2317,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2334,7 +2334,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
@@ -2352,7 +2352,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2369,7 +2369,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
 
@@ -2387,7 +2387,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex items-center">
@@ -2404,7 +2404,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2574,7 +2574,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2605,7 +2605,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2637,7 +2637,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2670,7 +2670,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2703,7 +2703,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2735,7 +2735,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2771,7 +2771,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2803,7 +2803,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2834,7 +2834,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {Object.values(InspectionResult).map((result) => (
                           <option key={result} value={result}>
@@ -2886,7 +2886,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -2900,7 +2900,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -2914,7 +2914,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -2927,7 +2927,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {continuityUnits.map((unit) => (
                           <option
@@ -2965,7 +2965,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationTestVoltages.map((option) => (
                   <option
@@ -3053,7 +3053,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3068,7 +3068,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3083,7 +3083,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3091,7 +3091,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.preTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3099,7 +3099,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.preTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3107,7 +3107,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.preTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
@@ -3130,7 +3130,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3145,7 +3145,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3160,7 +3160,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3168,7 +3168,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.postTestCorrected.ag}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3176,7 +3176,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.postTestCorrected.bg}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3184,7 +3184,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                         type="text"
                         value={formData.insulationTest.postTestCorrected.cg}
                         readOnly={true}
-                        className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                        className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
@@ -3209,7 +3209,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationUnits.map((unit) => (
                   <option
@@ -3280,7 +3280,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3314,7 +3314,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3348,7 +3348,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             ?.currentUnit || "mA"
                         }
                         disabled={!isEditMode}
-                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {currentUnits.map((unit) => (
                           <option
@@ -3381,7 +3381,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3397,7 +3397,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                           }
                           readOnly={!isEditMode}
                           list="kvac-options-ats"
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3414,7 +3414,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3431,7 +3431,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3448,7 +3448,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3465,7 +3465,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3482,7 +3482,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -3499,7 +3499,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     </tr>
@@ -3556,7 +3556,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3573,7 +3573,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3594,7 +3594,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3611,7 +3611,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3651,7 +3651,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>
@@ -3668,7 +3668,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3689,7 +3689,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3706,7 +3706,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3746,7 +3746,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>
@@ -3763,7 +3763,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3784,7 +3784,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3801,7 +3801,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -3906,7 +3906,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                 onChange={(e) => handleChange("comments", e.target.value)}
                 readOnly={!isEditMode}
                 rows={6}
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
 
@@ -3964,7 +3964,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

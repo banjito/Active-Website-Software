@@ -170,7 +170,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
+            className={`mt-1 block w-full rounded-none shadow-sm ${
               errors.title
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
@@ -192,7 +192,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             id="type"
             value={type}
             onChange={(e) => setType(e.target.value as SalesGoal["type"])}
-            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Revenue">Revenue</option>
             <option value="Deals">Deals</option>
@@ -213,7 +213,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             id="scope"
             value={scope}
             onChange={(e) => setScope(e.target.value as SalesGoal["scope"])}
-            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Individual">Individual</option>
             <option value="Team">Team</option>
@@ -235,7 +235,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             onChange={(e) =>
               handlePeriodChange(e.target.value as SalesGoal["period"])
             }
-            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           >
             <option value="Monthly">Monthly</option>
             <option value="Quarterly">Quarterly</option>
@@ -256,7 +256,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             type="text"
             value={targetValue}
             onChange={(e) => setTargetValue(e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
+            className={`mt-1 block w-full rounded-none shadow-sm ${
               errors.targetValue
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
@@ -279,7 +279,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             type="text"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
+            className={`mt-1 block w-full rounded-none shadow-sm ${
               errors.currentValue
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
@@ -302,7 +302,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
+            className={`mt-1 block w-full rounded-none shadow-sm ${
               errors.startDate
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
@@ -325,7 +325,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
+            className={`mt-1 block w-full rounded-none shadow-sm ${
               errors.endDate
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-neutral-300 focus:border-indigo-500 focus:ring-indigo-500"
@@ -348,7 +348,7 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
+            className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-150 dark:border-dark-300"
           />
         </div>
       </div>
@@ -357,14 +357,14 @@ export function GoalForm({ goalData, onSave, onCancel }: GoalFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
+          className="inline-flex justify-center rounded-none border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-dark-150 dark:border-dark-300 dark:text-white dark:hover:bg-dark-300"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          className={`inline-flex justify-center rounded-none border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             isSubmitting
               ? "bg-indigo-400 cursor-not-allowed"
               : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"

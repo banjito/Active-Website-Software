@@ -497,12 +497,12 @@ export default function FacilityManagement() {
 
                     <div className="mb-4">
                       <label className="text-sm font-medium">Select Date</label>
-                      <div className="rounded-md border">
+                      <div className="rounded-none border">
                         <Calendar
                           mode="single"
                           selected={selectedDate}
                           onSelect={handleDateSelect}
-                          className="rounded-md border"
+                          className="rounded-none border"
                         />
                       </div>
                     </div>
@@ -587,7 +587,7 @@ export default function FacilityManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Date</label>
-                <div className="border rounded-md p-2">
+                <div className="border rounded-none p-2">
                   {format(selectedDate, "MMMM d, yyyy")}
                 </div>
               </div>

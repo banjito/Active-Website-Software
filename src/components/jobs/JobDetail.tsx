@@ -6249,7 +6249,7 @@ export default function JobDetail() {
               value={docSaveName}
               onChange={(e) => setDocSaveName(e.target.value)}
               placeholder="e.g., Main Substation Cover Letter"
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
             />
           </div>
 
@@ -6282,7 +6282,7 @@ export default function JobDetail() {
 
               return (
                 <div className="px-6">
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-none">
                     <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                       📋 {reportCount} report{reportCount !== 1 ? "s" : ""} from
                       selected substations will be automatically included
@@ -6297,7 +6297,7 @@ export default function JobDetail() {
             })()}
 
           {/* Document editor */}
-          <div className="max-h-[40vh] overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm bg-neutral-50 dark:bg-dark-200 mx-6 p-6">
+          <div className="max-h-[40vh] overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-none shadow-sm bg-neutral-50 dark:bg-dark-200 mx-6 p-6">
             <style>{`
               /* Preview-only styles - override print styles for better preview */
               #generated-doc-editor .amp-page {
@@ -6360,7 +6360,7 @@ export default function JobDetail() {
             <div
               id="generated-doc-editor"
               ref={generatedDocEditorRef}
-              className="prose max-w-none mx-auto bg-white dark:bg-dark-150 rounded-lg shadow-md p-8"
+              className="prose max-w-none mx-auto bg-white dark:bg-dark-150 rounded-none shadow-md p-8"
               style={{
                 outline: "none",
                 cursor: "text",
@@ -6816,9 +6816,9 @@ ${newBodyHtml}
     }
   };
 
-  // QuickBooks: check connection when Overview tab is shown
+  // QuickBooks: check connection when Overview or Profitability tab is shown
   useEffect(() => {
-    if (!id || activeTab !== "overview") return;
+    if (!id || (activeTab !== "overview" && activeTab !== "profitability")) return;
     getQuickBooksStatus()
       .then((s) => setQbConnected(s.connected))
       .catch(() => setQbConnected(false));
@@ -7932,7 +7932,7 @@ ${newBodyHtml}
                 disabled={!adjacentJobIds.previous}
                 aria-label="Previous Job"
                 title="Previous Job"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -7945,7 +7945,7 @@ ${newBodyHtml}
                 disabled={!adjacentJobIds.next}
                 aria-label="Next Job"
                 title="Next Job"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none border border-neutral-300 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -8002,7 +8002,7 @@ ${newBodyHtml}
             {/* Edit Form Header */}
             <CardHeader className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#f26722]/10 rounded-lg">
+                <div className="p-2 bg-[#f26722]/10 rounded-none">
                   <Edit3 className="h-5 w-5 text-[#f26722]" />
                 </div>
                 <div>
@@ -8042,7 +8042,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white font-mono text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white font-mono text-sm"
                         placeholder="JOB-0000"
                       />
                     </div>
@@ -8061,7 +8061,7 @@ ${newBodyHtml}
                             prev ? { ...prev, division: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
                         <option value="north_alabama">Decatur</option>
@@ -8090,7 +8090,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter fireteam lead name"
                       />
                     </div>
@@ -8110,7 +8110,7 @@ ${newBodyHtml}
                             prev ? { ...prev, title: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter job title"
                       />
                     </div>
@@ -8133,7 +8133,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full !h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter job description"
                       />
                     </div>
@@ -8159,7 +8159,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full !h-24 px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter physical site address"
                       />
                     </div>
@@ -8169,7 +8169,7 @@ ${newBodyHtml}
                 {/* Status, Priority, Timeline & Quoted Amount Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
-                    <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                    <div className="w-1 h-5 bg-blue-500 rounded-none"></div>
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                       Status, Timeline & Quoted Amount
                     </h3>
@@ -8191,7 +8191,7 @@ ${newBodyHtml}
                             prev ? { ...prev, status: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In Progress</option>
@@ -8221,7 +8221,7 @@ ${newBodyHtml}
                             prev ? { ...prev, priority: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -8247,7 +8247,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
@@ -8267,7 +8267,7 @@ ${newBodyHtml}
                             prev ? { ...prev, due_date: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
@@ -8296,7 +8296,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="0.00"
                       />
                     </div>
@@ -8325,7 +8325,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="From estimate or enter manually"
                       />
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -8347,7 +8347,7 @@ ${newBodyHtml}
                 {/* Submittal Tracking Configuration Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
-                    <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                    <div className="w-1 h-5 bg-purple-500 rounded-none"></div>
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                       Remote Submittal Tracking
                     </h3>
@@ -8380,7 +8380,7 @@ ${newBodyHtml}
                               : null,
                           );
                         }}
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="standard">Standard (7 days)</option>
                         <option value="data_center">
@@ -8414,7 +8414,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         {editFormData?.submittal_job_type === "data_center" ? (
                           <>
@@ -8498,10 +8498,10 @@ ${newBodyHtml}
 
               {/* Global Batch Upload Progress Indicator */}
               {isBatchUploading && (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-none">
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-none h-5 w-5 border-b-2 border-blue-600"></div>
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-2">
@@ -8512,9 +8512,9 @@ ${newBodyHtml}
                           {batchUploadProgress}%
                         </span>
                       </div>
-                      <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                      <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-none h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          className="bg-blue-600 h-2 rounded-none transition-all duration-300"
                           style={{ width: `${batchUploadProgress}%` }}
                         ></div>
                       </div>
@@ -8562,7 +8562,7 @@ ${newBodyHtml}
                       Report Approvals
                       {openReportFlagCount > 0 && (
                         <span
-                          className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
+                          className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-none bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
                           title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                           aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                         >
@@ -8698,7 +8698,7 @@ ${newBodyHtml}
                                   type="button"
                                   onClick={handleUnlinkQuickBooksProject}
                                   disabled={qbAssigning}
-                                  className="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-white disabled:opacity-50"
+                                  className="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-white disabled:opacity-50"
                                 >
                                   {qbAssigning ? "Unlinking..." : "Unlink"}
                                 </button>
@@ -8776,10 +8776,10 @@ ${newBodyHtml}
                                   setQbProjectSearchOpen(true);
                                 }}
                                 onFocus={() => setQbProjectSearchOpen(true)}
-                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                               />
                               {qbProjectSearchOpen && (
-                                <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-lg">
+                                <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg">
                                   {qbProjectSearching ? (
                                     <div className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                                       Searching...
@@ -8844,7 +8844,7 @@ ${newBodyHtml}
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center space-x-2">
                               <div
-                                className={`h-3 w-3 rounded-full ${
+                                className={`h-3 w-3 rounded-none ${
                                   job.status === "completed"
                                     ? "bg-green-500"
                                     : job.status === "in_progress"
@@ -8867,7 +8867,7 @@ ${newBodyHtml}
                             <div className="flex items-center gap-2">
                               {!isStatusEditing ? (
                                 <button
-                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                   onClick={() => setIsStatusEditing(true)}
                                 >
                                   Change
@@ -8886,7 +8886,7 @@ ${newBodyHtml}
                                           : prev,
                                       )
                                     }
-                                    className="mt-0 block w-full p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-900 dark:text-white"
+                                    className="mt-0 block w-full p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white"
                                   >
                                     <option value="pending">Pending</option>
                                     <option value="in_progress">
@@ -8902,7 +8902,7 @@ ${newBodyHtml}
                                     <option value="billed">Billed</option>
                                   </select>
                                   <button
-                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
                                     onClick={() =>
                                       handleQuickStatusSave(
                                         (job.status as any) || "pending",
@@ -8912,7 +8912,7 @@ ${newBodyHtml}
                                     Save
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() => setIsStatusEditing(false)}
                                   >
                                     Cancel
@@ -8962,7 +8962,7 @@ ${newBodyHtml}
                             </div>
                             <div className="relative fireteam-lead-selector">
                               <button
-                                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                 onClick={() =>
                                   setIsFireteamLeadSelectorOpen(
                                     !isFireteamLeadSelectorOpen,
@@ -8974,7 +8974,7 @@ ${newBodyHtml}
 
                               {/* User Selection Dropdown */}
                               {isFireteamLeadSelectorOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-lg z-50">
+                                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
                                   <div className="p-3">
                                     <input
                                       type="text"
@@ -8983,7 +8983,7 @@ ${newBodyHtml}
                                       onChange={(e) =>
                                         setUserSearchQuery(e.target.value)
                                       }
-                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                                     />
                                   </div>
                                   <div className="max-h-60 overflow-y-auto">
@@ -9137,7 +9137,7 @@ ${newBodyHtml}
                                 </a>
                                 {(opportunity as any).opportunity_type ===
                                   "time_materials" && (
-                                  <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
+                                  <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
                                     T&M
                                   </span>
                                 )}
@@ -9175,7 +9175,7 @@ ${newBodyHtml}
                                 <label className="text-sm font-medium text-neutral-600 dark:text-white">
                                   Source
                                 </label>
-                                <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
+                                <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
                                   T&M
                                 </span>
                               </div>
@@ -9251,7 +9251,7 @@ ${newBodyHtml}
                                       : "Not set"}
                                   </p>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() =>
                                       setIsProgressBillingStatusEditing(true)
                                     }
@@ -9278,7 +9278,7 @@ ${newBodyHtml}
                                           : prev,
                                       )
                                     }
-                                    className="flex-1 p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-900 dark:text-white text-sm"
+                                    className="flex-1 p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white text-sm"
                                   >
                                     <option value="">Not set</option>
                                     <option value="not_started">
@@ -9292,7 +9292,7 @@ ${newBodyHtml}
                                     <option value="cancelled">Cancelled</option>
                                   </select>
                                   <button
-                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
                                     onClick={async () => {
                                       if (!id || !job) return;
                                       try {
@@ -9361,7 +9361,7 @@ ${newBodyHtml}
                                     Save
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
                                     onClick={() => {
                                       setIsProgressBillingStatusEditing(false);
                                       // Reset to original value
@@ -9537,7 +9537,7 @@ ${newBodyHtml}
                               return (
                                 <div
                                   key={contract.id}
-                                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
+                                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex-1">
@@ -9681,9 +9681,9 @@ ${newBodyHtml}
                             {oneLineDrawings.map((drawing) => (
                               <div
                                 key={drawing.id}
-                                className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 hover:shadow-md transition-shadow"
                               >
-                                <div className="aspect-video bg-neutral-100 dark:bg-dark-150 rounded-lg mb-3 flex items-center justify-center">
+                                <div className="aspect-video bg-neutral-100 dark:bg-dark-150 rounded-none mb-3 flex items-center justify-center">
                                   <Image className="h-8 w-8 text-neutral-400" />
                                 </div>
                                 <div className="space-y-2">
@@ -9771,7 +9771,7 @@ ${newBodyHtml}
                             {miscellaneousDocuments.map((document) => (
                               <div
                                 key={document.id}
-                                className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
+                                className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
@@ -9862,7 +9862,7 @@ ${newBodyHtml}
                         </Button>
 
                         {isDropdownOpen && (
-                          <div className="absolute right-0 top-10 w-[32rem] rounded-md shadow-lg bg-white dark:bg-dark-150 ring-1 ring-black ring-opacity-5 z-10">
+                          <div className="absolute right-0 top-10 w-[32rem] rounded-none shadow-lg bg-white dark:bg-dark-150 ring-1 ring-black ring-opacity-5 z-10">
                             <div
                               className="py-1"
                               role="menu"
@@ -10128,10 +10128,10 @@ ${newBodyHtml}
 
                       {/* Status filter tabs */}
                       <div className="mt-4">
-                        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg">
+                        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
                           <button
                             onClick={() => setAssetStatusFilter("all")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "all"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10141,7 +10141,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("not started")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "not started"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10157,7 +10157,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("in_progress")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "in_progress"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10177,7 +10177,7 @@ ${newBodyHtml}
                             onClick={() =>
                               setAssetStatusFilter("ready_for_review")
                             }
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "ready_for_review"
                                 ? "bg-blue-600 text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10193,7 +10193,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("approved")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "approved"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10213,7 +10213,7 @@ ${newBodyHtml}
                             onClick={() =>
                               setAssetStatusFilter("approved_internal_forms")
                             }
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "approved_internal_forms"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10231,7 +10231,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("sent")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "sent"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10247,7 +10247,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("issue")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "issue"
                                 ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10263,7 +10263,7 @@ ${newBodyHtml}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("archived")}
-                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
                               assetStatusFilter === "archived"
                                 ? "bg-neutral-500 text-white shadow-sm"
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
@@ -10376,9 +10376,9 @@ ${newBodyHtml}
                             )}
                             {isPrinting && (
                               <div className="text-sm text-neutral-600 dark:text-white">
-                                <div className="w-full bg-neutral-200 dark:bg-dark-150 rounded-full h-2 mb-1">
+                                <div className="w-full bg-neutral-200 dark:bg-dark-150 rounded-none h-2 mb-1">
                                   <div
-                                    className="bg-[#f26722] h-2 rounded-full"
+                                    className="bg-[#f26722] h-2 rounded-none"
                                     style={{ width: `${printProgress}%` }}
                                   ></div>
                                 </div>
@@ -10541,7 +10541,7 @@ ${newBodyHtml}
                             const renderFolderTable = (folderKey: string) => (
                               <details
                                 key={folderKey}
-                                className="group border rounded-md overflow-hidden"
+                                className="group border rounded-none overflow-hidden"
                               >
                                 <summary className="cursor-pointer select-none bg-neutral-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
                                   <div className="flex items-center gap-2">
@@ -11064,7 +11064,7 @@ ${newBodyHtml}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm text-yellow-800 dark:text-yellow-200">
+                        <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none text-sm text-yellow-800 dark:text-yellow-200">
                           You do not have permission to access the report
                           approval view. Please contact an administrator if you
                           believe this is an error.
@@ -11219,10 +11219,10 @@ ${newBodyHtml}
                                 setQbProjectSearchOpen(true);
                               }}
                               onFocus={() => setQbProjectSearchOpen(true)}
-                              className="w-full rounded-md border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                              className="w-full rounded-none border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                             />
                             {qbProjectSearchOpen && (
-                              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-neutral-300 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-800">
+                              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-none border border-neutral-300 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-800">
                                 {qbProjectSearching ? (
                                   <div className="p-3 text-sm text-neutral-500">Searching...</div>
                                 ) : qbProjectError ? (
@@ -11337,9 +11337,9 @@ ${newBodyHtml}
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-none overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full"
+                    className="h-full bg-blue-600 rounded-none"
                     style={{ width: `${uploadProgress}%` }}
                   ></div>
                 </div>
@@ -11351,9 +11351,9 @@ ${newBodyHtml}
 
             {isBatchUploading && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-none overflow-hidden">
                   <div
-                    className="h-full bg-green-600 rounded-full"
+                    className="h-full bg-green-600 rounded-none"
                     style={{ width: `${batchUploadProgress}%` }}
                   ></div>
                 </div>
@@ -11451,9 +11451,9 @@ ${newBodyHtml}
 
             {isUploadingPdfReport && (
               <div className="space-y-2">
-                <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-neutral-200 rounded-none overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full"
+                    className="h-full bg-blue-600 rounded-none"
                     style={{ width: `${pdfUploadProgress}%` }}
                   ></div>
                 </div>
@@ -11706,7 +11706,7 @@ ${newBodyHtml}
                       type: e.target.value as Contract["type"],
                     }))
                   }
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
                 >
                   <option value="main">Main Contract</option>
                   <option value="subcontract">Subcontract</option>
@@ -11884,7 +11884,7 @@ ${newBodyHtml}
                     }))
                   }
                   placeholder="Brief description (optional)"
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                   rows={3}
                 />
               </div>
@@ -11993,10 +11993,10 @@ ${newBodyHtml}
 
           <div className="flex-1 overflow-hidden">
             {selectedContract?.file_url && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
                 <iframe
                   src={selectedContract.file_url}
-                  className="w-full h-full rounded-lg border-0"
+                  className="w-full h-full rounded-none border-0"
                   title={selectedContract.name}
                   style={{ minHeight: "70vh" }}
                 />
@@ -12053,7 +12053,7 @@ ${newBodyHtml}
                   }))
                 }
                 placeholder="Brief description of the drawing..."
-                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                 rows={3}
               />
             </div>
@@ -12148,11 +12148,11 @@ ${newBodyHtml}
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {selectedDrawing && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
                 {selectedDrawing.file_url.toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={selectedDrawing.file_url}
-                    className="w-full h-full rounded-lg border-0"
+                    className="w-full h-full rounded-none border-0"
                     title={selectedDrawing.name}
                     style={{ minHeight: "100%" }}
                   />
@@ -12208,7 +12208,7 @@ ${newBodyHtml}
                   }))
                 }
                 placeholder="Brief description of the document..."
-                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
                 rows={3}
               />
             </div>
@@ -12289,13 +12289,13 @@ ${newBodyHtml}
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {selectedMiscDocument && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-lg">
+              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
                 {selectedMiscDocument.file_url
                   .toLowerCase()
                   .endsWith(".pdf") ? (
                   <iframe
                     src={selectedMiscDocument.file_url}
-                    className="w-full h-full rounded-lg border-0"
+                    className="w-full h-full rounded-none border-0"
                     title={selectedMiscDocument.name}
                     style={{ minHeight: "100%" }}
                   />

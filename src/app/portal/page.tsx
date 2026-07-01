@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
+import { Switch } from "../../components/ui/Switch";
 import Card from "../../components/ui/Card";
 import { CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 import { Badge } from "../../components/ui";
@@ -1157,7 +1158,7 @@ export default function PortalLanding() {
       <FireworksOverlay trigger={fireworksTrigger} />
       {offlineTooltip && (
         <div
-          className="pointer-events-none fixed z-[100] rounded-full border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
+          className="pointer-events-none fixed z-[100] rounded-none border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
           style={{
             left: offlineTooltip.x,
             top: offlineTooltip.y,
@@ -1209,20 +1210,20 @@ export default function PortalLanding() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16">
             {isEditMode && (
-              <div className="flex items-center justify-between mb-4 p-3 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="flex items-center justify-between mb-4 p-3 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
                 <span className="text-sm font-medium text-neutral-700 dark:text-white">
                   Welcome Section
                 </span>
                 <button
                   onClick={() => togglePortalPreference("showWelcome")}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                     portalPreferences.showWelcome
                       ? "bg-[#f26722]"
                       : "bg-neutral-300 dark:bg-neutral-600"
                   }`}
                 >
                   <span
-                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                       portalPreferences.showWelcome
                         ? "translate-x-5"
                         : "translate-x-1"
@@ -1239,7 +1240,7 @@ export default function PortalLanding() {
               {/* Spinning red/white/blue glow, revealed on hover */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -inset-6 -z-10 animate-spin-glow rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-70 [background:conic-gradient(from_0deg,rgba(187,0,0,0.7),rgba(255,255,255,0.7),rgba(53,63,163,0.7),rgba(187,0,0,0.7))]"
+                className="pointer-events-none absolute -inset-6 -z-10 animate-spin-glow rounded-none opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-70 [background:conic-gradient(from_0deg,rgba(187,0,0,0.7),rgba(255,255,255,0.7),rgba(53,63,163,0.7),rgba(187,0,0,0.7))]"
               />
               <svg
                 role="img"
@@ -1310,7 +1311,7 @@ export default function PortalLanding() {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="h-11 px-5 text-base rounded-md border-none text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
+                className="h-11 px-5 text-base rounded-none border-none text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
                 onClick={handleAbout}
               >
                 Learn More
@@ -1328,7 +1329,7 @@ export default function PortalLanding() {
                 <Button
                   disabled
                   aria-disabled="true"
-                  className="group pointer-events-none inline-flex items-center rounded-md justify-center h-11 px-5 !text-neutral-600 bg-transparent opacity-60"
+                  className="group pointer-events-none inline-flex items-center rounded-none justify-center h-11 px-5 !text-neutral-600 bg-transparent opacity-60"
                   leftIcon={<Download className="h-5 w-5 text-neutral-600" />}
                 >
                   Offline Software
@@ -1344,7 +1345,7 @@ export default function PortalLanding() {
         className={`max-w-[1400px] mx-auto mt-8 ${!portalPreferences.showAnnouncements && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <span className="text-sm font-medium text-neutral-700 dark:text-white">
               Announcements Section
             </span>
@@ -1353,14 +1354,14 @@ export default function PortalLanding() {
               role="switch"
               aria-checked={portalPreferences.showAnnouncements}
               onClick={() => togglePortalPreference("showAnnouncements")}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                 portalPreferences.showAnnouncements
                   ? "bg-[#f26722]"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
               <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                   portalPreferences.showAnnouncements
                     ? "translate-x-5"
                     : "translate-x-1"
@@ -1372,7 +1373,7 @@ export default function PortalLanding() {
         {portalAnnouncements.length > 0 ? (
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-[#f26722]/10">
+              <div className="flex items-center justify-center h-10 w-10 rounded-none bg-[#f26722]/10">
                 <Megaphone className="h-6 w-6 text-[#f26722]" />
               </div>
               <div>
@@ -1414,7 +1415,7 @@ export default function PortalLanding() {
                   return (
                     <div
                       key={a.id}
-                      className={`bg-white dark:bg-dark-150 rounded-xl shadow-md border ${
+                      className={`bg-white dark:bg-dark-150 rounded-none shadow-md border ${
                         a.is_pinned
                           ? "border-l-4 border-l-[#f26722] border-t border-r border-b border-t-neutral-200 border-r-neutral-200 border-b-neutral-200 dark:border-t-neutral-700 dark:border-r-neutral-700 dark:border-b-neutral-700 ring-1 ring-[#f26722]/10"
                           : "border-neutral-200 dark:border-neutral-700"
@@ -1435,7 +1436,7 @@ export default function PortalLanding() {
                               {a.title}
                             </h3>
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-semibold ${
                                 a.category === "company"
                                   ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                                   : a.category === "hr"
@@ -1458,7 +1459,7 @@ export default function PortalLanding() {
                             </span>
                             {requiresSignature &&
                               (isSigned ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                   <Check className="h-3 w-3" />
                                   Signed{" "}
                                   {signedAtDate
@@ -1475,7 +1476,7 @@ export default function PortalLanding() {
                                     : ""}
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                                   <AlertCircle className="h-3 w-3" />
                                   Signature required
                                 </span>
@@ -1543,7 +1544,7 @@ export default function PortalLanding() {
                                         ? guidePath
                                         : `/${guidePath}`
                                     }
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-md transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors shadow-sm"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <BookOpen className="h-4 w-4" />
@@ -1553,7 +1554,7 @@ export default function PortalLanding() {
                                 {docUrl && (
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-md transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors shadow-sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       openAckModal(docUrl, a.title, a.id);
@@ -1585,7 +1586,7 @@ export default function PortalLanding() {
                                     href={url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="block border border-neutral-200 dark:border-neutral-700 rounded-md overflow-hidden hover:opacity-90 transition-opacity"
+                                    className="block border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden hover:opacity-90 transition-opacity"
                                   >
                                     <img
                                       src={url}
@@ -1623,7 +1624,7 @@ export default function PortalLanding() {
                               !canDismiss || dismissingAnnouncementId === a.id
                             }
                             onClick={() => dismissAnnouncement(a.id)}
-                            className={`p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                            className={`p-1.5 rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                               canDismiss
                                 ? "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/30"
                                 : "opacity-40 cursor-not-allowed text-neutral-500 dark:text-neutral-400"
@@ -1701,7 +1702,7 @@ export default function PortalLanding() {
           <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
             {ackModalDocUrl && (
               <div
-                className="border rounded-lg overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900"
+                className="border rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900"
                 style={{ minHeight: "50vh" }}
               >
                 <iframe
@@ -1728,7 +1729,7 @@ export default function PortalLanding() {
             {!ackResolvingForm && ackFormId && (
               <div className="space-y-2 shrink-0">
                 <label className="text-sm font-medium">Your signature</label>
-                <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
+                <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
                   <div className="relative">
                     <canvas
                       ref={ackCanvasRef}
@@ -1782,20 +1783,20 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showReviewShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <span className="text-sm font-medium text-neutral-700 dark:text-white">
               Review Shortcuts Section
             </span>
             <button
               onClick={() => togglePortalPreference("showReviewShortcuts")}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showReviewShortcuts
                   ? "bg-[#f26722]"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
               <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                   portalPreferences.showReviewShortcuts
                     ? "translate-x-5"
                     : "translate-x-1"
@@ -1810,27 +1811,14 @@ export default function PortalLanding() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2">
-              <label
-                htmlFor="default-review-shortcuts-toggle"
-                className="text-sm text-neutral-600 dark:text-white"
-              >
+              <span className="text-sm text-neutral-600 dark:text-white">
                 Default to {defaultToShowReview ? "show" : "hide"}:
-              </label>
-              <button
-                id="default-review-shortcuts-toggle"
-                onClick={toggleDefaultReviewBehavior}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
-                  defaultToShowReview
-                    ? "bg-[#f26722]"
-                    : "bg-neutral-300 dark:bg-neutral-600"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    defaultToShowReview ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </button>
+              </span>
+              <Switch
+                checked={defaultToShowReview}
+                onCheckedChange={toggleDefaultReviewBehavior}
+                checkedClassName="bg-[#f26722]"
+              />
             </div>
             <Button
               variant="ghost"
@@ -1861,20 +1849,20 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showIssueShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <span className="text-sm font-medium text-neutral-700 dark:text-white">
               Issue Shortcuts Section
             </span>
             <button
               onClick={() => togglePortalPreference("showIssueShortcuts")}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showIssueShortcuts
                   ? "bg-[#f26722]"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
               <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                   portalPreferences.showIssueShortcuts
                     ? "translate-x-5"
                     : "translate-x-1"
@@ -1887,27 +1875,14 @@ export default function PortalLanding() {
           <h3 className="text-lg font-medium">Issue Shortcuts</h3>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <label
-                htmlFor="default-issue-shortcuts-toggle"
-                className="text-sm text-neutral-600 dark:text-white"
-              >
+              <span className="text-sm text-neutral-600 dark:text-white">
                 Default to {defaultToShowIssue ? "show" : "hide"}:
-              </label>
-              <button
-                id="default-issue-shortcuts-toggle"
-                onClick={toggleDefaultIssueBehavior}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
-                  defaultToShowIssue
-                    ? "bg-[#f26722]"
-                    : "bg-neutral-300 dark:bg-neutral-600"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    defaultToShowIssue ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </button>
+              </span>
+              <Switch
+                checked={defaultToShowIssue}
+                onCheckedChange={toggleDefaultIssueBehavior}
+                checkedClassName="bg-[#f26722]"
+              />
             </div>
             <Button
               variant="ghost"
@@ -1938,20 +1913,20 @@ export default function PortalLanding() {
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showApprovedShortcuts && !isEditMode ? "hidden" : ""}`}
       >
         {isEditMode && (
-          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <span className="text-sm font-medium text-neutral-700 dark:text-white">
               Approved Shortcuts Section
             </span>
             <button
               onClick={() => togglePortalPreference("showApprovedShortcuts")}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showApprovedShortcuts
                   ? "bg-[#f26722]"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
               <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                   portalPreferences.showApprovedShortcuts
                     ? "translate-x-5"
                     : "translate-x-1"
@@ -1964,27 +1939,14 @@ export default function PortalLanding() {
           <h3 className="text-lg font-medium">Approved Shortcuts</h3>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <label
-                htmlFor="default-approved-shortcuts-toggle"
-                className="text-sm text-neutral-600 dark:text-white"
-              >
+              <span className="text-sm text-neutral-600 dark:text-white">
                 Default to {defaultToShowApproved ? "show" : "hide"}:
-              </label>
-              <button
-                id="default-approved-shortcuts-toggle"
-                onClick={toggleDefaultApprovedBehavior}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
-                  defaultToShowApproved
-                    ? "bg-[#f26722]"
-                    : "bg-neutral-300 dark:bg-neutral-600"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    defaultToShowApproved ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </button>
+              </span>
+              <Switch
+                checked={defaultToShowApproved}
+                onCheckedChange={toggleDefaultApprovedBehavior}
+                checkedClassName="bg-[#f26722]"
+              />
             </div>
             <Button
               variant="ghost"
@@ -2013,7 +1975,7 @@ export default function PortalLanding() {
       {/* Portal Section */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
         {isEditMode && (
-          <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -2027,13 +1989,13 @@ export default function PortalLanding() {
               <div className="flex gap-2">
                 <button
                   onClick={handleSelectAllPortals}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-md transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors"
                 >
                   Select All
                 </button>
                 <button
                   onClick={handleDeselectAllPortals}
-                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-50 rounded-md transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-50 rounded-none transition-colors"
                 >
                   Deselect All
                 </button>
@@ -2056,21 +2018,21 @@ export default function PortalLanding() {
               ].map((portalName) => (
                 <div
                   key={portalName}
-                  className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-dark-100 rounded-md"
+                  className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-dark-100 rounded-none"
                 >
                   <span className="text-sm text-neutral-700 dark:text-white">
                     {portalName}
                   </span>
                   <button
                     onClick={() => togglePortalVisibility(portalName)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                    className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                       !isPortalHidden(portalName)
                         ? "bg-[#f26722]"
                         : "bg-neutral-300 dark:bg-neutral-600"
                     }`}
                   >
                     <span
-                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                      className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
                         !isPortalHidden(portalName)
                           ? "translate-x-5"
                           : "translate-x-1"
@@ -2104,7 +2066,7 @@ export default function PortalLanding() {
                 <div className="flex flex-col justify-between p-6 sm:w-1/2">
                   <div className="flex items-center gap-3">
                     <div
-                      className="portal-icon-bg p-2.5 rounded-full"
+                      className="portal-icon-bg p-2.5 rounded-none"
                       style={{ color: "#a36a0d" }}
                     >
                       <MapPin
@@ -2116,9 +2078,9 @@ export default function PortalLanding() {
                       Field Technician Portal
                     </CardTitle>
                   </div>
-                  <span className="portal-card-badge mt-4 inline-flex items-center self-start rounded-full px-2.5 py-1 text-xs font-medium text-white">
+                  <Badge className="portal-card-badge mt-4 self-start text-white">
                     Field Tech
-                  </span>
+                  </Badge>
                 </div>
 
                 {/* Per-city mini-cards */}
@@ -2136,7 +2098,7 @@ export default function PortalLanding() {
                         e.stopPropagation();
                         handleCityCardClick(city.id);
                       }}
-                      className="field-tech-city-button flex items-center justify-center rounded-full border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-white transition-colors hover:border-[#664610] hover:bg-[#664610] hover:text-white"
+                      className="field-tech-city-button flex items-center justify-center rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-200 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-white transition-colors hover:border-[#664610] hover:bg-[#664610] hover:text-white"
                     >
                       {city.label}
                     </button>
@@ -2156,7 +2118,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#a36a0d" }}
                   >
                     <Globe
@@ -2188,7 +2150,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#181818" }}
                   >
                     <MapPin
@@ -2220,7 +2182,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#993809" }}
                   >
                     <MapPin
@@ -2253,7 +2215,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#3730a3" }}
                   >
                     <Building
@@ -2286,7 +2248,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#14532d" }}
                   >
                     <BriefcaseBusiness
@@ -2318,7 +2280,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#155e75" }}
                   >
                     <Omega
@@ -2351,7 +2313,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#831843" }}
                   >
                     <CircleUserRound
@@ -2383,7 +2345,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#374151" }}
                   >
                     <Plane
@@ -2415,7 +2377,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#9a3412" }}
                   >
                     <FileText
@@ -2447,7 +2409,7 @@ export default function PortalLanding() {
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="portal-icon-bg p-2.5 rounded-full"
+                    className="portal-icon-bg p-2.5 rounded-none"
                     style={{ color: "#155e75" }}
                   >
                     <HelpCircle
@@ -2493,7 +2455,7 @@ export default function PortalLanding() {
           onClick={handleGenericPopupBackdropClick} // Add onClick here
         >
           <div
-            className="bg-white dark:bg-dark-150 rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl"
+            className="bg-white dark:bg-dark-150 rounded-none p-6 max-w-sm w-full mx-4 shadow-xl"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the content
           >
             <div className="text-neutral-900 dark:text-dark-900 mb-4 text-center">
@@ -2501,7 +2463,7 @@ export default function PortalLanding() {
             </div>
             <div className="flex justify-center">
               <Button
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-8 py-2 rounded-md dark:bg-amp-gold-600 dark:hover:bg-amp-gold-700"
+                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-8 py-2 rounded-none dark:bg-amp-gold-600 dark:hover:bg-amp-gold-700"
                 onClick={() => setShowPopup(false)}
               >
                 Okay

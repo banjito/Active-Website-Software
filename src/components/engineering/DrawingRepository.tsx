@@ -428,7 +428,7 @@ const DrawingRepository: React.FC = () => {
                   <h4 className="text-sm font-semibold mb-1">Description</h4>
                   <p>{selectedDrawing.description}</p>
                 </div>
-                <div className="bg-neutral-100 dark:bg-dark-300 p-4 rounded-lg flex items-center justify-center h-64">
+                <div className="bg-neutral-100 dark:bg-dark-300 p-4 rounded-none flex items-center justify-center h-64">
                   <div className="flex flex-col items-center text-neutral-500">
                     <FileText className="w-12 h-12 mb-2" />
                     <p>Drawing preview would display here</p>
@@ -446,7 +446,7 @@ const DrawingRepository: React.FC = () => {
         {/* Add Drawing Modal */}
         {showDrawingModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-900 rounded-none max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center p-6 border-b">
                 <h3 className="text-xl font-semibold">Add New Drawing</h3>
                 <Button
@@ -475,7 +475,7 @@ const DrawingRepository: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Project</label>
                   <select
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 border rounded-none"
                     value={newDrawing.project}
                     onChange={(e) =>
                       setNewDrawing({ ...newDrawing, project: e.target.value })
@@ -525,7 +525,7 @@ const DrawingRepository: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Status</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border rounded-none"
                       value={newDrawing.status}
                       onChange={(e) =>
                         setNewDrawing({ ...newDrawing, status: e.target.value })
@@ -566,7 +566,7 @@ const DrawingRepository: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Description</label>
                   <textarea
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 border rounded-none"
                     rows={3}
                     value={newDrawing.description}
                     onChange={(e) =>
@@ -584,7 +584,7 @@ const DrawingRepository: React.FC = () => {
                   <label className="text-sm font-medium">
                     Upload Drawing (coming soon)
                   </label>
-                  <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center text-neutral-500">
+                  <div className="border border-dashed rounded-none p-6 flex flex-col items-center justify-center text-neutral-500">
                     <Upload className="h-8 w-8 mb-2" />
                     <p className="text-sm">
                       Drag & drop a file or click to browse
@@ -618,7 +618,7 @@ const DrawingRepository: React.FC = () => {
         {/* Add Project Modal */}
         {showProjectModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-900 rounded-none max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center p-6 border-b">
                 <h3 className="text-xl font-semibold">Add New Project</h3>
                 <Button
@@ -673,7 +673,7 @@ const DrawingRepository: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Status</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border rounded-none"
                       value={newProject.status}
                       onChange={(e) =>
                         setNewProject({ ...newProject, status: e.target.value })

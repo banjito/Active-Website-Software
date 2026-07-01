@@ -871,7 +871,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         onChange={handleInputChange}
         placeholder={placeholder}
         readOnly={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
       />
     );
   };
@@ -917,7 +917,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         value={displayValue}
         onChange={handleInputChange}
         disabled={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
@@ -1062,7 +1062,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     handleFahrenheitChange(Number(e.target.value))
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1074,7 +1074,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   value={formData.temperature.celsius}
                   onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-20 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1085,7 +1085,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   type="number"
                   value={formData.temperature.tcf}
                   readOnly
-                  className="mt-1 block w-20 rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm dark:text-white"
+                  className="mt-1 block w-20 rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm dark:text-white"
                 />
               </div>
               <div>
@@ -1557,7 +1557,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1569,7 +1569,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1581,7 +1581,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
@@ -1642,7 +1642,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1654,7 +1654,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1666,7 +1666,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
@@ -1727,7 +1727,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1739,7 +1739,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1751,7 +1751,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                           formData.temperature.tcf,
                         )}
                         readOnly
-                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
+                        className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-center"
                       />
                     </td>
                     {/* Units */}
@@ -2331,7 +2331,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 placeholder="Enter any comments or notes here..."
                 readOnly={!isEditing}
                 rows={6}
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (
@@ -2390,7 +2390,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

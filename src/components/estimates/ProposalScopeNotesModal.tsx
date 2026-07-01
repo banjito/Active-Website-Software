@@ -222,7 +222,7 @@ export const ProposalScopeNotesModal: React.FC<
         className="fixed inset-0 bg-black bg-opacity-50 z-[59]"
         onClick={onClose}
       />
-      <div className="relative z-[60] bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col">
+      <div className="relative z-[60] bg-white rounded-none shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-bold text-neutral-900">
@@ -264,12 +264,12 @@ export const ProposalScopeNotesModal: React.FC<
                   placeholder="Search scope notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
+                  className="px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -310,7 +310,7 @@ export const ProposalScopeNotesModal: React.FC<
                         {categoryNotes.map((note) => (
                           <div
                             key={note.id}
-                            className={`border rounded-lg p-3 cursor-pointer transition-all ${
+                            className={`border rounded-none p-3 cursor-pointer transition-all ${
                               selectedNoteIds.has(note.id)
                                 ? "border-[#f26722] bg-orange-50 ring-1 ring-[#f26722]"
                                 : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
@@ -428,7 +428,7 @@ export const ProposalScopeNotesModal: React.FC<
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g., Breaker Testing Size Threshold"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                   autoFocus
                 />
               </div>
@@ -441,7 +441,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormContent(e.target.value)}
                   placeholder="e.g., Circuit breaker testing is required only for breakers rated 100A and above per project specifications."
                   rows={4}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm resize-vertical"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm resize-vertical"
                 />
                 <p className="mt-1 text-xs text-neutral-500">
                   This text will be inserted into the letter proposal. You can
@@ -458,7 +458,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormCategory(e.target.value)}
                   placeholder="e.g., Circuit Breakers, Transformers, General"
                   list="scope-note-categories"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
                 />
                 <datalist id="scope-note-categories">
                   {categories

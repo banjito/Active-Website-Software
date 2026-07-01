@@ -400,7 +400,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
         }
       }}
     >
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-[500px] max-h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-lg w-full max-w-[500px] max-h-[85vh] flex flex-col overflow-hidden">
         {/* Fixed Header */}
         <div className="flex-shrink-0 border-b border-neutral-200 dark:border-neutral-700 px-4 py-3">
           <div className="flex justify-between items-center mb-2">
@@ -461,7 +461,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
         </div>
 
         {error && (
-          <div className="flex-shrink-0 mx-4 mt-3 p-2 text-sm text-red-500 border border-red-300 bg-red-50 rounded-md dark:bg-red-900/30 dark:border-red-800">
+          <div className="flex-shrink-0 mx-4 mt-3 p-2 text-sm text-red-500 border border-red-300 bg-red-50 rounded-none dark:bg-red-900/30 dark:border-red-800">
             {error}
           </div>
         )}
@@ -482,7 +482,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
               <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-neutral-300 rounded-md dark:border-neutral-600">
+            <div className="text-center py-8 border border-dashed border-neutral-300 rounded-none dark:border-neutral-600">
               <LinkIcon className="h-10 w-10 mx-auto text-neutral-400 dark:text-white mb-2" />
               <p className="text-neutral-500 dark:text-white">
                 You don't have any shortcuts yet.
@@ -541,7 +541,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
               }
             }}
           >
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-[520px] max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-lg w-full max-w-[520px] max-h-[80vh] flex flex-col overflow-hidden">
               {quickAddOpen ? (
                 <>
                   {/* Fixed Header */}
@@ -556,7 +556,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                         placeholder="Search portals and links..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-[#f26722]"
+                        className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-[#f26722]"
                       />
                     </div>
                     {Object.keys(selectedQuick).filter((k) => selectedQuick[k])
@@ -664,7 +664,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Portal</label>
                           <select
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                             value={selectedPortal}
                             onChange={(e) => {
                               setSelectedPortal(e.target.value);
@@ -687,7 +687,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                             Destination
                           </label>
                           <select
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                             value={selectedOption}
                             onChange={(e) => setSelectedOption(e.target.value)}
                           >
@@ -714,7 +714,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                           <input
                             id="title"
                             name="title"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                             value={formData.title}
                             onChange={handleInputChange}
                             placeholder="My Shortcut"
@@ -728,7 +728,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                           <input
                             id="url"
                             name="url"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                             value={formData.url}
                             onChange={handleInputChange}
                             placeholder="/north_alabama/dashboard or https://example.com"
@@ -740,19 +740,19 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                     <div className="flex justify-end space-x-2 pt-4">
                       <button
                         type="button"
-                        className="px-4 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 text-neutral-700 dark:text-white"
+                        className="px-4 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 text-neutral-700 dark:text-white"
                         onClick={handleCloseForm}
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-[#f26722] text-white rounded-md hover:bg-[#f26722]/90"
+                        className="px-4 py-2 bg-[#f26722] text-white rounded-none hover:bg-[#f26722]/90"
                         disabled={loading}
                       >
                         {loading ? (
                           <>
-                            <span className="inline-block h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></span>
+                            <span className="inline-block h-4 w-4 border-2 border-t-transparent border-white rounded-none animate-spin mr-2"></span>
                             Saving...
                           </>
                         ) : isEditing ? (

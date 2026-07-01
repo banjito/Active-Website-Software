@@ -105,7 +105,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
               return (
                 <div
                   key={saved.id}
-                  className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 overflow-hidden"
+                  className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 overflow-hidden"
                 >
                   <div className="flex items-center justify-between gap-3 p-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-200">
                     <h3 className="font-medium text-neutral-900 dark:text-white truncate">

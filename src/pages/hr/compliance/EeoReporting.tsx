@@ -168,9 +168,9 @@ export const EeoReporting: React.FC = () => {
           {count} ({percent}%)
         </span>
       </div>
-      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5">
+      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-none h-2.5">
         <div
-          className={`h-2.5 rounded-full ${color}`}
+          className={`h-2.5 rounded-none ${color}`}
           style={{ width: `${Math.max(percent, 2)}%` }}
         />
       </div>
@@ -338,7 +338,7 @@ export const EeoReporting: React.FC = () => {
                     return (
                       <div
                         key={stage.stage}
-                        className={`rounded-lg border-2 ${stageBorder} p-4 ${stageBg}`}
+                        className={`rounded-none border-2 ${stageBorder} p-4 ${stageBg}`}
                       >
                         <div className="flex items-center gap-2 mb-3">
                           {stageIcon}
@@ -506,7 +506,7 @@ export const EeoReporting: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto border rounded-lg">
+                <div className="overflow-x-auto border rounded-none">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/50">

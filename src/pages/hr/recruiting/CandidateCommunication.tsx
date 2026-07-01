@@ -284,7 +284,7 @@ Your Team`,
                 {templates.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
+                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-none"
                   >
                     <div>
                       <span className="font-medium text-neutral-900 dark:text-white">
@@ -427,7 +427,7 @@ Your Team`,
               <select
                 value={selectedTemplateId}
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               >
                 <option value="">Select a template...</option>
                 {templates.map((t) => (
@@ -441,7 +441,7 @@ Your Team`,
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Candidates
               </label>
-              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+              <div className="border border-neutral-300 dark:border-neutral-600 rounded-none p-3 max-h-48 overflow-y-auto space-y-2">
                 {candidates.length === 0 ? (
                   <p className="text-neutral-500 text-sm">No candidates.</p>
                 ) : (
@@ -494,7 +494,7 @@ Your Team`,
                     </div>
                   )}
                 </div>
-                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
                   <div>
                     <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                       Subject:

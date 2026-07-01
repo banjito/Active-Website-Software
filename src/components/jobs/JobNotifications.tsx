@@ -288,7 +288,7 @@ export function JobNotifications({
       <div className="max-h-96 overflow-y-auto">
         {loading ? (
           <div className="p-4 text-center text-neutral-500">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-neutral-900 mx-auto mb-2"></div>
+            <div className="animate-spin rounded-none h-6 w-6 border-b-2 border-neutral-900 mx-auto mb-2"></div>
             <LoadingSpinner size="md" />
           </div>
         ) : error ? (
@@ -500,12 +500,12 @@ export function JobNotifications({
   const renderNotificationButton = () => (
     <Button
       variant="ghost"
-      className={`relative p-2 rounded-full ${buttonClassName || ""}`}
+      className={`relative p-2 rounded-none ${buttonClassName || ""}`}
       onClick={() => setShowNotifications(!showNotifications)}
     >
       <Bell className="h-5 w-5" />
       {unreadCount > 0 && (
-        <div className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full">
+        <div className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-none">
           {unreadCount > 9 ? "9+" : unreadCount}
         </div>
       )}
@@ -521,7 +521,7 @@ export function JobNotifications({
       {showTray ? (
         <>
           {showNotifications && (
-            <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-dark-150 shadow-lg rounded-md z-50 overflow-hidden">
+            <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-dark-150 shadow-lg rounded-none z-50 overflow-hidden">
               {renderNotificationContent()}
             </div>
           )}

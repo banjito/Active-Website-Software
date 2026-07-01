@@ -976,7 +976,7 @@ export const OnboardingTracking: React.FC = () => {
                 setFilterStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
             >
               {statusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -1012,7 +1012,7 @@ export const OnboardingTracking: React.FC = () => {
                 {paginated.map((record) => (
                   <div
                     key={record.id}
-                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <button
                       type="button"
@@ -1110,7 +1110,7 @@ export const OnboardingTracking: React.FC = () => {
                                 {chips.map((c) => (
                                   <span
                                     key={c.label}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
                                   >
                                     {c.icon}
                                     <span>{c.label}</span>
@@ -1123,7 +1123,7 @@ export const OnboardingTracking: React.FC = () => {
                             )}
                             {prog.total > 0 && (
                               <div className="flex items-center gap-2 max-w-md">
-                                <div className="flex-1 h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
+                                <div className="flex-1 h-1.5 rounded-none bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
                                   <div
                                     className={`h-full transition-all ${
                                       prog.percent === 100
@@ -1157,7 +1157,7 @@ export const OnboardingTracking: React.FC = () => {
                               | "completed",
                           )
                         }
-                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In progress</option>
@@ -1245,7 +1245,7 @@ export const OnboardingTracking: React.FC = () => {
             <div className="space-y-4 py-2">
               {/* Applicant info (reference only, not a linked account) */}
               {selectedTracking.candidate && (
-                <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-none">
                   <Mail className="h-5 w-5 text-neutral-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
@@ -1256,7 +1256,7 @@ export const OnboardingTracking: React.FC = () => {
                     </p>
                   </div>
                   {selectedTracking.candidate.position_applied && (
-                    <span className="text-xs bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-1 rounded-full whitespace-nowrap">
+                    <span className="text-xs bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-1 rounded-none whitespace-nowrap">
                       {selectedTracking.candidate.position_applied}
                     </span>
                   )}
@@ -1264,7 +1264,7 @@ export const OnboardingTracking: React.FC = () => {
               )}
 
               {/* Link Work Account – search users */}
-              <div className="border-2 border-[#f26722]/30 rounded-lg p-4 bg-orange-50 dark:bg-orange-900/10">
+              <div className="border-2 border-[#f26722]/30 rounded-none p-4 bg-orange-50 dark:bg-orange-900/10">
                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
                   <Link2 className="h-4 w-4 text-[#f26722]" />
                   Work Account
@@ -1276,7 +1276,7 @@ export const OnboardingTracking: React.FC = () => {
 
                 {selectedTracking.user ? (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-none">
                       <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-neutral-900 dark:text-white">
@@ -1300,7 +1300,7 @@ export const OnboardingTracking: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none">
                       <span className="text-xs text-yellow-700 dark:text-yellow-300">
                         No work account linked yet. Search below once the
                         account has been created.
@@ -1313,14 +1313,14 @@ export const OnboardingTracking: React.FC = () => {
                         placeholder="Search by name or email..."
                         value={linkAccountSearch}
                         onChange={(e) => searchWorkAccounts(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                       />
                       {linkAccountLoading && (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
                       )}
                     </div>
                     {linkAccountResults.length > 0 && (
-                      <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                      <div className="border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden max-h-40 overflow-y-auto">
                         {linkAccountResults.map((u) => (
                           <button
                             key={u.id}
@@ -1393,7 +1393,7 @@ export const OnboardingTracking: React.FC = () => {
               {(() => {
                 const prog = computeProgress(selectedTracking);
                 return (
-                  <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 p-4">
+                  <div className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-150 p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Onboarding progress
@@ -1402,7 +1402,7 @@ export const OnboardingTracking: React.FC = () => {
                         {prog.done}/{prog.total} items · {prog.percent}%
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden mb-3">
+                    <div className="h-2 rounded-none bg-neutral-200 dark:bg-neutral-700 overflow-hidden mb-3">
                       <div
                         className={`h-full transition-all ${prog.percent === 100 ? "bg-green-500" : "bg-[#f26722]"}`}
                         style={{ width: `${prog.percent}%` }}
@@ -1466,7 +1466,7 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_packets!.map((p) => (
                           <li
                             key={p.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800"
+                            className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800"
                           >
                             <span className="text-sm text-neutral-900 dark:text-white truncate flex-1">
                               {p.name}
@@ -1530,7 +1530,7 @@ export const OnboardingTracking: React.FC = () => {
                             </p>
                           ) : (
                             <>
-                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {availablePackets.map((t) => {
                                   const isChecked = packetIdsToAssign.includes(
                                     t.id,
@@ -1624,7 +1624,7 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_forms!.map((f) => (
                           <li
                             key={f.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                            className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                           >
                             <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                               <FileSignature className="h-3.5 w-3.5 flex-shrink-0" />
@@ -1697,7 +1697,7 @@ export const OnboardingTracking: React.FC = () => {
                             </p>
                           ) : (
                             <>
-                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {available.map((form) => {
                                   const isChecked = formIdsToAssign.includes(
                                     form.id,
@@ -1795,7 +1795,7 @@ export const OnboardingTracking: React.FC = () => {
                         {selectedTracking.assigned_checklists!.map((c) => (
                           <li
                             key={c.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                            className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                           >
                             <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                               <CheckSquare className="h-3.5 w-3.5 flex-shrink-0" />
@@ -1884,7 +1884,7 @@ export const OnboardingTracking: React.FC = () => {
                             </p>
                           ) : (
                             <>
-                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                              <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {availableChecklists.map((cl) => {
                                   const isChecked =
                                     checklistIdsToAssign.includes(cl.id);
@@ -1988,7 +1988,7 @@ export const OnboardingTracking: React.FC = () => {
                           {selectedTracking.assigned_it_tasks!.map((t) => (
                             <li
                               key={t.id}
-                              className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                              className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                             >
                               <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                 <Laptop className="h-3.5 w-3.5 flex-shrink-0" />
@@ -2072,7 +2072,7 @@ export const OnboardingTracking: React.FC = () => {
                               </p>
                             ) : (
                               <>
-                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {availableITTasks.map((task) => {
                                     const isChecked =
                                       itTaskIdsToAssign.includes(task.id);
@@ -2176,7 +2176,7 @@ export const OnboardingTracking: React.FC = () => {
                             (t) => (
                               <li
                                 key={t.id}
-                                className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                                className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                               >
                                 <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                   <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
@@ -2263,7 +2263,7 @@ export const OnboardingTracking: React.FC = () => {
                               </p>
                             ) : (
                               <>
-                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {available.map((task) => {
                                     const isChecked =
                                       officeAdminTaskIdsToAssign.includes(
@@ -2372,7 +2372,7 @@ export const OnboardingTracking: React.FC = () => {
                           {selectedTracking.assigned_hr_tasks!.map((t) => (
                             <li
                               key={t.id}
-                              className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 gap-2"
+                              className="flex items-center justify-between p-2 rounded-none bg-neutral-50 dark:bg-neutral-800 gap-2"
                             >
                               <span className="text-sm text-neutral-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
                                 <Users className="h-3.5 w-3.5 flex-shrink-0" />
@@ -2456,7 +2456,7 @@ export const OnboardingTracking: React.FC = () => {
                               </p>
                             ) : (
                               <>
-                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
+                                <div className="border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 max-h-48 overflow-y-auto divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {available.map((task) => {
                                     const isChecked =
                                       hrTaskIdsToAssign.includes(task.id);
@@ -2597,7 +2597,7 @@ export const OnboardingTracking: React.FC = () => {
                     name="onboarding-user-search"
                   />
                 </div>
-                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden max-h-60 overflow-y-auto">
                   {filteredAddPersonUsers.length === 0 ? (
                     <div className="p-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
                       No users match your search.

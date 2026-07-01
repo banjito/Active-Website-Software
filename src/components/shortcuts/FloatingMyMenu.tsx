@@ -89,7 +89,7 @@ export const FloatingMyMenu: React.FC = () => {
               setOpen(false);
             }
           }}
-          className="rounded-md px-2 py-2 bg-white/90 dark:bg-dark-150 shadow border border-neutral-200 dark:border-dark-200 hover:bg-white dark:hover:bg-dark-100"
+          className="rounded-none px-2 py-2 bg-white/90 dark:bg-dark-150 shadow border border-neutral-200 dark:border-dark-200 hover:bg-white dark:hover:bg-dark-100"
           aria-label="Open My Menu"
         >
           <PanelLeftOpen className="h-5 w-5 text-neutral-700 dark:text-white" />
@@ -106,7 +106,7 @@ export const FloatingMyMenu: React.FC = () => {
           />
           {/* Floating popover near the left center */}
           <div
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] h-[70vh] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 shadow-2xl rounded-xl flex flex-col overflow-hidden"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] h-[70vh] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 shadow-2xl rounded-none flex flex-col overflow-hidden"
             onMouseEnter={() => {
               setHoveringDrawer(true);
               if (closeTimer) {

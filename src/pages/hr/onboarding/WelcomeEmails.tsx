@@ -298,7 +298,7 @@ export const WelcomeEmails: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}
       >
         {status}
       </span>

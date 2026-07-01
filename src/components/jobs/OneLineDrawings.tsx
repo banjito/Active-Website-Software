@@ -279,10 +279,10 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
             <div className="space-y-4">
               {/* Current Drawing */}
               {currentDrawing && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-none p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="bg-green-100 dark:bg-green-800 p-2 rounded-lg">
+                      <div className="bg-green-100 dark:bg-green-800 p-2 rounded-none">
                         <FileImage className="h-5 w-5 text-green-600 dark:text-green-400" />
                       </div>
                       <div>
@@ -290,7 +290,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                           <h4 className="font-medium text-neutral-900 dark:text-white">
                             {currentDrawing.name}
                           </h4>
-                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-none">
                             Current
                           </span>
                         </div>
@@ -339,10 +339,10 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                 .map((drawing) => (
                   <div
                     key={drawing.id}
-                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg">
+                      <div className="bg-neutral-100 dark:bg-neutral-800 p-2 rounded-none">
                         <FileImage className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
                       </div>
                       <div>
@@ -486,12 +486,12 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                 <img
                   src={previewDrawing.file_url}
                   alt={previewDrawing.name}
-                  className="w-full h-auto rounded-lg border border-neutral-200 dark:border-neutral-700"
+                  className="w-full h-auto rounded-none border border-neutral-200 dark:border-neutral-700"
                 />
               ) : previewDrawing.file_type === "application/pdf" ? (
                 <iframe
                   src={previewDrawing.file_url}
-                  className="w-full h-96 border border-neutral-200 dark:border-neutral-700 rounded-lg"
+                  className="w-full h-96 border border-neutral-200 dark:border-neutral-700 rounded-none"
                   title={previewDrawing.name}
                 />
               ) : (

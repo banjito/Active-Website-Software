@@ -452,13 +452,13 @@ export function TechnicianScheduleManagement({
                   {timeOffRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between"
+                      className="border rounded-none p-4 flex flex-col sm:flex-row sm:items-center justify-between"
                     >
                       <div className="space-y-2 mb-3 sm:mb-0">
                         <div className="flex items-center">
                           <h3 className="font-medium">{request.reason}</h3>
                           <span
-                            className={`ml-2 text-xs font-medium text-white px-2 py-0.5 rounded-full ${getStatusBadgeColor(request.status)}`}
+                            className={`ml-2 text-xs font-medium text-white px-2 py-0.5 rounded-none ${getStatusBadgeColor(request.status)}`}
                           >
                             {request.status}
                           </span>

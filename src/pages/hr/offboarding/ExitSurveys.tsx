@@ -543,7 +543,7 @@ export const ExitSurveys: React.FC = () => {
     if (!opt) return null;
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-medium ${opt.color}`}
       >
         {status === "active" ? (
           <CheckCircle className="h-3 w-3" />
@@ -587,7 +587,7 @@ export const ExitSurveys: React.FC = () => {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-none p-4">
         <div className="flex items-start gap-3">
           <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           <div>
@@ -861,7 +861,7 @@ export const ExitSurveys: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                  className="w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -927,7 +927,7 @@ export const ExitSurveys: React.FC = () => {
                   {(formData.attached_documents ?? []).map((doc, i) => (
                     <li
                       key={i}
-                      className="flex items-center justify-between gap-2 py-2 px-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
+                      className="flex items-center justify-between gap-2 py-2 px-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none"
                     >
                       <span
                         className="text-sm truncate flex-1"
@@ -958,7 +958,7 @@ export const ExitSurveys: React.FC = () => {
                   <Link2 className="h-3.5 w-3.5 mr-1.5" />
                   Add from document library
                 </Button>
-                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-300 dark:border-neutral-600 rounded-md cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-300 dark:border-neutral-600 rounded-none cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
@@ -975,7 +975,7 @@ export const ExitSurveys: React.FC = () => {
                 </label>
               </div>
               {showDocPicker && availableDocs.length > 0 && (
-                <div className="mt-3 p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg max-h-40 overflow-y-auto">
+                <div className="mt-3 p-3 border border-neutral-200 dark:border-neutral-700 rounded-none max-h-40 overflow-y-auto">
                   <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
                     Select a document to attach
                   </p>
@@ -1017,7 +1017,7 @@ export const ExitSurveys: React.FC = () => {
                 </Button>
               </div>
               {formData.questions.length === 0 ? (
-                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-none p-6 text-center">
                   <FileText className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
                   <p className="text-sm text-neutral-500">
                     No questions yet. Add questions to collect feedback.
@@ -1028,7 +1028,7 @@ export const ExitSurveys: React.FC = () => {
                   {formData.questions.map((q, i) => (
                     <div
                       key={q.id}
-                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <Input
@@ -1044,7 +1044,7 @@ export const ExitSurveys: React.FC = () => {
                           onChange={(e) =>
                             updateQuestion(i, "type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                          className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {QUESTION_TYPE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -1112,12 +1112,12 @@ export const ExitSurveys: React.FC = () => {
               <div className="flex items-center gap-3 flex-wrap">
                 {getStatusBadge(selectedSurvey.status)}
                 {(selectedSurvey.is_template ?? false) && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-none text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
                     Template
                   </span>
                 )}
                 {selectedSurvey.is_optional && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-none text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
                     Optional
                   </span>
                 )}
@@ -1154,7 +1154,7 @@ export const ExitSurveys: React.FC = () => {
                   <ol className="space-y-3">
                     {selectedSurvey.questions.map((q, i) => (
                       <li key={q.id} className="flex gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-none bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-medium text-neutral-600 dark:text-neutral-400">
                           {i + 1}
                         </span>
                         <div>
@@ -1225,7 +1225,7 @@ export const ExitSurveys: React.FC = () => {
               {surveyResponses.map((r) => (
                 <div
                   key={r.id}
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
                 >
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
                     <span className="font-medium text-neutral-900 dark:text-white">
@@ -1312,7 +1312,7 @@ export const ExitSurveys: React.FC = () => {
                       <select
                         value={sendEmployeeId}
                         onChange={(e) => setSendEmployeeId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                        className="w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                       >
                         <option value="">Select an employee</option>
                         {employees
@@ -1350,7 +1350,7 @@ export const ExitSurveys: React.FC = () => {
               </>
             ) : (
               <>
-                <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-3 border border-neutral-200 dark:border-neutral-700">
+                <div className="rounded-none bg-neutral-50 dark:bg-neutral-800/50 p-3 border border-neutral-200 dark:border-neutral-700">
                   <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
                     Individual survey link
                   </p>

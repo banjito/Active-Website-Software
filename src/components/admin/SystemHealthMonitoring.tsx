@@ -393,10 +393,10 @@ function MetricCard({
   status: HealthStatus;
 }) {
   return (
-    <div className="rounded-md border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
+    <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <div className="rounded-md bg-neutral-100 p-2 dark:bg-dark-300">
+          <div className="rounded-none bg-neutral-100 p-2 dark:bg-dark-300">
             {icon}
           </div>
           <div className="min-w-0">
@@ -556,14 +556,14 @@ export const SystemHealthMonitoring: React.FC = () => {
             <Skeleton className="h-64 w-full" />
           </div>
         ) : error ? (
-          <div className="flex items-center rounded-md bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-300">
+          <div className="flex items-center rounded-none bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-300">
             <AlertCircle className="mr-2 h-5 w-5" />
             <span>{error}</span>
           </div>
         ) : stats ? (
           <div className="space-y-6">
             <div
-              className={`rounded-md border p-4 ${getStatusBadgeClass(stats.overallStatus)}`}
+              className={`rounded-none border p-4 ${getStatusBadgeClass(stats.overallStatus)}`}
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-start gap-3">
@@ -727,13 +727,13 @@ export const SystemHealthMonitoring: React.FC = () => {
                   </div>
 
                   {stats.database.error && (
-                    <div className="rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    <div className="rounded-none bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300">
                       {stats.database.error}
                     </div>
                   )}
 
                   {stats.database.note && (
-                    <div className="rounded-md bg-yellow-50 p-4 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+                    <div className="rounded-none bg-yellow-50 p-4 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
                       {stats.database.note}
                     </div>
                   )}

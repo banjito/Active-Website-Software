@@ -527,7 +527,7 @@ export function TechnicalDocumentationLibrary() {
                       })
                     }
                     placeholder="Enter document description"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-150"
                     rows={3}
                   />
                 </div>
@@ -585,7 +585,7 @@ export function TechnicalDocumentationLibrary() {
                   <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                     File *
                   </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-md">
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-none">
                     <div className="space-y-1 text-center">
                       <svg
                         className="mx-auto h-12 w-12 text-neutral-400"
@@ -604,7 +604,7 @@ export function TechnicalDocumentationLibrary() {
                       <div className="flex text-sm text-neutral-600 dark:text-white">
                         <label
                           htmlFor="file-upload"
-                          className="relative cursor-pointer bg-white dark:bg-dark-150 rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                          className="relative cursor-pointer bg-white dark:bg-dark-150 rounded-none font-medium text-primary hover:text-primary-dark focus-within:outline-none"
                         >
                           <span>Upload a file</span>
                           <input

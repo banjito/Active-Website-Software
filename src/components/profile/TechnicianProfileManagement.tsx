@@ -415,7 +415,7 @@ export function TechnicianProfileManagement({
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-none">
               {error}
               <button
                 className="ml-2 text-red-600"
@@ -427,7 +427,7 @@ export function TechnicianProfileManagement({
           )}
 
           {hasAdminPermission === false && (
-            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
+            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-none">
               <div className="flex items-start">
                 <Shield className="w-5 h-5 text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
                 <div>
@@ -445,7 +445,7 @@ export function TechnicianProfileManagement({
           )}
 
           {technicians.length === 0 ? (
-            <div className="text-center p-8 bg-neutral-50 rounded-md">
+            <div className="text-center p-8 bg-neutral-50 rounded-none">
               <UserCircle className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
               <h3 className="text-lg font-medium mb-1">No Technicians Found</h3>
               <p className="text-neutral-600 mb-4">
@@ -479,7 +479,7 @@ export function TechnicianProfileManagement({
               {technicianData && (
                 <div className="mb-6">
                   <div className="flex items-start space-x-6">
-                    <div className="p-2 bg-blue-50 rounded-full">
+                    <div className="p-2 bg-blue-50 rounded-none">
                       <UserCircle className="h-16 w-16 text-blue-500" />
                     </div>
                     <div>
@@ -561,7 +561,7 @@ export function TechnicianProfileManagement({
                                 })
                               }
                               placeholder="e.g., Circuit Troubleshooting, Cable Testing"
-                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                              className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                             />
                           </div>
                           <div>
@@ -621,7 +621,7 @@ export function TechnicianProfileManagement({
                                       certificationDate: e.target.value,
                                     })
                                   }
-                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                                  className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                                 />
                               </div>
                               <div>
@@ -637,7 +637,7 @@ export function TechnicianProfileManagement({
                                       expirationDate: e.target.value,
                                     })
                                   }
-                                  className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                                  className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                                 />
                               </div>
                             </>
@@ -655,7 +655,7 @@ export function TechnicianProfileManagement({
                                 })
                               }
                               placeholder="Additional details about experience or certification"
-                              className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
+                              className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
                             />
                           </div>
                         </div>
@@ -809,7 +809,7 @@ export function TechnicianProfileManagement({
                 </TabsContent>
 
                 <TabsContent value="schedule">
-                  <div className="p-4 bg-neutral-50 rounded-md text-center">
+                  <div className="p-4 bg-neutral-50 rounded-none text-center">
                     <Clock className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                     <h3 className="text-lg font-medium mb-1">
                       Schedule Management
@@ -825,7 +825,7 @@ export function TechnicianProfileManagement({
                 </TabsContent>
 
                 <TabsContent value="assignments">
-                  <div className="p-4 bg-neutral-50 rounded-md text-center">
+                  <div className="p-4 bg-neutral-50 rounded-none text-center">
                     <Award className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
                     <h3 className="text-lg font-medium mb-1">
                       Job Assignment Management

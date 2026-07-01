@@ -323,7 +323,7 @@ export const TerminationWorkflows: React.FC = () => {
     const Icon = opt.icon;
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-medium ${opt.color}`}
       >
         <Icon className="h-3 w-3" />
         {opt.label}
@@ -567,7 +567,7 @@ export const TerminationWorkflows: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                  className="w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -613,7 +613,7 @@ export const TerminationWorkflows: React.FC = () => {
                 </Button>
               </div>
               {formData.tasks.length === 0 ? (
-                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-none p-6 text-center">
                   <CheckSquare className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
                   <p className="text-sm text-neutral-500">
                     No tasks yet. Add tasks that need to be completed during
@@ -625,7 +625,7 @@ export const TerminationWorkflows: React.FC = () => {
                   {formData.tasks.map((task, i) => (
                     <div
                       key={task.id}
-                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
@@ -641,7 +641,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateTask(i, "assignee_type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                          className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {ASSIGNEE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -654,7 +654,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateTask(i, "category", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                          className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {CATEGORY_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -707,7 +707,7 @@ export const TerminationWorkflows: React.FC = () => {
                 </Button>
               </div>
               {formData.documents.length === 0 ? (
-                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-none p-6 text-center">
                   <FileText className="h-8 w-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
                   <p className="text-sm text-neutral-500">
                     No documents yet. Add documents required for offboarding.
@@ -718,7 +718,7 @@ export const TerminationWorkflows: React.FC = () => {
                   {formData.documents.map((doc, i) => (
                     <div
                       key={doc.id}
-                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg"
+                      className="flex gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none"
                     >
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Input
@@ -734,7 +734,7 @@ export const TerminationWorkflows: React.FC = () => {
                           onChange={(e) =>
                             updateDocument(i, "doc_type", e.target.value)
                           }
-                          className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                          className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                         >
                           {DOC_TYPE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -802,7 +802,7 @@ export const TerminationWorkflows: React.FC = () => {
               <div className="flex items-center gap-3">
                 {getStatusBadge(selectedWorkflow.status)}
                 {selectedWorkflow.is_template && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-none text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
                     Template
                   </span>
                 )}
@@ -819,7 +819,7 @@ export const TerminationWorkflows: React.FC = () => {
                   <ul className="space-y-2">
                     {selectedWorkflow.tasks.map((t) => (
                       <li key={t.id} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-none bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
                           <span className="text-neutral-900 dark:text-white">
                             {t.title}
@@ -858,7 +858,7 @@ export const TerminationWorkflows: React.FC = () => {
                   <ul className="space-y-2">
                     {selectedWorkflow.documents.map((d) => (
                       <li key={d.id} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#f26722] mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-none bg-[#f26722] mt-2 flex-shrink-0" />
                         <div>
                           <span className="text-neutral-900 dark:text-white">
                             {d.name || "Unnamed"}

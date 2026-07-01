@@ -183,19 +183,19 @@ export function GoalNotifications() {
     <div className="relative">
       <Button
         variant="ghost"
-        className="relative p-2 rounded-full"
+        className="relative p-2 rounded-none"
         onClick={() => setShowNotifications(!showNotifications)}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <div className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full">
+          <div className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-none">
             {unreadCount > 9 ? "9+" : unreadCount}
           </div>
         )}
       </Button>
 
       {showNotifications && (
-        <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-dark-150 shadow-lg rounded-md z-50">
+        <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-dark-150 shadow-lg rounded-none z-50">
           <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex justify-between items-center">
             <h3 className="font-medium">Notifications</h3>
             {notifications.length > 0 && (

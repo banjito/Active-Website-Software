@@ -380,7 +380,7 @@ export const PublicCareerPage: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
-        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -389,13 +389,13 @@ export const PublicCareerPage: React.FC = () => {
                 placeholder="Search jobs by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
               />
             </div>
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
             >
               <option value="all">All Departments</option>
               {departments.map((dept) => (
@@ -409,13 +409,13 @@ export const PublicCareerPage: React.FC = () => {
 
         {/* Job Listings */}
         {loading ? (
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
+          <div className="bg-white dark:bg-neutral-800 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center">
               <LoadingSpinner size="md" />
             </div>
           </div>
         ) : filteredRequisitions.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
+          <div className="bg-white dark:bg-neutral-800 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-12">
             <div className="text-center">
               <Briefcase className="mx-auto h-12 w-12 text-neutral-400" />
               <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
@@ -431,7 +431,7 @@ export const PublicCareerPage: React.FC = () => {
             {filteredRequisitions.map((req) => (
               <div
                 key={req.id}
-                className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-neutral-800 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div className="flex-1">
@@ -647,7 +647,7 @@ export const PublicCareerPage: React.FC = () => {
                 <FileText className="h-5 w-5" />
                 Resume <span className="text-red-500">*</span>
               </h3>
-              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-6">
+              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none p-6">
                 <input
                   type="file"
                   id="resume-upload"
@@ -701,7 +701,7 @@ export const PublicCareerPage: React.FC = () => {
                 }
                 placeholder="Tell us why you're interested in this position..."
                 rows={5}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none"
               />
             </div>
 
@@ -728,7 +728,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_gender: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="Male">Male</option>
@@ -749,7 +749,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_race: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="American Indian or Alaska Native">
@@ -880,9 +880,9 @@ export const PublicCareerPage: React.FC = () => {
                     {uploadProgress}%
                   </span>
                 </div>
-                <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+                <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-none h-2">
                   <div
-                    className="bg-[#f26722] h-2 rounded-full transition-all duration-300"
+                    className="bg-[#f26722] h-2 rounded-none transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>

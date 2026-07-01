@@ -569,7 +569,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         body { overflow-x: hidden; }
 
         /* Remove card and section chrome; show clean tables only */
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow, section { background: white !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow, section { background: white !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
         .border, [class*='border'], .print\\:border, .print\\:border-black { border: none !important; }
 
         /* Force black text */
@@ -2033,7 +2033,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditMode}
-                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {RESULT_OPTIONS.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2045,7 +2045,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     <td className="px-3 py-2">
                       <input
                         type="text"
-                        className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         readOnly={!isEditMode}
                       />
                     </td>

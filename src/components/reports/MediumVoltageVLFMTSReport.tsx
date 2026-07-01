@@ -1042,7 +1042,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
           <p className="mb-6">{error}</p>
           <button
             onClick={() => navigate(`/jobs/${jobId || ""}?tab=assets`)}
-            className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-none"
           >
             Return to Job
           </button>
@@ -1501,7 +1501,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             : handleChange(item.field, e.target.value)
                         }
                         readOnly={!isEditMode}
-                        className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-1/2 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </div>
                   ) : (
@@ -1706,7 +1706,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             })
                           }
                           disabled={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {Object.values(InspectionResult).map((result) => (
                             <option key={result} value={result}>
@@ -1763,7 +1763,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             })
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     ))}
@@ -1777,7 +1777,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditMode}
-                        className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {continuityUnits.map((unit) => (
                           <option
@@ -1815,7 +1815,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationTestVoltages.map((option) => (
                   <option
@@ -1902,7 +1902,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditMode}
-                            className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       ))}
@@ -1919,7 +1919,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               ]
                             }
                             readOnly={true}
-                            className="w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
                           />
                         </td>
                       ))}
@@ -1944,7 +1944,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                   })
                 }
                 disabled={!isEditMode}
-                className={`w-32 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 {insulationUnits.map((unit) => (
                   <option
@@ -2017,7 +2017,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 ?.currentUnit || "mA"
                             }
                             disabled={!isEditMode}
-                            className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {currentUnits.map((unit) => (
                               <option
@@ -2052,7 +2052,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -2067,7 +2067,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       {["phaseA", "phaseB", "phaseC"].map((phase) => (
@@ -2086,7 +2086,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditMode}
-                              className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
@@ -2103,7 +2103,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditMode}
-                              className={`w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                         </React.Fragment>
@@ -2148,7 +2148,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>
@@ -2165,7 +2165,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2182,7 +2182,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2199,7 +2199,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
 
@@ -2228,7 +2228,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>
@@ -2245,7 +2245,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2262,7 +2262,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2279,7 +2279,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
 
@@ -2308,7 +2308,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditMode}
-                  className="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm"
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>
@@ -2325,7 +2325,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2342,7 +2342,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2359,7 +2359,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2485,7 +2485,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                 onChange={(e) => handleChange("comments", e.target.value)}
                 readOnly={!isEditMode}
                 rows={4}
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white break-words whitespace-pre-wrap ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white break-words whitespace-pre-wrap ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
           </section>
@@ -2529,7 +2529,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

@@ -245,7 +245,7 @@ export const HRTasks: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status] || colors.pending}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[status] || colors.pending}`}
       >
         {status.replace("_", " ")}
       </span>
@@ -261,7 +261,7 @@ export const HRTasks: React.FC = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority] || colors.medium}`}
+        className={`px-2 py-1 rounded-none text-xs font-medium ${colors[priority] || colors.medium}`}
       >
         {priority}
       </span>

@@ -378,7 +378,7 @@ export default function JobList() {
               key={option.value}
               type="button"
               onClick={() => setValue(option.value)}
-              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -1333,7 +1333,7 @@ export default function JobList() {
             setLoading(true);
             fetchJobs();
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md"
+          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none"
         >
           Try Again
         </button>
@@ -1398,7 +1398,7 @@ export default function JobList() {
                     phone: "",
                   });
                 }}
-                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add T&M or Emergency Job
@@ -1411,7 +1411,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              className="inline-flex items-center p-2 border border-transparent rounded-md shadow-sm text-white bg-[#f26722] hover:bg-[#d94e00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
+              className="inline-flex items-center p-2 border border-transparent rounded-none shadow-sm text-white bg-[#f26722] hover:bg-[#d94e00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -1443,7 +1443,7 @@ export default function JobList() {
                 <button
                   type="button"
                   onClick={() => setAllTime(!allTime)}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  className={`px-4 py-1.5 text-sm font-medium rounded-none transition-colors ${
                     allTime
                       ? "bg-[#f26722] text-white"
                       : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
@@ -1457,7 +1457,7 @@ export default function JobList() {
                       type="date"
                       value={dateRangeStart}
                       onChange={(e) => setDateRangeStart(e.target.value)}
-                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                     />
                     <span className="text-neutral-500 dark:text-neutral-400">
                       to
@@ -1466,7 +1466,7 @@ export default function JobList() {
                       type="date"
                       value={dateRangeEnd}
                       onChange={(e) => setDateRangeEnd(e.target.value)}
-                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
                     />
                   </div>
                 )}
@@ -1474,7 +1474,7 @@ export default function JobList() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-              <div className="bg-neutral-50 dark:bg-dark-100 rounded-md p-3">
+              <div className="bg-neutral-50 dark:bg-dark-100 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   All Jobs
                 </div>
@@ -1490,7 +1490,7 @@ export default function JobList() {
                 </div>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-md p-3">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   Pending
                 </div>
@@ -1506,7 +1506,7 @@ export default function JobList() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   In Progress
                 </div>
@@ -1522,7 +1522,7 @@ export default function JobList() {
                 </div>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-3">
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   Completed
                 </div>
@@ -1538,7 +1538,7 @@ export default function JobList() {
                 </div>
               </div>
 
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-md p-3">
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   Billed
                 </div>
@@ -1557,7 +1557,7 @@ export default function JobList() {
 
             {/* Remaining Balance Left to Bill */}
             <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3">
+              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-none p-3">
                 <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                   Remaining Balance Left to Bill
                 </div>
@@ -1583,7 +1583,7 @@ export default function JobList() {
       {/* Status Tabs */}
       <div className="mt-6">
         <div
-          className="inline-flex rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+          className="inline-flex rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
           role="tablist"
           aria-label="Job status filter"
         >
@@ -1629,7 +1629,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsSortMenuOpen((prev) => !prev)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
               aria-expanded={isSortMenuOpen}
               aria-label="Sort jobs"
               title="Sort"
@@ -1637,7 +1637,7 @@ export default function JobList() {
               <ArrowDownWideNarrow className="h-5 w-5" />
             </button>
             {isSortMenuOpen && (
-              <div className="absolute left-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+              <div className="absolute left-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                 <div>
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Sort by
@@ -1667,7 +1667,7 @@ export default function JobList() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
-              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
@@ -1703,7 +1703,7 @@ export default function JobList() {
       </div>
 
       <div className="mt-8">
-        <div className="-mx-4 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
+        <div className="-mx-4 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-none">
           <table className="min-w-[1180px] divide-y divide-neutral-300">
             <thead className="bg-neutral-50 dark:bg-dark-150">
               <tr>
@@ -1790,7 +1790,7 @@ export default function JobList() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                       <span
-                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
+                        className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
                       >
                         {formatStatusLabel(job.status)}
                       </span>
@@ -1823,7 +1823,7 @@ export default function JobList() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                       <span
-                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                        className={`inline-flex rounded-none px-2 text-xs font-semibold leading-5 ${
                           job.priority === "high"
                             ? "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400"
                             : job.priority === "medium"
@@ -1836,11 +1836,11 @@ export default function JobList() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                       {isTM ? (
-                        <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
+                        <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
                           T&M
                         </span>
                       ) : isFromOpportunity ? (
-                        <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                        <span className="px-2 py-1 rounded-none bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
                           From Opportunity
                         </span>
                       ) : (
@@ -1866,7 +1866,7 @@ export default function JobList() {
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl">
+          <div className="relative bg-white dark:bg-dark-150 rounded-none max-w-xl w-full mx-auto p-6 shadow-xl">
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
@@ -1898,7 +1898,7 @@ export default function JobList() {
                       required
                       value={formData.customer_id}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     >
                       <option value="">Select a customer</option>
                       {customers.map((customer) => (
@@ -1925,7 +1925,7 @@ export default function JobList() {
                       required
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div>
@@ -1944,7 +1944,7 @@ export default function JobList() {
                       rows={3}
                       value={formData.description}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div>
@@ -1962,7 +1962,7 @@ export default function JobList() {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     >
                       <option value="pending">Pending</option>
                       <option value="in_progress">In Progress</option>
@@ -1985,7 +1985,7 @@ export default function JobList() {
                       name="priority"
                       value={formData.priority}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -2008,7 +2008,7 @@ export default function JobList() {
                       id="start_date"
                       value={formData.start_date}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div>
@@ -2027,7 +2027,7 @@ export default function JobList() {
                       id="due_date"
                       value={formData.due_date}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div>
@@ -2052,7 +2052,7 @@ export default function JobList() {
                         step="0.01"
                         value={formData.budget}
                         onChange={handleInputChange}
-                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                       />
                     </div>
                   </div>
@@ -2073,7 +2073,7 @@ export default function JobList() {
                       rows={3}
                       value={formData.notes}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div>
@@ -2090,7 +2090,7 @@ export default function JobList() {
                       id="job_number"
                       value={formData.job_number}
                       onChange={handleInputChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-md"
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-neutral-300 dark:border-neutral-600 dark:bg-dark-150 dark:text-white rounded-none"
                     />
                   </div>
                 </div> */}
@@ -2099,14 +2099,14 @@ export default function JobList() {
               <div className="mt-5 flex justify-end space-x-3">
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none"
+                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:outline-none"
                   onClick={() => setIsOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-none shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Create Job
                 </button>
@@ -2142,7 +2142,7 @@ export default function JobList() {
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+          <div className="relative bg-white dark:bg-dark-150 rounded-none max-w-md w-full mx-auto p-6 shadow-xl">
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
@@ -2160,7 +2160,7 @@ export default function JobList() {
 
             <form onSubmit={handleTMSubmit} className="space-y-4">
               {showNewCustomer && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Customer
@@ -2244,7 +2244,7 @@ export default function JobList() {
               )}
 
               {showNewContact && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Contact
@@ -2325,7 +2325,7 @@ export default function JobList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
                   <div className="text-xs text-neutral-600 dark:text-white mb-1">
@@ -2346,7 +2346,7 @@ export default function JobList() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-none">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = TMFormData.customer_id === customer.id;
                     return (
@@ -2403,7 +2403,7 @@ export default function JobList() {
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -2440,7 +2440,7 @@ export default function JobList() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -2453,7 +2453,7 @@ export default function JobList() {
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -2501,7 +2501,7 @@ export default function JobList() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>
@@ -2509,7 +2509,7 @@ export default function JobList() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => setShowTMModal(false)}
                 >
                   Cancel
@@ -2517,7 +2517,7 @@ export default function JobList() {
                 <button
                   type="submit"
                   disabled={isCreatingTM}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-none shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                 >
                   {isCreatingTM ? "Creating..." : "Create T&M or Emergency Job"}
                 </button>

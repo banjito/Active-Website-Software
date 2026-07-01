@@ -656,7 +656,7 @@ export default function ContactList() {
             setLoading(true);
             fetchContacts(sortOrder);
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md"
+          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none"
         >
           Try Again
         </button>
@@ -686,7 +686,7 @@ export default function ContactList() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search contacts by name, email, phone"
-            className="w-72 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            className="w-72 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
           <div className="relative">
             <input
@@ -697,7 +697,7 @@ export default function ContactList() {
                 setPage(1);
               }}
               placeholder="Starts with..."
-              className="w-32 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="w-32 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             />
             {startsWithFilter && (
               <button
@@ -720,7 +720,7 @@ export default function ContactList() {
           <button
             type="button"
             onClick={toggleSortOrder}
-            className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm ${
+            className={`inline-flex items-center justify-center rounded-none border px-4 py-2 text-sm font-medium shadow-sm ${
               sortOrder
                 ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20"
                 : "border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
@@ -752,7 +752,7 @@ export default function ContactList() {
               setFormData(initialFormData);
               setIsOpen(true);
             }}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+            className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add contact
@@ -765,7 +765,7 @@ export default function ContactList() {
         <button
           type="button"
           onClick={clearDivisionTabs}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
               ? "bg-[#f26722] text-white"
               : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -778,7 +778,7 @@ export default function ContactList() {
             key={div.value}
             type="button"
             onClick={() => toggleDivisionTab(div.value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
                 ? "bg-[#f26722] text-white"
                 : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
@@ -795,7 +795,7 @@ export default function ContactList() {
       </div>
 
       <div className="mt-4">
-        <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
+        <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-none">
           <table className="min-w-full divide-y divide-neutral-300">
             <thead className="bg-neutral-50 dark:bg-dark-150">
               <tr>
@@ -875,11 +875,11 @@ export default function ContactList() {
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-white">
                     {contact.is_primary ? (
-                      <span className="inline-flex rounded-full bg-green-100 dark:bg-green-900 px-2 text-xs font-semibold leading-5 text-green-800 dark:text-green-200">
+                      <span className="inline-flex rounded-none bg-green-100 dark:bg-green-900 px-2 text-xs font-semibold leading-5 text-green-800 dark:text-green-200">
                         Yes
                       </span>
                     ) : (
-                      <span className="inline-flex rounded-full bg-neutral-100 dark:bg-dark-150 px-2 text-xs font-semibold leading-5 text-neutral-800 dark:text-neutral-200">
+                      <span className="inline-flex rounded-none bg-neutral-100 dark:bg-dark-150 px-2 text-xs font-semibold leading-5 text-neutral-800 dark:text-neutral-200">
                         No
                       </span>
                     )}
@@ -978,11 +978,11 @@ export default function ContactList() {
                     }
                   }}
                   placeholder="Search for a customer..."
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
                 {showCustomerResults && filteredCustomers.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-300 dark:border-neutral-600">
+                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-none border border-neutral-300 dark:border-neutral-600">
                     <ul className="max-h-60 overflow-auto py-1">
                       {filteredCustomers.map((customer) => (
                         <li
@@ -1017,7 +1017,7 @@ export default function ContactList() {
                   required
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1034,7 +1034,7 @@ export default function ContactList() {
                   required
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1050,7 +1050,7 @@ export default function ContactList() {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1066,7 +1066,7 @@ export default function ContactList() {
                   id="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1082,7 +1082,7 @@ export default function ContactList() {
                   id="position"
                   value={formData.position}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -1125,7 +1125,7 @@ export default function ContactList() {
                               : [...prev.divisions, div.value],
                           }));
                         }}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                           isActive
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
@@ -1145,7 +1145,7 @@ export default function ContactList() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting
                     ? "Saving..."
@@ -1156,7 +1156,7 @@ export default function ContactList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -1187,14 +1187,14 @@ export default function ContactList() {
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 dark:bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-red-600 dark:bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 Delete
               </button>
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex justify-center rounded-md border border-neutral-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-dark-300 hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-amp-orange-500 dark:focus:ring-amp-gold-500 focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-neutral-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-dark-300 hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-amp-orange-500 dark:focus:ring-amp-gold-500 focus:ring-offset-2"
               >
                 Cancel
               </button>

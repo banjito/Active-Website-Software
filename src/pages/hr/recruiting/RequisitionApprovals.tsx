@@ -337,7 +337,7 @@ export const RequisitionApprovals: React.FC = () => {
               />
             )}
             <div
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-none text-xs font-medium ${
                 approver.status === "approved"
                   ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                   : approver.status === "rejected"
@@ -424,10 +424,10 @@ export const RequisitionApprovals: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-neutral-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-neutral-100 dark:bg-dark-100 p-1 rounded-none w-fit">
         <button
           onClick={() => setViewTab("mine")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             viewTab === "mine"
               ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
               : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -437,7 +437,7 @@ export const RequisitionApprovals: React.FC = () => {
         </button>
         <button
           onClick={() => setViewTab("all")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             viewTab === "all"
               ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
               : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -458,7 +458,7 @@ export const RequisitionApprovals: React.FC = () => {
                 placeholder="Search by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -466,7 +466,7 @@ export const RequisitionApprovals: React.FC = () => {
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -479,7 +479,7 @@ export const RequisitionApprovals: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -540,18 +540,18 @@ export const RequisitionApprovals: React.FC = () => {
                       <div className="flex items-center gap-3 mb-2">
                         <CardTitle className="text-xl">{req.title}</CardTitle>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(req.priority)}`}
+                          className={`px-2 py-1 rounded-none text-xs font-medium ${getPriorityColor(req.priority)}`}
                         >
                           {req.priority.charAt(0).toUpperCase() +
                             req.priority.slice(1)}{" "}
                           Priority
                         </span>
                         {canApprove && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
+                          <span className="px-2 py-1 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
                             Your Turn
                           </span>
                         )}
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        <span className="px-2 py-1 rounded-none text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                           Step {currentStep} of {approvers.length || "?"}
                         </span>
                       </div>
@@ -661,7 +661,7 @@ export const RequisitionApprovals: React.FC = () => {
           {selectedRequisition && (
             <div className="space-y-6 py-4">
               {/* Key Information Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-50 dark:bg-dark-100 rounded-none">
                 <div>
                   <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                     Department
@@ -727,7 +727,7 @@ export const RequisitionApprovals: React.FC = () => {
               {/* Approval Chain in Detail */}
               {allApproversMap[selectedRequisition.id] &&
                 allApproversMap[selectedRequisition.id].length > 0 && (
-                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-none">
                     <div className="flex items-center gap-2 mb-3">
                       <Users className="h-4 w-4 text-neutral-500" />
                       <label className="text-sm font-semibold text-neutral-900 dark:text-white">
@@ -743,7 +743,7 @@ export const RequisitionApprovals: React.FC = () => {
                           return (
                             <div
                               key={approver.id}
-                              className={`flex items-center gap-3 p-3 rounded-lg border ${
+                              className={`flex items-center gap-3 p-3 rounded-none border ${
                                 approver.status === "approved"
                                   ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
                                   : approver.status === "rejected"
@@ -754,7 +754,7 @@ export const RequisitionApprovals: React.FC = () => {
                               }`}
                             >
                               <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                className={`w-8 h-8 rounded-none flex items-center justify-center text-xs font-bold ${
                                   approver.status === "approved"
                                     ? "bg-green-500 text-white"
                                     : approver.status === "rejected"
@@ -813,7 +813,7 @@ export const RequisitionApprovals: React.FC = () => {
                   <label className="text-sm font-semibold text-neutral-900 dark:text-white mb-2 block">
                     Job Description, Requirements & Notes
                   </label>
-                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+                  <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-none">
                     <div
                       className="text-neutral-900 dark:text-white prose prose-sm dark:prose-invert max-w-none leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p]:mb-2"
                       dangerouslySetInnerHTML={{
@@ -904,7 +904,7 @@ export const RequisitionApprovals: React.FC = () => {
           </DialogHeader>
           {selectedRequisition && (
             <div className="space-y-4 py-4">
-              <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-lg">
+              <div className="p-4 bg-neutral-50 dark:bg-dark-100 rounded-none">
                 <p className="text-sm font-medium text-neutral-900 dark:text-white">
                   Rejecting:{" "}
                   <span className="font-semibold">

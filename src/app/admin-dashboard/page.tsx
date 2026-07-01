@@ -245,12 +245,12 @@ function StatCard({
   helper: string;
   loading: boolean;
 }) {
-  if (loading) return <Skeleton className="h-[88px] w-full rounded-md" />;
+  if (loading) return <Skeleton className="h-[88px] w-full rounded-none" />;
 
   return (
-    <div className="rounded-md border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
+    <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
       <div className="flex items-start gap-3">
-        <div className="shrink-0 rounded-md bg-neutral-100 p-2 dark:bg-dark-300">
+        <div className="shrink-0 rounded-none bg-neutral-100 p-2 dark:bg-dark-300">
           {icon}
         </div>
         <div className="min-w-0">
@@ -691,6 +691,7 @@ export const AdminDashboardLayout: React.FC = () => {
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
+                className="rounded-none border-none bg-neutral-100 hover:bg-neutral-200"
                 onClick={() => navigate("/admin-dashboard")}
                 leftIcon={<ArrowLeft className="h-4 w-4" />}
               >

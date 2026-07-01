@@ -1120,7 +1120,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           }
           readOnly={!isEditing || isReadOnly}
           placeholder={placeholder}
-          className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
       </div>
     );
@@ -2034,7 +2034,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionResultOptions.map((opt) => (
                             <option key={opt} value={opt}>
@@ -2660,7 +2660,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>
@@ -2863,7 +2863,7 @@ if (typeof document !== "undefined") {
 
       /* Border utilities */
       .border-b { border-bottom-width: 1px !important; }
-      .rounded-lg { border-radius: 0.5rem !important; }
+      .rounded-none { border-radius: 0.5rem !important; }
       .shadow-md { box-shadow: none !important; }
 
       /* Text utilities */

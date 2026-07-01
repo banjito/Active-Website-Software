@@ -106,7 +106,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
   }, [localFilters]);
 
   return (
-    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-neutral-200 dark:border-dark-300">
+    <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-none border border-neutral-200 dark:border-dark-300">
       <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-dark-300">
         <h3 className="font-medium text-neutral-900 dark:text-white">
           Search Filters
@@ -142,7 +142,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
               checked={localFilters.advancedMode}
               onChange={toggleAdvancedMode}
             />
-            <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-[#f26722]"></div>
+            <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-none peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-none after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-[#f26722]"></div>
           </label>
         </div>
 

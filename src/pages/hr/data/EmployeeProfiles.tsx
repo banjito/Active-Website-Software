@@ -503,7 +503,7 @@ export const EmployeeProfiles: React.FC = () => {
                   >
                     <div className="flex items-center gap-4 px-4 sm:px-6 py-3 sm:py-4 flex-wrap sm:flex-nowrap">
                       {/* Profile Picture */}
-                      <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-muted">
+                      <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-none overflow-hidden bg-muted">
                         {profile.avatar_url ? (
                           <img
                             src={profile.avatar_url}
@@ -528,14 +528,14 @@ export const EmployeeProfiles: React.FC = () => {
                             {profile.full_name || profile.email}
                           </h3>
                           {!profile.profile_set_up && (
-                            <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200 shrink-0">
+                            <span className="inline-flex items-center rounded-none bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200 shrink-0">
                               Profile not set up
                             </span>
                           )}
                           {(
                             profile.employment_status || "active"
                           ).toLowerCase() !== "active" && (
-                            <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-700 dark:text-slate-200 shrink-0">
+                            <span className="inline-flex items-center rounded-none bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-700 dark:text-slate-200 shrink-0">
                               Inactive
                             </span>
                           )}

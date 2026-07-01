@@ -125,7 +125,7 @@ export const CityComparisonTable: React.FC = () => {
   // the cities that actually have work.
   const chip = (value: number, tone: keyof typeof toneClasses) => (
     <span
-      className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-2.5 py-1 text-sm font-semibold tabular-nums ${
+      className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-none px-2.5 py-1 text-sm font-semibold tabular-nums ${
         value === 0 && !loading
           ? "text-neutral-300 dark:text-dark-400"
           : toneClasses[tone]
@@ -138,7 +138,7 @@ export const CityComparisonTable: React.FC = () => {
   const headDot = (tone: "blue" | "amber" | "green", label: string) => (
     <span className="inline-flex items-center justify-center gap-1.5">
       <span
-        className={`h-1.5 w-1.5 rounded-full ${
+        className={`h-1.5 w-1.5 rounded-none ${
           tone === "blue"
             ? "bg-blue-500"
             : tone === "amber"

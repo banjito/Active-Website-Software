@@ -105,7 +105,7 @@ type CalibrationEquipmentItem = {
 };
 
 const headerIconButtonClass =
-  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
 
 const headerIconButtonActiveClass =
   "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
@@ -201,8 +201,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const [manualUnreadIds, setManualUnreadIds] = useState<Set<string>>(() =>
     readStoredSet(MANUAL_UNREAD_KEY),
   );
-  const [seenCalibrationIds, setSeenCalibrationIds] = useState<Set<string>>(() =>
-    readStoredSet(CALIBRATION_SEEN_KEY),
+  const [seenCalibrationIds, setSeenCalibrationIds] = useState<Set<string>>(
+    () => readStoredSet(CALIBRATION_SEEN_KEY),
   );
   const [reportAssetsByStatus, setReportAssetsByStatus] = useState<
     Record<StatusKey, { id: string; createdAt: string }[]>
@@ -904,7 +904,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     <>
       {headerTooltip && (
         <div
-          className="pointer-events-none fixed z-[100] rounded-full border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
+          className="pointer-events-none fixed z-[100] rounded-none border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
           style={{
             left: headerTooltip.x,
             top: headerTooltip.y,
@@ -933,7 +933,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   key={shortcut.id}
                   data-shortcut-tab
                   onClick={() => handleHeaderShortcutClick(shortcut.url)}
-                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-md transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
+                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-none transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
                   title={shortcut.url}
                 >
                   {shortcut.title}
@@ -1044,13 +1044,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 >
                   <ClipboardCheck className="h-5 w-5" />
                   {reviewJobCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
                       {Math.min(99, reviewJobCount)}
                     </span>
                   )}
                   {openReportFlagCount > 0 && (
                     <span
-                      className="absolute top-[15px] -right-1 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-yellow-400 text-yellow-950 shadow-sm ring-2 ring-white dark:ring-dark-150"
+                      className="absolute top-[15px] -right-1 inline-flex h-[18px] w-[18px] items-center justify-center rounded-none bg-yellow-400 text-yellow-950 shadow-sm ring-2 ring-white dark:ring-dark-150"
                       title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                       aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
                     >
@@ -1114,7 +1114,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <Phone className="h-5 w-5" />
               </button>
               {isContactsOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
+                <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
                   <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between shrink-0">
                     <div className="font-medium text-neutral-900 dark:text-white">
                       AMP contacts
@@ -1213,14 +1213,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 >
                   <Bell className="h-5 w-5" />
                   {totalUnreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
                       {Math.min(99, totalUnreadCount)}
                     </span>
                   )}
                 </button>
 
                 {isNotificationsOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="font-medium text-neutral-900 dark:text-white">
@@ -1271,7 +1271,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     reports
                                   </div>
                                   {unseenCounts[row.status] > 0 && (
-                                    <span className="min-w-[16px] h-[16px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[16px] text-center">
+                                    <span className="min-w-[16px] h-[16px] px-1 rounded-none bg-red-600 text-white text-[10px] leading-[16px] text-center">
                                       {Math.min(99, unseenCounts[row.status])}
                                     </span>
                                   )}
@@ -1464,16 +1464,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       )}
                     </div>
                     {detailStatus !== null && (
-                    <div className="p-2 border-t border-neutral-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
-                      {detailStatus === "needs_calibration" ||
+                      <div className="p-2 border-t border-neutral-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
+                        {detailStatus === "needs_calibration" ||
                         detailStatus === "equipment_out_of_cal" ? (
-                        <>
-                          <button
-                            onClick={() => navigate("/neta/field-equipment")}
-                            className="text-xs text-[#f26722] hover:underline"
-                          >
-                            View field equipment
-                          </button>
+                          <>
+                            <button
+                              onClick={() => navigate("/neta/field-equipment")}
+                              className="text-xs text-[#f26722] hover:underline"
+                            >
+                              View field equipment
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDetailStatus(null);
+                                setJobGroups([]);
+                                setNotifications([]);
+                              }}
+                              className="text-xs text-[#f26722] hover:underline"
+                            >
+                              Back to summary
+                            </button>
+                          </>
+                        ) : (
                           <button
                             onClick={() => {
                               setDetailStatus(null);
@@ -1484,20 +1496,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           >
                             Back to summary
                           </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            setDetailStatus(null);
-                            setJobGroups([]);
-                            setNotifications([]);
-                          }}
-                          className="text-xs text-[#f26722] hover:underline"
-                        >
-                          Back to summary
-                        </button>
-                      )}
-                    </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
@@ -1508,7 +1508,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               ref={profileMenuRef}
             >
               <button
-                className="rounded-full w-10 h-10 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-600 p-0 overflow-hidden flex items-center justify-center border border-neutral-300 dark:border-neutral-600"
+                className="rounded-none w-10 h-10 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-600 p-0 overflow-hidden flex items-center justify-center"
                 {...tooltipHandlers("Profile")}
                 onClick={() => {
                   const next = !isProfileMenuOpen;
@@ -1520,7 +1520,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   <img
                     src={user.user_metadata.profileImage}
                     alt="Profile"
-                    className="h-10 w-10 rounded-full object-cover"
+                    className="h-10 w-10 rounded-none object-cover"
                   />
                 ) : (
                   <UserIcon className="h-5 w-5 text-neutral-600 dark:text-white" />
@@ -1543,7 +1543,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         />
                       </div>
                     )}
-                    <div className="rounded-md bg-white dark:bg-dark-150 shadow-md ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="rounded-none bg-white dark:bg-dark-150 shadow-md ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-neutral-200 dark:border-dark-200">
                           <p className="text-sm font-medium text-neutral-900 dark:text-dark-900">
@@ -1589,7 +1589,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               Demo Mode
                             </span>
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                                 isDemoMode
                                   ? "bg-[#f26722] text-white"
                                   : "bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"
@@ -1612,7 +1612,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             {isDark ? "Light Mode" : "Dark Mode (In Testing)"}
                           </span>
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                               isDark
                                 ? "bg-[#f26722] text-white"
                                 : "bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"

@@ -600,7 +600,7 @@ export function Announcements() {
         </div>
         <button
           onClick={openCreateForm}
-          className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+          className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Announcement
@@ -609,13 +609,13 @@ export function Announcements() {
 
       {/* Filter tabs + search */}
       <div className="flex items-center gap-3">
-        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 rounded-lg p-1 w-fit">
+        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 rounded-none p-1 w-fit">
           {(["all", "published", "scheduled", "draft"] as const).map(
             (status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-1.5 text-sm font-medium rounded-none transition-colors ${
                   filterStatus === status
                     ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm"
                     : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -639,14 +639,14 @@ export function Announcements() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search…"
-            className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Announcements list */}
       {filteredAnnouncements.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-dark-150 rounded-lg shadow">
+        <div className="text-center py-12 bg-white dark:bg-dark-150 rounded-none shadow">
           <Megaphone className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
           <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
             No announcements
@@ -683,7 +683,7 @@ export function Announcements() {
                     setDocumentViewerOpen(true);
                   }
                 }}
-                className={`bg-white dark:bg-dark-150 rounded-lg shadow p-5 border-l-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-lg ${
+                className={`bg-white dark:bg-dark-150 rounded-none shadow p-5 border-l-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-lg ${
                   a.is_pinned ? "border-[#f26722]" : "border-transparent"
                 }`}
               >
@@ -697,12 +697,12 @@ export function Announcements() {
                         {a.title}
                       </h3>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(status)}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${getStatusBadge(status)}`}
                       >
                         {status}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(a.category)}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${getCategoryBadgeColor(a.category)}`}
                       >
                         {CATEGORIES.find((c) => c.value === a.category)
                           ?.label || a.category}
@@ -766,7 +766,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => togglePin(a)}
-                        className={`p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-neutral-400"}`}
+                        className={`p-1.5 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-neutral-400"}`}
                       >
                         {a.is_pinned ? (
                           <PinOff className="h-4 w-4" />
@@ -784,7 +784,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => togglePublish(a)}
-                        className={`p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_published ? "text-green-600" : "text-neutral-400"}`}
+                        className={`p-1.5 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_published ? "text-green-600" : "text-neutral-400"}`}
                       >
                         <Globe
                           className={`h-4 w-4 ${a.is_published ? "" : "opacity-50"}`}
@@ -817,7 +817,7 @@ export function Announcements() {
                             setDocumentViewerOpen(true);
                           }
                         }}
-                        className="p-1.5 rounded-md text-neutral-400 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="p-1.5 rounded-none text-neutral-400 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -829,7 +829,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => openEditForm(a)}
-                        className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="p-1.5 rounded-none text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -844,7 +844,7 @@ export function Announcements() {
                           setDeleteId(a.id);
                           setDeleteConfirmOpen(true);
                         }}
-                        className="p-1.5 rounded-md text-neutral-400 hover:text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="p-1.5 rounded-none text-neutral-400 hover:text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -860,7 +860,7 @@ export function Announcements() {
       {/* Floating tooltip */}
       {tooltip && (
         <span
-          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-none bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -879,7 +879,7 @@ export function Announcements() {
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-2xl rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+          <Dialog.Panel className="w-full max-w-2xl rounded-none bg-white dark:bg-neutral-900 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
                 {isEditing ? "Edit Announcement" : "New Announcement"}
@@ -904,7 +904,7 @@ export function Announcements() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Announcement title"
                 />
               </div>
@@ -922,7 +922,7 @@ export function Announcements() {
                       excerpt: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Short summary shown on the portal (optional)"
                 />
               </div>
@@ -941,17 +941,17 @@ export function Announcements() {
                       content: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Full announcement content..."
                 />
               </div>
 
-              <div className="border border-neutral-200 dark:border-neutral-700 rounded-md p-3">
+              <div className="border border-neutral-200 dark:border-neutral-700 rounded-none p-3">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <label className="text-sm font-medium text-neutral-700 dark:text-white">
                     Image attachments
                   </label>
-                  <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#f26722] rounded-md cursor-pointer hover:bg-[#f26722]/90">
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#f26722] rounded-none cursor-pointer hover:bg-[#f26722]/90">
                     {uploadingAttachment ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
@@ -1014,7 +1014,7 @@ export function Announcements() {
                         category: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -1037,7 +1037,7 @@ export function Announcements() {
                         published_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Leave empty to publish immediately when toggled on
@@ -1059,7 +1059,7 @@ export function Announcements() {
                         expires_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Leave empty for no expiration
@@ -1123,14 +1123,14 @@ export function Announcements() {
                           linked_document_url: "",
                         }));
                     }}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
                       showDocPicker
                         ? "bg-[#f26722]"
                         : "bg-neutral-300 dark:bg-neutral-600"
                     }`}
                   >
                     <span
-                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showDocPicker ? "translate-x-5" : "translate-x-1"}`}
+                      className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${showDocPicker ? "translate-x-5" : "translate-x-1"}`}
                     />
                   </button>
                   <label
@@ -1161,7 +1161,7 @@ export function Announcements() {
                             linked_document_url: "",
                           }));
                         }}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                        className={`px-3 py-1.5 text-sm font-medium rounded-none transition-colors ${
                           linkType === "document"
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
@@ -1179,7 +1179,7 @@ export function Announcements() {
                             linked_document_url: "",
                           }));
                         }}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                        className={`px-3 py-1.5 text-sm font-medium rounded-none transition-colors ${
                           linkType === "guide"
                             ? "bg-[#f26722] text-white"
                             : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
@@ -1198,7 +1198,7 @@ export function Announcements() {
                             Compliance &rarr; Document Acknowledgment first.
                           </p>
                         ) : (
-                          <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md p-2">
+                          <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none p-2">
                             {availableDocs.map((doc) => (
                               <button
                                 key={doc.id}
@@ -1209,7 +1209,7 @@ export function Announcements() {
                                     linked_document_url: doc.file_url || "",
                                   }))
                                 }
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors ${
+                                className={`w-full text-left px-3 py-2 rounded-none text-sm flex items-center gap-2 transition-colors ${
                                   formData.linked_document_url === doc.file_url
                                     ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
                                     : "hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
@@ -1226,7 +1226,7 @@ export function Announcements() {
                                 </div>
                                 {formData.linked_document_url ===
                                   doc.file_url && (
-                                  <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-full">
+                                  <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-none">
                                     Selected
                                   </span>
                                 )}
@@ -1252,7 +1252,7 @@ export function Announcements() {
                             Center first.
                           </p>
                         ) : (
-                          <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md p-2">
+                          <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none p-2">
                             {availableGuides.map((guide) => {
                               const guidePath = `/help-center/guide/${guide.id}`;
                               const isSelected =
@@ -1267,7 +1267,7 @@ export function Announcements() {
                                       linked_document_url: guidePath,
                                     }))
                                   }
-                                  className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors ${
+                                  className={`w-full text-left px-3 py-2 rounded-none text-sm flex items-center gap-2 transition-colors ${
                                     isSelected
                                       ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
                                       : "hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
@@ -1285,7 +1285,7 @@ export function Announcements() {
                                     )}
                                   </div>
                                   {isSelected && (
-                                    <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-full">
+                                    <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-none">
                                       Selected
                                     </span>
                                   )}
@@ -1312,18 +1312,18 @@ export function Announcements() {
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200"
+                  className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
                 >
                   {formLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-none h-4 w-4 border-b-2 border-white mr-2"></div>
                       Saving...
                     </>
                   ) : isEditing ? (
@@ -1346,7 +1346,7 @@ export function Announcements() {
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-sm rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
+          <Dialog.Panel className="w-full max-w-sm rounded-none bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
               Delete Announcement
             </Dialog.Title>
@@ -1357,13 +1357,13 @@ export function Announcements() {
             <div className="mt-5 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-200"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-none hover:bg-red-700"
               >
                 Delete
               </button>
@@ -1384,7 +1384,7 @@ export function Announcements() {
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-5xl rounded-lg bg-white dark:bg-neutral-900 shadow-xl max-h-[90vh] flex flex-col">
+          <Dialog.Panel className="w-full max-w-5xl rounded-none bg-white dark:bg-neutral-900 shadow-xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-700">
               <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                 <FileText className="h-5 w-5 text-[#f26722]" />
@@ -1421,7 +1421,7 @@ export function Announcements() {
                   setDocumentViewerUrl(null);
                   setDocumentViewerTitle("");
                 }}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-dark-200"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-200"
               >
                 Close
               </button>

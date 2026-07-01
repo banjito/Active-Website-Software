@@ -591,7 +591,7 @@ export const VersionTracking: React.FC<VersionTrackingProps> = ({
                     return (
                       <div
                         key={cert.id}
-                        className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors ${
+                        className={`flex items-center justify-between p-4 border rounded-none hover:bg-muted/50 transition-colors ${
                           statusInfo.isExpired
                             ? "border-red-500 bg-red-50 dark:bg-red-950"
                             : statusInfo.isExpiringSoon

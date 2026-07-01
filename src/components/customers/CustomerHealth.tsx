@@ -15,11 +15,11 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
     <div className="p-6 relative z-10">
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4 flex flex-col items-center">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4 flex flex-col items-center">
           <div className="text-xs text-neutral-500 dark:text-white mb-2">
             Overall Health
           </div>
-          <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-2">
+          <div className="w-24 h-24 rounded-none bg-green-500 flex items-center justify-center mb-2">
             <span className="text-white text-3xl font-bold">85</span>
           </div>
           <div className="font-medium text-green-600 dark:text-green-400">
@@ -27,7 +27,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Engagement
           </div>
@@ -39,15 +39,15 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
               ▲ 5%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
             <div
-              className="h-full bg-green-500 rounded-full"
+              className="h-full bg-green-500 rounded-none"
               style={{ width: "85%" }}
             ></div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Satisfaction
           </div>
@@ -59,15 +59,15 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
               ▲ 3%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
             <div
-              className="h-full bg-green-500 rounded-full"
+              className="h-full bg-green-500 rounded-none"
               style={{ width: "92%" }}
             ></div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="text-xs text-neutral-500 dark:text-white">
             Response Time
           </div>
@@ -79,9 +79,9 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
               ▼ 2%
             </div>
           </div>
-          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+          <div className="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
             <div
-              className="h-full bg-yellow-500 rounded-full"
+              className="h-full bg-yellow-500 rounded-none"
               style={{ width: "78%" }}
             ></div>
           </div>
@@ -93,40 +93,40 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
         <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Health Trend
         </h3>
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="h-64 flex items-end justify-between px-2">
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-32 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-32 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Jan
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-24 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-24 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Feb
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-40 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-40 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Mar
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-36 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-36 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Apr
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-44 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-44 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 May
               </div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-48 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-48 w-4 bg-[#f26722] rounded-none"></div>
               <div className="text-xs text-neutral-500 dark:text-white mt-2">
                 Jun
               </div>
@@ -140,7 +140,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
         <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
           Recent Surveys
         </h3>
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
           <div className="mb-6">
             <div className="flex justify-between mb-2">
               <div>
@@ -159,9 +159,9 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
               Completed: Mar 15, 2023
             </div>
             <div className="text-sm mb-1">Satisfaction</div>
-            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
               <div
-                className="h-full bg-green-500 rounded-full"
+                className="h-full bg-green-500 rounded-none"
                 style={{ width: "90%" }}
               ></div>
             </div>
@@ -185,9 +185,9 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
               Completed: Feb 10, 2023
             </div>
             <div className="text-sm mb-1">Satisfaction</div>
-            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-full">
+            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-600 rounded-none">
               <div
-                className="h-full bg-yellow-500 rounded-full"
+                className="h-full bg-yellow-500 rounded-none"
                 style={{ width: "70%" }}
               ></div>
             </div>
@@ -208,7 +208,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Risk Factors
           </h3>
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
             <div className="mb-4 pb-4 border-b border-neutral-200 dark:border-neutral-600">
               <div className="flex items-start">
                 <div className="flex-shrink-0 w-5 h-5 text-yellow-400">
@@ -321,9 +321,9 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-4">
             Activity Metrics
           </h3>
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow p-4">
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
                 <div className="text-sm text-neutral-500 dark:text-white">
                   Support Tickets
                 </div>
@@ -354,7 +354,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                 </div>
               </div>
 
-              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
                 <div className="text-sm text-neutral-500 dark:text-white">
                   Active Users
                 </div>
@@ -385,7 +385,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                 </div>
               </div>
 
-              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
                 <div className="text-sm text-neutral-500 dark:text-white">
                   Feature Usage
                 </div>
@@ -416,7 +416,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
                 </div>
               </div>
 
-              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-lg">
+              <div className="bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
                 <div className="text-sm text-neutral-500 dark:text-white">
                   Login Frequency
                 </div>
@@ -453,7 +453,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({
 
       {/* Generate Report Button */}
       <div className="mt-8 flex justify-end">
-        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+        <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
           Generate Health Report
         </button>
       </div>

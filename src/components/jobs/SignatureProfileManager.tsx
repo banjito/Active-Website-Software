@@ -232,7 +232,7 @@ export const SignatureProfileManager: React.FC<
               {profiles.map((profile) => (
                 <div
                   key={profile.id}
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
                 >
                   {editingId === profile.id ? (
                     <div className="space-y-3">
@@ -382,7 +382,7 @@ export const SignatureProfileManager: React.FC<
               ))}
 
               {isAdding && (
-                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 bg-neutral-50 dark:bg-dark-200">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 bg-neutral-50 dark:bg-dark-200">
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>

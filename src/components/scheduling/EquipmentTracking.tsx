@@ -363,7 +363,7 @@ export function EquipmentTracking({
     if (loading) {
       return (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
+          <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-neutral-900 mx-auto"></div>
           <div className="flex justify-center py-6">
             <LoadingSpinner size="md" />
           </div>
@@ -407,7 +407,7 @@ export function EquipmentTracking({
                 >
                   {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                 </Badge>
-                <div className="p-2 rounded-full bg-neutral-100">
+                <div className="p-2 rounded-none bg-neutral-100">
                   {getCategoryIcon(item.category)}
                 </div>
               </div>
@@ -577,7 +577,7 @@ export function EquipmentTracking({
             </div>
 
             {isVehicle && (
-              <div className="space-y-4 border p-4 rounded-md bg-neutral-50">
+              <div className="space-y-4 border p-4 rounded-none bg-neutral-50">
                 <h3 className="font-medium">Vehicle Details</h3>
 
                 <div className="grid grid-cols-2 gap-4">

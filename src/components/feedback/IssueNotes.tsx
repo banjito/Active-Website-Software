@@ -371,7 +371,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
 
   return (
     <>
-      <div className="flex flex-col min-h-[280px] max-h-[400px] bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="flex flex-col min-h-[280px] max-h-[400px] bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageCircle className="h-4 w-4 text-[#f26722]" />
@@ -408,7 +408,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-8 w-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] ${
+                    className={`flex-shrink-0 h-8 w-8 rounded-none overflow-hidden flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] ${
                       !profileImageUrl &&
                       (isCurrentUser
                         ? "bg-[#f26722] text-white"
@@ -445,7 +445,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                       </span>
                     </div>
                     <div
-                      className={`rounded-lg px-3 py-2 text-sm ${isCurrentUser ? "bg-[#f26722] text-white" : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"}`}
+                      className={`rounded-none px-3 py-2 text-sm ${isCurrentUser ? "bg-[#f26722] text-white" : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"}`}
                     >
                       {isEditing ? (
                         <div className="space-y-2">
@@ -596,7 +596,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                 title="Send"
               >
                 {submitting ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-none animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
                 )}

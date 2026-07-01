@@ -422,7 +422,7 @@ const PermissionManagement: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* User selection */}
-          <div className="md:col-span-1 border rounded-lg p-4">
+          <div className="md:col-span-1 border rounded-none p-4">
             <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
               <Users className="h-4 w-4" /> Users
             </h3>
@@ -438,7 +438,7 @@ const PermissionManagement: React.FC = () => {
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-neutral-400" />
             </div>
 
-            <div className="border rounded-lg overflow-y-auto max-h-[500px]">
+            <div className="border rounded-none overflow-y-auto max-h-[500px]">
               {filteredUsers.length === 0 ? (
                 <div className="p-4 text-center text-neutral-500">
                   No users found
@@ -474,7 +474,7 @@ const PermissionManagement: React.FC = () => {
           </div>
 
           {/* Permissions display */}
-          <div className="md:col-span-2 border rounded-lg p-4">
+          <div className="md:col-span-2 border rounded-none p-4">
             {!selectedUser ? (
               <div className="text-center py-20 text-neutral-500">
                 <Shield className="h-16 w-16 mx-auto mb-4 text-neutral-300" />
@@ -506,7 +506,7 @@ const PermissionManagement: React.FC = () => {
 
                 {/* Add permission form */}
                 {isAdding && (
-                  <div className="border rounded-lg p-4 mb-4 bg-neutral-50 dark:bg-dark-150">
+                  <div className="border rounded-none p-4 mb-4 bg-neutral-50 dark:bg-dark-150">
                     <h4 className="font-medium mb-3">Grant New Permission</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -655,7 +655,7 @@ const PermissionManagement: React.FC = () => {
                           ([resource, permissions]) => (
                             <div
                               key={resource}
-                              className="border rounded-lg overflow-hidden"
+                              className="border rounded-none overflow-hidden"
                             >
                               <div className="bg-neutral-50 dark:bg-dark-150 px-4 py-2 font-medium">
                                 {resource.charAt(0).toUpperCase() +
@@ -705,7 +705,7 @@ const PermissionManagement: React.FC = () => {
                         </p>
                       </div>
                     ) : (
-                      <div className="border rounded-lg overflow-hidden">
+                      <div className="border rounded-none overflow-hidden">
                         <table className="min-w-full divide-y">
                           <thead>
                             <tr className="bg-neutral-50 dark:bg-dark-150">

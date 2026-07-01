@@ -336,7 +336,7 @@ function formatDivisionName(division: string): string {
 }
 
 const OPPORTUNITY_MODAL_PANEL_CLASS =
-  "relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-400 [&::-webkit-scrollbar-thumb]:hover:bg-neutral-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600";
+  "relative bg-white dark:bg-dark-150 rounded-none max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-neutral-400 [&::-webkit-scrollbar-thumb]:hover:bg-neutral-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600";
 
 export default function OpportunityList() {
   const { user, loading: authLoading, softRefresh } = useAuth();
@@ -559,7 +559,7 @@ export default function OpportunityList() {
               onClick={() =>
                 toggleFilterValue(selectedValues, setValues, option.value)
               }
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2 py-1 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "text-[#f26722]"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -602,7 +602,7 @@ export default function OpportunityList() {
                 setValue(option.value);
                 setPage(1);
               }}
-              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
@@ -2464,7 +2464,7 @@ export default function OpportunityList() {
             setLoading(true);
             fetchOpportunities();
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md flex items-center gap-2"
+          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
           Try Again
@@ -2489,7 +2489,7 @@ export default function OpportunityList() {
                 <button
                   type="button"
                   onClick={handleMoveSelectedToProjection}
-                  className="rounded-md bg-[#f26722] px-3 py-1.5 font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="rounded-none bg-[#f26722] px-3 py-1.5 font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 >
                   Move to Projection
                 </button>
@@ -2497,7 +2497,7 @@ export default function OpportunityList() {
                   type="button"
                   disabled={selectedForMerge.size < 2}
                   onClick={handleMergeSelected}
-                  className={`rounded-md px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`rounded-none px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                     selectedForMerge.size < 2
                       ? "bg-neutral-200 text-neutral-500 cursor-not-allowed dark:bg-dark-200 dark:text-dark-400"
                       : "bg-green-600 text-white hover:bg-green-700"
@@ -2516,7 +2516,7 @@ export default function OpportunityList() {
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               to="/sales-dashboard/opportunities/calendar"
-              className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
+              className="inline-flex items-center gap-2 rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
             >
               <Calendar className="h-4 w-4 text-[#f26722]" />
               Calendar
@@ -2527,7 +2527,7 @@ export default function OpportunityList() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by quote #, title, description, sales person, or customer"
-                className={`w-72 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                className={`w-72 rounded-none border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                   searchTerm
                     ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
                     : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150"
@@ -2545,7 +2545,7 @@ export default function OpportunityList() {
                     setSearchTerm("");
                     setDebouncedSearch("");
                   }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-0.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-0.5 rounded-none text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 transition-colors"
                   aria-label="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -2556,7 +2556,7 @@ export default function OpportunityList() {
               <button
                 type="button"
                 onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                   activeFilterCount > 0
                     ? "text-[#f26722]"
                     : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
@@ -2568,7 +2568,7 @@ export default function OpportunityList() {
                 <Filter className="h-5 w-5" />
               </button>
               {isFilterMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                   <div>
                     <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Division
@@ -2608,7 +2608,7 @@ export default function OpportunityList() {
                         setStatusFilters([]);
                         setPage(1);
                       }}
-                      className="mt-3 w-full rounded-md border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                     >
                       Clear filters
                     </button>
@@ -2620,7 +2620,7 @@ export default function OpportunityList() {
               <button
                 type="button"
                 onClick={() => setIsSortMenuOpen((prev) => !prev)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
                 aria-expanded={isSortMenuOpen}
                 aria-label="Sort opportunities"
                 title="Sort"
@@ -2628,7 +2628,7 @@ export default function OpportunityList() {
                 <ArrowDownWideNarrow className="h-5 w-5" />
               </button>
               {isSortMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                   <div>
                     <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Sort by
@@ -2657,14 +2657,14 @@ export default function OpportunityList() {
               <button
                 type="button"
                 onClick={() => setIsCreateMenuOpen((prev) => !prev)}
-                className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Create
                 <ChevronDown className="h-4 w-4 ml-1.5 opacity-80" />
               </button>
               {isCreateMenuOpen && (
-                <div className="absolute right-0 z-30 mt-2 w-64 rounded-md border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-lg py-1">
+                <div className="absolute right-0 z-30 mt-2 w-64 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 shadow-lg py-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -2859,7 +2859,7 @@ export default function OpportunityList() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-dark-200 overflow-hidden">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-dark-200 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-2 border-b border-neutral-100 dark:border-dark-200">
             <div
               ref={topScrollbarRef}
@@ -3044,7 +3044,7 @@ export default function OpportunityList() {
                               e.target.value,
                             )
                           }
-                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 dark:bg-transparent ${getStatusColor(
+                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 dark:bg-transparent ${getStatusColor(
                             opportunity.status,
                           )}`}
                           onClick={(e) => e.stopPropagation()}
@@ -3083,7 +3083,7 @@ export default function OpportunityList() {
                             )
                           }
                           disabled={!(opportunity as any).latest_estimate_id}
-                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 disabled:opacity-70 disabled:cursor-not-allowed dark:bg-transparent ${getEstimateApprovalColor(
+                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 disabled:opacity-70 disabled:cursor-not-allowed dark:bg-transparent ${getEstimateApprovalColor(
                             (opportunity as any).estimate_approval_status,
                           )}`}
                           onClick={(e) => e.stopPropagation()}
@@ -3163,7 +3163,7 @@ export default function OpportunityList() {
                               e.target.value,
                             )
                           }
-                          className={`min-w-[160px] px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 dark:bg-transparent ${getOpportunityTypeColor(
+                          className={`min-w-[160px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 dark:bg-transparent ${getOpportunityTypeColor(
                             getOpportunityTypeValue(opportunity),
                           )}`}
                           onClick={(e) => e.stopPropagation()}
@@ -3259,7 +3259,7 @@ export default function OpportunityList() {
                                 projectionPopupPos && (
                                   <div
                                     ref={projectionMenuRef}
-                                    className="fixed z-50 w-48 rounded-lg border border-neutral-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:ring-white/10"
+                                    className="fixed z-50 w-48 rounded-none border border-neutral-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:ring-white/10"
                                     style={{
                                       left: projectionPopupPos.x - 200,
                                       top: projectionPopupPos.y - 4,
@@ -3377,7 +3377,7 @@ export default function OpportunityList() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {showNewCustomer && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Customer
@@ -3461,7 +3461,7 @@ export default function OpportunityList() {
               )}
 
               {showNewContact && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Contact
@@ -3545,7 +3545,7 @@ export default function OpportunityList() {
                   name="sales_person"
                   value={user?.email || ""}
                   disabled
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-50 dark:bg-dark-150 focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:text-white cursor-not-allowed"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-50 dark:bg-dark-150 focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:text-white cursor-not-allowed"
                 />
               </div>
 
@@ -3557,7 +3557,7 @@ export default function OpportunityList() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option
@@ -3626,7 +3626,7 @@ export default function OpportunityList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {formData.customer_id && (
                   <div className="text-xs text-neutral-600 dark:text-white mb-1">
@@ -3647,7 +3647,7 @@ export default function OpportunityList() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-none">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = formData.customer_id === customer.id;
                     return (
@@ -3706,7 +3706,7 @@ export default function OpportunityList() {
                   name="contact_id"
                   value={formData.contact_id}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!formData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -3743,7 +3743,7 @@ export default function OpportunityList() {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -3803,7 +3803,7 @@ export default function OpportunityList() {
                   }}
                   ref={descriptionRef}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -3818,7 +3818,7 @@ export default function OpportunityList() {
                     name="expected_value"
                     value={formData.expected_value}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     min="0"
                   />
                 </div>
@@ -3832,7 +3832,7 @@ export default function OpportunityList() {
                     name="probability"
                     value={formData.probability}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     min="0"
                     max="100"
                     required
@@ -3849,7 +3849,7 @@ export default function OpportunityList() {
                   name="proposal_due_date"
                   value={formData.proposal_due_date}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
 
@@ -3863,7 +3863,7 @@ export default function OpportunityList() {
                     name="estimated_start_date"
                     value={formData.estimated_start_date}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -3877,7 +3877,7 @@ export default function OpportunityList() {
                     value={formData.estimated_end_date}
                     onChange={handleChange}
                     min={formData.estimated_start_date || undefined}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   />
                 </div>
               </div>
@@ -3890,7 +3890,7 @@ export default function OpportunityList() {
                   name="amp_division"
                   value={formData.amp_division}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -3943,7 +3943,7 @@ export default function OpportunityList() {
                   name="documents_stage"
                   value={formData.documents_stage || ""}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
                     Select Documents Stage
@@ -4021,7 +4021,7 @@ export default function OpportunityList() {
                     name="reviewed_by"
                     value={formData.reviewed_by}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     placeholder="Enter reviewer name"
                   />
                 </div>
@@ -4036,7 +4036,7 @@ export default function OpportunityList() {
                     value={formData.prepared_by}
                     onChange={handleChange}
                     readOnly
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
                     placeholder="Auto-populated from quote creators"
                   />
                 </div>
@@ -4045,14 +4045,14 @@ export default function OpportunityList() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => setIsOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-none shadow-sm hover:bg-[#f26722]/90 focus:outline-none"
                 >
                   Create
                 </button>
@@ -4106,7 +4106,7 @@ export default function OpportunityList() {
 
             <form onSubmit={handleTMSubmit} className="space-y-4">
               {showNewCustomer && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Customer
@@ -4193,7 +4193,7 @@ export default function OpportunityList() {
                 </div>
               )}
               {showNewContact && (
-                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                <div className="border rounded-none p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-medium text-neutral-800 dark:text-white">
                       New Contact
@@ -4277,7 +4277,7 @@ export default function OpportunityList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
                   <div className="text-xs text-neutral-600 dark:text-white mb-1">
@@ -4298,7 +4298,7 @@ export default function OpportunityList() {
                     </button>
                   </div>
                 )}
-                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-md">
+                <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-600 rounded-none">
                   {filteredCustomers.slice(0, 20).map((customer) => {
                     const isSelected = TMFormData.customer_id === customer.id;
                     return (
@@ -4358,7 +4358,7 @@ export default function OpportunityList() {
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -4395,7 +4395,7 @@ export default function OpportunityList() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -4408,7 +4408,7 @@ export default function OpportunityList() {
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -4462,7 +4462,7 @@ export default function OpportunityList() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>
@@ -4470,7 +4470,7 @@ export default function OpportunityList() {
               <div className="mt-5 flex justify-end">
                 <button
                   type="button"
-                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
+                  className="mr-3 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none"
                   onClick={() => setShowTMModal(false)}
                 >
                   Cancel
@@ -4478,7 +4478,7 @@ export default function OpportunityList() {
                 <button
                   type="submit"
                   disabled={isCreatingTM}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-none shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                 >
                   {isCreatingTM ? "Creating..." : "Create T&M or Emergency Job"}
                 </button>

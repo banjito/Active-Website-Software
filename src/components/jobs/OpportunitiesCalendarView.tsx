@@ -366,7 +366,7 @@ export function OpportunitiesCalendarView() {
             title="No estimate has been started"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-not-started)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-not-started)]"
               aria-hidden
             />{" "}
             Not Started
@@ -376,7 +376,7 @@ export function OpportunitiesCalendarView() {
             title="Estimate is being worked on"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-in-progress)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-in-progress)]"
               aria-hidden
             />{" "}
             In Progress
@@ -386,7 +386,7 @@ export function OpportunitiesCalendarView() {
             title="Estimate is ready for internal review"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-ready-for-review)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-ready-for-review)]"
               aria-hidden
             />{" "}
             Ready for Review
@@ -396,7 +396,7 @@ export function OpportunitiesCalendarView() {
             title="Estimate has been approved to send to the customer"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-approved-to-send)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-approved-to-send)]"
               aria-hidden
             />{" "}
             Approved to Send
@@ -406,7 +406,7 @@ export function OpportunitiesCalendarView() {
             title="Estimate has been sent to the customer"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-sent)]"
               aria-hidden
             />{" "}
             Sent
@@ -416,7 +416,7 @@ export function OpportunitiesCalendarView() {
             title="Not submitting a quote for this opportunity"
           >
             <span
-              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-gray)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-gray)]"
               aria-hidden
             />{" "}
             No Quote
@@ -425,12 +425,12 @@ export function OpportunitiesCalendarView() {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+        <div className="rounded-none bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
           {error}
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-100 rounded-xl border border-neutral-200/80 dark:border-dark-300 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-dark-100 rounded-none border border-neutral-200/80 dark:border-dark-300 shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-24 text-neutral-500 dark:text-dark-400 text-sm">
             <LoadingSpinner size="md" />
@@ -441,7 +441,7 @@ export function OpportunitiesCalendarView() {
               <button
                 type="button"
                 onClick={goPrev}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-none text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
                 aria-label={
                   currentView === "dayGridWeek"
                     ? "Previous week"
@@ -456,7 +456,7 @@ export function OpportunitiesCalendarView() {
               <button
                 type="button"
                 onClick={goNext}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-none text-neutral-600 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300 hover:text-neutral-900 dark:hover:text-dark-900 transition-colors"
                 aria-label={
                   currentView === "dayGridWeek" ? "Next week" : "Next month"
                 }
@@ -466,7 +466,7 @@ export function OpportunitiesCalendarView() {
             </div>
             <div className="px-4 pb-4 pt-1">
               <div className="flex items-center justify-center gap-2 mb-3">
-                <div className="inline-flex rounded-lg bg-neutral-100 dark:bg-dark-200 p-1">
+                <div className="inline-flex rounded-none bg-neutral-100 dark:bg-dark-200 p-1">
                   {[
                     { label: "Month", view: "dayGridMonth" as CalendarView },
                     { label: "Week", view: "dayGridWeek" as CalendarView },
@@ -475,7 +475,7 @@ export function OpportunitiesCalendarView() {
                       key={item.view}
                       type="button"
                       onClick={() => changeView(item.view)}
-                      className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+                      className={`text-xs font-medium px-3 py-1.5 rounded-none transition-colors ${
                         currentView === item.view
                           ? "bg-white dark:bg-dark-100 text-neutral-900 dark:text-dark-900 shadow-sm"
                           : "text-neutral-600 dark:text-dark-400 hover:text-neutral-900 dark:hover:text-dark-900"
@@ -488,7 +488,7 @@ export function OpportunitiesCalendarView() {
                 <button
                   type="button"
                   onClick={goToday}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`text-xs font-medium px-3 py-1.5 rounded-none transition-colors ${
                     isCurrentPeriod
                       ? "bg-neutral-200 dark:bg-dark-300 text-neutral-700 dark:text-dark-200"
                       : "text-neutral-600 dark:text-dark-400 hover:bg-neutral-100 dark:hover:bg-dark-200"

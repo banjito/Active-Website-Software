@@ -241,7 +241,7 @@ export const SignOnboardingForm: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {attachmentUrl && (
-            <div className="border rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+            <div className="border rounded-none overflow-hidden bg-neutral-100 dark:bg-neutral-900">
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 px-3 py-2 border-b border-neutral-200 dark:border-neutral-700">
                 Attached document
               </p>
@@ -254,7 +254,7 @@ export const SignOnboardingForm: React.FC = () => {
             </div>
           )}
           {hasFormContent && (
-            <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4 max-h-[400px] overflow-y-auto">
+            <div className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4 max-h-[400px] overflow-y-auto">
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Form content
               </p>
@@ -265,7 +265,7 @@ export const SignOnboardingForm: React.FC = () => {
             </div>
           )}
           {hasFormFields && (
-            <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4">
+            <div className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-4">
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Form fields
               </p>
@@ -298,7 +298,7 @@ export const SignOnboardingForm: React.FC = () => {
                 <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Your signature
                 </label>
-                <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
+                <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
                   <canvas
                     ref={canvasRef}
                     width={500}

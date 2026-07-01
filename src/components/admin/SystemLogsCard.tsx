@@ -281,7 +281,7 @@ export const SystemLogsCard: React.FC = () => {
         ) : (
           <div className="space-y-5">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+              <div className="rounded-none border border-neutral-200 p-4 dark:border-dark-300">
                 <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Events
                 </p>
@@ -289,7 +289,7 @@ export const SystemLogsCard: React.FC = () => {
                   {logs.length}
                 </p>
               </div>
-              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+              <div className="rounded-none border border-neutral-200 p-4 dark:border-dark-300">
                 <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Unread
                 </p>
@@ -297,7 +297,7 @@ export const SystemLogsCard: React.FC = () => {
                   {unreadCount}
                 </p>
               </div>
-              <div className="rounded-md border border-neutral-200 p-4 dark:border-dark-300">
+              <div className="rounded-none border border-neutral-200 p-4 dark:border-dark-300">
                 <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-300">
                   Sources
                 </p>
@@ -313,7 +313,7 @@ export const SystemLogsCard: React.FC = () => {
             </div>
 
             {sourceErrors.length > 0 && (
-              <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+              <div className="rounded-none border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
                 <p className="font-medium">Some log sources need setup.</p>
                 <div className="mt-2 space-y-1">
                   {sourceErrors.map((sourceError) => (
@@ -332,7 +332,7 @@ export const SystemLogsCard: React.FC = () => {
                     key={option.value}
                     type="button"
                     onClick={() => setActiveFilter(option.value)}
-                    className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                    className={`rounded-none border px-3 py-2 text-sm font-medium ${
                       activeFilter === option.value
                         ? "border-orange-300 bg-orange-50 text-orange-700 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300"
                         : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-dark-300 dark:bg-dark-200 dark:text-neutral-200 dark:hover:bg-dark-300"
@@ -343,7 +343,7 @@ export const SystemLogsCard: React.FC = () => {
                 ))}
               </div>
 
-              <label className="flex min-w-0 items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 dark:border-dark-300">
+              <label className="flex min-w-0 items-center gap-2 rounded-none border border-neutral-200 px-3 py-2 dark:border-dark-300">
                 <Search className="h-4 w-4 text-neutral-400" />
                 <input
                   value={searchQuery}
@@ -355,14 +355,14 @@ export const SystemLogsCard: React.FC = () => {
             </div>
 
             {filteredLogs.length > 0 ? (
-              <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-dark-300">
+              <div className="overflow-hidden rounded-none border border-neutral-200 dark:border-dark-300">
                 {filteredLogs.map((log) => (
                   <div
                     key={log.id}
                     className="flex flex-col gap-3 border-b border-neutral-100 p-4 last:border-0 dark:border-dark-300 md:flex-row md:items-start md:justify-between"
                   >
                     <div className="flex min-w-0 gap-3">
-                      <div className="mt-1 rounded-md bg-neutral-100 p-2 dark:bg-dark-300">
+                      <div className="mt-1 rounded-none bg-neutral-100 p-2 dark:bg-dark-300">
                         {getIcon(log.kind)}
                       </div>
                       <div className="min-w-0">
@@ -371,7 +371,7 @@ export const SystemLogsCard: React.FC = () => {
                             {log.title}
                           </p>
                           <span
-                            className={`rounded-full border px-2 py-0.5 text-xs font-medium ${getBadgeClass(log.kind)}`}
+                            className={`rounded-none border px-2 py-0.5 text-xs font-medium ${getBadgeClass(log.kind)}`}
                           >
                             {log.badge}
                           </span>
@@ -394,7 +394,7 @@ export const SystemLogsCard: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-neutral-300 p-8 text-center dark:border-dark-300">
+              <div className="flex flex-col items-center justify-center rounded-none border border-dashed border-neutral-300 p-8 text-center dark:border-dark-300">
                 <Filter className="h-8 w-8 text-neutral-400" />
                 <p className="mt-2 font-medium text-neutral-900 dark:text-white">
                   No logs found

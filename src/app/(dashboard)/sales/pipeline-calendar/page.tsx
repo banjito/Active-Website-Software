@@ -251,7 +251,7 @@ function sortJobs(
 function StatusIcon({ status }: { status: PipelineStatus }) {
   if (status === "confirmed") return <Check className="h-3.5 w-3.5" />;
   if (status === "dropped") return <X className="h-3.5 w-3.5" />;
-  return <span className="h-2 w-2 rounded-full bg-current" />;
+  return <span className="h-2 w-2 rounded-none bg-current" />;
 }
 
 function getStatusBadgeClasses(status: PipelineStatus): string {
@@ -268,7 +268,7 @@ function StatusBadge({ status }: { status: PipelineStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+        "inline-flex items-center gap-1 rounded-none px-2 py-0.5 text-xs font-semibold",
         getStatusBadgeClasses(status),
       )}
     >
@@ -660,7 +660,7 @@ export default function PipelineCalendarPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
+        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
           <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
             Pipeline
           </div>
@@ -668,7 +668,7 @@ export default function PipelineCalendarPage() {
             {formatMillions(totals.awarded)} / {formatMillions(totals.active)}
           </div>
         </div>
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
+        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
           <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
             Awarded
           </div>
@@ -676,7 +676,7 @@ export default function PipelineCalendarPage() {
             {formatMillions(totals.awarded)}
           </div>
         </div>
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
+        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
           <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
             Expected
           </div>
@@ -684,7 +684,7 @@ export default function PipelineCalendarPage() {
             {formatMillions(totals.expected)}
           </div>
         </div>
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
+        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
           <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
             Dropped
           </div>
@@ -695,21 +695,21 @@ export default function PipelineCalendarPage() {
       </div>
 
       {storageError && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+        <div className="rounded-none border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
           {storageError}
         </div>
       )}
 
-      <section className="rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150">
+      <section className="rounded-none border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150">
         <div className="flex flex-col gap-4 border-b border-neutral-200 p-4 dark:border-neutral-800">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
                 <button
                   type="button"
                   onClick={() => setViewMode("calendar")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "inline-flex h-9 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     viewMode === "calendar" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -721,7 +721,7 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "inline-flex h-9 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     viewMode === "list" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -731,12 +731,12 @@ export default function PipelineCalendarPage() {
                 </button>
               </div>
 
-              <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
                 <button
                   type="button"
                   onClick={() => setRangeMode("month")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     rangeMode === "month" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -747,7 +747,7 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setRangeMode("quarter")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     rangeMode === "quarter" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -758,7 +758,7 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setRangeMode("year")}
                   className={cn(
-                    "h-9 rounded-md px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     rangeMode === "year" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -767,12 +767,12 @@ export default function PipelineCalendarPage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="flex items-center gap-1 rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
                 <button
                   type="button"
                   aria-label="Previous range"
                   onClick={() => moveRange(-1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -783,7 +783,7 @@ export default function PipelineCalendarPage() {
                   type="button"
                   aria-label="Next range"
                   onClick={() => moveRange(1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -802,7 +802,7 @@ export default function PipelineCalendarPage() {
                     }))
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-semibold",
+                    "inline-flex h-9 items-center gap-2 rounded-none border px-3 text-sm font-semibold",
                     statusFilter[status]
                       ? cn("border-transparent", getStatusBadgeClasses(status))
                       : "border-neutral-200 bg-neutral-50 text-neutral-400 opacity-70 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500",
@@ -824,14 +824,14 @@ export default function PipelineCalendarPage() {
                     }))
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
+                    "inline-flex h-9 items-center gap-2 rounded-none border px-3 text-sm font-medium",
                     regionFilter[region]
                       ? "border-neutral-300 bg-white text-neutral-950 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-50"
                       : "border-neutral-200 bg-neutral-50 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500",
                   )}
                 >
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
+                    className="h-2.5 w-2.5 rounded-none"
                     style={{ backgroundColor: regionPalette[region].bg }}
                   />
                   {region}
@@ -849,7 +849,7 @@ export default function PipelineCalendarPage() {
             <button
               type="button"
               onClick={handleRemoveSelectedFromProjection}
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
+              className="inline-flex h-9 items-center gap-2 rounded-none border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
             >
               <Trash2 className="h-4 w-4" />
               Remove from Pipeline
@@ -862,7 +862,7 @@ export default function PipelineCalendarPage() {
             <div className="min-w-0 overflow-x-auto">
               <div
                 className={cn(
-                  "rounded-lg border border-neutral-200 dark:border-neutral-800",
+                  "rounded-none border border-neutral-200 dark:border-neutral-800",
                   rangeMode === "year" ? "min-w-[1320px]" : "min-w-[900px]",
                 )}
               >
@@ -957,7 +957,7 @@ export default function PipelineCalendarPage() {
                                 })
                               }
                               className={cn(
-                                "absolute top-2 z-10 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
+                                "absolute top-2 z-10 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-none px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
                                 isSelected &&
                                   "z-30 ring-2 ring-neutral-950 dark:ring-white",
                                 job.status === "dropped" &&
@@ -972,7 +972,7 @@ export default function PipelineCalendarPage() {
                               </span>
                               {!job.endDate && (
                                 <span
-                                  className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-md"
+                                  className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-none"
                                   style={{
                                     backgroundImage:
                                       "repeating-linear-gradient(135deg, rgba(255,255,255,.72) 0 4px, rgba(255,255,255,.08) 4px 8px)",
@@ -1093,7 +1093,7 @@ export default function PipelineCalendarPage() {
                     <td className="px-3 py-3">
                       <span className="inline-flex items-center gap-2">
                         <span
-                          className="h-2.5 w-2.5 rounded-full"
+                          className="h-2.5 w-2.5 rounded-none"
                           style={{
                             backgroundColor: regionPalette[job.region].bg,
                           }}
@@ -1129,7 +1129,7 @@ export default function PipelineCalendarPage() {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed z-[1000] w-72 rounded-lg border border-neutral-200 bg-white p-3 text-sm text-neutral-900 shadow-xl ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="fixed z-[1000] w-72 rounded-none border border-neutral-200 bg-white p-3 text-sm text-neutral-900 shadow-xl ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             style={{
               top: popoverPosition.top,
               left: popoverPosition.left,
@@ -1155,7 +1155,7 @@ export default function PipelineCalendarPage() {
                 type="button"
                 aria-label="Close job details"
                 onClick={closeJobPopover}
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-none text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1184,7 +1184,7 @@ export default function PipelineCalendarPage() {
                 </div>
                 <div className="mt-0.5 flex items-center gap-1.5 font-semibold">
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
+                    className="h-2.5 w-2.5 rounded-none"
                     style={{
                       backgroundColor: regionPalette[selectedJob.region].bg,
                     }}

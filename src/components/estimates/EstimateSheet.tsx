@@ -6604,7 +6604,7 @@ export default function EstimateSheet({
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
+          <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
             <div className="absolute top-0 right-3 pt-4 pr-4 flex items-center gap-3">
               {isViewMode &&
               quotes.length === 0 &&
@@ -6641,7 +6641,7 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
                         <Trash className="h-6 w-6" />
                       </Button>
@@ -6672,7 +6672,7 @@ export default function EstimateSheet({
                   <button
                     onClick={saveQuote}
                     disabled={isSaving}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       justSaved
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                         : "bg-[#f26722] hover:bg-[#f26722]/90 focus:ring-[#f26722]"
@@ -6704,7 +6704,7 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
                         <Trash className="h-6 w-6" />
                       </Button>
@@ -6819,7 +6819,7 @@ export default function EstimateSheet({
                             key={quote.id}
                             className={`flex flex-col items-center ${
                               dragOverTabIndex === index
-                                ? "ring-2 ring-[#f26722] ring-offset-2 rounded-t-lg"
+                                ? "ring-2 ring-[#f26722] ring-offset-2 rounded-none"
                                 : ""
                             }`}
                             onDragOver={(e) => {
@@ -6846,7 +6846,7 @@ export default function EstimateSheet({
                             {/* Tab itself */}
                             <Tab
                               className={({ selected }) =>
-                                `px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none transition-all ${
+                                `px-4 py-2 text-sm font-medium rounded-none focus:outline-none transition-all ${
                                   selected
                                     ? "bg-[#f26722] text-white"
                                     : "bg-neutral-100 dark:bg-dark-150 text-neutral-500 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300"
@@ -8748,7 +8748,7 @@ export default function EstimateSheet({
                                     {tt.groups.map((g: any, idx: number) => (
                                       <div
                                         key={idx}
-                                        className="border border-neutral-200 dark:border-dark-200 rounded-md p-3 mb-2"
+                                        className="border border-neutral-200 dark:border-dark-200 rounded-none p-3 mb-2"
                                       >
                                         <div className="flex items-center justify-between mb-2">
                                           <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
@@ -8825,7 +8825,7 @@ export default function EstimateSheet({
                                     <button
                                       type="button"
                                       onClick={addTravelGroup}
-                                      className="w-full flex items-center justify-center gap-2 text-sm text-[#185FA5] dark:text-blue-300 border border-blue-200 dark:border-blue-900 rounded-md py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                                      className="w-full flex items-center justify-center gap-2 text-sm text-[#185FA5] dark:text-blue-300 border border-blue-200 dark:border-blue-900 rounded-none py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                                     >
                                       + Add trip group
                                     </button>
@@ -9162,7 +9162,7 @@ export default function EstimateSheet({
                             </SectionNav>
 
                             {/* Travel grand totals */}
-                            <div className="mt-4 flex flex-wrap items-center justify-end gap-6 rounded-md bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-dark-200 px-4 py-3">
+                            <div className="mt-4 flex flex-wrap items-center justify-end gap-6 rounded-none bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-dark-200 px-4 py-3">
                               <div className="text-sm text-neutral-600 dark:text-neutral-300">
                                 Total travel hours:{" "}
                                 <span className="font-semibold text-neutral-900 dark:text-white">
@@ -12952,7 +12952,7 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-lg shadow-lg p-6 max-w-md w-full">
+          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-none shadow-lg p-6 max-w-md w-full">
             <h2 className="text-lg font-bold mb-4 dark:text-white">
               Select a Quote
             </h2>
@@ -12999,7 +12999,7 @@ export default function EstimateSheet({
                   Include SOV item notes
                 </span>
               </label>
-              <div className="mt-3 p-3 bg-neutral-50 dark:bg-dark-100 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="mt-3 p-3 bg-neutral-50 dark:bg-dark-100 rounded-none border border-neutral-200 dark:border-neutral-700">
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-2">
                   Work Schedule Pricing in Letter
                 </p>
@@ -13051,7 +13051,7 @@ export default function EstimateSheet({
                   </label>
                 </div>
               </div>
-              <div className="mt-3 p-3 bg-neutral-50 dark:bg-dark-100 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="mt-3 p-3 bg-neutral-50 dark:bg-dark-100 rounded-none border border-neutral-200 dark:border-neutral-700">
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-2">
                   Payment Terms in Letter
                 </p>
@@ -13154,7 +13154,7 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-lg shadow-lg p-6 max-w-lg w-full">
+          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-none shadow-lg p-6 max-w-lg w-full">
             <h2 className="text-lg font-bold mb-4 dark:text-white">
               Select Multiple Quotes for Combined Letter
             </h2>
@@ -13164,7 +13164,7 @@ export default function EstimateSheet({
                 proposal:
               </p>
             </div>
-            <div className="mb-4 p-3 bg-neutral-50 dark:bg-dark-100 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="mb-4 p-3 bg-neutral-50 dark:bg-dark-100 rounded-none border border-neutral-200 dark:border-neutral-700">
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Pricing Options:
               </p>
@@ -13304,7 +13304,7 @@ export default function EstimateSheet({
               {quotes.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="mb-3 flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
+                  className="mb-3 flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-none"
                 >
                   <div className="flex items-center flex-1">
                     <input
@@ -13449,7 +13449,7 @@ export default function EstimateSheet({
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         >
-          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-lg shadow-lg p-6 max-w-2xl w-full">
+          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-none shadow-lg p-6 max-w-2xl w-full">
             <h2 className="text-lg font-bold mb-4 dark:text-white">
               Saved Letter Proposals
             </h2>
@@ -13593,7 +13593,7 @@ export default function EstimateSheet({
           className="fixed inset-0 bg-black bg-opacity-60 z-40"
           onClick={handleCloseLetterProposal}
         />
-        <div className="relative z-50 bg-white w-full h-full max-w-5xl mx-auto my-8 rounded-lg shadow-lg flex flex-col">
+        <div className="relative z-50 bg-white w-full h-full max-w-5xl mx-auto my-8 rounded-none shadow-lg flex flex-col">
           <div className="p-4 border-b space-y-3">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-bold">Letter Proposal</h2>
@@ -14109,7 +14109,7 @@ export default function EstimateSheet({
                 value={letterProposalName}
                 onChange={(e) => setLetterProposalName(e.target.value)}
                 placeholder={`Letter Proposal - ${opportunityData?.title || "Untitled"}`}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
               />
             </div>
           </div>

@@ -914,7 +914,7 @@ export const FormBuilder: React.FC = () => {
                 placeholder="7.3.3, ATS, etc."
               />
               {showNetaSectionDropdown && (
-                <div className="absolute z-50 w-full mt-1 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150">
+                <div className="absolute z-50 w-full mt-1 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150">
                   <div className="max-h-60 overflow-y-auto py-1">
                     {filteredNetaSections.map((section) => (
                       <div
@@ -1009,7 +1009,7 @@ export const FormBuilder: React.FC = () => {
               <Button
                 onClick={() => setShowPreview(!showPreview)}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={previewTooltipTitle}
                 leftIcon={
@@ -1036,7 +1036,7 @@ export const FormBuilder: React.FC = () => {
                 onClick={handleSaveTemplate}
                 disabled={isSaving || !isDirty}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={saveTooltipTitle}
                 leftIcon={<Save className="w-5 h-5" />}
@@ -1057,7 +1057,7 @@ export const FormBuilder: React.FC = () => {
                 onClick={handlePublishToggle}
                 disabled={!template.id}
                 variant="outline"
-                className="!h-10 !w-10 !rounded-full !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
+                className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={template.isPublished ? "Unpublish" : "Publish"}
                 leftIcon={
@@ -1096,7 +1096,7 @@ export const FormBuilder: React.FC = () => {
                 onClick={() => setShowSidebar(true)}
                 title="Show component library"
                 aria-label="Show component library"
-                className="h-9 w-9 rounded-full p-0 [&>span:first-child]:mr-0 border-none"
+                className="h-9 w-9 rounded-none p-0 [&>span:first-child]:mr-0 border-none"
                 leftIcon={<PanelLeftOpen className="w-4 h-4" />}
               />
             </div>
@@ -1276,7 +1276,7 @@ export const FormBuilder: React.FC = () => {
 
           <DragOverlay>
             {activeId ? (
-              <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-lg border-2 border-[#f26722]">
+              <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-lg border-2 border-[#f26722]">
                 Dragging...
               </div>
             ) : null}
@@ -1310,7 +1310,7 @@ export const FormBuilder: React.FC = () => {
 
       {actionTooltip && (
         <div
-          className={`pointer-events-none fixed z-[100] rounded-full border ${actionTooltip.borderClass} bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white`}
+          className={`pointer-events-none fixed z-[100] rounded-none border ${actionTooltip.borderClass} bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white`}
           style={{
             left: actionTooltip.x,
             top: actionTooltip.y,

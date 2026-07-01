@@ -335,43 +335,43 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
     switch (category) {
       case "not_started":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400">
             Not Started
           </span>
         );
       case "in_progress":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
             In Progress
           </span>
         );
       case "ready_for_review":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
             Ready for Review
           </span>
         );
       case "approved":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
             Approved
           </span>
         );
       case "issue":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
             Issue
           </span>
         );
       case "sent_on_time":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
             Sent on time
           </span>
         );
       case "sent_late":
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
             Sent late
           </span>
         );
@@ -400,7 +400,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
   const getFilterButtonClass = (key: StatusCategory | "all") => {
     const isActive = activeFilter === key;
     let baseClass =
-      "px-3 py-2 text-sm font-medium rounded-md transition-colors ";
+      "px-3 py-2 text-sm font-medium rounded-none transition-colors ";
 
     if (isActive) {
       if (key === "sent_on_time") {
@@ -495,7 +495,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       </div>
 
       {/* KPI Card - On-Time Delivery */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8">
+      <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-8">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide mb-2">
@@ -552,7 +552,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-lg overflow-x-auto">
+      <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none overflow-x-auto">
         {statusFilters.map((filter) => (
           <button
             key={filter.key}
@@ -566,7 +566,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
 
       {/* Report List */}
       {filteredReports.length > 0 && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
           <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wide">
               Report Status
@@ -706,12 +706,12 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                   <div className="flex-shrink-0 ml-4 flex items-center gap-2">
                     {getCategoryBadge(status.category)}
                     {status.urgency === "critical" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
                         <AlertTriangle className="w-3 h-3" />
                         Critical
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                         Normal
                       </span>
                     )}
@@ -724,7 +724,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
       )}
 
       {filteredReports.length === 0 && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8 text-center">
+        <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700 p-8 text-center">
           <p className="text-neutral-500 dark:text-neutral-400">
             No reports in this category
           </p>

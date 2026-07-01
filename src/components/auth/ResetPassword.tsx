@@ -90,7 +90,7 @@ export default function ResetPassword() {
               ) : isError &&
                 message === "This reset link is invalid or expired." ? (
                 <div className="space-y-6">
-                  <div className="rounded-xl p-4 bg-transparent border border-red-700 text-red-950">
+                  <div className="rounded-none p-4 bg-transparent border border-red-700 text-red-950">
                     <div className="text-sm font-medium">{message}</div>
                   </div>
                   <Button
@@ -141,7 +141,7 @@ export default function ResetPassword() {
 
                   {message && (
                     <div
-                      className={`rounded-xl p-4 ${
+                      className={`rounded-none p-4 ${
                         isError
                           ? "bg-transparent border border-red-700 text-red-950"
                           : "bg-transparent border border-green-700 text-green-950"

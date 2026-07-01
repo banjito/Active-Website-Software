@@ -649,7 +649,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-none, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
         section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
         div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
         div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
@@ -2574,7 +2574,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                   );
                 }
               }}
-              className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Mark Ready to Review
             </button>

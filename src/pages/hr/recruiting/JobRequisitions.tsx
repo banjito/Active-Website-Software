@@ -849,7 +849,7 @@ export const JobRequisitions: React.FC = () => {
                   placeholder="Search by title, department, or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -857,7 +857,7 @@ export const JobRequisitions: React.FC = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                 >
                   <option value="all">All Status</option>
                   <option value="draft">Draft</option>
@@ -870,7 +870,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -882,7 +882,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="all">All Priorities</option>
                 <option value="low">Low</option>
@@ -1036,7 +1036,7 @@ export const JobRequisitions: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(req.status)}`}
+                          className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(req.status)}`}
                         >
                           {getStatusLabel(req.status)}
                         </span>
@@ -1103,7 +1103,7 @@ export const JobRequisitions: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <CardTitle className="text-xl">{req.title}</CardTitle>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(req.status)}`}
+                        className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(req.status)}`}
                       >
                         {getStatusLabel(req.status)}
                       </span>
@@ -1168,7 +1168,7 @@ export const JobRequisitions: React.FC = () => {
                               </span>
                             )}
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs font-medium ${
                                 approver.status === "approved"
                                   ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                   : approver.status === "rejected"
@@ -1379,7 +1379,7 @@ export const JobRequisitions: React.FC = () => {
                 }
                 placeholder="Enter job description, requirements, and internal notes. Use the toolbar for bold, italic, underline, lists, and more."
                 minHeight="220px"
-                className="rounded-lg"
+                className="rounded-none"
               />
             </div>
 
@@ -1402,9 +1402,9 @@ export const JobRequisitions: React.FC = () => {
                     return (
                       <div
                         key={uid}
-                        className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
+                        className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                       >
-                        <div className="w-6 h-6 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        <div className="w-6 h-6 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1460,11 +1460,11 @@ export const JobRequisitions: React.FC = () => {
                       }
                       value={approverSearchTerm}
                       onChange={(e) => setApproverSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
                     />
                   </div>
                   {approverSearchTerm && (
-                    <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg shadow-sm">
+                    <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-none shadow-sm">
                       {filteredUsers.length === 0 ? (
                         <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                           No users found
@@ -1627,7 +1627,7 @@ export const JobRequisitions: React.FC = () => {
                 }
                 placeholder="Enter job description, requirements, and internal notes. Use the toolbar for bold, italic, underline, lists, and more."
                 minHeight="220px"
-                className="rounded-lg"
+                className="rounded-none"
               />
             </div>
 
@@ -1651,9 +1651,9 @@ export const JobRequisitions: React.FC = () => {
                       return (
                         <div
                           key={uid}
-                          className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
+                          className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                         >
-                          <div className="w-6 h-6 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                          <div className="w-6 h-6 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
                             {idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1708,11 +1708,11 @@ export const JobRequisitions: React.FC = () => {
                         }
                         value={approverSearchTerm}
                         onChange={(e) => setApproverSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
                       />
                     </div>
                     {approverSearchTerm && (
-                      <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg shadow-sm">
+                      <div className="mt-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-none shadow-sm">
                         {filteredUsers.length === 0 ? (
                           <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                             No users found
@@ -1762,7 +1762,7 @@ export const JobRequisitions: React.FC = () => {
                       (approver, idx) => (
                         <div
                           key={approver.id}
-                          className={`flex items-center gap-2 p-2.5 rounded-lg border ${
+                          className={`flex items-center gap-2 p-2.5 rounded-none border ${
                             approver.status === "approved"
                               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
                               : approver.status === "rejected"
@@ -1771,7 +1771,7 @@ export const JobRequisitions: React.FC = () => {
                           }`}
                         >
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            className={`w-6 h-6 rounded-none flex items-center justify-center text-xs font-bold ${
                               approver.status === "approved"
                                 ? "bg-green-500 text-white"
                                 : approver.status === "rejected"
@@ -1966,7 +1966,7 @@ export const JobRequisitions: React.FC = () => {
                           return (
                             <div
                               key={approver.id}
-                              className={`flex items-center gap-3 p-3 rounded-lg border ${
+                              className={`flex items-center gap-3 p-3 rounded-none border ${
                                 approver.status === "approved"
                                   ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
                                   : approver.status === "rejected"
@@ -1977,7 +1977,7 @@ export const JobRequisitions: React.FC = () => {
                               }`}
                             >
                               <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                className={`w-7 h-7 rounded-none flex items-center justify-center text-xs font-bold ${
                                   approver.status === "approved"
                                     ? "bg-green-500 text-white"
                                     : approver.status === "rejected"
@@ -2086,9 +2086,9 @@ export const JobRequisitions: React.FC = () => {
                     return (
                       <div
                         key={uid}
-                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-dark-200 rounded-lg bg-neutral-50 dark:bg-dark-100"
+                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                       >
-                        <div className="w-7 h-7 rounded-full bg-[#f26722] text-white flex items-center justify-center text-xs font-bold">
+                        <div className="w-7 h-7 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2146,11 +2146,11 @@ export const JobRequisitions: React.FC = () => {
                     placeholder="Search by name or email..."
                     value={approverSearchTerm}
                     onChange={(e) => setApproverSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   />
                 </div>
                 {approverSearchTerm && (
-                  <div className="mt-2 max-h-48 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-lg">
+                  <div className="mt-2 max-h-48 overflow-y-auto border border-neutral-200 dark:border-dark-200 rounded-none">
                     {filteredUsers.length === 0 ? (
                       <p className="p-3 text-sm text-neutral-500 dark:text-neutral-400">
                         No users found
@@ -2178,7 +2178,7 @@ export const JobRequisitions: React.FC = () => {
             )}
 
             {selectedApprovers.length === 0 && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-none">
                 <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
                 <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   At least 1 approver is required to submit for approval.

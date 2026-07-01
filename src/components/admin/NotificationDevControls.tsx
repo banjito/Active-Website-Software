@@ -127,7 +127,7 @@ export const NotificationDevControls: React.FC = () => {
 
         {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
 
-        <div className="border rounded-md divide-y">
+        <div className="border rounded-none divide-y">
           {visibleJobs.length === 0 ? (
             <div className="p-4 text-sm text-neutral-500">No jobs found.</div>
           ) : (

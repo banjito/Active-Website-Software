@@ -1221,7 +1221,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                 return (
                   <div
                     key={interview.id}
-                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
@@ -1243,7 +1243,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                         {interview.duration_minutes} min
                       </div>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(interview.status)}`}
+                        className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(interview.status)}`}
                       >
                         {interview.status.charAt(0).toUpperCase() +
                           interview.status.slice(1)}
@@ -1328,7 +1328,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                 return (
                   <div
                     key={interview.id}
-                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
@@ -1379,7 +1379,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                         </div>
                       )}
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(interview.status)}`}
+                        className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(interview.status)}`}
                       >
                         {interview.status.charAt(0).toUpperCase() +
                           interview.status.slice(1)}
@@ -1587,7 +1587,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   </span>
                 )}
               </label>
-              <div className="border border-neutral-300 dark:border-neutral-600 rounded-md p-3 max-h-40 overflow-y-auto">
+              <div className="border border-neutral-300 dark:border-neutral-600 rounded-none p-3 max-h-40 overflow-y-auto">
                 {users.length === 0 ? (
                   <div className="flex justify-center py-4">
                     <LoadingSpinner size="md" />
@@ -1765,7 +1765,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   stages.map((stage) => (
                     <li
                       key={stage.id}
-                      className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-md"
+                      className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-none"
                     >
                       <span className="font-medium text-neutral-900 dark:text-white">
                         {stage.name}
@@ -1803,7 +1803,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                     {templateQuestions.map((q, index) => (
                       <li
                         key={q.id}
-                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-neutral-700 rounded-md"
+                        className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-neutral-700 rounded-none"
                       >
                         <div className="flex flex-col gap-0">
                           <button
@@ -2243,7 +2243,7 @@ ${interviewFormData.overallFeedback || "N/A"}
               </div>
               {selectedInterview &&
                 !getStageIsFinal(selectedInterview.interview_stage) && (
-                  <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-lg">
+                  <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-none">
                     <Timer className="h-5 w-5 text-[#f26722]" />
                     <span className="text-lg font-mono font-semibold text-neutral-900 dark:text-white">
                       {formatTime(elapsedTime)}
@@ -2605,7 +2605,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           onClick={() =>
                             handleInterviewFormChange("rating", rating)
                           }
-                          className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-semibold transition-colors ${
+                          className={`w-10 h-10 rounded-none border-2 flex items-center justify-center font-semibold transition-colors ${
                             interviewFormData.rating === rating
                               ? "bg-[#f26722] border-[#f26722] text-white"
                               : "border-neutral-300 text-neutral-700 dark:text-neutral-300 hover:border-[#f26722]"

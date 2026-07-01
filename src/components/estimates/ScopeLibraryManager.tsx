@@ -272,7 +272,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -304,13 +304,13 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search items, notes, or equipment..."
-              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
             />
           </div>
           <select
             value={activityFilter}
             onChange={(e) => setActivityFilter(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           >
             <option value="All">All activities</option>
             {activityOptions.map((activity) => (
@@ -331,7 +331,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         </div>
 
         {error && (
-          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
+          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
             <span>{error}</span>
             <button onClick={() => setError(null)} aria-label="Dismiss error">
               <X className="h-4 w-4" />
@@ -340,14 +340,14 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         )}
 
         {successMessage && (
-          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-sm text-green-700 dark:text-green-300">
+          <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-none p-3 text-sm text-green-700 dark:text-green-300">
             {successMessage}
           </div>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               {editingItem
@@ -373,7 +373,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 value={form.item_name}
                 onChange={(e) => updateForm("item_name", e.target.value)}
                 placeholder="e.g., Transformer Turns Ratio Test"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 autoFocus
               />
             </div>
@@ -388,7 +388,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("activity", e.target.value)}
                 placeholder="e.g., Maintenance"
                 list="scope-library-activity-options"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
               <datalist id="scope-library-activity-options">
                 {activityOptions.map((activity) => (
@@ -411,7 +411,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.01"
                   value={form.material_cost}
                   onChange={(e) => updateForm("material_cost", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
               <div>
@@ -424,7 +424,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.25"
                   value={form.tech_count}
                   onChange={(e) => updateForm("tech_count", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
               <div>
@@ -437,7 +437,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.25"
                   value={form.hours}
                   onChange={(e) => updateForm("hours", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
             </div>
@@ -451,7 +451,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("estimate_notes", e.target.value)}
                 rows={4}
                 placeholder="Imported into the estimate row notes field."
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
               />
             </div>
 
@@ -464,7 +464,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("library_notes", e.target.value)}
                 rows={4}
                 placeholder="Internal estimating guidance; not imported into the estimate."
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
               />
             </div>
 
@@ -473,12 +473,12 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 Test Equipment
               </label>
               {equipment.length === 0 ? (
-                <div className="rounded-md border border-dashed border-neutral-300 dark:border-neutral-600 p-4 text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-none border border-dashed border-neutral-300 dark:border-neutral-600 p-4 text-sm text-neutral-500 dark:text-neutral-400">
                   No test equipment has been created yet. Add equipment in the
                   Test Equipment tab, then attach it here.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 rounded-md border border-neutral-200 dark:border-neutral-700 p-3 max-h-52 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 rounded-none border border-neutral-200 dark:border-neutral-700 p-3 max-h-52 overflow-y-auto">
                   {equipment.map((equipmentItem) => (
                     <label
                       key={equipmentItem.id}
@@ -523,7 +523,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
@@ -610,7 +610,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                     </td>
                     <td className="px-4 py-3 align-top">
                       <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                        className={`inline-flex rounded-none px-2 py-1 text-xs font-medium ${
                           item.is_active
                             ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                             : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"

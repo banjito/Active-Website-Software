@@ -901,7 +901,7 @@ export default function CalendarSystem() {
                     <SelectItem key={category.value} value={category.value}>
                       <div className="flex items-center">
                         <div
-                          className={`w-3 h-3 rounded-full mr-2 ${category.color}`}
+                          className={`w-3 h-3 rounded-none mr-2 ${category.color}`}
                         ></div>
                         {category.label}
                       </div>

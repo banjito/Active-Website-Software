@@ -111,7 +111,7 @@ export function SectionNav<K extends string>({
   children: ReactNode;
 }) {
   return (
-    <div className="flex border border-neutral-200 dark:border-dark-200 rounded-lg overflow-hidden">
+    <div className="flex border border-neutral-200 dark:border-dark-200 rounded-none overflow-hidden">
       <div className="w-48 shrink-0 bg-neutral-50 dark:bg-dark-100 border-r border-neutral-200 dark:border-dark-200 py-2">
         {items.map((n) => {
           const isActive = active === n.key;

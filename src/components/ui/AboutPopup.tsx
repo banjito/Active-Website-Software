@@ -34,11 +34,11 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-white dark:bg-dark-150 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white dark:bg-dark-150 rounded-none shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Close Button - Moved inside the card */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/80 hover:bg-white dark:bg-dark-150/80 dark:hover:bg-dark-100 shadow-md transition-all"
+          className="absolute top-4 right-4 z-50 p-2 rounded-none bg-white/80 hover:bg-white dark:bg-dark-150/80 dark:hover:bg-dark-100 shadow-md transition-all"
         >
           <X className="w-6 h-6 text-orange-500 dark:text-orange-400" />
         </button>
@@ -67,7 +67,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
         <div className="py-12 bg-white dark:bg-dark-150">
           <div className="container mx-auto px-4">
             <div className="flex justify-center mb-8">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-orange-50 dark:bg-dark-150 rounded-full border border-orange-200 dark:border-dark-300">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-orange-50 dark:bg-dark-150 rounded-none border border-orange-200 dark:border-dark-300">
                 <Zap className="w-5 h-5 text-orange-500 dark:text-orange-400" />
                 <span className="text-orange-600 dark:text-orange-400 font-semibold tracking-wide">
                   OUR CORE VALUES
@@ -77,8 +77,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
 
             <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {/* Purpose */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Globe className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -92,8 +92,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Mission */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <ArrowRight className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -106,8 +106,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Attentiveness */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Eye className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -120,8 +120,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Commitment */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <CheckCircle className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -133,8 +133,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Creativity */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Lightbulb className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -146,8 +146,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Dependability */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Shield className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -160,8 +160,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Diligence */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Briefcase className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -174,8 +174,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Integrity */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <Scale className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -188,8 +188,8 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Poise */}
-              <div className="bg-white dark:bg-dark-150 p-6 rounded-2xl border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-dark-150 p-6 rounded-none border border-orange-100 dark:border-dark-300 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-orange-50 rounded-none flex items-center justify-center mb-4">
                   <CircleDot className="w-6 h-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-orange-500 mb-2">
@@ -207,7 +207,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
         <div className="py-12 bg-orange-50 dark:bg-dark-150">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-dark-300 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-dark-300 rounded-none flex items-center justify-center mb-6 mx-auto">
                 <Zap className="w-8 h-8 text-orange-500 dark:text-orange-400" />
               </div>
               <h2 className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-6">
@@ -229,7 +229,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
         <div className="py-12 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5 bg-cover bg-center" />
           <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-4xl mx-auto bg-white dark:bg-dark-150 rounded-3xl shadow-xl overflow-hidden">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-dark-150 rounded-none shadow-xl overflow-hidden">
               <div className="bg-orange-500 dark:bg-orange-600 py-6 px-8">
                 <h2 className="text-3xl font-bold text-white text-center">
                   OUR STORY

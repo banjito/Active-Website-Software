@@ -97,6 +97,10 @@ import {
 
 export const QuickBooksDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingLabel, setLoadingLabel] = useState(
+    "Connecting to QuickBooks...",
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [connected, setConnected] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
@@ -475,12 +479,16 @@ export const QuickBooksDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadingProgress(0);
+    setLoadingLabel("Connecting to QuickBooks...");
     setError(null);
 
     try {
       const qbStatus = await getQuickBooksStatus();
       const isConnected = qbStatus.connected;
       setConnected(isConnected);
+      setLoadingProgress(10);
+      setLoadingLabel("Thinking and pondering...");
 
       if (!isConnected) {
         setError(
@@ -498,7 +506,8 @@ export const QuickBooksDashboard: React.FC = () => {
       // Batch API calls sequentially to prevent overwhelming the API
       // The rate limiter will handle spacing, but we'll process in smaller batches
       // Batch 1: Core financial data (most important, runs first)
-      console.log("[QB Dashboard] Loading batch 1: Core financial data...");
+      setLoadingProgress(20);
+      setLoadingLabel("Hacking the mainframe...");
 
       // Process in smaller sub-batches to reduce initial queue size
       const batch1a = await Promise.allSettled([
@@ -510,23 +519,24 @@ export const QuickBooksDashboard: React.FC = () => {
         ),
         getQuickBooksAccounts(),
       ]);
-
-      // Small delay between sub-batches
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoadingProgress(45);
+      setLoadingLabel("Checking Jackie's bank account...");
 
       const batch1b = await Promise.allSettled([
         getQuickBooksInvoices(),
         getQuickBooksPayments(),
         getQuickBooksDeposits(),
       ]);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoadingProgress(70);
+      setLoadingLabel("Poking the bear...");
 
       const cashFlowDateRange = getCashFlowDateRange();
       const batch1c = await Promise.allSettled([
         getQuickBooksCashFlow(cashFlowDateRange.start, cashFlowDateRange.end),
         getQuickBooksEmployees(),
       ]);
+      setLoadingProgress(100);
+      setLoadingLabel("Counting the beans...");
 
       // Combine results
       const batch1 = [...batch1a, ...batch1b, ...batch1c];
@@ -608,12 +618,11 @@ export const QuickBooksDashboard: React.FC = () => {
         hasAccounts,
       );
 
-      // Force a state update to ensure React re-renders
       setLoading(false);
       setInitialLoadComplete(true);
 
+      // Batch 2–5 load in the background after the dashboard is visible
       // Batch 2: Secondary data (customers, purchases, time activities)
-      console.log("[QB Dashboard] Loading batch 2: Secondary data...");
 
       const batch2a = await Promise.allSettled([
         getQuickBooksCustomers(),
@@ -630,8 +639,6 @@ export const QuickBooksDashboard: React.FC = () => {
           return [];
         }),
       ]);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const batch2b = await Promise.allSettled([
         getQuickBooksBills(),
@@ -684,8 +691,6 @@ export const QuickBooksDashboard: React.FC = () => {
         getQuickBooksSalesReceipts(),
         getQuickBooksCreditMemos(),
       ]);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const batch3b = await Promise.allSettled([
         getQuickBooksRefundReceipts(),
@@ -743,8 +748,6 @@ export const QuickBooksDashboard: React.FC = () => {
         getQuickBooksVendorCredits(),
         getQuickBooksTransfers(),
       ]);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const batch4b = await Promise.allSettled([
         getQuickBooksPaymentMethods(),
@@ -853,8 +856,6 @@ export const QuickBooksDashboard: React.FC = () => {
           );
         }
       });
-
-      console.log("[QB Dashboard] All data loading complete.");
     } catch (err: any) {
       console.error("Error loading QuickBooks data:", err);
       setError(err?.message || "Failed to load QuickBooks data");
@@ -2212,19 +2213,30 @@ export const QuickBooksDashboard: React.FC = () => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Debug logging
-  console.log(
-    "[QB Dashboard] Render check - loading:",
-    loading,
-    "connected:",
-    connected,
-    "initialLoadComplete:",
-    initialLoadComplete,
-  );
-
-  if (loading) {
+  if (loading || !initialLoadComplete) {
     return (
       <div className="space-y-6">
+        {/* Accurate progress bar */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+            <span>{loadingLabel}</span>
+            <span>{loadingProgress}%</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-700">
+            <div
+              className="relative h-full overflow-hidden rounded-none bg-[#2CA01C] transition-all duration-500 ease-out"
+              style={{ width: `${loadingProgress}%` }}
+            >
+              <div className="absolute inset-0 animate-[shimmer_1.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            </div>
+          </div>
+          <style>{`
+            @keyframes shimmer {
+              0%   { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
+        </div>
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
@@ -2290,10 +2302,12 @@ export const QuickBooksDashboard: React.FC = () => {
             onClick={handleRefresh}
             disabled={refreshing}
             variant="outline"
+            leftIcon={
+              <RefreshCw
+                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+            }
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-            />
             Refresh
           </Button>
         </div>
@@ -2401,7 +2415,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 </span>
                 {pnlSummary.income > 0 && (
                   <span
-                    className={`text-sm px-2 py-0.5 rounded-full ${
+                    className={`text-sm px-2 py-0.5 rounded-none ${
                       pnlSummary.netIncome >= 0
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
@@ -2528,7 +2542,7 @@ export const QuickBooksDashboard: React.FC = () => {
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div
-                          className={`w-3 h-3 rounded-full flex-shrink-0 ${colors[index % colors.length]}`}
+                          className={`w-3 h-3 rounded-none flex-shrink-0 ${colors[index % colors.length]}`}
                         />
                         <span className="text-sm truncate">{item.name}</span>
                       </div>
@@ -2565,7 +2579,7 @@ export const QuickBooksDashboard: React.FC = () => {
               <CashFlowPeriodSelector />
               {/* View Mode Toggle */}
               <div
-                className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1"
+                className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 rounded-none p-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -2736,7 +2750,7 @@ export const QuickBooksDashboard: React.FC = () => {
 
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <ArrowDownCircle className="h-4 w-4 text-green-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -2748,7 +2762,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Payments & deposits</p>
             </div>
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <ArrowUpCircle className="h-4 w-4 text-red-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -2760,7 +2774,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Purchases & expenses</p>
             </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-4 w-4 text-blue-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -2930,7 +2944,7 @@ export const QuickBooksDashboard: React.FC = () => {
         <CardContent className="pt-0 pb-4">
           {/* Main Stats Row */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-4 w-4 text-indigo-500" />
                 <span className="text-sm text-neutral-600">
@@ -2942,7 +2956,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Active employees</p>
             </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <Timer className="h-4 w-4 text-blue-500" />
                 <span className="text-sm text-neutral-600">Hours Tracked</span>
@@ -2952,7 +2966,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">In selected period</p>
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <Briefcase className="h-4 w-4 text-green-500" />
                 <span className="text-sm text-neutral-600">Billable Hours</span>
@@ -2964,7 +2978,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 {employeeStats.totals.billablePercentage}% billable rate
               </p>
             </div>
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <DollarSign className="h-4 w-4 text-emerald-500" />
                 <span className="text-sm text-neutral-600">Gross Pay</span>
@@ -2978,7 +2992,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Total payroll (period)</p>
             </div>
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <DollarSign className="h-4 w-4 text-orange-500" />
                 <span className="text-sm text-neutral-600">Labour Cost</span>
@@ -2992,43 +3006,43 @@ export const QuickBooksDashboard: React.FC = () => {
 
           {/* Time Off Stats Row */}
           <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-            <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg text-center">
+            <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-cyan-600">
                 {employeeStats.totals.totalPaidTimeOff.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">Paid Time Off</p>
             </div>
-            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-purple-600">
                 {employeeStats.totals.totalVacation.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">Vacation</p>
             </div>
-            <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg text-center">
+            <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-rose-600">
                 {employeeStats.totals.totalSick.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">Sick Time</p>
             </div>
-            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-center">
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-amber-600">
                 {employeeStats.totals.totalHoliday.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">Holiday</p>
             </div>
-            <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-center">
+            <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-teal-600">
                 {employeeStats.totals.totalPTO.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">PTO Used</p>
             </div>
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-red-600">
                 {employeeStats.totals.totalUnpaid.toFixed(1)}
               </p>
               <p className="text-xs text-neutral-500">Unpaid Leave</p>
             </div>
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
+            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-none text-center">
               <p className="text-lg font-bold text-yellow-600">
                 {employeeStats.totals.totalOvertime.toFixed(1)}
               </p>
@@ -3087,7 +3101,7 @@ export const QuickBooksDashboard: React.FC = () => {
                       >
                         <td className="p-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-none flex items-center justify-center flex-shrink-0">
                               <User className="h-3.5 w-3.5 text-indigo-600" />
                             </div>
                             <div className="min-w-0">
@@ -3373,13 +3387,13 @@ export const QuickBooksDashboard: React.FC = () => {
 
         <CardContent className="pt-0 pb-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
               <p className="text-2xl font-bold text-blue-600">
                 {customers.filter((c) => c.Active !== false).length}
               </p>
               <p className="text-xs text-neutral-500">Active Customers</p>
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(
                   customers.reduce((sum, c) => sum + (c.Balance || 0), 0),
@@ -3387,13 +3401,13 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Total Outstanding</p>
             </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-none">
               <p className="text-2xl font-bold text-purple-600">
                 {customers.filter((c) => c.Balance > 0).length}
               </p>
               <p className="text-xs text-neutral-500">With Balance Due</p>
             </div>
-            <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-none">
               <p className="text-2xl font-bold text-neutral-600">
                 {customers.filter((c) => c.Active === false).length}
               </p>
@@ -3494,7 +3508,7 @@ export const QuickBooksDashboard: React.FC = () => {
 
         <CardContent className="pt-0 pb-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-none">
               <p className="text-2xl font-bold text-red-600">
                 {formatCurrency(
                   bills.reduce((sum, b) => sum + (b.Balance || 0), 0),
@@ -3502,13 +3516,13 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Outstanding Bills</p>
             </div>
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-none">
               <p className="text-2xl font-bold text-orange-600">
                 {bills.filter((b) => b.Balance > 0).length}
               </p>
               <p className="text-xs text-neutral-500">Unpaid Bills</p>
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(
                   billPayments.reduce((sum, p) => sum + (p.TotalAmt || 0), 0),
@@ -3516,7 +3530,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Total Paid</p>
             </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-none">
               <p className="text-2xl font-bold text-purple-600">
                 {formatCurrency(
                   vendorCredits.reduce((sum, c) => sum + (c.TotalAmt || 0), 0),
@@ -3628,7 +3642,7 @@ export const QuickBooksDashboard: React.FC = () => {
 
         <CardContent className="pt-0 pb-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-none">
               <p className="text-2xl font-bold text-emerald-600">
                 {formatCurrency(
                   salesReceipts.reduce((sum, r) => sum + (r.TotalAmt || 0), 0),
@@ -3636,7 +3650,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Sales Receipts Total</p>
             </div>
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-none">
               <p className="text-2xl font-bold text-yellow-600">
                 {formatCurrency(
                   creditMemos.reduce((sum, c) => sum + (c.TotalAmt || 0), 0),
@@ -3644,7 +3658,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Credit Memos</p>
             </div>
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-none">
               <p className="text-2xl font-bold text-red-600">
                 {formatCurrency(
                   refundReceipts.reduce((sum, r) => sum + (r.TotalAmt || 0), 0),
@@ -3652,7 +3666,7 @@ export const QuickBooksDashboard: React.FC = () => {
               </p>
               <p className="text-xs text-neutral-500">Refunds Issued</p>
             </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
               <p className="text-2xl font-bold text-blue-600">
                 {salesReceipts.length}
               </p>
@@ -3891,19 +3905,19 @@ export const QuickBooksDashboard: React.FC = () => {
 
           <CardContent className="pt-0 pb-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+              <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-none">
                 <p className="text-2xl font-bold text-teal-600">
                   {purchaseOrders.filter((p) => p.POStatus === "Open").length}
                 </p>
                 <p className="text-xs text-neutral-500">Open Orders</p>
               </div>
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
                 <p className="text-2xl font-bold text-green-600">
                   {purchaseOrders.filter((p) => p.POStatus === "Closed").length}
                 </p>
                 <p className="text-xs text-neutral-500">Closed Orders</p>
               </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
                 <p className="text-2xl font-bold text-blue-600">
                   {formatCurrency(
                     purchaseOrders.reduce(
@@ -4091,27 +4105,27 @@ export const QuickBooksDashboard: React.FC = () => {
 
         <CardContent className="pt-0 pb-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none text-center">
               <GitBranch className="h-5 w-5 mx-auto mb-1 text-blue-500" />
               <p className="text-xl font-bold">{classes.length}</p>
               <p className="text-xs text-neutral-500">Classes</p>
             </div>
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none text-center">
               <Building className="h-5 w-5 mx-auto mb-1 text-purple-500" />
               <p className="text-xl font-bold">{departments.length}</p>
               <p className="text-xs text-neutral-500">Departments</p>
             </div>
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none text-center">
               <BadgePercent className="h-5 w-5 mx-auto mb-1 text-green-500" />
               <p className="text-xl font-bold">{taxCodes.length}</p>
               <p className="text-xs text-neutral-500">Tax Codes</p>
             </div>
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none text-center">
               <CreditCard className="h-5 w-5 mx-auto mb-1 text-orange-500" />
               <p className="text-xl font-bold">{paymentMethods.length}</p>
               <p className="text-xs text-neutral-500">Payment Methods</p>
             </div>
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none text-center">
               <CalendarDays className="h-5 w-5 mx-auto mb-1 text-cyan-500" />
               <p className="text-xl font-bold">{terms.length}</p>
               <p className="text-xs text-neutral-500">Payment Terms</p>

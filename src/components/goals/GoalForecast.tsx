@@ -423,7 +423,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm">
                       <p className="text-sm text-neutral-500 mb-1">
                         Current Revenue
                       </p>
@@ -431,7 +431,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
                         {formatCurrency(latestActual)}
                       </p>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm">
                       <p className="text-sm text-neutral-500 mb-1">
                         Current Target
                       </p>
@@ -439,7 +439,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
                         {formatCurrency(latestTarget)}
                       </p>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm">
                       <p className="text-sm text-neutral-500 mb-1">
                         Projected by End of Period
                       </p>
@@ -447,7 +447,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
                         {formatCurrency(finalProjected)}
                       </p>
                     </div>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm">
+                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm">
                       <p className="text-sm text-neutral-500 mb-1">
                         Percent of Target
                       </p>
@@ -467,7 +467,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
                 );
               })()}
 
-              <div className="bg-white dark:bg-dark-150 p-4 rounded-lg shadow-sm mt-6">
+              <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm mt-6">
                 <h4 className="text-md font-medium mb-2">Recommendation</h4>
                 {(() => {
                   const finalProjected =

@@ -218,7 +218,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
         }
       }}
     >
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-[500px] p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-lg w-full max-w-[500px] p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Manage Shortcuts</h2>
           <Button variant="ghost" size="sm" onClick={onClose} className="p-1">
@@ -240,7 +240,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
         </div>
 
         {error && (
-          <div className="p-2 mb-4 text-red-500 border border-red-300 bg-red-50 rounded-md dark:bg-red-900/30 dark:border-red-800">
+          <div className="p-2 mb-4 text-red-500 border border-red-300 bg-red-50 rounded-none dark:bg-red-900/30 dark:border-red-800">
             {error}
           </div>
         )}
@@ -269,7 +269,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
               <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
-            <div className="text-center py-6 border border-dashed border-neutral-300 rounded-md dark:border-neutral-600">
+            <div className="text-center py-6 border border-dashed border-neutral-300 rounded-none dark:border-neutral-600">
               <LinkIcon className="h-10 w-10 mx-auto text-neutral-400 dark:text-white mb-2" />
               <p className="text-neutral-500 dark:text-white">
                 You don't have any shortcuts yet.
@@ -314,7 +314,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                                   snapshot.isDragging
                                     ? "border-[#f26722] ring-2 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10"
                                     : "border-neutral-200 dark:border-neutral-700 shadow-sm hover:border-orange-200 dark:hover:border-[#f26722]/30"
-                                } rounded-md transition-all ${snapshot.isDragging ? "cursor-grabbing" : ""}`}
+                                } rounded-none transition-all ${snapshot.isDragging ? "cursor-grabbing" : ""}`}
                               >
                                 <div className="flex items-center w-full">
                                   <MoveVertical className="h-5 w-5 text-[#f26722] mr-3 flex-shrink-0" />
@@ -384,7 +384,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
               }
             }}
           >
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow-lg w-full max-w-[425px] p-6">
+            <div className="bg-white dark:bg-dark-150 rounded-none shadow-lg w-full max-w-[425px] p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold">
                   {isEditing ? "Edit Shortcut" : "Add Shortcut"}
@@ -399,7 +399,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                   <input
                     id="title"
                     name="title"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="My Shortcut"
@@ -413,7 +413,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                   <input
                     id="url"
                     name="url"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 dark:bg-dark-150"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150"
                     value={formData.url}
                     onChange={handleInputChange}
                     placeholder="/north_alabama/dashboard or https://example.com"
@@ -427,19 +427,19 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                 <div className="flex justify-end space-x-2 pt-4">
                   <button
                     type="button"
-                    className="px-4 py-2 border border-neutral-300 rounded-md dark:border-neutral-700 text-neutral-700 dark:text-white"
+                    className="px-4 py-2 border border-neutral-300 rounded-none dark:border-neutral-700 text-neutral-700 dark:text-white"
                     onClick={handleCloseForm}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#f26722] text-white rounded-md hover:bg-[#f26722]/90"
+                    className="px-4 py-2 bg-[#f26722] text-white rounded-none hover:bg-[#f26722]/90"
                     disabled={loading}
                   >
                     {loading ? (
                       <>
-                        <span className="inline-block h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></span>
+                        <span className="inline-block h-4 w-4 border-2 border-t-transparent border-white rounded-none animate-spin mr-2"></span>
                         Saving...
                       </>
                     ) : isEditing ? (

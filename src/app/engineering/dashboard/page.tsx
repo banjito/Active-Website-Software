@@ -39,7 +39,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/designs" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-50 rounded-full mr-3">
+                <div className="p-2 bg-blue-50 rounded-none mr-3">
                   <PencilRuler className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
@@ -60,7 +60,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/documentation" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-green-50 rounded-full mr-3">
+                <div className="p-2 bg-green-50 rounded-none mr-3">
                   <Book className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
@@ -81,7 +81,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/standards" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-50 rounded-full mr-3">
+                <div className="p-2 bg-orange-50 rounded-none mr-3">
                   <FileCode className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
@@ -102,7 +102,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/drawings" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-50 rounded-full mr-3">
+                <div className="p-2 bg-purple-50 rounded-none mr-3">
                   <FileSymlink className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
@@ -123,7 +123,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/customers" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-50 rounded-full mr-3">
+                <div className="p-2 bg-blue-50 rounded-none mr-3">
                   <Building className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
@@ -144,7 +144,7 @@ export default function EngineeringDashboard() {
           <Link to="/engineering/jobs" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-green-50 rounded-full mr-3">
+                <div className="p-2 bg-green-50 rounded-none mr-3">
                   <Briefcase className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
@@ -179,7 +179,7 @@ export default function EngineeringDashboard() {
                   8 pending approval
                 </p>
               </div>
-              <div className="rounded-md bg-black/5 p-2">
+              <div className="rounded-none bg-black/5 p-2">
                 <PencilRuler className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function EngineeringDashboard() {
                   3 in critical phase
                 </p>
               </div>
-              <div className="rounded-md bg-black/5 p-2">
+              <div className="rounded-none bg-black/5 p-2">
                 <Workflow className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function EngineeringDashboard() {
                   2 require action
                 </p>
               </div>
-              <div className="rounded-md bg-black/5 p-2">
+              <div className="rounded-none bg-black/5 p-2">
                 <FileCode className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function EngineeringDashboard() {
                   Above target (95%)
                 </p>
               </div>
-              <div className="rounded-md bg-black/5 p-2">
+              <div className="rounded-none bg-black/5 p-2">
                 <Gauge className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function EngineeringDashboard() {
           <div className="p-6">
             <ul className="space-y-4">
               <li className="flex items-start">
-                <div className="p-1.5 rounded-full bg-blue-50 text-blue-500 mr-3 mt-0.5">
+                <div className="p-1.5 rounded-none bg-blue-50 text-blue-500 mr-3 mt-0.5">
                   <PencilRuler className="h-3.5 w-3.5" />
                 </div>
                 <div>
@@ -264,7 +264,7 @@ export default function EngineeringDashboard() {
                 </div>
               </li>
               <li className="flex items-start">
-                <div className="p-1.5 rounded-full bg-green-50 text-green-500 mr-3 mt-0.5">
+                <div className="p-1.5 rounded-none bg-green-50 text-green-500 mr-3 mt-0.5">
                   <Book className="h-3.5 w-3.5" />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ export default function EngineeringDashboard() {
                 </div>
               </li>
               <li className="flex items-start">
-                <div className="p-1.5 rounded-full bg-orange-50 text-orange-500 mr-3 mt-0.5">
+                <div className="p-1.5 rounded-none bg-orange-50 text-orange-500 mr-3 mt-0.5">
                   <FileCode className="h-3.5 w-3.5" />
                 </div>
                 <div>

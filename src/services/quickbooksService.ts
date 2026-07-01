@@ -22,7 +22,7 @@ class QuickBooksRateLimiter {
   private queue: Array<() => Promise<any>> = [];
   private processing = false;
   private lastRequestTime = 0;
-  private readonly minDelayMs = 300; // Minimum 300ms between requests (200 req/min) - more conservative
+  private readonly minDelayMs = 120; // 120ms = ~500 req/min (QBO's actual limit)
   private readonly maxRetries = 3;
   private readonly retryDelayMs = 2000; // Start with 2 second delay for rate limits
 

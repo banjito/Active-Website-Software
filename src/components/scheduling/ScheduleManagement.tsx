@@ -427,7 +427,7 @@ export function ScheduleManagement({
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-none">
               {error}
               <button
                 className="ml-2 text-red-600"
@@ -564,7 +564,7 @@ export function ScheduleManagement({
                               startTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
@@ -580,7 +580,7 @@ export function ScheduleManagement({
                               endTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                     </div>
@@ -689,7 +689,7 @@ export function ScheduleManagement({
                               exceptionDate: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
@@ -726,7 +726,7 @@ export function ScheduleManagement({
                               startTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div>
@@ -742,7 +742,7 @@ export function ScheduleManagement({
                               endTime: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -759,7 +759,7 @@ export function ScheduleManagement({
                             })
                           }
                           placeholder="E.g., Vacation, Training, Sick Leave"
-                          className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700"
+                          className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
                         />
                       </div>
                     </div>
@@ -807,7 +807,7 @@ export function ScheduleManagement({
                                 "MMM D, YYYY",
                               )}
                               <span
-                                className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                                className={`ml-2 px-2 py-0.5 rounded-none text-xs ${
                                   exception.is_available
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"

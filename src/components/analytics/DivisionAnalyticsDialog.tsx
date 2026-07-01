@@ -219,7 +219,7 @@ export function DivisionAnalyticsDialog({
             <div className="space-y-6">
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-none">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-emerald-500" />
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -235,7 +235,7 @@ export function DivisionAnalyticsDialog({
                   </p>
                 </div>
 
-                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-none">
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-5 w-5 text-blue-500" />
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -251,7 +251,7 @@ export function DivisionAnalyticsDialog({
                   </p>
                 </div>
 
-                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-lg">
+                <div className="bg-neutral-50 dark:bg-dark-150 p-4 rounded-none">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-orange-500" />
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white">

@@ -485,7 +485,7 @@ const DocumentManagement: React.FC = () => {
             <CardContent>
               {/* Drag and drop area */}
               <div
-                className={`border-2 border-dashed rounded-lg p-8 mb-6 text-center transition-colors ${
+                className={`border-2 border-dashed rounded-none p-8 mb-6 text-center transition-colors ${
                   isDragging
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                     : "border-neutral-300 dark:border-neutral-700"
@@ -577,7 +577,7 @@ const DocumentManagement: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Selected Files</Label>
-                <ScrollArea className="h-40 border rounded-md p-2">
+                <ScrollArea className="h-40 border rounded-none p-2">
                   <ul className="space-y-2">
                     {uploadedFiles.map((file, index) => (
                       <li

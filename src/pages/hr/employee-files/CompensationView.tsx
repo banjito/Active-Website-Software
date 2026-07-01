@@ -259,7 +259,7 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
                 <div className="space-y-2">
                   <Label>Pay type</Label>
                   <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-dark-300"
+                    className="flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-dark-300"
                     value={payTypeInput}
                     onChange={(e) => setPayTypeInput(e.target.value)}
                   >
@@ -274,7 +274,7 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
                   <div className="space-y-2">
                     <Label>Frequency</Label>
                     <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-dark-300"
+                      className="flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-dark-300"
                       value={payFreqInput}
                       onChange={(e) => setPayFreqInput(e.target.value)}
                     >

@@ -26,12 +26,12 @@ export const KeyboardNavigationTest: React.FC = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
           Keyboard Navigation Test
         </h1>
 
-        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
           <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
             How to Test:
           </h2>
@@ -75,7 +75,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => handleChange("firstName", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter first name"
                 />
               </div>
@@ -92,7 +92,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => handleChange("lastName", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter last name"
                 />
               </div>
@@ -109,7 +109,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="number"
                   value={formData.age}
                   onChange={(e) => handleChange("age", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter age"
                 />
               </div>
@@ -134,7 +134,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter email address"
                 />
               </div>
@@ -151,7 +151,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter phone number"
                 />
               </div>
@@ -175,7 +175,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   id="country"
                   value={formData.country}
                   onChange={(e) => handleChange("country", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select country</option>
                   <option value="us">United States</option>
@@ -197,7 +197,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value={formData.city}
                   onChange={(e) => handleChange("city", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="Enter city"
                 />
               </div>
@@ -214,7 +214,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="date"
                   value={formData.birthDate}
                   onChange={(e) => handleChange("birthDate", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
             </div>
@@ -237,7 +237,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   id="category"
                   value={formData.category}
                   onChange={(e) => handleChange("category", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select category</option>
                   <option value="personal">Personal</option>
@@ -257,7 +257,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   id="priority"
                   value={formData.priority}
                   onChange={(e) => handleChange("priority", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 >
                   <option value="">Select priority</option>
                   <option value="low">Low</option>
@@ -285,7 +285,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                 value={formData.notes}
                 onChange={(e) => handleChange("notes", e.target.value)}
                 rows={4}
-                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 placeholder="Enter any additional notes..."
               />
             </div>
@@ -309,7 +309,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value="This field is readonly"
                   readOnly
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-700 dark:text-white cursor-not-allowed"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-neutral-100 dark:bg-dark-150 text-neutral-700 dark:text-white cursor-not-allowed"
                 />
               </div>
 
@@ -325,7 +325,7 @@ export const KeyboardNavigationTest: React.FC = () => {
                   type="text"
                   value=""
                   onChange={(e) => handleChange("normalField", e.target.value)}
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   placeholder="This field is navigable"
                 />
               </div>
@@ -336,7 +336,7 @@ export const KeyboardNavigationTest: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="button"
-              className="px-6 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+              className="px-6 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               onClick={() => console.log("Form data:", formData)}
             >
               Test Submit

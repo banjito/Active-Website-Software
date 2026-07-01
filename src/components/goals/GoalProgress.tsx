@@ -64,9 +64,9 @@ export const GoalProgress: React.FC<GoalProgressProps> = ({
         )}
       </div>
 
-      <div className="w-full h-2 bg-neutral-200 dark:bg-dark-300 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-neutral-200 dark:bg-dark-300 rounded-none overflow-hidden">
         <div
-          className={`h-full ${statusColor} rounded-full`}
+          className={`h-full ${statusColor} rounded-none`}
           style={{ width: `${Math.min(100, percentage)}%` }}
         ></div>
       </div>

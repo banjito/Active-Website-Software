@@ -38,10 +38,10 @@ export const Slider: React.FC<SliderProps> = ({
     <div className={`relative w-full ${className}`}>
       <div
         ref={trackRef}
-        className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-dark-150"
+        className="relative h-1.5 w-full rounded-none bg-neutral-200 dark:bg-dark-150"
       >
         <div
-          className="absolute h-full rounded-full bg-blue-600 dark:bg-blue-500"
+          className="absolute h-full rounded-none bg-blue-600 dark:bg-blue-500"
           style={{ width: `${percentage}%` }}
         />
       </div>

@@ -61,12 +61,12 @@ export const BackToJobButtonTest: React.FC = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-6">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
           Back to Job Button Test
         </h1>
 
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-none">
           <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
             Current Page Analysis:
           </h2>
@@ -139,7 +139,7 @@ export const BackToJobButtonTest: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-none">
           <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
             How It Works:
           </h3>

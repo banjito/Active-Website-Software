@@ -32,7 +32,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             block w-full p-2.5
             bg-white dark:bg-dark-150 text-neutral-900 dark:text-white
             border ${error ? "border-red-500" : "border-neutral-300 dark:border-neutral-600"}
-            rounded-md shadow-sm
+            rounded-none shadow-sm
             focus:outline-none focus:ring-2 focus:ring-offset-0
             ${error ? "focus:ring-red-500" : "focus:ring-orange-500 dark:focus:ring-orange-400"}
             disabled:bg-neutral-100 dark:disabled:bg-neutral-700

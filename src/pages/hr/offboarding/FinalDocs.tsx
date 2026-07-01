@@ -321,7 +321,7 @@ export const FinalDocs: React.FC = () => {
     if (!opt) return null;
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${opt.color}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-medium ${opt.color}`}
       >
         {status === "active" ? (
           <CheckCircle className="h-3 w-3" />
@@ -369,7 +369,7 @@ export const FinalDocs: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+              <div className="p-2 rounded-none bg-neutral-100 dark:bg-neutral-800">
                 <FileText className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
               </div>
               <div>
@@ -384,7 +384,7 @@ export const FinalDocs: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+              <div className="p-2 rounded-none bg-green-100 dark:bg-green-900/20">
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
@@ -399,7 +399,7 @@ export const FinalDocs: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/20">
+              <div className="p-2 rounded-none bg-amber-100 dark:bg-amber-900/20">
                 <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
@@ -429,7 +429,7 @@ export const FinalDocs: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm min-w-[180px]"
+              className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm min-w-[180px]"
             >
               <option value="all">All Types</option>
               {DOC_TYPE_OPTIONS.map((opt) => (
@@ -618,7 +618,7 @@ export const FinalDocs: React.FC = () => {
                     doc_type: e.target.value as FinalDocType,
                   }))
                 }
-                className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                className="w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
               >
                 {DOC_TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -665,7 +665,7 @@ export const FinalDocs: React.FC = () => {
                 e.g. .doc, .docx, .pdf, .txt (max {MAX_FILE_MB} MB).
               </p>
               {formData.attachment_name ? (
-                <div className="flex items-center justify-between gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <div className="flex items-center justify-between gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-none border border-neutral-200 dark:border-neutral-700">
                   <span className="text-sm font-medium text-neutral-900 dark:text-white truncate flex items-center gap-2">
                     <FileText className="h-4 w-4 flex-shrink-0 text-neutral-500" />
                     {formData.attachment_name}
@@ -683,7 +683,7 @@ export const FinalDocs: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                <label className="flex items-center justify-center gap-2 h-24 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                   <Upload className="h-5 w-5 text-neutral-400" />
                   <span className="text-sm text-neutral-600 dark:text-neutral-400">
                     Choose file to upload
@@ -711,7 +711,7 @@ export const FinalDocs: React.FC = () => {
                       status: e.target.value as any,
                     }))
                   }
-                  className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                  className="h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -769,7 +769,7 @@ export const FinalDocs: React.FC = () => {
               <div className="flex items-center gap-3">
                 {getStatusBadge(selectedTemplate.status)}
                 {selectedTemplate.required && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-none text-xs font-medium bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
                     Required
                   </span>
                 )}
@@ -797,7 +797,7 @@ export const FinalDocs: React.FC = () => {
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Instructions
                   </p>
-                  <p className="text-sm text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-lg">
+                  <p className="text-sm text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-none">
                     {selectedTemplate.instructions}
                   </p>
                 </div>

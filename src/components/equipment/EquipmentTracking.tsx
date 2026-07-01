@@ -544,7 +544,7 @@ export const EquipmentTracking = forwardRef<
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+            <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-none">
               {error}
               <button
                 className="ml-2 text-red-600"
@@ -566,7 +566,7 @@ export const EquipmentTracking = forwardRef<
               }}
             >
               <div
-                className="bg-white rounded-lg shadow-lg w-full max-w-3xl overflow-hidden"
+                className="bg-white rounded-none shadow-lg w-full max-w-3xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -714,7 +714,7 @@ export const EquipmentTracking = forwardRef<
                           setForm({ ...form, notes: e.target.value })
                         }
                         placeholder="Maintenance history, issues, etc."
-                        className="w-full p-2 border rounded-md dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
+                        className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700 min-h-[100px]"
                       />
                     </div>
                   </div>
@@ -747,7 +747,7 @@ export const EquipmentTracking = forwardRef<
                 <LoadingSpinner size="md" />
               </div>
             ) : equipment.length === 0 ? (
-              <div className="text-center p-8 bg-neutral-50 rounded-md">
+              <div className="text-center p-8 bg-neutral-50 rounded-none">
                 <p className="text-neutral-600">
                   No equipment found. Use the "Add Equipment" button above to
                   add items.
@@ -764,7 +764,7 @@ export const EquipmentTracking = forwardRef<
                     <CardContent className="p-4">
                       <div className="flex justify-between">
                         <div className="flex items-start space-x-3">
-                          <div className="p-2 bg-neutral-100 rounded-full">
+                          <div className="p-2 bg-neutral-100 rounded-none">
                             <Hammer className="h-6 w-6 text-neutral-600" />
                           </div>
                           <div>

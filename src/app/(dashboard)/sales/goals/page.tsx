@@ -29,7 +29,7 @@ export default function GoalsPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm p-6">
         <GoalList />
       </div>
     </div>

@@ -236,7 +236,7 @@ export const PublicExitSurveyTake: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {(assignment.attached_documents?.length ?? 0) > 0 && (
-              <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-4">
+              <div className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-4">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                   <FileText className="h-4 w-4 text-[#f26722]" />
                   Documents to review
@@ -340,7 +340,7 @@ function QuestionField({
               key={num}
               type="button"
               onClick={() => onChange(num)}
-              className={`w-10 h-10 rounded-md border text-sm font-medium transition-colors ${
+              className={`w-10 h-10 rounded-none border text-sm font-medium transition-colors ${
                 n === num
                   ? "bg-[#f26722] text-white border-[#f26722]"
                   : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"

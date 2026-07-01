@@ -401,7 +401,7 @@ export const EncryptionSettings: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="border rounded-md">
+                  <div className="border rounded-none">
                     <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Customer Data</h3>
                     </div>
@@ -437,7 +437,7 @@ export const EncryptionSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="border rounded-md">
+                  <div className="border rounded-none">
                     <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Employee Data</h3>
                     </div>
@@ -475,7 +475,7 @@ export const EncryptionSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="border rounded-md">
+                  <div className="border rounded-none">
                     <div className="bg-neutral-50 px-4 py-2 border-b">
                       <h3 className="font-medium">Payment Data</h3>
                     </div>

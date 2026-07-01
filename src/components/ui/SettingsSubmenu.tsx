@@ -33,7 +33,7 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
   return (
     <>
       <div
-        className="w-80 max-w-[calc(100vw-2rem)] max-h-[min(32rem,calc(100vh-6rem))] overflow-y-auto rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+        className="w-80 max-w-[calc(100vw-2rem)] max-h-[min(32rem,calc(100vh-6rem))] overflow-y-auto rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 z-50"
         role="menu"
         aria-label="Settings"
       >

@@ -170,7 +170,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
               return (
                 <li
                   key={c.id}
-                  className="group flex items-center justify-between gap-3 rounded-lg border border-neutral-200 dark:border-dark-300 p-3 hover:border-neutral-300 dark:hover:border-dark-200 transition-colors"
+                  className="group flex items-center justify-between gap-3 rounded-none border border-neutral-200 dark:border-dark-300 p-3 hover:border-neutral-300 dark:hover:border-dark-200 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0">
@@ -179,7 +179,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                     </div>
                     {pulseInfo && PulseIcon && (
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${pulseInfo.color}`}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs font-semibold ${pulseInfo.color}`}
                       >
                         <PulseIcon className="h-3 w-3" />
                         {pulseInfo.label}
@@ -332,7 +332,7 @@ function OneOnOneViewer({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/50 backdrop-blur-sm overflow-y-auto p-4">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-dark-150 rounded-xl shadow-2xl my-6 overflow-hidden">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-dark-150 rounded-none shadow-2xl my-6 overflow-hidden">
         <div className="h-1.5 bg-gradient-to-r from-[#4a4e8a] via-[#52b788] to-[#c9a84c]" />
 
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
@@ -359,7 +359,7 @@ function OneOnOneViewer({
           {/* Pulse */}
           {pulseInfo && PulseIcon && (
             <div
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${pulseInfo.color}`}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-sm font-semibold ${pulseInfo.color}`}
             >
               <PulseIcon className="h-4 w-4" />
               {pulseInfo.label}

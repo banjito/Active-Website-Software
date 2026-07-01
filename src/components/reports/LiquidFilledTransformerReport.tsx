@@ -1665,7 +1665,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1683,7 +1683,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1701,7 +1701,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1715,7 +1715,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       handleNestedChange("nameplateData", "kva", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1737,7 +1737,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1755,7 +1755,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1773,7 +1773,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1791,7 +1791,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -1824,7 +1824,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-neutral-500 dark:text-white">/</span>
                     <input
@@ -1839,7 +1839,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div className="flex justify-center space-x-4">
@@ -1914,7 +1914,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
+                      className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
                     />
                     <span className="text-neutral-500 dark:text-white">/</span>
                     <input
@@ -1929,7 +1929,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
+                      className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!isEditing ? "bg-neutral-100" : ""}`}
                     />
                   </div>
                   <div className="flex justify-center space-x-4">
@@ -2024,7 +2024,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               );
                             }}
                             readOnly={!isEditing}
-                            className={`w-full text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             placeholder={index === 5 || index === 6 ? "-" : ""}
                           />
                         ),
@@ -2073,7 +2073,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                         <span className="text-neutral-500 dark:text-white">
                           /
@@ -2095,7 +2095,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-16 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                       <div className="flex items-center space-x-2">
@@ -2119,7 +2119,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                       <div className="flex items-center space-x-2">
@@ -2143,7 +2143,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-24 text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </div>
                     </div>
@@ -2438,7 +2438,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil level"
                     />
                   </div>
@@ -2464,7 +2464,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil temperature"
                     />
                   </div>
@@ -2490,7 +2490,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter oil temp range"
                     />
                   </div>
@@ -2516,7 +2516,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter tank pressure"
                     />
                   </div>
@@ -2542,7 +2542,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter winding temperature"
                     />
                   </div>
@@ -2568,7 +2568,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         );
                       }}
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder="Enter winding temp range"
                     />
                   </div>
@@ -2726,7 +2726,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {visualInspectionOptions.map((option) => (
                                   <option
@@ -2762,7 +2762,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                                 placeholder="Optional comments"
                               />
                             </div>
@@ -2853,7 +2853,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {testVoltageOptions.map((voltage) => (
                                   <option
@@ -2883,7 +2883,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -2903,7 +2903,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -2923,7 +2923,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-1 py-1">
@@ -2943,7 +2943,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {insulationResistanceUnits.map((unit) => (
                                   <option
@@ -3004,7 +3004,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.halfMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                             <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3015,7 +3015,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.oneMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                             <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3026,7 +3026,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.corrected?.tenMinute || ""
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                             <td className="px-1 py-1">
@@ -3037,7 +3037,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                                     ?.unit || "MΩ"
                                 }
                                 readOnly
-                                className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                                className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                               />
                             </td>
                           </tr>
@@ -3084,7 +3084,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3095,7 +3095,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3106,7 +3106,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.dielectricAbsorption || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1">
@@ -3117,7 +3117,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               .dielectricAbsorptionAcceptable
                           }
                           readOnly
-                          className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
+                          className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
                             formData.insulationResistance
                               .dielectricAbsorptionAcceptable === "Yes"
                               ? "text-green-600 dark:text-green-400 font-medium"
@@ -3144,7 +3144,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3155,7 +3155,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3166,7 +3166,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               ?.polarizationIndex || ""
                           }
                           readOnly
-                          className="w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                          className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
                         />
                       </td>
                       <td className="px-1 py-1">
@@ -3177,7 +3177,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                               .polarizationIndexAcceptable
                           }
                           readOnly
-                          className={`w-full text-sm text-center rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
+                          className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
                             formData.insulationResistance
                               .polarizationIndexAcceptable === "Yes"
                               ? "text-green-600 dark:text-green-400 font-medium"
@@ -3258,7 +3258,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -3275,7 +3275,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -3292,7 +3292,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                         })
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                 </div>
@@ -3352,7 +3352,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 onChange={(e) => handleChange(null, "comments", e.target.value)}
                 rows={4}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
               />
               {formData.comments?.trim() && (
                 <div className="hidden print:block">
@@ -3411,7 +3411,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 );
               }
             }}
-            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Mark Ready to Review
           </button>

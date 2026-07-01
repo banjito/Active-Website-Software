@@ -1158,7 +1158,7 @@ export const OfferLetters: React.FC = () => {
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-700 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
                   <div className="flex-1">
                     <div className="font-medium text-neutral-900 dark:text-white">
@@ -1711,7 +1711,7 @@ export const OfferLetters: React.FC = () => {
           </DialogHeader>
           <div className="py-4">
             <div
-              className="prose max-w-none dark:prose-invert border border-neutral-200 dark:border-neutral-700 rounded-lg p-6"
+              className="prose max-w-none dark:prose-invert border border-neutral-200 dark:border-neutral-700 rounded-none p-6"
               dangerouslySetInnerHTML={{
                 __html:
                   previewContent ||
@@ -1764,7 +1764,7 @@ export const OfferLetters: React.FC = () => {
                 {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
-            <ul className="border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-200 dark:divide-neutral-700">
+            <ul className="border border-neutral-200 dark:border-neutral-700 rounded-none divide-y divide-neutral-200 dark:divide-neutral-700">
               {offerAttachments.length === 0 ? (
                 <li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">
                   No attachments yet.
@@ -1831,7 +1831,7 @@ export const OfferLetters: React.FC = () => {
                     type="text"
                     value={signingLink || ""}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   />
                   <Button variant="outline" onClick={copySigningLink}>
                     <Copy className="h-4 w-4" />
@@ -1900,7 +1900,7 @@ export const OfferLetters: React.FC = () => {
                 value={extendNewDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               />
             </div>
             <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">

@@ -72,10 +72,6 @@ export default function PortalLanding() {
   const [fireworksTrigger, setFireworksTrigger] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("");
-  const [offlineTooltip, setOfflineTooltip] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -1156,18 +1152,6 @@ export default function PortalLanding() {
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <FireworksOverlay trigger={fireworksTrigger} />
-      {offlineTooltip && (
-        <div
-          className="pointer-events-none fixed z-[100] rounded-none border border-orange-200 dark:border-orange-700 bg-white px-3 py-1 text-xs font-medium text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white"
-          style={{
-            left: offlineTooltip.x,
-            top: offlineTooltip.y,
-            transform: "translateX(-100%)",
-          }}
-        >
-          In Development
-        </div>
-      )}
       <HeaderBar onEnterEditMode={handleEnterEditMode} />
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
@@ -1316,25 +1300,24 @@ export default function PortalLanding() {
               >
                 Learn More
               </Button>
-              <span
-                onMouseEnter={(e) =>
-                  setOfflineTooltip({ x: e.clientX - 12, y: e.clientY + 14 })
-                }
-                onMouseMove={(e) =>
-                  setOfflineTooltip({ x: e.clientX - 12, y: e.clientY + 14 })
-                }
-                onMouseLeave={() => setOfflineTooltip(null)}
-                className="inline-flex cursor-not-allowed"
+              <a
+                href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-Windows-x64-Setup.exe"
+                rel="noopener"
+                title="ampOS Offline — Windows (x64) installer"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-[#f26722] font-medium text-white transition-colors hover:bg-[#d9551a] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
               >
-                <Button
-                  disabled
-                  aria-disabled="true"
-                  className="group pointer-events-none inline-flex items-center rounded-none justify-center h-11 px-5 !text-neutral-600 bg-transparent opacity-60"
-                  leftIcon={<Download className="h-5 w-5 text-neutral-600" />}
-                >
-                  Offline Software
-                </Button>
-              </span>
+                <Download className="h-5 w-5" />
+                Windows
+              </a>
+              <a
+                href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-macOS-AppleSilicon.zip"
+                rel="noopener"
+                title="ampOS Offline — macOS (Apple Silicon)"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none border border-[#f26722] font-medium text-[#f26722] transition-colors hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:text-[#f26722]"
+              >
+                <Download className="h-5 w-5" />
+                Mac
+              </a>
             </div>
           </div>
         </div>

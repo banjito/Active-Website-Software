@@ -801,6 +801,11 @@ const OilInspectionReport: React.FC = () => {
   const reportIdRef = React.useRef<string | undefined>(initialReportId);
   const creatingRef = React.useRef(false);
   const pendingSaveRef = React.useRef(false);
+
+  // Report slug/name — declared before use (passing reportSlug into
+  // useReportLocked before this line is a temporal-dead-zone crash).
+  const reportSlug = "oil-inspection"; // This component handles the oil-inspection route
+  const reportName = getReportName(reportSlug);
   const { locked } = useReportLocked(currentReportId, jobId, reportSlug);
 
   // Print Mode Detection
@@ -809,8 +814,6 @@ const OilInspectionReport: React.FC = () => {
 
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = "oil-inspection"; // This component handles the oil-inspection route
-  const reportName = getReportName(reportSlug);
   const [isOmicronMode, setIsOmicronMode] = useState(false); // <-- Add state for the toggle
   const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
 

@@ -3,9 +3,11 @@
  *
  * The offline reporting shell needs a complete slug -> { name, component } map.
  * We derive it from the main app's own route table so it stays in sync:
- *   - collect every default import from ./components/reports/*
- *   - for each `/jobs/:id/<slug>/:reportId?` route, find the report component
- *     rendered inside it
+ *   - collect every report component imported from components/reports/*,
+ *     whether via a static `import X from "@/components/reports/X"` (or "./…")
+ *     or a lazy `const X = lazy(() => import("@/components/reports/X"))`
+ *   - for each `/jobs/:id/<slug>/:reportId?` route, pair the slug with the
+ *     FIRST such report component rendered right after the path
  *   - pair the slug with its display name from reportMappings.ts
  *
  * Run: node scripts/gen-report-registry.mjs
@@ -21,33 +23,46 @@ const mappingsSrc = fs.readFileSync(
   "utf8"
 );
 
-// 1. Default imports from components/reports -> { name: relativeImportPath }
+// 1. Report components imported from components/reports -> { name: importPath }.
+//    Handles static (`import X from "@/components/reports/X"` and "./…") and
+//    lazy (`const X = lazy(() => import("@/components/reports/X"))`) forms.
 const importPath = {};
-const impRe =
-  /import\s+([A-Za-z0-9_]+)\s+from\s+["']\.\/components\/reports\/([^"']+)["']/g;
+const stripExt = (p) => p.replace(/\.(tsx|ts|jsx|js)$/, "");
+
+const staticRe =
+  /import\s+([A-Za-z0-9_]+)\s+from\s+["'](?:@|\.)\/components\/reports\/([^"']+)["']/g;
 let m;
-while ((m = impRe.exec(appSrc))) {
-  importPath[m[1]] = m[2].replace(/\.(tsx|ts|jsx|js)$/, "");
-}
+while ((m = staticRe.exec(appSrc))) importPath[m[1]] = stripExt(m[2]);
+
+const lazyRe =
+  /const\s+([A-Za-z0-9_]+)\s*=\s*lazy\(\s*\(\)\s*=>\s*import\(\s*["'](?:@|\.)\/components\/reports\/([^"']+)["']/g;
+while ((m = lazyRe.exec(appSrc))) importPath[m[1]] = stripExt(m[2]);
+
 const reportNames = new Set(Object.keys(importPath));
 
-// 2. Display names from reportMappings REPORT_NAMES
+// 2. Display names from reportMappings REPORT_NAMES.
 const names = {};
 const nameRe = /['"]([a-z0-9-]+)['"]\s*:\s*['"]([^'"]+)['"]/g;
 while ((m = nameRe.exec(mappingsSrc))) names[m[1]] = m[2];
 
-// 3. slug -> component from /jobs/:id/<slug>/:reportId? routes
+// 3. slug -> component. For every `/jobs/:id/<slug>/:reportId?` route, take the
+//    first known report component that appears after the path (small window so
+//    we never bleed into the next route's element).
+const lines = appSrc.split("\n");
 const pairs = new Map();
-const routeRe = /path="\/jobs\/:id\/([a-z0-9-]+)\/:reportId\?"/g;
-while ((m = routeRe.exec(appSrc))) {
-  const slug = m[1];
+const routeLineRe = /path="\/jobs\/:id\/([a-z0-9-]+)\/:reportId\?"/;
+const compRe = /<([A-Z][A-Za-z0-9_]+)[\s/>]/g;
+for (let i = 0; i < lines.length; i++) {
+  const rm = routeLineRe.exec(lines[i]);
+  if (!rm) continue;
+  const slug = rm[1];
   if (pairs.has(slug)) continue;
-  const win = appSrc.slice(m.index, m.index + 900);
-  const ids = win.match(/<([A-Z][A-Za-z0-9_]+)/g) || [];
-  for (const id of ids) {
-    const comp = id.slice(1);
-    if (reportNames.has(comp)) {
-      pairs.set(slug, comp);
+  const windowText = lines.slice(i, i + 12).join("\n");
+  let cm;
+  compRe.lastIndex = 0;
+  while ((cm = compRe.exec(windowText))) {
+    if (reportNames.has(cm[1])) {
+      pairs.set(slug, cm[1]);
       break;
     }
   }

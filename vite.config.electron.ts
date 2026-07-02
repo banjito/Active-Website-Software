@@ -49,25 +49,15 @@ function offlineSupabasePlugin(): Plugin {
  * offlineSupabaseAdapter.ts). Phase 0 intentionally keeps the REAL Supabase
  * client so we can confirm the components render against live data first.
  */
-// Vite 8's rolldown bundler requires manualChunks as a function (the base web
-// config uses the legacy object form). Express the same vendor groupings as a
-// function so the Electron renderer build succeeds.
-const VENDOR_GROUPS: Record<string, string[]> = {
-  pdfjs: ["pdfjs-dist"],
-  "vendor-mui": ["@mui/material", "@mui/icons-material", "@mui/x-date-pickers"],
-  "vendor-charts": ["recharts", "chart.js", "react-chartjs-2"],
-  "vendor-bootstrap": ["react-bootstrap", "bootstrap"],
-  "vendor-calendar": ["@fullcalendar/"],
-  "vendor-supabase": ["@supabase/"],
-  "vendor-pdf": ["@react-pdf/renderer", "jspdf", "jspdf-autotable", "pdf-lib"],
-  "vendor-react-core": ["react", "react-dom", "react-router-dom"],
-};
-
-function manualChunks(id: string): string | undefined {
-  if (!id.includes("node_modules")) return undefined;
-  for (const [chunk, pkgs] of Object.entries(VENDOR_GROUPS)) {
-    if (pkgs.some((p) => id.includes(`node_modules/${p}`))) return chunk;
-  }
+// The base web config uses the legacy object form of manualChunks (which Vite
+// 8's rolldown rejects) to hand-group vendors for CDN caching. A desktop app
+// loaded from disk gains nothing from vendor-splitting, and that manual
+// grouping produced cross-chunk circular references that crashed some reports
+// at runtime ("Cannot access 'X' before initialization", e.g. recharts in
+// TanDeltaChart). So we OVERRIDE it with a function that opts out of manual
+// grouping entirely (returns undefined for every module), letting rolldown do
+// its own cycle-safe automatic chunking.
+function manualChunks(): undefined {
   return undefined;
 }
 
@@ -92,6 +82,7 @@ export default defineConfig((env) => {
     build: {
       outDir: path.resolve(__dirname, "electron/renderer-dist"),
       emptyOutDir: true,
+      minify: process.env.ELECTRON_NO_MINIFY ? false : undefined,
       rollupOptions: {
         output: { manualChunks },
       },

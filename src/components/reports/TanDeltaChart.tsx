@@ -101,11 +101,13 @@ const TanDeltaChart: React.FC = () => {
   const [justSaved, setJustSaved] = useState(false);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
-  const { locked } = useReportLocked(reportId, jobId, reportSlug);
 
-  // Define the report slug and name
+  // Define the report slug and name (declared before use — passing reportSlug
+  // into useReportLocked before this line is a temporal-dead-zone crash).
   const reportSlug = "medium-voltage-vlf-tan-delta";
   const reportName = getReportName(reportSlug);
+  const { locked } = useReportLocked(reportId, jobId, reportSlug);
+
   const [data, setData] = useState<TanDeltaDataPoint[]>(initialData);
   const [editingData, setEditingData] = useState<boolean>(false);
   const [testDate, setTestDate] = useState<string>("");

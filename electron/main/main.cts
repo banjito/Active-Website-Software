@@ -153,6 +153,15 @@ app.whenReady().then(() => {
     });
   }
 
+  // Headless all-reports sweep: open every registered report and confirm it
+  // mounts without a render crash (see runAllReportsTest).
+  if (process.env.ELECTRON_ALL_REPORTS_TEST) {
+    const win = BrowserWindow.getAllWindows()[0];
+    win.webContents.once("did-finish-load", () => {
+      void runAllReportsTest(win);
+    });
+  }
+
   // Headless PDF test: render the loaded renderer to a PDF file and verify.
   if (process.env.ELECTRON_PDF_TEST) {
     const win = BrowserWindow.getAllWindows()[0];
@@ -314,11 +323,6 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   );
   assert(title === "ampOS Offline", "list page heading renders");
 
-  if (process.env.ELECTRON_CAPTURE) {
-    await new Promise((r) => setTimeout(r, 700));
-    const png = await win.webContents.capturePage();
-    fs.writeFileSync("/tmp/shell-capture.png", png.toPNG());
-  }
   const count = (await waitForDom(
     win,
     `document.querySelectorAll('main button').length`,
@@ -340,6 +344,85 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   assert(!crashed, "report mounted without a render crash");
 
   console.log("[shell-test] complete");
+  app.quit();
+}
+
+/**
+ * Opens EVERY registered report in turn and confirms it mounts without a render
+ * crash. Slugs are read from the generated registry source so the sweep always
+ * covers the full set. A crash surfaces as the ReportHost error boundary's
+ * `[data-report-error]` marker; we also fail on a gone render process.
+ */
+async function runAllReportsTest(win: BrowserWindow): Promise<void> {
+  const registryPath = path.join(
+    process.cwd(),
+    "electron/renderer/reportRegistry.tsx",
+  );
+  const slugs = Array.from(
+    fs.readFileSync(registryPath, "utf8").matchAll(/slug:\s*"([^"]+)"/g),
+    (m) => m[1],
+  );
+
+  let processGone = false;
+  win.webContents.once("render-process-gone", () => {
+    processGone = true;
+  });
+
+  const failures: string[] = [];
+  const empty: string[] = [];
+  const stubs: string[] = [];
+  for (const slug of slugs) {
+    if (processGone) break;
+    // Route through the list first so each report gets a clean remount.
+    await win.webContents.executeJavaScript(`location.hash = '#/'`);
+    await waitForDom(win, `!document.querySelector('.electron-report-toolbar')`);
+    await win.webContents.executeJavaScript(
+      `location.hash = '#/jobs/offline/${slug}'`,
+    );
+    // Wait until the report host has rendered (toolbar present), then give
+    // effects/data fetches a beat to run so a late throw still trips the boundary.
+    await waitForDom(
+      win,
+      `document.body.innerText.includes('All reports') || !!document.querySelector('[data-report-error]')`,
+    );
+    await new Promise((r) => setTimeout(r, 200));
+    const crashed = (await win.webContents.executeJavaScript(
+      `!!document.querySelector('[data-report-error]') || document.body.innerText.includes('Unknown report')`,
+    )) as boolean;
+    if (crashed) {
+      failures.push(slug);
+      continue;
+    }
+    // Guard against a report that mounts but renders nothing (blank form). The
+    // toolbar alone is tiny; a real report form has substantial text/fields.
+    // "coming soon" placeholders are intentional stubs (same in the web app),
+    // so classify those separately rather than failing on them.
+    const bodyLen = (await win.webContents.executeJavaScript(
+      `document.body.innerText.trim().length`,
+    )) as number;
+    const fields = (await win.webContents.executeJavaScript(
+      `document.querySelectorAll('input, select, textarea, table').length`,
+    )) as number;
+    const isStub = (await win.webContents.executeJavaScript(
+      `document.body.innerText.toLowerCase().includes('coming soon')`,
+    )) as boolean;
+    if (isStub) stubs.push(slug);
+    else if (bodyLen < 200 && fields === 0) empty.push(`${slug}(len=${bodyLen})`);
+  }
+
+  const ok = !processGone && failures.length === 0 && empty.length === 0;
+  console.log(
+    `${failures.length === 0 ? "PASS" : "FAIL"}: ${slugs.length - failures.length}/${slugs.length} reports mounted without a crash`,
+  );
+  console.log(
+    `${empty.length === 0 ? "PASS" : "FAIL"}: ${slugs.length - empty.length - stubs.length}/${slugs.length - stubs.length} implemented reports rendered visible content (${stubs.length} 'coming soon' stubs skipped)`,
+  );
+  if (empty.length) console.log(`FAIL: empty reports -> ${empty.join(", ")}`);
+  if (stubs.length) console.log(`INFO: unimplemented stubs -> ${stubs.join(", ")}`);
+  if (processGone) console.log("FAIL: render process gone during sweep");
+  if (failures.length) console.log(`FAIL: crashed reports -> ${failures.join(", ")}`);
+  if (!ok) process.exitCode = 1;
+  console.log("[all-reports-test] complete");
   app.quit();
 }
 

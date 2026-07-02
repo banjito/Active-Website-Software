@@ -9,10 +9,18 @@ directories:
   buildResources: build-resources
 
 # What ships inside the asar. The compiled Electron processes plus the built
-# renderer (emitted by `npm run electron:build`).
+# renderer (emitted by `npm run electron:build`). The renderer is fully bundled
+# by Vite, so the ONLY runtime node_module needed is the native better-sqlite3
+# (and its `bindings`/`file-uri-to-path` helpers). Everything else in this
+# webapp's package.json (puppeteer, react-pdf, …) is excluded to keep the app
+# small — otherwise electron-builder drags in the entire web dependency tree.
 files:
   - electron/build/**/*
   - electron/renderer-dist/**/*
+  - "!node_modules/**/*"
+  - "node_modules/better-sqlite3/**/*"
+  - "node_modules/bindings/**/*"
+  - "node_modules/file-uri-to-path/**/*"
 
 extraResources:
   - from: build-resources/icon.png

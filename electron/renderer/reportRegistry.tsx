@@ -2,6 +2,8 @@
 // Maps each report route slug to its display name and React component,
 // derived from src/App.tsx + reportMappings.ts.
 import type { ComponentType } from "react";
+import AppliedVoltageTestATSReport from "@/components/reports/AppliedVoltageTestATSReport";
+import AutomaticTransferSwitchATSReport from "@/components/reports/AutomaticTransferSwitchATSReport";
 import CableHiPotReport from "@/components/reports/CableHiPotReport";
 import CurrentTransformerTestATSReport from "@/components/reports/CurrentTransformerTestATSReport";
 import DryTypeTransformerReport from "@/components/reports/DryTypeTransformerReport";
@@ -12,8 +14,11 @@ import GroundingSystemMaster from "@/components/reports/GroundingSystemMaster";
 import JobHazardAnalysisForm from "@/components/reports/JobHazardAnalysisForm";
 import LVMoldedCaseCircuitBreakerATS25Report from "@/components/reports/LVMoldedCaseCircuitBreakerATS25Report";
 import LargeDryTypeTransformerMTSReport from "@/components/reports/LargeDryTypeTransformerMTSReport";
+import LargeDryTypeTransformerReport from "@/components/reports/LargeDryTypeTransformerReport";
 import LargeDryTypeXfmrMTSReport from "@/components/reports/LargeDryTypeXfmrMTSReport";
 import LiquidFilledTransformerReport from "@/components/reports/LiquidFilledTransformerReport";
+import LiquidFilledXfmrATS25Report from "@/components/reports/LiquidFilledXfmrATS25Report";
+import LiquidXfmrVisualMTSReport from "@/components/reports/LiquidXfmrVisualMTSReport";
 import LowVoltageCircuitBreakerElectronicTripATSReport from "@/components/reports/LowVoltageCircuitBreakerElectronicTripATSReport";
 import LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport from "@/components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport";
 import LowVoltageCircuitBreakerElectronicTripMTSReport from "@/components/reports/LowVoltageCircuitBreakerElectronicTripMTSReport";
@@ -33,19 +38,26 @@ import MediumVoltageSwitchSF6Report from "@/components/reports/MediumVoltageSwit
 import MediumVoltageVLFMTSReport from "@/components/reports/MediumVoltageVLFMTSReport";
 import MediumVoltageVLFReport from "@/components/reports/MediumVoltageVLFReport";
 import MetalEnclosedBuswayReport from "@/components/reports/MetalEnclosedBuswayReport";
+import New12CurrentTransformerTestATSReport from "@/components/reports/12-CurrentTransformerTestATSReport";
+import New12CurrentTransformerTestMTSReport from "@/components/reports/12-CurrentTransformerTestMTSReport";
 import OilAnalysisReport from "@/components/reports/OilAnalysisReport";
 import OilInspectionReport from "@/components/reports/OilInspectionReport";
+import PanelboardAssembliesATS25Report from "@/components/reports/PanelboardAssembliesATS25Report";
 import PanelboardReport from "@/components/reports/PanelboardReport";
 import PotentialTransformerATSReport from "@/components/reports/PotentialTransformerATSReport";
 import RelayTestReport from "@/components/reports/RelayTestReport";
+import SmallLowVoltageDryTypeTransformerATS25Report from "@/components/reports/SmallLowVoltageDryTypeTransformerATS25Report";
 import SwitchgearPanelboardMTSReport from "@/components/reports/SwitchgearPanelboardMTSReport";
 import SwitchgearReport from "@/components/reports/SwitchgearReport";
+import SwitchgearSwitchboardAssembliesATS25Report from "@/components/reports/SwitchgearSwitchboardAssembliesATS25Report";
 import TanDeltaChart from "@/components/reports/TanDeltaChart";
 import TanDeltaChartMTS from "@/components/reports/TanDeltaChartMTS";
 import TanDeltaTestMTSForm from "@/components/reports/TanDeltaTestMTSForm";
 import ThreeLowVoltageCableATSForm from "@/components/reports/3-LowVoltageCableATS";
 import ThreeLowVoltageCableMTSForm from "@/components/reports/3-LowVoltageCableMTS";
 import TwelveSetsLowVoltageCableTestForm from "@/components/reports/12setslowvoltagecables";
+import TwoSmallDryTyperXfmrATSReport from "@/components/reports/TwoSmallDryTyperXfmrATSReport";
+import TwoSmallDryTyperXfmrMTSReport from "@/components/reports/TwoSmallDryTyperXfmrMTSReport";
 import VoltagePotentialTransformerTestMTSReport from "@/components/reports/13-VoltagePotentialTransformerTestMTSReport";
 
 export interface ReportEntry {
@@ -55,10 +67,14 @@ export interface ReportEntry {
 }
 
 export const REPORTS: ReportEntry[] = [
+  { slug: "12-current-transformer-test-ats-report", name: "12-Current Transformer Test ATS", component: New12CurrentTransformerTestATSReport },
+  { slug: "12-current-transformer-test-mts-report", name: "12-Current Transformer Test MTS", component: New12CurrentTransformerTestMTSReport },
   { slug: "13-voltage-potential-transformer-test-mts-report", name: "13-Voltage Potential Transformer Test MTS", component: VoltagePotentialTransformerTestMTSReport },
   { slug: "23-medium-voltage-motor-starter-mts-report", name: "23-Medium Voltage Motor Starter MTS Report", component: MediumVoltageMotorStarterMTSReport },
   { slug: "23-medium-voltage-switch-mts-report", name: "23-Medium Voltage Switch MTS", component: MediumVoltageSwitchMTSReport },
   { slug: "6-low-voltage-switch-maint-mts-report", name: "6-Low Voltage Switch Maint. MTS", component: LowVoltageSwitchMaintMTSReport },
+  { slug: "applied-voltage-test-ats-report", name: "Applied Voltage Test ATS", component: AppliedVoltageTestATSReport },
+  { slug: "automatic-transfer-switch-ats-report", name: "35-Automatic Transfer Switch ATS", component: AutomaticTransferSwitchATSReport },
   { slug: "cable-hipot-test-report", name: "cable-hipot-test-report", component: CableHiPotReport },
   { slug: "current-transformer-test-ats-report", name: "12-Current Transformer Test ATS (partial, single CT)", component: CurrentTransformerTestATSReport },
   { slug: "dry-type-transformer", name: "2-Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: DryTypeTransformerReport },
@@ -68,10 +84,13 @@ export const REPORTS: ReportEntry[] = [
   { slug: "grounding-fall-of-potential-slope-method-test", name: "Grounding Fall of Potential Slope Method Test", component: GroundingFallOfPotentialSlopeMethodTest },
   { slug: "grounding-system-master", name: "Grounding System MASTER", component: GroundingSystemMaster },
   { slug: "job-hazard-analysis-form", name: "Job Hazard Analysis Form", component: JobHazardAnalysisForm },
+  { slug: "large-dry-type-transformer", name: "2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: LargeDryTypeTransformerReport },
   { slug: "large-dry-type-transformer-mts-report", name: "2-Large Dry Type Xfmr. Inspection and Test MTS 23", component: LargeDryTypeTransformerMTSReport },
-  { slug: "large-dry-type-transformer-report", name: "2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: LargeDryTypeTransformerMTSReport },
+  { slug: "large-dry-type-transformer-report", name: "2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: LargeDryTypeTransformerReport },
   { slug: "large-dry-type-xfmr-mts-report", name: "2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS", component: LargeDryTypeXfmrMTSReport },
   { slug: "liquid-filled-transformer", name: "2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: LiquidFilledTransformerReport },
+  { slug: "liquid-filled-xfmr-ats25", name: "7.2.2 Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 25", component: LiquidFilledXfmrATS25Report },
+  { slug: "liquid-xfmr-visual-mts-report", name: "2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test MTS", component: LiquidXfmrVisualMTSReport },
   { slug: "low-voltage-cable-test-12sets", name: "3-Low Voltage Cable Test ATS", component: TwelveSetsLowVoltageCableTestForm },
   { slug: "low-voltage-cable-test-3sets", name: "3-Low Voltage Cable MTS", component: ThreeLowVoltageCableMTSForm },
   { slug: "low-voltage-cable-test-3sets-ats", name: "low-voltage-cable-test-3sets-ats", component: ThreeLowVoltageCableATSForm },
@@ -98,9 +117,14 @@ export const REPORTS: ReportEntry[] = [
   { slug: "mv-switch-oil", name: "mv-switch-oil", component: MediumVoltageSwitchOilReport },
   { slug: "oil-analysis-report", name: "oil-analysis-report", component: OilAnalysisReport },
   { slug: "oil-inspection", name: "2-Oil Xfmr. Inspection and Test ATS 21", component: OilInspectionReport },
+  { slug: "panelboard-assemblies-ats25", name: "7.1.2 Panelboard Assemblies Test Sheet ATS 25", component: PanelboardAssembliesATS25Report },
   { slug: "panelboard-report", name: "1-Panelboard Inspection & Test Report ATS 21", component: PanelboardReport },
   { slug: "potential-transformer-ats-report", name: "Potential Transformer ATS", component: PotentialTransformerATSReport },
   { slug: "relay-test-report", name: "relay-test-report", component: RelayTestReport },
+  { slug: "small-lv-dry-type-transformer-ats25", name: "7.2.1.1 Small Low Voltage Dry Type Transformer Test Sheet ATS 25", component: SmallLowVoltageDryTypeTransformerATS25Report },
   { slug: "switchgear-panelboard-mts-report", name: "1-Switchgear, Switchboard, Panelboard Inspection & Test Report MTS", component: SwitchgearPanelboardMTSReport },
   { slug: "switchgear-report", name: "1-Switchgear, Switchboard, Panelboard Inspection & Test Report ATS 21", component: SwitchgearReport },
+  { slug: "switchgear-switchboard-assemblies-ats25", name: "7.1.1 Switchgear & Switchboard Assemblies Test Sheet ATS 25", component: SwitchgearSwitchboardAssembliesATS25Report },
+  { slug: "two-small-dry-typer-xfmr-ats-report", name: "2-Small Dry Typer Xfmr. Inspection and Test ATS", component: TwoSmallDryTyperXfmrATSReport },
+  { slug: "two-small-dry-typer-xfmr-mts-report", name: "2-Small Dry Typer Xfmr. Inspection and Test MTS", component: TwoSmallDryTyperXfmrMTSReport },
 ];

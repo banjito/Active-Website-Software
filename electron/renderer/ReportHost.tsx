@@ -1,6 +1,43 @@
-import { useMemo } from "react";
+import { Component, useMemo, type ReactNode } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { REPORTS } from "./reportRegistry";
+
+/**
+ * Isolates a report render crash so one buggy report can't white-screen the
+ * whole offline app — the tech sees a clear message and can go back. The
+ * `data-report-error` marker also lets the headless all-reports test detect a
+ * crash reliably (see ELECTRON_ALL_REPORTS_TEST in electron/main/main.cts).
+ */
+class ReportErrorBoundary extends Component<
+  { slug?: string; children: ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  componentDidCatch(error: Error) {
+    console.error(`[REPORT_CRASH] ${this.props.slug}: ${error.stack ?? error.message}`);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          data-report-error="true"
+          className="p-8 text-neutral-700 dark:text-neutral-200"
+        >
+          <p className="text-lg font-semibold text-red-600 dark:text-red-400">
+            This report failed to load.
+          </p>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            {this.props.slug}: {this.state.error.message}
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 /** Bridge exposed by the preload (electron/preload/preload.cts). */
 const electronAPI = (
@@ -105,7 +142,9 @@ export default function ReportHost() {
           </button>
         </div>
       )}
-      <ReportComponent />
+      <ReportErrorBoundary slug={entry.slug}>
+        <ReportComponent />
+      </ReportErrorBoundary>
     </div>
   );
 }

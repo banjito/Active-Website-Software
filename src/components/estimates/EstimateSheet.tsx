@@ -2899,8 +2899,8 @@ export default function EstimateSheet({
   };
 
   // Arrow-key cell navigation for estimate tables (avoids global nav's position heuristic which skips rows / jumps on Windows)
-  const SOV_FOCUSABLE_COLS = [0, 1, 2, 3, 6, 7, 11, 12];
-  const NON_SOV_FOCUSABLE_COLS = [0, 1, 2, 3, 6, 7, 10, 11];
+  const SOV_FOCUSABLE_COLS = [0, 1, 2, 6, 7, 11, 12];
+  const NON_SOV_FOCUSABLE_COLS = [0, 1, 2, 6, 7, 10, 11];
 
   const handleEstimateCellKeyDown = (
     e: React.KeyboardEvent,
@@ -7067,10 +7067,6 @@ export default function EstimateSheet({
                             • "Material" columns for costs to receive tax &
                             mark-up
                           </li>
-                          <li style={{ marginBottom: "5px" }}>
-                            • "Expense" columns for costs with no mark-up or
-                            different mark-up from materials
-                          </li>
                         </ul>
                       </div>
 
@@ -7272,12 +7268,8 @@ export default function EstimateSheet({
                               </th>
                               <th style={styles.tableHeader}>QUANTITY</th>
                               <th style={styles.tableHeader}>MATERIAL PRICE</th>
-                              <th style={styles.tableHeader}>EXPENSE PRICE</th>
                               <th style={styles.tableHeader}>
                                 MATERIAL EXTENSION
-                              </th>
-                              <th style={styles.tableHeader}>
-                                EXPENSE EXTENSION
                               </th>
                               <th style={styles.tableHeader}>LABOR (MEN)</th>
                               <th style={styles.tableHeader}>LABOR (HOURS)</th>
@@ -7324,7 +7316,7 @@ export default function EstimateSheet({
                                       }}
                                     />
                                     <td
-                                      colSpan={12}
+                                      colSpan={10}
                                       style={{
                                         ...styles.tableCell,
                                         backgroundColor: structuralBg,
@@ -7764,62 +7756,6 @@ export default function EstimateSheet({
                                       readOnly={isViewMode}
                                     />
                                   </td>
-                                  <td style={styles.tableCell}>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
-                                      style={styles.tableInput}
-                                      value={
-                                        blankingKeys.has(
-                                          makeKey("sov", index, "expensePrice"),
-                                        )
-                                          ? ""
-                                          : String(item.expensePrice ?? "")
-                                      }
-                                      onChange={(e) =>
-                                        handleItemChange(
-                                          "sov",
-                                          index,
-                                          "expensePrice",
-                                          e.target.value,
-                                        )
-                                      }
-                                      onKeyDown={(e) => {
-                                        handleEstimateCellKeyDown(
-                                          e,
-                                          "sov",
-                                          index,
-                                          3,
-                                          data.sovItems.length,
-                                        );
-                                        if (
-                                          e.key === "Backspace" &&
-                                          String(item.expensePrice) === "0"
-                                        ) {
-                                          const copy = new Set(blankingKeys);
-                                          copy.add(
-                                            makeKey(
-                                              "sov",
-                                              index,
-                                              "expensePrice",
-                                            ),
-                                          );
-                                          setBlankingKeys(copy);
-                                          e.preventDefault();
-                                          handleItemChange(
-                                            "sov",
-                                            index,
-                                            "expensePrice",
-                                            "",
-                                          );
-                                        }
-                                      }}
-                                      data-estimate-table="sov"
-                                      data-estimate-row={index}
-                                      data-estimate-col={3}
-                                      readOnly={isViewMode}
-                                    />
-                                  </td>
                                   <td
                                     style={{
                                       ...styles.tableCell,
@@ -7827,14 +7763,6 @@ export default function EstimateSheet({
                                     }}
                                   >
                                     {formatCurrency(materialExtension)}
-                                  </td>
-                                  <td
-                                    style={{
-                                      ...styles.tableCell,
-                                      ...styles.calculated,
-                                    }}
-                                  >
-                                    {formatCurrency(expenseExtension)}
                                   </td>
                                   <td style={styles.tableCell}>
                                     <input
@@ -8248,12 +8176,8 @@ export default function EstimateSheet({
                             </th>
                             <th style={styles.tableHeader}>QUANTITY</th>
                             <th style={styles.tableHeader}>MATERIAL PRICE</th>
-                            <th style={styles.tableHeader}>EXPENSE PRICE</th>
                             <th style={styles.tableHeader}>
                               MATERIAL EXTENSION
-                            </th>
-                            <th style={styles.tableHeader}>
-                              EXPENSE EXTENSION
                             </th>
                             <th style={styles.tableHeader}>LABOR (MEN)</th>
                             <th style={styles.tableHeader}>LABOR (HOURS)</th>
@@ -8272,10 +8196,6 @@ export default function EstimateSheet({
                                 item.quantity,
                                 item.materialPrice,
                               );
-                            const expenseExtension = calculateExpenseExtension(
-                              item.quantity,
-                              item.expensePrice,
-                            );
                             const laborUnit = calculateLaborUnit(
                               item.laborMen,
                               item.laborHours,
@@ -8475,35 +8395,6 @@ export default function EstimateSheet({
                                     readOnly={isViewMode}
                                   />
                                 </td>
-                                <td style={styles.tableCell}>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    style={styles.tableInput}
-                                    value={item.expensePrice}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        "nonSov",
-                                        index,
-                                        "expensePrice",
-                                        e.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleEstimateCellKeyDown(
-                                        e,
-                                        "nonSov",
-                                        index,
-                                        3,
-                                        data.nonSovItems.length,
-                                      )
-                                    }
-                                    data-estimate-table="nonSov"
-                                    data-estimate-row={index}
-                                    data-estimate-col={3}
-                                    readOnly={isViewMode}
-                                  />
-                                </td>
                                 <td
                                   style={{
                                     ...styles.tableCell,
@@ -8511,14 +8402,6 @@ export default function EstimateSheet({
                                   }}
                                 >
                                   {formatCurrency(materialExtension)}
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.tableCell,
-                                    ...styles.calculated,
-                                  }}
-                                >
-                                  {formatCurrency(expenseExtension)}
                                 </td>
                                 <td style={styles.tableCell}>
                                   <input
@@ -9343,67 +9226,6 @@ export default function EstimateSheet({
                                   data.calculatedValues.totalMaterial *
                                     1.09 *
                                     materialMarkup,
-                                )}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  fontWeight: "bold",
-                                  padding: "12px 8px",
-                                  textAlign: "left",
-                                }}
-                              >
-                                EXPENSE TOTAL:
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calcCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatCurrency(
-                                  data.calculatedValues.totalExpense,
-                                )}
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                1.09
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calcCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatCurrency(
-                                  data.calculatedValues.totalExpense * 1.09,
-                                )}
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                1
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  ...styles.calcCell,
-                                  padding: "12px 8px",
-                                }}
-                              >
-                                {formatCurrency(
-                                  data.calculatedValues.totalExpense * 1.09,
                                 )}
                               </td>
                             </tr>

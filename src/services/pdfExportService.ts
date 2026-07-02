@@ -257,9 +257,12 @@ export class PDFExportService {
     printStyle.textContent = `
       @media print {
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        @page { size: landscape; margin: 0; margin-top: 0.4in; }
-        /* Pull first page content up; page 2+ keep 0.4in margin */
-        body { margin-top: -0.4in !important; }
+        /* margin:0 leaves no page-margin box, so Chrome cannot draw its
+           header/footer (URL, title, date, page numbers) even when the
+           print dialog's "Headers and footers" option is enabled. Content
+           top spacing is handled by #report-container padding below instead
+           of a page margin. */
+        @page { size: landscape; margin: 0; }
         * { color: black !important; }
         #report-container { padding-top: 0.1in !important; padding-right: 0.06in !important; margin-top: 0 !important; }
         #report-container > div:first-child, #report-container .report-body { padding-top: 0 !important; margin-top: 0 !important; }
@@ -446,16 +449,20 @@ export class PDFExportService {
     // Wait for handlers (e.g., ReportWrapper standardizers) to run
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Keep browser print headers from showing the asset filename.
+    // Chrome derives the "Save as PDF" suggested filename from document.title.
+    // Set both the iframe's and the top-level document's title to the computed
+    // report name + identifier so each report saves with its own filename
+    // instead of falling back to the tab URL (which made every PDF identical).
+    const printTitle = (filename || '').trim() || 'report';
     const originalTopTitle = document.title;
     try {
       try {
         if (iframeDocument) {
-          iframeDocument.title = ' ';
+          iframeDocument.title = printTitle;
         }
       } catch {}
       try {
-        document.title = ' ';
+        document.title = printTitle;
       } catch {}
 
       await new Promise<void>((resolve) => {

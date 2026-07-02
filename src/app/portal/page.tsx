@@ -83,7 +83,7 @@ export default function PortalLanding() {
       const next = !open;
       if (next && offlineBtnRef.current) {
         const r = offlineBtnRef.current.getBoundingClientRect();
-        setOfflinePos({ top: r.bottom + 8, left: r.right - 240 });
+        setOfflinePos({ top: r.bottom + 8, left: r.left - 5 });
       }
       return next;
     });
@@ -1352,12 +1352,9 @@ export default function PortalLanding() {
                         onClick={() => setOfflineOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:text-white"
                       >
-                        <img src="/img/Microsoft_logo.svg" alt="" className="h-5 w-5" />
+                        <img src="/img/Microsoft_logo.svg" alt="" className="h-5 w-auto" />
                         <span>
                           <span className="block font-medium">Windows</span>
-                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
-                            64-bit installer (.exe)
-                          </span>
                         </span>
                       </a>
                       <a
@@ -1366,12 +1363,9 @@ export default function PortalLanding() {
                         onClick={() => setOfflineOpen(false)}
                         className="flex items-center gap-3 border-t border-neutral-200 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:border-neutral-700 dark:text-white"
                       >
-                        <img src="/img/apple_logo.svg" alt="" className="h-5 w-5 dark:invert" />
+                        <img src="/img/apple_logo.svg" alt="" className="h-5 w-auto dark:invert" />
                         <span>
                           <span className="block font-medium">Mac</span>
-                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
-                            Apple Silicon (.zip)
-                          </span>
                         </span>
                       </a>
                     </div>

@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../lib/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import {
   getEstimatingPresets,
   updateEstimatingPresets,
@@ -27,10 +28,12 @@ import {
   CheckCircle,
   BookOpen,
   Wrench,
+  FileText,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import ScopeLibraryManager from "../components/estimates/ScopeLibraryManager";
 import TestEquipmentManager from "../components/estimates/TestEquipmentManager";
+import ProposalTemplateEditor from "../components/estimates/ProposalTemplateEditor";
 
 // Input component for currency fields - moved outside to prevent recreation
 const CurrencyInput: React.FC<{
@@ -187,8 +190,9 @@ FactorInput.displayName = "FactorInput";
 
 export default function EstimatingPresetsPage() {
   const { user } = useAuth();
+  const { isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState<
-    "presets" | "library" | "equipment"
+    "presets" | "library" | "equipment" | "proposal"
   >("presets");
   const [presets, setPresets] = useState<EstimatingPresets | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,7 +249,12 @@ export default function EstimatingPresetsPage() {
       setError(null);
       setSuccessMessage(null);
 
-      const { id, created_at, updated_at, updated_by, ...updateData } = presets;
+      const { id, created_at, updated_at, updated_by, ...rest } = presets;
+      // proposal_* template columns are managed by the Proposal Template tab;
+      // don't write this page's (possibly stale) copies back over them.
+      const updateData = Object.fromEntries(
+        Object.entries(rest).filter(([key]) => !key.startsWith("proposal_")),
+      );
       await updateEstimatingPresets(updateData, user.id);
 
       setHasChanges(false);
@@ -401,6 +410,16 @@ export default function EstimatingPresetsPage() {
                 label: "Test Equipment",
                 icon: Wrench,
               },
+              // Proposal letter template editing is restricted to admin/super users
+              ...(isAdmin
+                ? [
+                    {
+                      id: "proposal" as const,
+                      label: "Proposal Template",
+                      icon: FileText,
+                    },
+                  ]
+                : []),
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -658,6 +677,10 @@ export default function EstimatingPresetsPage() {
       {activeTab === "library" && <ScopeLibraryManager userId={user?.id} />}
 
       {activeTab === "equipment" && <TestEquipmentManager userId={user?.id} />}
+
+      {activeTab === "proposal" && isAdmin && (
+        <ProposalTemplateEditor userId={user?.id} />
+      )}
     </div>
   );
 }

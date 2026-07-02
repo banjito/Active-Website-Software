@@ -71,10 +71,8 @@ import AdminDashboardLayout, {
 import AdminUserManagement from "./components/admin/AdminUserManagement";
 import SystemHealthMonitoring from "./components/admin/SystemHealthMonitoring";
 import { SystemLogsCard } from "./components/admin/SystemLogsCard";
-import { PortalConfiguration } from "./components/admin/PortalConfiguration";
 import { DataBackupControls } from "./components/admin/DataBackupControls";
 import RoleManagement from "./components/admin/RoleManagement";
-import PermissionManagement from "./components/admin/PermissionManagement";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
 import InProgressDashboard from "./components/admin/InProgressDashboard";
 import IntegrationsSettings from "./components/admin/IntegrationsSettings";
@@ -641,10 +639,6 @@ function App() {
                       element={<RoleManagement />}
                     />
                     <Route
-                      path="permission-management"
-                      element={<PermissionManagement />}
-                    />
-                    <Route
                       path="notification-controls"
                       element={<NotificationDevControls />}
                     />
@@ -653,10 +647,6 @@ function App() {
                       element={<SystemHealthMonitoring />}
                     />
                     <Route path="system-logs" element={<SystemLogsCard />} />
-                    <Route
-                      path="portal-config"
-                      element={<PortalConfiguration />}
-                    />
                     <Route path="data-backup" element={<DataBackupControls />} />
                     <Route
                       path="encryption"

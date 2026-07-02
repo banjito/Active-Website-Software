@@ -290,8 +290,8 @@ export default function FieldTechJobsPage() {
       const filtered = customers.filter((customer) => {
         const searchTerm = customerSearch.toLowerCase();
         return (
-          customer.name.toLowerCase().includes(searchTerm) ||
-          customer.company_name.toLowerCase().includes(searchTerm)
+          customer.name?.toLowerCase().includes(searchTerm) ||
+          customer.company_name?.toLowerCase().includes(searchTerm)
         );
       });
       setFilteredCustomers(filtered);

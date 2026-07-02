@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Database, FileText, Hash, Sigma } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import Card, { CardContent, CardHeader, CardTitle } from "./ui/Card";
-import { Skeleton } from "./ui/Skeleton";
+import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface DbStats {
   total_size_bytes: number;

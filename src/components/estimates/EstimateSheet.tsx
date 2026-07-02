@@ -31,6 +31,12 @@ import {
   DEFAULT_ESTIMATING_PRESETS,
 } from "../../services/estimatingPresetsService";
 import {
+  DEFAULT_PROPOSAL_TEMPLATE_SECTIONS,
+  ProposalTemplateSections,
+  renderTemplateSection,
+  resolveProposalTemplateSections,
+} from "./proposalTemplateDefaults";
+import {
   createEmptyTravelGroup,
   DEFAULT_TRAVEL_DATA,
   normalizeTravelData,
@@ -4018,6 +4024,27 @@ export default function EstimateSheet({
     loadAndApplyPresets();
   }, [quotes.length, selectedQuoteIndex]);
 
+  // Proposal letter template sections (admin-editable from Estimating Presets
+  // > Proposal Template). Defaults are used until the presets row loads; null
+  // DB columns fall back to the built-in text, so letters are unchanged until
+  // an admin edits a section.
+  const [proposalTemplate, setProposalTemplate] =
+    useState<ProposalTemplateSections>(DEFAULT_PROPOSAL_TEMPLATE_SECTIONS);
+  useEffect(() => {
+    let cancelled = false;
+    getEstimatingPresets()
+      .then((presets) => {
+        if (!cancelled)
+          setProposalTemplate(resolveProposalTemplateSections(presets));
+      })
+      .catch((err) =>
+        console.error("Error loading proposal template sections:", err),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Trigger recalculation when hourly rates change
   useEffect(() => {
     // This will cause the component to re-render and recalculate getFinalValue()
@@ -5165,6 +5192,49 @@ export default function EstimateSheet({
 
     const signatureUrl =
       (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
+
+    // Render the admin-editable template sections with this letter's values.
+    // The computed machinery (pricing, scope tables, mobilization) stays
+    // code-generated below and is assembled around these sections.
+    const templateTokens: Record<string, string> = {
+      contactName,
+      projectTitle: opportunityData?.title || "Project Title",
+      jobsiteLocation: opportunityData?.jobsite_location
+        ? ", " + opportunityData.jobsite_location
+        : "",
+      netaStandardText:
+        NETA_OPTIONS.find((o) => o.value === netaStandard)?.text ||
+        "[Select NETA Standard]",
+      currentYear: String(new Date().getFullYear()),
+      alternateRatesNote:
+        showSatInLetter || showSunInLetter
+          ? " Alternate rates apply for Saturday and Sunday/Holiday work as noted above."
+          : "",
+      signatureImage: signatureUrl,
+      signerName: proposalTemplate.signerName,
+      signerTitle: proposalTemplate.signerTitle,
+    };
+    const introHtml = renderTemplateSection(
+      proposalTemplate.introHtml,
+      templateTokens,
+    );
+    const termsHtml = renderTemplateSection(
+      proposalTemplate.termsHtml,
+      templateTokens,
+    );
+    const conclusionHtml = renderTemplateSection(
+      proposalTemplate.conclusionHtml,
+      templateTokens,
+    );
+    const signatureBlockHtml = renderTemplateSection(
+      proposalTemplate.signatureHtml,
+      templateTokens,
+    );
+    const safetyPolicyHtml = renderTemplateSection(
+      proposalTemplate.safetyPolicyHtml,
+      templateTokens,
+    );
+
     const newLetterHtml = `
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display:flex;align-items:center;padding-bottom:6px;margin-bottom:12px;border-bottom:1px solid #ccc;">
@@ -5178,12 +5248,7 @@ export default function EstimateSheet({
           ${customer.company_name || "Company"}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div class="amp-section" style="margin: 8px 0;">Dear ${contactName},</div>
-        <div class="amp-section">AMP LLC is pleased to offer the following proposal for your consideration.</div>
-        <div class="amp-section" style="margin: 8px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at ${opportunityData?.title || "Project Title"}${opportunityData?.jobsite_location ? ", " + opportunityData.jobsite_location : ""}.</div>
-        <div class="amp-section" style="margin: 8px 0;">
-          <span id="neta-standard-text">${NETA_OPTIONS.find((o) => o.value === netaStandard)?.text || "[Select NETA Standard]"}</span>
-        </div>
+        ${introHtml}
         <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b style="font-size: 1.15em;">Scope</b>
@@ -5203,28 +5268,9 @@ export default function EstimateSheet({
         }
         ${pricingHtml}
         ${showMobilizationInLetter ? `<div class="amp-section">Mobilization costs of ${mobilization} shall be paid out of the above agreed upon price before the first day of work.</div>` : ""}
-        <div class="amp-section">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
-        <div class="amp-section" style="margin-top: 8px;">This price is based upon the following:</div>
-        <ol class="amp-section" style="margin: 4px 0 4px 20px;">
-          <li>The schedule for this work will be mutually determined.</li>
-          <li>Work to be performed during normal working hours, Monday through Friday.${showSatInLetter || showSunInLetter ? " Alternate rates apply for Saturday and Sunday/Holiday work as noted above." : ""}</li>
-          <li>Repairs and/or retests, if required, will be separately quoted.</li>
-          <li>All site work delays beyond AMP Quality Energy Services control will be billed in accordance with AMP Quality Energy Services ${new Date().getFullYear()} T&M Rate Sheet.</li>
-          <li>Aerial lift for overhead work to be provided by others.</li>
-          <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
-          <li>All work performed by AMP will be in accordance with the safety policy attached</li>
-        </ol>
-        <div style="margin-top: 12px;"><b style="font-size: 1.15em;">Conclusion</b></div>
-        <div>This proposal is valid for 120 days.</div>
-        <div style="margin-top: 8px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
-        <div style="margin-top: 8px;"><b><i>Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</i></b></div>
-        <div style="margin-top: 8px;">Should you have any questions please contact the undersigned.</div>
-        <div style="margin-top: 12px;">Sincerely,</div>
-        <div style="margin: 4px 0 2px 0;">
-          <img src="${signatureUrl}" alt="Signature" style="height: 40px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
-        </div>
-        <div>Brian Rodgers</div>
-        <div>Chief Executive Officer</div>
+        ${termsHtml}
+        ${conclusionHtml}
+        ${signatureBlockHtml}
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
         <div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 1725 | Decatur, Alabama 35602 | (256) 513-8255</div>
         <div style="margin-top: 80px;">
@@ -5233,25 +5279,7 @@ export default function EstimateSheet({
             <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
             <span style="font-size: 1.0em; font-weight: bold; color: #333; margin-left: 12px;">&mdash; Safety Policy on Jobsites</span>
           </div>
-          <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
-          <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
-          <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
-          <ul style="margin: 4px 0 4px 16px;">
-            <li>The employees shall be notified that a lockout (tagout) system is going to be implemented and the reason therefore. The qualified employee implementing the lockout (tagout) shall know the disconnecting means location for all sources of electrical energy and the location of all sources of potential energy. The qualified person shall be knowledgeable of hazards associated with all energy sources.</li>
-            <li>If the electrical supply is energized, the qualified person shall deenergize and disconnect the electric supply and relieve all stored energy.</li>
-            <li>Lockout (tagout) all disconnecting means with lockout (tagout) devices.</li>
-            <li>For tagout, one additional safety measure must be employed, such as opening, blocking, or removing an additional circuit element.</li>
-            <li>Attempt to operate the disconnecting means to determine that operation is prohibited.</li>
-            <li>A voltage-detecting instrument shall be used.  Inspect the instrument for visible damage. Do not proceed if there is an indication of damage to the instrument until an undamaged device is available.</li>
-            <li>Verify proper instrument operation and then test for absence of voltage.</li>
-            <li>Verify proper instrument operation after testing for absence of voltage.</li>
-            <li>Where required, install grounding equipment/conductor device on the phase conductors or circuit parts, to eliminate induced voltage or stored energy, before touching them. Where it has been determined that contact with other exposed energized conductors or circuit parts is possible, apply ground connecting devices rated for the available fault duty.</li>
-            <li>The equipment and/or electrical source is now locked out (tagged out).</li>
-          </ul>
-          <div style="margin-top: 6px; font-weight: bold;">Procedure Involving More Than One Person.</div>
-          <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 8px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
-          <div style="margin-top: 12px; font-size: 1.0em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
+          ${safetyPolicyHtml}
         </div>
       </div>
     `;
@@ -5696,6 +5724,48 @@ export default function EstimateSheet({
     const signatureUrl =
       (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
 
+    // Combined letters render the same admin-editable template sections as
+    // single-scope letters (shared source in proposalTemplateDefaults.ts), so
+    // template edits apply to both letter types.
+    const templateTokens: Record<string, string> = {
+      contactName,
+      projectTitle: opportunityData?.title || "Project Title",
+      jobsiteLocation: opportunityData?.jobsite_location
+        ? ", " + opportunityData.jobsite_location
+        : "",
+      netaStandardText:
+        NETA_OPTIONS.find((o) => o.value === netaStandard)?.text ||
+        "[Select NETA Standard]",
+      currentYear: String(new Date().getFullYear()),
+      alternateRatesNote:
+        grandShowSat || grandShowSun
+          ? " Alternate rates apply for Saturday and Sunday/Holiday work as noted above."
+          : "",
+      signatureImage: signatureUrl,
+      signerName: proposalTemplate.signerName,
+      signerTitle: proposalTemplate.signerTitle,
+    };
+    const introHtml = renderTemplateSection(
+      proposalTemplate.introHtml,
+      templateTokens,
+    );
+    const termsHtml = renderTemplateSection(
+      proposalTemplate.termsHtml,
+      templateTokens,
+    );
+    const conclusionHtml = renderTemplateSection(
+      proposalTemplate.conclusionHtml,
+      templateTokens,
+    );
+    const signatureBlockHtml = renderTemplateSection(
+      proposalTemplate.signatureHtml,
+      templateTokens,
+    );
+    const safetyPolicyHtml = renderTemplateSection(
+      proposalTemplate.safetyPolicyHtml,
+      templateTokens,
+    );
+
     const newCombinedLetterHtml = `
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 6px; margin-bottom: 12px;">
@@ -5709,12 +5779,7 @@ export default function EstimateSheet({
           ${customer.company_name || "Company"}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div style="margin: 8px 0;">Dear ${contactName},</div>
-        <div>AMP LLC is pleased to offer the following proposal for your consideration.</div>
-        <div style="margin: 8px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at ${opportunityData?.title || "Project Title"}${opportunityData?.jobsite_location ? ", " + opportunityData.jobsite_location : ""}.</div>
-        <div style="margin: 8px 0;">
-          <span id="neta-standard-text">${NETA_OPTIONS.find((o) => o.value === netaStandard)?.text || "[Select NETA Standard]"}</span>
-        </div>
+        ${introHtml}
         <div><b style="font-size: 1.15em;">Combined Scope of Work</b></div>
         ${sovTablesHtml}
         ${
@@ -5902,50 +5967,13 @@ export default function EstimateSheet({
         `
             : ""
         }
-        <div style="margin-top: 12px;">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
-        <div style="margin-top: 12px;">This price is based upon the following:</div>
-        <ol style="margin-left: 20px;">
-          <li>The schedule for this work will be mutually determined.</li>
-          <li>Work to be performed during normal working hours, Monday through Friday.${grandShowSat || grandShowSun ? " Alternate rates apply for Saturday and Sunday/Holiday work as noted above." : ""}</li>
-          <li>Repairs and/or retests, if required, will be separately quoted.</li>
-          <li>All site work delays beyond AMP Quality Energy Services control will be billed in accordance with AMP Quality Energy Services ${new Date().getFullYear()} T&M Rate Sheet.</li>
-          <li>Aerial lift for overhead work to be provided by others.</li>
-          <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
-          <li>All work performed by AMP will be in accordance with the safety policy attached</li>
-        </ol>
-        <div style="margin-top: 24px;"><b style="font-size: 1.15em;">Conclusion</b></div>
-        <div>This proposal is valid for 120 days.</div>
-        <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
-        <div style="margin-top: 16px;"><b><i>Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</i></b></div>
-        <div style="margin-top: 16px;">Should you have any questions please contact the undersigned.</div>
-        <div style="margin-top: 20px;">Sincerely,</div>
-        <div style="margin: 4px 0 2px 0;">
-          <img src="${signatureUrl}" alt="Signature" style="height: 40px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
-        </div>
-        <div>Brian Rodgers</div>
-        <div>Chief Executive Officer</div>
+        ${termsHtml}
+        ${conclusionHtml}
+        ${signatureBlockHtml}
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
         <div class="safety-policy-section" style="margin-top: 20px;">
           <div style="font-size: 1.3em; font-weight: bold; color: #333; margin: 10px 0 12px 0; text-align: center;">Safety Policy on Jobsites</div>
-          <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
-          <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
-          <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
-          <ul style="margin: 4px 0 4px 16px;">
-            <li>The employees shall be notified that a lockout (tagout) system is going to be implemented and the reason therefore. The qualified employee implementing the lockout (tagout) shall know the disconnecting means location for all sources of electrical energy and the location of all sources of potential energy. The qualified person shall be knowledgeable of hazards associated with all energy sources.</li>
-            <li>If the electrical supply is energized, the qualified person shall deenergize and disconnect the electric supply and relieve all stored energy.</li>
-            <li>Lockout (tagout) all disconnecting means with lockout (tagout) devices.</li>
-            <li>For tagout, one additional safety measure must be employed, such as opening, blocking, or removing an additional circuit element.</li>
-            <li>Attempt to operate the disconnecting means to determine that operation is prohibited.</li>
-            <li>A voltage-detecting instrument shall be used.  Inspect the instrument for visible damage. Do not proceed if there is an indication of damage to the instrument until an undamaged device is available.</li>
-            <li>Verify proper instrument operation and then test for absence of voltage.</li>
-            <li>Verify proper instrument operation after testing for absence of voltage.</li>
-            <li>Where required, install grounding equipment/conductor device on the phase conductors or circuit parts, to eliminate induced voltage or stored energy, before touching them. Where it has been determined that contact with other exposed energized conductors or circuit parts is possible, apply ground connecting devices rated for the available fault duty.</li>
-            <li>The equipment and/or electrical source is now locked out (tagged out).</li>
-          </ul>
-          <div style="margin-top: 6px; font-weight: bold;">Procedure Involving More Than One Person.</div>
-          <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 8px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
-          <div style="margin-top: 12px; font-size: 1.0em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
+          ${safetyPolicyHtml}
         </div>
       </div>
     `;

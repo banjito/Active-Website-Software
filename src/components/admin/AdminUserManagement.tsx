@@ -16,6 +16,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import UserPermissionsPanel from "./UserPermissionsPanel";
 
 interface UserData {
   id: string;
@@ -37,7 +39,6 @@ export default function AdminUserManagement() {
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoadingUserId, setPasswordLoadingUserId] = useState<
@@ -223,7 +224,6 @@ export default function AdminUserManagement() {
     currentRole: string | Role | undefined,
   ) => {
     setEditingUser(userId);
-    setPasswordUserId(null);
     setNewPassword("");
     setConfirmPassword("");
     // Ensure we set a valid Role type or null
@@ -238,24 +238,6 @@ export default function AdminUserManagement() {
     setEditingUser(null);
     setSelectedRole(null);
     setUpdateErrorUserId(null); // Clear specific error on cancel
-  };
-
-  const handleStartPasswordEdit = (userId: string) => {
-    setEditingUser(null);
-    setSelectedRole(null);
-    setPasswordUserId(userId);
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordErrorUserId(null);
-    setPasswordSuccessUserId(null);
-    setError(null);
-  };
-
-  const handleCancelPasswordEdit = () => {
-    setPasswordUserId(null);
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordErrorUserId(null);
   };
 
   const handleChangePassword = async (userId: string) => {
@@ -292,7 +274,6 @@ export default function AdminUserManagement() {
         throw error;
       }
 
-      setPasswordUserId(null);
       setNewPassword("");
       setConfirmPassword("");
       setPasswordSuccessUserId(userId);
@@ -538,15 +519,6 @@ export default function AdminUserManagement() {
         />
       )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            User Management
-          </h2>
-          <p className="text-neutral-600 dark:text-white mt-1">
-            Manage user accounts and assign roles.
-          </p>
-        </div>
-
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <Switch
@@ -625,23 +597,8 @@ export default function AdminUserManagement() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
-                    {/* Profile Image/Initial */}
-                    <div
-                      className={`relative h-10 w-10 rounded-none bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0 group ${
-                        canEditProfileImages ? "cursor-pointer" : ""
-                      }`}
-                      onClick={
-                        canEditProfileImages &&
-                        avatarUploadingUserId !== user.id
-                          ? () => handleStartAvatarChange(user.id)
-                          : undefined
-                      }
-                      title={
-                        canEditProfileImages
-                          ? "Change profile photo"
-                          : undefined
-                      }
-                    >
+                    {/* Profile Image/Initial (display only; edit via Account tab) */}
+                    <div className="relative h-10 w-10 rounded-none bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {user.user_metadata?.profileImage ? (
                         <img
                           src={user.user_metadata.profileImage}
@@ -655,12 +612,6 @@ export default function AdminUserManagement() {
                             "?"}
                         </span>
                       )}
-                      {canEditProfileImages &&
-                        avatarUploadingUserId !== user.id && (
-                          <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="h-4 w-4 text-white" />
-                          </div>
-                        )}
                       {avatarUploadingUserId === user.id && (
                         <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center">
                           <RefreshCw className="h-4 w-4 text-white animate-spin" />
@@ -697,228 +648,287 @@ export default function AdminUserManagement() {
                     </div>
                   </div>
 
-                  {/* Role Display/Edit */}
-                  {editingUser === user.id ? (
-                    <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0">
-                      <select
-                        value={selectedRole || ""} // Ensure value is controlled
-                        onChange={(e) =>
-                          setSelectedRole(e.target.value as Role)
-                        }
-                        className="block w-full pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                      >
-                        <option value="" disabled>
-                          Select a role
-                        </option>
-                        {Object.keys(ROLES).map((roleKey) => (
-                          <option key={roleKey} value={roleKey}>
-                            {roleKey}{" "}
-                            {/* Display the key (e.g., 'Admin', 'NETA Technician') */}
-                          </option>
-                        ))}
-                      </select>
-                      <Button
-                        size="sm"
-                        onClick={() => handleSaveRole(user.id)}
-                        disabled={!selectedRole}
-                        className="px-2 bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
-                        aria-label="Save Role"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCancelEdit}
-                        className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
-                        aria-label="Cancel Edit"
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
-                      <div className="mr-2">
-                        {/* Role Display Badge — colors per role from roles.ts */}
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium whitespace-nowrap ${getRoleBadgeClasses(
-                            user.user_metadata?.role,
-                          )}`}
-                        >
-                          {user.user_metadata?.role || "No Role"}
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          handleStartEdit(user.id, user.user_metadata?.role)
-                        }
-                        className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
-                        aria-label="Edit Role"
-                        leftIcon={<Edit className="h-4 w-4" />}
-                      >
-                        Edit
-                      </Button>
-                      {canChangePasswords && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleStartPasswordEdit(user.id)}
-                          className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
-                          leftIcon={<KeyRound className="h-4 w-4" />}
-                        >
-                          <span className="ml-1">Change password</span>
-                        </Button>
-                      )}
-                      {/* Deactivate (soft-delete) / Reactivate. We never
-                          delete the account, so report authorship is kept. */}
-                      {user.id !== currentUser?.id &&
-                        (user.is_active ? (
-                          <div className="relative">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                setConfirmDeactivateUserId((prev) =>
-                                  prev === user.id ? null : user.id,
-                                )
-                              }
-                              disabled={activeLoadingUserId === user.id}
-                              className="px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
-                              aria-label="Deactivate User"
-                              title="Deactivate user (blocks login, keeps their reports)"
-                              leftIcon={
-                                activeLoadingUserId === user.id ? (
-                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Ban className="h-4 w-4" />
-                                )
-                              }
-                            >
-                              Deactivate
-                            </Button>
-
-                            {confirmDeactivateUserId === user.id && (
-                              <>
-                                {/* click-away backdrop */}
-                                <div
-                                  className="fixed inset-0 z-40"
-                                  onClick={() =>
-                                    setConfirmDeactivateUserId(null)
-                                  }
-                                />
-                                <div
-                                  role="dialog"
-                                  className="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-4 shadow-xl"
-                                >
-                                  {/* caret pointing down to the button */}
-                                  <div className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45 border-b border-r border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150" />
-
-                                  <div className="flex items-start gap-2">
-                                    <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-                                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                                      Deactivate{" "}
-                                      {user.user_metadata?.name || user.email}?
-                                    </p>
-                                  </div>
-                                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">
-                                    They'll be <b>signed out</b> and{" "}
-                                    <b>blocked</b> from logging in, and hidden
-                                    from selection lists. Their account and all
-                                    reports they authored are kept (their name
-                                    stays on those reports). You can reactivate
-                                    them anytime.
-                                  </p>
-                                  <div className="mt-3 flex justify-end gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() =>
-                                        setConfirmDeactivateUserId(null)
-                                      }
-                                      className="text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-50"
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetActive(user.id, false)
-                                      }
-                                      className="bg-red-600 text-white hover:bg-red-700"
-                                      leftIcon={<Ban className="h-4 w-4" />}
-                                    >
-                                      Deactivate
-                                    </Button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
+                  {/* Role badge + single Edit/Close toggle */}
+                  <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-medium whitespace-nowrap ${getRoleBadgeClasses(
+                        user.user_metadata?.role,
+                      )}`}
+                    >
+                      {user.user_metadata?.role || "No Role"}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        editingUser === user.id
+                          ? handleCancelEdit()
+                          : handleStartEdit(user.id, user.user_metadata?.role)
+                      }
+                      className="px-2 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
+                      aria-label={
+                        editingUser === user.id ? "Close editor" : "Edit user"
+                      }
+                      leftIcon={
+                        editingUser === user.id ? (
+                          <XCircle className="h-4 w-4" />
                         ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleSetActive(user.id, true)}
-                            disabled={activeLoadingUserId === user.id}
-                            className="px-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20"
-                            aria-label="Reactivate User"
-                            title="Reactivate user (restores login)"
-                            leftIcon={
-                              activeLoadingUserId === user.id ? (
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <UserCheck className="h-4 w-4" />
-                              )
-                            }
-                          >
-                            Reactivate
-                          </Button>
-                        ))}
-                    </div>
-                  )}
+                          <Edit className="h-4 w-4" />
+                        )
+                      }
+                    >
+                      {editingUser === user.id ? "Close" : "Edit"}
+                    </Button>
+                  </div>
                 </div>
 
-                {canChangePasswords && passwordUserId === user.id && (
+                {editingUser === user.id && (
                   <div className="rounded-none border border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-100 p-4">
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="New password"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                      />
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                      />
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleChangePassword(user.id)}
-                        disabled={passwordLoadingUserId === user.id}
-                        className="bg-[#f26722] hover:bg-[#d95d1f] text-white"
-                      >
-                        {passwordLoadingUserId === user.id
-                          ? "Saving..."
-                          : "Save password"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCancelPasswordEdit}
-                        disabled={passwordLoadingUserId === user.id}
-                        className="text-neutral-500 hover:bg-neutral-200 dark:hover:bg-dark-50"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+                    <Tabs defaultValue="account">
+                      <TabsList className="mb-4 h-auto justify-start space-x-1 bg-neutral-100 p-1 dark:bg-dark-150">
+                        <TabsTrigger
+                          value="account"
+                          className="py-2 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white"
+                        >
+                          Account
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="permissions"
+                          className="py-2 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white"
+                        >
+                          Permissions
+                        </TabsTrigger>
+                      </TabsList>
+
+                      {/* Account tab: role, password, avatar, active status */}
+                      <TabsContent value="account">
+                        <div className="space-y-6">
+                          {/* Role */}
+                          <div>
+                            <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                              Role
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <select
+                                value={selectedRole || ""}
+                                onChange={(e) =>
+                                  setSelectedRole(e.target.value as Role)
+                                }
+                                className="block pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                              >
+                                <option value="" disabled>
+                                  Select a role
+                                </option>
+                                {Object.keys(ROLES).map((roleKey) => (
+                                  <option key={roleKey} value={roleKey}>
+                                    {roleKey}
+                                  </option>
+                                ))}
+                              </select>
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveRole(user.id)}
+                                disabled={!selectedRole}
+                                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+                                leftIcon={<CheckCircle className="h-4 w-4" />}
+                              >
+                                Save role
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Password */}
+                          {canChangePasswords && (
+                            <div>
+                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                                Reset password
+                              </p>
+                              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <input
+                                  type="password"
+                                  value={newPassword}
+                                  onChange={(e) =>
+                                    setNewPassword(e.target.value)
+                                  }
+                                  placeholder="New password"
+                                  className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                                />
+                                <input
+                                  type="password"
+                                  value={confirmPassword}
+                                  onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                  }
+                                  placeholder="Confirm new password"
+                                  className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                                />
+                              </div>
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleChangePassword(user.id)}
+                                  disabled={passwordLoadingUserId === user.id}
+                                  className="bg-[#f26722] hover:bg-[#d95d1f] text-white"
+                                  leftIcon={<KeyRound className="h-4 w-4" />}
+                                >
+                                  {passwordLoadingUserId === user.id
+                                    ? "Saving..."
+                                    : "Save password"}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Profile photo */}
+                          {canEditProfileImages && (
+                            <div>
+                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                                Profile photo
+                              </p>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleStartAvatarChange(user.id)}
+                                disabled={avatarUploadingUserId === user.id}
+                                leftIcon={
+                                  avatarUploadingUserId === user.id ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Camera className="h-4 w-4" />
+                                  )
+                                }
+                              >
+                                {avatarUploadingUserId === user.id
+                                  ? "Uploading..."
+                                  : "Change photo"}
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Active status */}
+                          {user.id !== currentUser?.id && (
+                            <div>
+                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                                Account status
+                              </p>
+                              {user.is_active ? (
+                                <div className="relative inline-block">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() =>
+                                      setConfirmDeactivateUserId((prev) =>
+                                        prev === user.id ? null : user.id,
+                                      )
+                                    }
+                                    disabled={activeLoadingUserId === user.id}
+                                    className="px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                    aria-label="Deactivate User"
+                                    title="Deactivate user (blocks login, keeps their reports)"
+                                    leftIcon={
+                                      activeLoadingUserId === user.id ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Ban className="h-4 w-4" />
+                                      )
+                                    }
+                                  >
+                                    Deactivate
+                                  </Button>
+
+                                  {confirmDeactivateUserId === user.id && (
+                                    <>
+                                      {/* click-away backdrop */}
+                                      <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() =>
+                                          setConfirmDeactivateUserId(null)
+                                        }
+                                      />
+                                      <div
+                                        role="dialog"
+                                        className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-4 shadow-xl"
+                                      >
+                                        {/* caret pointing down to the button */}
+                                        <div className="absolute -bottom-1.5 left-5 h-3 w-3 rotate-45 border-b border-r border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150" />
+
+                                        <div className="flex items-start gap-2">
+                                          <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+                                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                            Deactivate{" "}
+                                            {user.user_metadata?.name ||
+                                              user.email}
+                                            ?
+                                          </p>
+                                        </div>
+                                        <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                          They'll be <b>signed out</b> and{" "}
+                                          <b>blocked</b> from logging in, and
+                                          hidden from selection lists. Their
+                                          account and all reports they authored
+                                          are kept (their name stays on those
+                                          reports). You can reactivate them
+                                          anytime.
+                                        </p>
+                                        <div className="mt-3 flex justify-end gap-2">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() =>
+                                              setConfirmDeactivateUserId(null)
+                                            }
+                                            className="text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-50"
+                                          >
+                                            Cancel
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() =>
+                                              handleSetActive(user.id, false)
+                                            }
+                                            className="bg-red-600 text-white hover:bg-red-700"
+                                            leftIcon={<Ban className="h-4 w-4" />}
+                                          >
+                                            Deactivate
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleSetActive(user.id, true)}
+                                  disabled={activeLoadingUserId === user.id}
+                                  className="px-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20"
+                                  aria-label="Reactivate User"
+                                  title="Reactivate user (restores login)"
+                                  leftIcon={
+                                    activeLoadingUserId === user.id ? (
+                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <UserCheck className="h-4 w-4" />
+                                    )
+                                  }
+                                >
+                                  Reactivate
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      {/* Permissions tab */}
+                      <TabsContent value="permissions">
+                        <UserPermissionsPanel
+                          user={user}
+                          currentUserId={currentUser?.id}
+                        />
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 )}
               </div>

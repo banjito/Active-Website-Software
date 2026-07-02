@@ -9,16 +9,13 @@ import {
   ArrowLeft,
   FileText,
   Database,
-  Sliders,
   LockKeyhole,
-  Shield,
   Bell,
   Clock,
   Link2,
   DollarSign,
   ClipboardList,
   Activity,
-  type LucideIcon,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -34,11 +31,9 @@ const subPathTitles: Record<string, string> = {
   "in-progress": "In Progress Dashboard",
   "user-management": "User Management",
   "role-management": "Role Management",
-  "permission-management": "Permission Management",
   "notification-controls": "Notification Dev Controls",
   "system-health": "System Health",
   "system-logs": "System Logs",
-  "portal-config": "Portal Configuration",
   "data-backup": "Data Backup",
   encryption: "Encryption Settings",
   integrations: "Integrations",
@@ -47,11 +42,19 @@ const subPathTitles: Record<string, string> = {
 
 type AdminCard = {
   title: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   iconClassName: string;
   cardClassName: string;
   path: string;
 };
+
+const QuickBooksIcon = ({ className }: { className?: string }) => (
+  <img
+    src="/img/Intuit_QuickBooks_logo.svg"
+    alt="QuickBooks"
+    className={className}
+  />
+);
 
 const adminCards: AdminCard[] = [
   {
@@ -79,14 +82,6 @@ const adminCards: AdminCard[] = [
     path: "/admin-dashboard/role-management",
   },
   {
-    title: "Permission Management",
-    icon: Shield,
-    iconClassName: "text-orange-700 dark:text-orange-200",
-    cardClassName:
-      "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30",
-    path: "/admin-dashboard/permission-management",
-  },
-  {
     title: "Notification Dev Controls",
     icon: Bell,
     iconClassName: "text-rose-700 dark:text-rose-200",
@@ -109,14 +104,6 @@ const adminCards: AdminCard[] = [
     cardClassName:
       "border-yellow-200 bg-yellow-50/80 dark:border-yellow-900 dark:bg-yellow-950/30",
     path: "/admin-dashboard/system-logs",
-  },
-  {
-    title: "Portal Configuration",
-    icon: Sliders,
-    iconClassName: "text-purple-700 dark:text-purple-200",
-    cardClassName:
-      "border-purple-200 bg-purple-50/80 dark:border-purple-900 dark:bg-purple-950/30",
-    path: "/admin-dashboard/portal-config",
   },
   {
     title: "Data Backup",
@@ -144,8 +131,8 @@ const adminCards: AdminCard[] = [
   },
   {
     title: "QuickBooks Dashboard",
-    icon: DollarSign,
-    iconClassName: "text-lime-800 dark:text-lime-200",
+    icon: QuickBooksIcon,
+    iconClassName: "",
     cardClassName:
       "border-lime-200 bg-lime-50/80 dark:border-lime-900 dark:bg-lime-950/30",
     path: "/admin-dashboard/quickbooks",
@@ -192,7 +179,6 @@ const CATEGORIES: CategorySection[] = [
       [
         "/admin-dashboard/user-management",
         "/admin-dashboard/role-management",
-        "/admin-dashboard/permission-management",
       ].includes(c.path),
     ),
   },
@@ -222,7 +208,6 @@ const CATEGORIES: CategorySection[] = [
     label: "Configuration",
     cards: adminCards.filter((c) =>
       [
-        "/admin-dashboard/portal-config",
         "/admin-dashboard/notification-controls",
         "/admin-dashboard/integrations",
       ].includes(c.path),
@@ -310,8 +295,8 @@ function NavCard({
         }
       }}
     >
-      <CardContent className="flex min-h-[56px] items-center justify-center gap-2 px-3 py-4 text-center">
-        <Icon className={`h-4 w-4 shrink-0 ${iconClassName}`} />
+      <CardContent className="flex min-h-[56px] items-center justify-center gap-3 px-4 !pt-4 pb-4">
+        <Icon className={`h-7 w-7 shrink-0 ${iconClassName}`} />
         <span className="text-sm font-medium text-neutral-900 dark:text-white">
           {title}
         </span>
@@ -691,7 +676,7 @@ export const AdminDashboardLayout: React.FC = () => {
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
-                className="rounded-none border-none bg-neutral-100 hover:bg-neutral-200"
+                className="rounded-none border-none bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-dark-200 dark:text-white dark:hover:bg-dark-300"
                 onClick={() => navigate("/admin-dashboard")}
                 leftIcon={<ArrowLeft className="h-4 w-4" />}
               >

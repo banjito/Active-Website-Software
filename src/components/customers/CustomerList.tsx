@@ -374,7 +374,7 @@ export default function CustomerList() {
       setFormLoading(true);
 
       const { divisions, ...baseData } = formData;
-      const dataWithDivisions = { ...baseData, name: baseData.company_name, divisions: divisions.length > 0 ? divisions : null };
+      const dataWithDivisions = { ...baseData, name: baseData.company_name, divisions: divisions.length > 0 ? divisions : undefined };
       const dataWithoutDivisions = { ...baseData, name: baseData.company_name };
 
       if (isEditing && customerToEdit) {

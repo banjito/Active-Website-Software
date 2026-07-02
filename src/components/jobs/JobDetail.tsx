@@ -8682,7 +8682,7 @@ ${newBodyHtml}
                               <strong>Admin Dashboard → Integrations</strong> to
                               search and link projects.
                             </p>
-                          ) : job.quickbooks_project_id ? (
+                          ) : job?.quickbooks_project_id ? (
                             <div className="space-y-3">
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
@@ -8690,8 +8690,8 @@ ${newBodyHtml}
                                     Linked:{" "}
                                   </span>
                                   <span className="text-neutral-900 dark:text-white font-medium">
-                                    {job.quickbooks_project_name ||
-                                      job.quickbooks_project_id}
+                                    {job?.quickbooks_project_name ||
+                                      job?.quickbooks_project_id}
                                   </span>
                                 </div>
                                 <button
@@ -8709,11 +8709,11 @@ ${newBodyHtml}
                                     Estimated hours
                                   </span>
                                   <p className="font-mono text-neutral-900 dark:text-white">
-                                    {job.estimated_man_hours != null &&
+                                    {job?.estimated_man_hours != null &&
                                     !Number.isNaN(
-                                      Number(job.estimated_man_hours),
+                                      Number(job?.estimated_man_hours),
                                     )
-                                      ? Number(job.estimated_man_hours)
+                                      ? Number(job?.estimated_man_hours)
                                       : "—"}
                                   </p>
                                 </div>
@@ -8736,12 +8736,12 @@ ${newBodyHtml}
                                   <p className="font-mono">
                                     {qbHoursLoading ||
                                     (qbActualHours == null &&
-                                      job.estimated_man_hours == null)
+                                      job?.estimated_man_hours == null)
                                       ? "—"
                                       : (() => {
                                           const est =
-                                            job.estimated_man_hours != null
-                                              ? Number(job.estimated_man_hours)
+                                            job?.estimated_man_hours != null
+                                              ? Number(job?.estimated_man_hours)
                                               : null;
                                           const act = qbActualHours ?? null;
                                           const diff = (act ?? 0) - (est ?? 0);

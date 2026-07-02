@@ -974,15 +974,15 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           status?: string;
         } = {};
 
-        if (existingAsset.name !== assetName) {
+        if (existingAsset?.name !== assetName) {
           assetUpdate.name = assetName;
         }
 
-        if (existingAsset.template_type !== "MTS") {
+        if (existingAsset?.template_type !== "MTS") {
           assetUpdate.template_type = "MTS";
         }
 
-        if (!existingAsset.status || existingAsset.status === "not started") {
+        if (!existingAsset?.status || existingAsset.status === "not started") {
           assetUpdate.status = "in_progress";
         }
 

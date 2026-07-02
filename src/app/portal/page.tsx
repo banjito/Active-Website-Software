@@ -73,6 +73,7 @@ export default function PortalLanding() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showReviewShortcuts, setShowReviewShortcuts] = useState(false);
@@ -1300,24 +1301,65 @@ export default function PortalLanding() {
               >
                 Learn More
               </Button>
-              <a
-                href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-Windows-x64-Setup.exe"
-                rel="noopener"
-                title="ampOS Offline — Windows (x64) installer"
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-[#f26722] font-medium text-white transition-colors hover:bg-[#d9551a] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-              >
-                <Download className="h-5 w-5" />
-                Windows
-              </a>
-              <a
-                href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-macOS-AppleSilicon.zip"
-                rel="noopener"
-                title="ampOS Offline — macOS (Apple Silicon)"
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none border border-[#f26722] font-medium text-[#f26722] transition-colors hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:text-[#f26722]"
-              >
-                <Download className="h-5 w-5" />
-                Mac
-              </a>
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={offlineOpen}
+                  onClick={() => setOfflineOpen((o) => !o)}
+                  className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-[#f26722] font-medium text-white transition-colors hover:bg-[#d9551a] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                >
+                  <Download className="h-5 w-5" />
+                  Offline Software
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`h-4 w-4 transition-transform ${offlineOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {offlineOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setOfflineOpen(false)}
+                    />
+                    <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150">
+                      <a
+                        href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-Windows-x64-Setup.exe"
+                        rel="noopener"
+                        onClick={() => setOfflineOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:text-white"
+                      >
+                        <img src="/img/Microsoft_logo.svg" alt="" className="h-5 w-5" />
+                        <span>
+                          <span className="block font-medium">Windows</span>
+                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                            64-bit installer (.exe)
+                          </span>
+                        </span>
+                      </a>
+                      <a
+                        href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-macOS-AppleSilicon.zip"
+                        rel="noopener"
+                        onClick={() => setOfflineOpen(false)}
+                        className="flex items-center gap-3 border-t border-neutral-200 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:border-neutral-700 dark:text-white"
+                      >
+                        <img src="/img/apple_logo.svg" alt="" className="h-5 w-5 dark:invert" />
+                        <span>
+                          <span className="block font-medium">Mac</span>
+                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                            Apple Silicon (.zip)
+                          </span>
+                        </span>
+                      </a>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

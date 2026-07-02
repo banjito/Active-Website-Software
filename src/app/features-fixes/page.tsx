@@ -1192,7 +1192,7 @@ const FeaturesFixesPage: React.FC = () => {
                           className="text-center py-1.5 px-3 text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase border-b border-orange-200 dark:border-orange-800"
                         >
                           <span className="inline-flex items-center gap-1">
-                            <Bug className="h-3 w-3" /> Issues
+                            Issues
                           </span>
                         </th>
                         <th
@@ -1200,7 +1200,7 @@ const FeaturesFixesPage: React.FC = () => {
                           className="text-center py-1.5 px-3 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase border-b border-blue-200 dark:border-blue-800"
                         >
                           <span className="inline-flex items-center gap-1">
-                            <Lightbulb className="h-3 w-3" /> Features
+                            Features
                           </span>
                         </th>
                       </tr>

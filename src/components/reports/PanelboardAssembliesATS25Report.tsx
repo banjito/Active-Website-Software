@@ -678,9 +678,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
   useEffect(() => {
     setFormData((prev) => {
-      const updated = prev.contactResistance.map((r) => {
+      const updated = prev.contactResistance.map((r, idx) => {
         const deviation = computeDeviation(r.aPhase, r.bPhase, r.cPhase);
-        const criteria = prev.contactEvaluation[0]?.criteria || "<50%";
+        const criteria = prev.contactEvaluation[idx]?.criteria || "<50%";
         const threshold = parseCriteriaPercent(criteria);
         let result: StatusType | "N/A" = "N/A";
         if (deviation !== "N/A" && threshold !== null) {
@@ -736,6 +736,77 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     formData.contactNeutral.criteria,
     formData.contactGround.criteria,
   ]);
+
+  // Add/remove row functions (mirrors 7.11 Switchgear/Switchboard Assemblies sheet)
+  const addInsulationResistanceRow = () => {
+    setFormData((prev) => {
+      const newRow: InsulationRowSimple = {
+        section: "",
+        p1: "",
+        p2: "",
+        p3: "",
+      };
+      return {
+        ...prev,
+        insulationMeasured: [...prev.insulationMeasured, newRow],
+        tempCorrected: [...prev.tempCorrected, { ...newRow }],
+      };
+    });
+  };
+
+  const removeInsulationResistanceRow = (index: number) => {
+    if (formData.insulationMeasured.length <= 1) {
+      alert("At least one row is required.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this row? Any data in this row will be deleted.",
+    );
+    if (!confirmed) return;
+    setFormData((prev) => ({
+      ...prev,
+      insulationMeasured: prev.insulationMeasured.filter((_, i) => i !== index),
+      tempCorrected: prev.tempCorrected.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addContactResistanceRow = () => {
+    setFormData((prev) => {
+      const newIndex = prev.contactResistance.length + 1;
+      const newRow: ContactRow = {
+        busSection: `Section ${newIndex}`,
+        aPhase: "",
+        bPhase: "",
+        cPhase: "",
+        neutral: "",
+        ground: "",
+      };
+      return {
+        ...prev,
+        contactResistance: [...prev.contactResistance, newRow],
+        contactEvaluation: [
+          ...prev.contactEvaluation,
+          { deviation: "N/A", criteria: "<50%", result: "N/A" },
+        ],
+      };
+    });
+  };
+
+  const removeContactResistanceRow = (index: number) => {
+    if (formData.contactResistance.length <= 1) {
+      alert("At least one row is required.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this row? Any data in this row will be deleted.",
+    );
+    if (!confirmed) return;
+    setFormData((prev) => ({
+      ...prev,
+      contactResistance: prev.contactResistance.filter((_, i) => i !== index),
+      contactEvaluation: prev.contactEvaluation.filter((_, i) => i !== index),
+    }));
+  };
 
   // Excel-equivalent for Table 100.1:
   // IF($AC$9="","",IF($AC$9<=250,IF(Z37="MΩ",25,0.025),IF(Z37="MΩ",100,0.1)))
@@ -1965,9 +2036,20 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
-              Electrical - Insulation Resistance Tests
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+                Electrical - Insulation Resistance Tests
+              </h2>
+              {isEditing && (
+                <button
+                  onClick={addInsulationResistanceRow}
+                  className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 print:hidden"
+                  type="button"
+                >
+                  + Add Row
+                </button>
+              )}
+            </div>
             <div className="flex justify-between items-start mb-2 gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm">Temperature Correction Factor:</span>
@@ -2025,7 +2107,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         }))
                       }
                       readOnly={!isEditing}
-                      className={`form-input w-20 h-7 py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`form-input w-10 h-7 py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-xs ml-2">Units</span>
                     <select
@@ -2037,7 +2119,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         }))
                       }
                       disabled={!isEditing}
-                      className={`form-select w-20 h-7 py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`form-select w-10 h-7 py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     >
                       {INSULATION_RESISTANCE_UNITS.map((u) => (
                         <option key={u} value={u}>
@@ -2125,12 +2207,31 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   {formData.insulationMeasured.map((row, i) => (
                     <tr key={i}>
                       <td className="px-3 py-2">
-                        <div className="print:hidden">
+                        <div className="print:hidden flex items-center gap-1">
                           <input
                             value={row.section}
-                            readOnly
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            onChange={(e) => {
+                              const list = [...formData.insulationMeasured];
+                              list[i] = { ...list[i], section: e.target.value };
+                              handleChange((p) => ({
+                                ...p,
+                                insulationMeasured: list,
+                              }));
+                            }}
+                            readOnly={!isEditing}
+                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
+                          {isEditing &&
+                            formData.insulationMeasured.length > 1 && (
+                              <button
+                                onClick={() => removeInsulationResistanceRow(i)}
+                                className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                type="button"
+                                title="Remove row"
+                              >
+                                ×
+                              </button>
+                            )}
                         </div>
                         <div className="hidden print:block text-center">
                           {row.section}
@@ -2162,13 +2263,15 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         <td key={`c-${k}`} className="px-3 py-2">
                           <div className="print:hidden">
                             <input
-                              value={(formData.tempCorrected[i] as any)[k]}
+                              value={
+                                (formData.tempCorrected[i] as any)?.[k] ?? ""
+                              }
                               readOnly
                               className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                             />
                           </div>
                           <div className="hidden print:block text-center">
-                            {(formData.tempCorrected[i] as any)[k]}
+                            {(formData.tempCorrected[i] as any)?.[k] ?? ""}
                           </div>
                         </td>
                       ))}
@@ -2203,7 +2306,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                         {formData.criteriaUnits}
                       </td>
                       <td className="px-3 py-2 text-center font-semibold">
-                        {evaluateRowResult(formData.tempCorrected[i])}
+                        {formData.tempCorrected[i]
+                          ? evaluateRowResult(formData.tempCorrected[i])
+                          : "-"}
                       </td>
                     </tr>
                   ))}
@@ -2229,12 +2334,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     handleChange((p) => ({
                       ...p,
                       torqueVerificationUsingLROhm: e.target.value as
-                        | "Yes"
-                        | "No",
+                        "Yes" | "No",
                     }))
                   }
                   disabled={!isEditing}
-                  className={`form-select ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`form-select !w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {(["Yes", "No"] as const).map((v) => (
                     <option key={v} value={v}>
@@ -2242,6 +2346,15 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     </option>
                   ))}
                 </select>
+                {isEditing && (
+                  <button
+                    onClick={addContactResistanceRow}
+                    className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 print:hidden whitespace-nowrap flex-shrink-0"
+                    type="button"
+                  >
+                    + Add Row
+                  </button>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
@@ -2250,23 +2363,25 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
                   <colgroup>
                     <col style={{ width: "16%" }} />
-                    <col style={{ width: "16%" }} />
-                    <col style={{ width: "16%" }} />
-                    <col style={{ width: "16%" }} />
-                    <col style={{ width: "16%" }} />
-                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "14%" }} />
                   </colgroup>
                   <thead>
                     <tr>
                       <th
                         className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"
-                        colSpan={6}
+                        colSpan={7}
                       >
                         Resistance Measurements
                       </th>
                     </tr>
                     <tr>
                       {[
+                        "Section",
                         "Pole 1",
                         "Pole 2",
                         "Pole 3",
@@ -2284,62 +2399,101 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
-                    <tr>
-                      {(
-                        [
-                          "aPhase",
-                          "bPhase",
-                          "cPhase",
-                          "neutral",
-                          "ground",
-                        ] as const
-                      ).map((key, idx) => (
-                        <td key={key} className="px-3 py-2">
-                          <div className="print:hidden">
+                    {formData.contactResistance.map((row, i) => (
+                      <tr key={i}>
+                        <td className="px-3 py-2">
+                          <div className="print:hidden flex items-center gap-1">
                             <input
-                              value={formData.contactResistance[0][key]}
+                              value={row.busSection}
                               onChange={(e) => {
                                 const list = [...formData.contactResistance];
-                                list[0] = { ...list[0], [key]: e.target.value };
+                                list[i] = {
+                                  ...list[i],
+                                  busSection: e.target.value,
+                                };
                                 handleChange((p) => ({
                                   ...p,
                                   contactResistance: list,
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
+                            {isEditing &&
+                              formData.contactResistance.length > 1 && (
+                                <button
+                                  onClick={() => removeContactResistanceRow(i)}
+                                  className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                  type="button"
+                                  title="Remove row"
+                                >
+                                  ×
+                                </button>
+                              )}
                           </div>
                           <div className="hidden print:block text-center">
-                            {formData.contactResistance[0][key]}
+                            {row.busSection}
                           </div>
                         </td>
-                      ))}
-                      <td className="px-3 py-2">
-                        <div className="print:hidden">
-                          <select
-                            value={formData.contactUnit}
-                            onChange={(e) =>
-                              handleChange((p) => ({
-                                ...p,
-                                contactUnit: e.target.value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                          >
-                            {CONTACT_RESISTANCE_UNITS.map((u) => (
-                              <option key={u} value={u}>
-                                {u}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="hidden print:block text-center">
-                          {formData.contactUnit}
-                        </div>
-                      </td>
-                    </tr>
+                        {(
+                          [
+                            "aPhase",
+                            "bPhase",
+                            "cPhase",
+                            "neutral",
+                            "ground",
+                          ] as const
+                        ).map((key) => (
+                          <td key={key} className="px-3 py-2">
+                            <div className="print:hidden">
+                              <input
+                                value={row[key]}
+                                onChange={(e) => {
+                                  const list = [...formData.contactResistance];
+                                  list[i] = {
+                                    ...list[i],
+                                    [key]: e.target.value,
+                                  };
+                                  handleChange((p) => ({
+                                    ...p,
+                                    contactResistance: list,
+                                  }));
+                                }}
+                                readOnly={!isEditing}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </div>
+                            <div className="hidden print:block text-center">
+                              {row[key]}
+                            </div>
+                          </td>
+                        ))}
+                        <td className="px-3 py-2">
+                          <div className="print:hidden">
+                            <select
+                              value={formData.contactUnit}
+                              onChange={(e) =>
+                                handleChange((p) => ({
+                                  ...p,
+                                  contactUnit: e.target.value,
+                                }))
+                              }
+                              disabled={!isEditing}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            >
+                              {CONTACT_RESISTANCE_UNITS.map((u) => (
+                                <option key={u} value={u}>
+                                  {u}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="hidden print:block text-center">
+                            {formData.contactUnit}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -2362,102 +2516,124 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="p-2 align-top">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs">Measured</span>
-                          <span className="text-sm font-semibold">
-                            {formData.contactEvaluation[0]?.deviation || "-"}
-                          </span>
-                        </div>
-                      </td>
-                      <td
-                        className="p-2 align-middle text-center font-extrabold uppercase"
-                        rowSpan={2}
-                      >
-                        <div className="print:hidden">
-                          <select
-                            value={
-                              formData.contactEvaluation[0]?.result || "N/A"
-                            }
-                            onChange={(e) => {
-                              const list = [...formData.contactEvaluation];
-                              list[0] = {
-                                ...(list[0] || {
-                                  deviation: "N/A",
-                                  criteria: "<50%",
-                                }),
-                                result: e.target.value as any,
-                              };
-                              handleChange((p) => ({
-                                ...p,
-                                contactEvaluation: list,
-                              }));
-                            }}
-                            disabled={!isEditing}
-                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                          >
-                            {(
-                              [
-                                "PASS",
-                                "FAIL",
-                                "LIMITED SERVICE",
-                                "N/A",
-                              ] as const
-                            ).map((r) => (
-                              <option key={r} value={r}>
-                                {r}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="hidden print:block">
-                          {formData.contactEvaluation[0]?.result || "-"}
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 align-top">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs">Criteria</span>
-                          <div className="print:hidden">
-                            <select
-                              value={
-                                formData.contactEvaluation[0]?.criteria ||
-                                "<50%"
-                              }
-                              onChange={(e) => {
-                                const list = [...formData.contactEvaluation];
-                                list[0] = {
-                                  ...(list[0] || {
-                                    deviation: "N/A",
-                                    result: "N/A",
-                                  }),
-                                  criteria: e.target.value,
-                                };
-                                handleChange((p) => ({
-                                  ...p,
-                                  contactEvaluation: list,
-                                }));
-                              }}
-                              disabled={!isEditing}
-                              className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    {formData.contactResistance.map((row, i) => (
+                      <React.Fragment key={i}>
+                        {formData.contactResistance.length > 1 && (
+                          <tr>
+                            <td
+                              className="p-1 px-2 text-xs font-semibold bg-neutral-50 dark:bg-dark-150"
+                              colSpan={2}
                             >
-                              {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
-                                (c) => (
-                                  <option key={c} value={c}>
-                                    {c}
+                              {row.busSection}
+                            </td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td className="p-2 align-top">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs">Measured</span>
+                              <span className="text-sm font-semibold">
+                                {formData.contactEvaluation[i]?.deviation ||
+                                  "-"}
+                              </span>
+                            </div>
+                          </td>
+                          <td
+                            className="p-2 align-middle text-center font-extrabold uppercase"
+                            rowSpan={2}
+                          >
+                            <div className="print:hidden">
+                              <select
+                                value={
+                                  formData.contactEvaluation[i]?.result || "N/A"
+                                }
+                                onChange={(e) => {
+                                  const list = [...formData.contactEvaluation];
+                                  list[i] = {
+                                    ...(list[i] || {
+                                      deviation: "N/A",
+                                      criteria: "<50%",
+                                    }),
+                                    result: e.target.value as any,
+                                  };
+                                  handleChange((p) => ({
+                                    ...p,
+                                    contactEvaluation: list,
+                                  }));
+                                }}
+                                disabled={!isEditing}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              >
+                                {(
+                                  [
+                                    "PASS",
+                                    "FAIL",
+                                    "LIMITED SERVICE",
+                                    "N/A",
+                                  ] as const
+                                ).map((r) => (
+                                  <option key={r} value={r}>
+                                    {r}
                                   </option>
-                                ),
-                              )}
-                            </select>
-                          </div>
-                          <span className="hidden print:block">
-                            {formData.contactEvaluation[0]?.criteria || "<50%"}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="hidden print:block">
+                              {formData.contactEvaluation[i]?.result || "-"}
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="p-2 align-top">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs">Criteria</span>
+                              <div className="print:hidden">
+                                <select
+                                  value={
+                                    formData.contactEvaluation[i]?.criteria ||
+                                    "<50%"
+                                  }
+                                  onChange={(e) => {
+                                    const list = [
+                                      ...formData.contactEvaluation,
+                                    ];
+                                    list[i] = {
+                                      ...(list[i] || {
+                                        deviation: "N/A",
+                                        result: "N/A",
+                                      }),
+                                      criteria: e.target.value,
+                                    };
+                                    handleChange((p) => ({
+                                      ...p,
+                                      contactEvaluation: list,
+                                    }));
+                                  }}
+                                  disabled={!isEditing}
+                                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                >
+                                  {[
+                                    "<10%",
+                                    "<25%",
+                                    "<50%",
+                                    "<75%",
+                                    "<100%",
+                                  ].map((c) => (
+                                    <option key={c} value={c}>
+                                      {c}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <span className="hidden print:block">
+                                {formData.contactEvaluation[i]?.criteria ||
+                                  "<50%"}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
                   </tbody>
                 </table>
               </div>

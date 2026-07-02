@@ -74,6 +74,20 @@ export default function PortalLanding() {
   const [popupContent, setPopupContent] = useState("");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [offlineOpen, setOfflineOpen] = useState(false);
+  const offlineBtnRef = useRef<HTMLButtonElement>(null);
+  // Menu is position:fixed (not absolute) so the hero section's overflow-hidden
+  // can't clip it; we anchor it to the button's on-screen rect when opening.
+  const [offlinePos, setOfflinePos] = useState<{ top: number; left: number } | null>(null);
+  const toggleOffline = () => {
+    setOfflineOpen((open) => {
+      const next = !open;
+      if (next && offlineBtnRef.current) {
+        const r = offlineBtnRef.current.getBoundingClientRect();
+        setOfflinePos({ top: r.bottom + 8, left: r.right - 240 });
+      }
+      return next;
+    });
+  };
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showReviewShortcuts, setShowReviewShortcuts] = useState(false);
@@ -1303,10 +1317,11 @@ export default function PortalLanding() {
               </Button>
               <div className="relative">
                 <button
+                  ref={offlineBtnRef}
                   type="button"
                   aria-haspopup="true"
                   aria-expanded={offlineOpen}
-                  onClick={() => setOfflineOpen((o) => !o)}
+                  onClick={toggleOffline}
                   className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-[#f26722] font-medium text-white transition-colors hover:bg-[#d9551a] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
                 >
                   <Download className="h-5 w-5" />
@@ -1324,10 +1339,13 @@ export default function PortalLanding() {
                 {offlineOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-40"
+                      className="fixed inset-0 z-[60]"
                       onClick={() => setOfflineOpen(false)}
                     />
-                    <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150">
+                    <div
+                      style={{ top: offlinePos?.top, left: offlinePos?.left }}
+                      className="fixed z-[61] w-60 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150"
+                    >
                       <a
                         href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-Windows-x64-Setup.exe"
                         rel="noopener"

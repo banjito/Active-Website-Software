@@ -199,6 +199,9 @@ import { initializeRoles } from "./services/roleService";
 // Import supabase
 import { supabase } from "./lib/supabase";
 
+// Global maintenance/offline overlay (shows when Supabase is unreachable)
+import ConnectionStatusOverlay from "./components/system/ConnectionStatusOverlay";
+
 // Import Low Voltage Switch Multi-Device Test component
 import LowVoltageSwitchWithPrint from "./components/reports/LowVoltageSwitchMultiDeviceTest";
 // Import Low Voltage Switch Report component
@@ -566,6 +569,7 @@ function App() {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DemoModeProvider>
             <DivisionProvider>
+              <ConnectionStatusOverlay />
               <Router>
                 <ScrollToTop />
                 <Routes>

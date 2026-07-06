@@ -70,6 +70,7 @@ export default function PortalLanding() {
   const { user, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showBrian, setShowBrian] = useState(false);
+  const [showBrianBubble, setShowBrianBubble] = useState(false);
   const brianImgRef = useRef<HTMLImageElement>(null);
   // Exact off-screen offset in px. Measured from the rotated image so he starts
   // right at the edge (no dead travel) regardless of how the image is cropped.
@@ -85,8 +86,12 @@ export default function PortalLanding() {
     if (brianTimeoutRef.current) clearTimeout(brianTimeoutRef.current);
     measureBrian();
     setShowBrian(true);
+    setShowBrianBubble(false);
     // Creep in over 4s, hang out for 1s, then slink back over 2s.
-    brianTimeoutRef.current = setTimeout(() => setShowBrian(false), 4000 + 1000);
+    brianTimeoutRef.current = setTimeout(() => {
+      setShowBrian(false);
+      setShowBrianBubble(false);
+    }, 4000 + 1000);
   };
   useEffect(() => {
     return () => {
@@ -1193,7 +1198,6 @@ export default function PortalLanding() {
 
       {/* Easter egg: click the ampOS logo and Brian slowly creeps in from the left */}
       <div
-        aria-hidden="true"
         className="pointer-events-none fixed bottom-6 left-0 z-[9999]"
         style={{
           // Enter over 4s, exit over 2s. Start exactly at his measured width so he
@@ -1206,13 +1210,28 @@ export default function PortalLanding() {
           transitionDuration: showBrian ? "3000ms" : "1000ms",
         }}
       >
-        <img
-          ref={brianImgRef}
-          src="/img/brian.png"
-          alt=""
-          onLoad={measureBrian}
-          className="h-auto w-48 rotate-90 drop-shadow-2xl"
-        />
+        <div className="relative">
+          {/* Speech bubble — appears when you click Brian */}
+          <div
+            className={`pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-xl ring-1 ring-black/10 transition-all duration-300 dark:bg-neutral-800 dark:text-white dark:ring-white/10 ${
+              showBrianBubble
+                ? "translate-y-[-100%] opacity-100"
+                : "translate-y-[-90%] opacity-0"
+            }`}
+          >
+            I&apos;m always watching...
+            {/* little tail pointing down at Brian */}
+            <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent border-t-white dark:border-t-neutral-800" />
+          </div>
+          <img
+            ref={brianImgRef}
+            src="/img/brian.png"
+            alt="Brian"
+            onLoad={measureBrian}
+            onClick={() => setShowBrianBubble((v) => !v)}
+            className="pointer-events-auto h-auto w-48 rotate-90 cursor-pointer drop-shadow-2xl"
+          />
+        </div>
       </div>
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />

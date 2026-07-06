@@ -153,6 +153,10 @@
         --portal-card-color: #a36a0d;
     }
 
+    .portal-click-card.portal-features-fixes {
+        --portal-card-color: #6D2C32;
+    }
+
     .portal-card-badge {
         background-color: var(--portal-card-color) !important;
     }
@@ -197,6 +201,10 @@
 
     .portal-click-card:has(.text-amber-500):hover {
         background-color: #a36a0d;
+    }
+
+    .portal-click-card:has(.text-\[\#6D2C32\]):hover {
+        background-color: #6D2C32;
     }
 
     .portal-click-card:has(.text-purple-500):hover {

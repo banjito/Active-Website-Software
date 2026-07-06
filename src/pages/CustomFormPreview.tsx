@@ -1007,13 +1007,14 @@ export const CustomFormPreview: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
+                <button
                   onClick={() => window.print()}
-                  className="text-sm text-white bg-neutral-600 hover:bg-neutral-700"
-                  leftIcon={<Printer className="w-4 h-4" />}
+                  className="p-2 rounded-none text-white bg-neutral-600 hover:bg-neutral-700"
+                  title="Print Report"
+                  aria-label="Print Report"
                 >
-                  Print Report
-                </Button>
+                  <Printer className="w-5 h-5" />
+                </button>
                 <button
                   onClick={() => setStatus(status === "PASS" ? "FAIL" : "PASS")}
                   className={`px-4 py-2 rounded-none text-white font-medium ${

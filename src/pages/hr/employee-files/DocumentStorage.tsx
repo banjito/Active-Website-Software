@@ -593,12 +593,14 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                 <Button
                   onClick={() => setIsFolderModalOpen(true)}
                   variant="outline"
+                  leftIcon={<FolderPlus size={16} />}
                 >
-                  <FolderPlus className="mr-2 h-4 w-4" />
                   New Folder
                 </Button>
-                <Button onClick={() => setIsUploadModalOpen(true)}>
-                  <Upload className="mr-2 h-4 w-4" />
+                <Button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  leftIcon={<Upload size={16} />}
+                >
                   Upload Document
                 </Button>
               </>

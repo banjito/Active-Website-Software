@@ -127,6 +127,7 @@ import { SignOnboardingForm } from "./pages/hr/onboarding/SignOnboardingForm";
 import { DocumentStorage } from "./pages/hr/employee-files/DocumentStorage";
 import { VersionTracking } from "./pages/hr/employee-files/VersionTracking";
 import { EmployeeFiles } from "./pages/hr/employee-files/EmployeeFiles";
+import { EmployeeHandbook } from "./pages/hr/handbook/EmployeeHandbook";
 import { EmployeeProfiles } from "./pages/hr/data/EmployeeProfiles";
 import { JobTitleHistory } from "./pages/hr/data/JobTitleHistory";
 import { CompensationHistory } from "./pages/hr/data/CompensationHistory";
@@ -1161,6 +1162,18 @@ function App() {
                       <RequireAuth>
                         <HrLayout>
                           <HrDashboard />
+                        </HrLayout>
+                      </RequireAuth>
+                    }
+                  />
+
+                  {/* HR Employee Handbook Route */}
+                  <Route
+                    path="/hr/handbook"
+                    element={
+                      <RequireAuth>
+                        <HrLayout>
+                          <EmployeeHandbook />
                         </HrLayout>
                       </RequireAuth>
                     }

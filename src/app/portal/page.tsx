@@ -33,6 +33,7 @@ import {
   Globe,
   BriefcaseBusiness,
   Omega,
+  OctagonAlert,
 } from "lucide-react";
 import {
   useState,
@@ -68,6 +69,30 @@ export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showBrian, setShowBrian] = useState(false);
+  const brianImgRef = useRef<HTMLImageElement>(null);
+  // Exact off-screen offset in px. Measured from the rotated image so he starts
+  // right at the edge (no dead travel) regardless of how the image is cropped.
+  const [brianHiddenX, setBrianHiddenX] = useState(400);
+  const brianTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const measureBrian = () => {
+    const el = brianImgRef.current;
+    if (!el) return;
+    const w = el.getBoundingClientRect().width; // includes the 90° rotation
+    if (w > 0) setBrianHiddenX(Math.ceil(w) + 8);
+  };
+  const triggerBrian = () => {
+    if (brianTimeoutRef.current) clearTimeout(brianTimeoutRef.current);
+    measureBrian();
+    setShowBrian(true);
+    // Creep in over 4s, hang out for 1s, then slink back over 2s.
+    brianTimeoutRef.current = setTimeout(() => setShowBrian(false), 4000 + 1000);
+  };
+  useEffect(() => {
+    return () => {
+      if (brianTimeoutRef.current) clearTimeout(brianTimeoutRef.current);
+    };
+  }, []);
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -1166,6 +1191,30 @@ export default function PortalLanding() {
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <HeaderBar onEnterEditMode={handleEnterEditMode} />
 
+      {/* Easter egg: click the ampOS logo and Brian slowly creeps in from the left */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed bottom-6 left-0 z-[9999]"
+        style={{
+          // Enter over 4s, exit over 2s. Start exactly at his measured width so he
+          // begins appearing immediately, then eases into place.
+          transform: showBrian
+            ? "translateX(0)"
+            : `translateX(-${brianHiddenX}px)`,
+          transitionProperty: "transform",
+          transitionTimingFunction: "ease-out",
+          transitionDuration: showBrian ? "3000ms" : "1000ms",
+        }}
+      >
+        <img
+          ref={brianImgRef}
+          src="/img/brian.png"
+          alt=""
+          onLoad={measureBrian}
+          className="h-auto w-48 rotate-90 drop-shadow-2xl"
+        />
+      </div>
+
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
 
       <WelcomePopup
@@ -1228,13 +1277,18 @@ export default function PortalLanding() {
                 </button>
               </div>
             )}
-            <div className="mb-4 inline-block select-none">
+            <button
+              type="button"
+              onClick={triggerBrian}
+              aria-label="ampOS"
+              className="mb-4 inline-block select-none bg-transparent border-none p-0 cursor-pointer focus:outline-none"
+            >
               <img
                 src="/ampOS_full_logo.svg"
                 alt="ampOS"
-                className="h-[6rem] w-auto dark:invert"
+                className="h-[6rem] w-auto dark:invert transition-transform duration-300 ease-out hover:scale-105"
               />
-            </div>
+            </button>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -2114,13 +2168,19 @@ export default function PortalLanding() {
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-none"
-                    style={{ color: "#181818" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-[#181818] dark:text-white"
-                      style={{ color: "#181818" }}
+                  <div className="portal-icon-bg p-2.5 rounded-none text-[#181818] dark:text-white">
+                    <div
+                      className="h-5 w-5 bg-current"
+                      style={{
+                        maskImage: "url(/Armadillo_Icon_Black.svg)",
+                        WebkitMaskImage: "url(/Armadillo_Icon_Black.svg)",
+                        maskSize: "contain",
+                        WebkitMaskSize: "contain",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskPosition: "center",
+                        WebkitMaskPosition: "center",
+                      }}
                     />
                   </div>
                   <div>
@@ -2146,13 +2206,19 @@ export default function PortalLanding() {
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-none"
-                    style={{ color: "#993809" }}
-                  >
-                    <MapPin
-                      className="h-5 w-5 text-[#993809] dark:text-white"
-                      style={{ color: "#993809" }}
+                  <div className="portal-icon-bg p-2.5 rounded-none text-[#993809] dark:text-white">
+                    <div
+                      className="h-5 w-5 bg-current"
+                      style={{
+                        maskImage: "url(/Scavenger_ICON.svg)",
+                        WebkitMaskImage: "url(/Scavenger_ICON.svg)",
+                        maskSize: "contain",
+                        WebkitMaskSize: "contain",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskPosition: "center",
+                        WebkitMaskPosition: "center",
+                      }}
                     />
                   </div>
                   <div>
@@ -2337,17 +2403,17 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-features-fixes border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#6D2C32] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"
-                    style={{ color: "#9a3412" }}
+                    style={{ color: "#6D2C32" }}
                   >
-                    <FileText
-                      className="h-5 w-5 text-[#f26722] dark:text-white"
-                      style={{ color: "#9a3412" }}
+                    <OctagonAlert
+                      className="h-5 w-5 text-[#6D2C32] dark:text-white"
+                      style={{ color: "#6D2C32" }}
                     />
                   </div>
                   <div>
@@ -2356,7 +2422,7 @@ export default function PortalLanding() {
                     </CardTitle>
                   </div>
                 </div>
-                <Badge className="portal-card-badge portal-general-badge !text-white px-2.5 py-1 text-xs font-medium">
+                <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
                   General
                 </Badge>
               </CardHeader>

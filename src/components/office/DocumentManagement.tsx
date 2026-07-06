@@ -408,8 +408,8 @@ const DocumentManagement: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => setIsNewFolderModalOpen(true)}
+            leftIcon={<FolderPlus size={16} />}
           >
-            <FolderPlus size={16} className="mr-2" />
             New Folder
           </Button>
 

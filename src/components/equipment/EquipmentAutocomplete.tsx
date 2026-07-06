@@ -42,6 +42,9 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
+  // Suppress the search effect for one searchQuery change right after a
+  // selection, so setting the input to the chosen name doesn't reopen the list.
+  const suppressSearchRef = useRef(false);
   const [dropdownPos, setDropdownPos] = useState<{
     top: number;
     left: number;
@@ -122,6 +125,14 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
       return;
     }
 
+    // Skip the search that would otherwise fire from setting the input to the
+    // just-selected equipment name (which would reopen the dropdown).
+    if (suppressSearchRef.current) {
+      suppressSearchRef.current = false;
+      setShowSuggestions(false);
+      return;
+    }
+
     if (!searchQuery || searchQuery.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -177,6 +188,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
 
   const handleSelectEquipment = (equipment: FieldEquipment) => {
     justSelectedRef.current = true;
+    suppressSearchRef.current = true;
     setSearchQuery(equipment.equipment_name);
     onChange(equipment.equipment_name);
     setShowSuggestions(false);

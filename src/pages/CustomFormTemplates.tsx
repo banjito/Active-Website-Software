@@ -23,12 +23,19 @@ import {
   Eye,
   Globe,
   Lock,
+  Sparkles,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  listReports,
+  generateTemplateFromReport,
+  type ReportOption,
+} from "@/lib/customForms/generateTemplateFromReport";
 
 interface Template {
   id: string;
@@ -50,9 +57,60 @@ export const CustomFormTemplates: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // AI-assisted generation from a hard-coded report
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [reportSearch, setReportSearch] = useState("");
+  const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+  const reports = React.useMemo(() => listReports(), []);
+  const filteredReports = reports.filter((r) =>
+    r.fileName.toLowerCase().includes(reportSearch.toLowerCase()),
+  );
+
   useEffect(() => {
     loadTemplates();
   }, []);
+
+  const handleGenerateFromReport = async (report: ReportOption) => {
+    if (generatingReport) return;
+    setGeneratingReport(report.path);
+    const toastId = toast.loading(
+      `Generating template from ${report.fileName}…`,
+    );
+    try {
+      const template = await generateTemplateFromReport(report);
+
+      const { data, error } = await supabase
+        .schema("neta_ops")
+        .from("custom_form_templates")
+        .insert({
+          name: template.name || report.fileName.replace(/\.(tsx|jsx)$/, ""),
+          description: template.description || null,
+          neta_section: template.netaSection || null,
+          created_by: user?.id,
+          structure: template.structure,
+          is_active: true,
+          is_published: false,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Draft template created — review it in the builder.", {
+        id: toastId,
+      });
+      setShowAiModal(false);
+      navigate(`/custom-forms/builder/${data.id}`);
+    } catch (err) {
+      console.error("Error generating template:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to generate template",
+        { id: toastId },
+      );
+    } finally {
+      setGeneratingReport(null);
+    }
+  };
 
   const loadTemplates = async () => {
     setIsLoading(true);
@@ -192,13 +250,26 @@ export const CustomFormTemplates: React.FC = () => {
                 Custom Form Templates
               </h1>
             </div>
-            <Button
-              onClick={() => navigate("/custom-forms/builder")}
-              className="bg-[#f26722] hover:bg-[#e55611]"
-              leftIcon={<Plus className="w-4 h-4" />}
-            >
-              Create Template
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setReportSearch("");
+                  setShowAiModal(true);
+                }}
+                variant="outline"
+                className="border-[#f26722] text-[#f26722] hover:bg-[#f26722]/10"
+                leftIcon={<Sparkles className="w-4 h-4" />}
+              >
+                Generate with AI
+              </Button>
+              <Button
+                onClick={() => navigate("/custom-forms/builder")}
+                className="bg-[#f26722] hover:bg-[#e55611]"
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                Create Template
+              </Button>
+            </div>
           </div>
 
           {/* Search */}
@@ -365,6 +436,81 @@ export const CustomFormTemplates: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* AI: Generate from report modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl max-h-[80vh] flex flex-col bg-white dark:bg-dark-100 rounded-lg shadow-xl">
+            <div className="flex items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#f26722]" />
+                  Generate template from a report
+                </h2>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  Pick a hard-coded report. AI reads its source and creates a
+                  draft template you can review and edit.
+                </p>
+              </div>
+              <button
+                onClick={() => !generatingReport && setShowAiModal(false)}
+                disabled={!!generatingReport}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 disabled:opacity-40"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 pb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="Search reports..."
+                  value={reportSearch}
+                  onChange={(e) => setReportSearch(e.target.value)}
+                  className="pl-10"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pb-6">
+              {filteredReports.length === 0 ? (
+                <p className="text-center text-neutral-500 dark:text-neutral-400 py-8">
+                  No reports match your search.
+                </p>
+              ) : (
+                <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {filteredReports.map((report) => {
+                    const busy = generatingReport === report.path;
+                    return (
+                      <li
+                        key={report.path}
+                        className="flex items-center justify-between py-2.5"
+                      >
+                        <span className="flex items-center gap-2 text-sm text-neutral-800 dark:text-neutral-200 truncate">
+                          <FileText className="w-4 h-4 text-neutral-400 shrink-0" />
+                          {report.fileName}
+                        </span>
+                        <Button
+                          size="sm"
+                          onClick={() => handleGenerateFromReport(report)}
+                          disabled={!!generatingReport}
+                          className="bg-[#f26722] hover:bg-[#e55611] shrink-0"
+                        >
+                          {busy ? "Generating…" : "Generate"}
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

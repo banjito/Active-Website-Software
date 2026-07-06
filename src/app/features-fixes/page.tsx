@@ -495,9 +495,9 @@ const FeaturesFixesPage: React.FC = () => {
                 setValue(option.value);
                 setCurrentPage(1);
               }}
-              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#6D2C32] ${
                 checked
-                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  ? "bg-orange-50 text-[#6D2C32] dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
@@ -1093,7 +1093,7 @@ const FeaturesFixesPage: React.FC = () => {
               <div className="bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-[#f26722]" />
+                    <Trophy className="h-5 w-5 text-[#6D2C32]" />
                     <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wide">
                       Top Contributors
                     </h3>
@@ -1130,7 +1130,7 @@ const FeaturesFixesPage: React.FC = () => {
                             )}
                             {r.name}
                           </span>
-                          <span className="text-sm font-bold text-[#f26722]">
+                          <span className="text-sm font-bold text-[#6D2C32]">
                             {r.count}
                           </span>
                         </div>
@@ -1141,7 +1141,7 @@ const FeaturesFixesPage: React.FC = () => {
                               width: `${barPct}%`,
                               backgroundColor:
                                 r.rank === 1
-                                  ? "#f26722"
+                                  ? "#6D2C32"
                                   : r.rank === 2
                                     ? "#f59e0b"
                                     : r.rank === 3
@@ -1165,7 +1165,7 @@ const FeaturesFixesPage: React.FC = () => {
               <div className="lg:col-span-2 bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-[#f26722]" />
+                    <Clock className="h-5 w-5 text-[#6D2C32]" />
                     <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wide">
                       Resolution Times by Priority
                     </h3>
@@ -1326,9 +1326,9 @@ const FeaturesFixesPage: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className={`w-64 rounded-none border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                className={`w-64 rounded-none border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D2C32] ${
                   search
-                    ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
+                    ? "border-[#6D2C32] bg-orange-50 dark:bg-orange-900/20"
                     : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-dark-150"
                 } text-neutral-900 dark:text-white`}
               />
@@ -1336,10 +1336,10 @@ const FeaturesFixesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#6D2C32] ${
                     activeFilterCount > 0
-                      ? "text-[#f26722]"
-                      : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                      ? "text-[#6D2C32]"
+                      : "text-neutral-700 hover:text-[#6D2C32] dark:text-white dark:hover:text-[#6D2C32]"
                   }`}
                   aria-expanded={isFilterMenuOpen}
                   aria-label="Filter features and fixes"
@@ -1348,7 +1348,7 @@ const FeaturesFixesPage: React.FC = () => {
                   <Filter className="h-5 w-5" />
                 </button>
                 {isFilterMenuOpen && (
-                  <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-none border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                  <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-none border border-neutral-200 bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#6D2C32_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-[#6D2C32] [&::-webkit-scrollbar-thumb]:hover:bg-[#57232A] dark:[scrollbar-color:#6D2C32_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                     <div>
                       <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                         Type
@@ -1377,7 +1377,7 @@ const FeaturesFixesPage: React.FC = () => {
                           setStatusFilter("all");
                           setCurrentPage(1);
                         }}
-                        className="mt-3 w-full rounded-none border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:text-white dark:hover:bg-dark-100"
+                        className="mt-3 w-full rounded-none border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#6D2C32] dark:border-dark-300 dark:text-white dark:hover:bg-dark-100"
                       >
                         Clear filters
                       </button>
@@ -1389,7 +1389,7 @@ const FeaturesFixesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsSortMenuOpen((prev) => !prev)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#6D2C32] focus:outline-none focus:ring-2 focus:ring-[#6D2C32] dark:text-white dark:hover:text-[#6D2C32]"
                   aria-expanded={isSortMenuOpen}
                   aria-label="Sort features and fixes"
                   title="Sort"
@@ -1416,9 +1416,9 @@ const FeaturesFixesPage: React.FC = () => {
                 onClick={handleDownloadCsv}
                 disabled={loading || filtered.length === 0}
                 title="Download the current filtered list as a CSV file"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-[#6D2C32] focus:outline-none focus:ring-2 focus:ring-[#6D2C32] dark:text-white dark:hover:text-[#6D2C32]"
               >
-                <Download className="h-5 w-5 hover:text-[#f26722]" />
+                <Download className="h-5 w-5 hover:text-[#6D2C32]" />
               </button>
             </div>
           </div>
@@ -1491,7 +1491,7 @@ const FeaturesFixesPage: React.FC = () => {
                               onClick={() => handleIssueClick(issue)}
                               className="text-left w-full"
                             >
-                              <div className="font-medium text-[#f26722] hover:text-[#e55611] cursor-pointer">
+                              <div className="font-medium text-[#6D2C32] hover:text-[#57232A] cursor-pointer">
                                 {issue.title}
                               </div>
                               <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-[600px]">
@@ -1961,7 +1961,7 @@ const FeaturesFixesPage: React.FC = () => {
                       </h3>
                       <a
                         href={selectedIssue.page_url}
-                        className="text-[#f26722] hover:text-[#e55611] break-all underline"
+                        className="text-[#6D2C32] hover:text-[#57232A] break-all underline"
                       >
                         {selectedIssue.page_url}
                       </a>
@@ -2007,7 +2007,7 @@ const FeaturesFixesPage: React.FC = () => {
                                         <div class="w-full h-48 bg-neutral-100 dark:bg-dark-100 flex items-center justify-center">
                                           <div class="text-center p-4">
                                             <p class="text-neutral-500 dark:text-neutral-400 text-sm">Image failed to load</p>
-                                            <a href="${attachment.file_url}" target="_blank" class="text-[#f26722] hover:text-[#e55611] text-xs underline mt-2 block">Open directly</a>
+                                            <a href="${attachment.file_url}" target="_blank" class="text-[#6D2C32] hover:text-[#57232A] text-xs underline mt-2 block">Open directly</a>
                                           </div>
                                         </div>
                                       `;
@@ -2039,7 +2039,7 @@ const FeaturesFixesPage: React.FC = () => {
                                         <p className="text-neutral-700 dark:text-neutral-300 text-sm font-medium">
                                           File Attachment
                                         </p>
-                                        <p className="text-[#f26722] hover:text-[#e55611] text-xs underline mt-1">
+                                        <p className="text-[#6D2C32] hover:text-[#57232A] text-xs underline mt-1">
                                           Click to open
                                         </p>
                                       </div>
@@ -2063,7 +2063,7 @@ const FeaturesFixesPage: React.FC = () => {
                                         href={attachment.file_url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="text-xs text-[#f26722] hover:text-[#e55611] underline mt-1 block"
+                                        className="text-xs text-[#6D2C32] hover:text-[#57232A] underline mt-1 block"
                                       >
                                         Open file
                                       </a>

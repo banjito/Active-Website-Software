@@ -1,10 +1,25 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Users, Briefcase, UserPlus, Clock, Award, BarChart3, ClipboardList } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Users, Briefcase, UserPlus, Clock, Award, BarChart3, ClipboardList, BookOpen } from 'lucide-react';
 
 export const HrDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-neutral-900 dark:text-white">HR Dashboard</h1>
+        <Link to="/hr/handbook">
+          <Button
+            leftIcon={<BookOpen className="h-4 w-4" />}
+            className="bg-[#f26722] text-white hover:bg-[#f5834a] hover:text-white"
+          >
+            Employee Handbook
+          </Button>
+        </Link>
+      </div>
+
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>

@@ -545,6 +545,16 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           {/* Sidebar Links */}
           <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
             {/* Standalone top-level items */}
+            <Link to="/hr/handbook">
+              <Button
+                variant="ghost"
+                leftIcon={<BookOpen className="h-3.5 w-3.5 text-white" />}
+                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-[#f26722] hover:bg-[#f5834a] hover:text-white !justify-start h-8"
+              >
+                Employee Handbook
+              </Button>
+            </Link>
+
             {isHrFullAccess && (
               <Link to="/hr/announcements">
                 <Button
@@ -574,20 +584,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                 }`}
               >
                 Employee Files
-              </Button>
-            </Link>
-
-            <Link to="/hr/handbook">
-              <Button
-                variant="ghost"
-                leftIcon={<BookOpen className="h-3.5 w-3.5 text-[#f26722]" />}
-                className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                  location.pathname.startsWith("/hr/handbook")
-                    ? "bg-black/5 dark:bg-dark-50"
-                    : ""
-                }`}
-              >
-                Employee Handbook
               </Button>
             </Link>
 

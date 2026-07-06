@@ -524,7 +524,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         setFormData((prev) => ({
           ...prev,
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(normalizeAddress(customerAddress)),
+          address: prev.address || maskCustomerAddress(normalizeAddress(customerAddress)),
           jobNumber: jobData.job_number || "",
         }));
       }
@@ -1169,8 +1169,9 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
                 <input
                   type="text"
                   value={maskCustomerAddress(formData.address)}
-                  readOnly
-                  className="form-input w-full bg-neutral-100 dark:bg-dark-150"
+                  onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                  readOnly={!isEditing}
+                  className={`form-input w-full dark:bg-dark-150 ${!isEditing ? "bg-neutral-100" : ""}`}
                 />
               </div>
               <div>

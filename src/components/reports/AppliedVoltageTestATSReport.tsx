@@ -297,7 +297,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(customerAddress),
+          address: prev.address || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -925,8 +925,9 @@ const AppliedVoltageTestATSReport: React.FC = () => {
               <input
                 type="text"
                 value={maskCustomerAddress(formData.address)}
-                readOnly
-                className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
+                onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                readOnly={!isEditing}
+                className={`form-input dark:bg-dark-150 w-full ${!isEditing ? "bg-neutral-100" : ""}`}
               />
             </div>
             <div>

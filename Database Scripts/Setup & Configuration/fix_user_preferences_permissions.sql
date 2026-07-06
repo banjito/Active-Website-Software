@@ -65,5 +65,15 @@ CREATE POLICY "user_preferences_delete_own"
 GRANT USAGE ON SCHEMA common TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON common.user_preferences TO authenticated;
 
+-- 5b. The scheduled digest jobs (daily review, ready-to-bill, weekly reports)
+--     run as `service_role`, NOT `authenticated`. service_role bypasses RLS but
+--     still needs a table-level GRANT, or PostgREST returns 42501
+--     "permission denied for table". Grant it read access to every table the
+--     digest functions touch.
+GRANT USAGE ON SCHEMA common TO service_role;
+GRANT SELECT ON common.user_preferences TO service_role;
+GRANT SELECT ON common.profiles TO service_role;
+GRANT SELECT ON common.customers TO service_role;
+
 -- 6. Make sure PostgREST sees the change immediately.
 NOTIFY pgrst, 'reload schema';

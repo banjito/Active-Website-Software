@@ -648,7 +648,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(customerAddress),
+          address: prev.address || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -1305,9 +1305,10 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                   </label>
                   <textarea
                     value={maskCustomerAddress(formData.address)}
-                    readOnly={true}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                    readOnly={!isEditMode}
                     rows={3}
-                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditMode ? "bg-neutral-50" : ""}`}
                   />
                 </div>
                 <div className="hidden print:flex print:items-baseline">

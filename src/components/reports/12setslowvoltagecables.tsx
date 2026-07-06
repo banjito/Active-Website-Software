@@ -1537,7 +1537,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(customerAddress),
+          address: prev.address || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -2940,8 +2940,9 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                     name="address"
                     type="text"
                     value={maskCustomerAddress(formData.address)}
-                    readOnly
-                    className="form-input bg-neutral-100 dark:bg-dark-150"
+                    onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                    readOnly={!isEditMode}
+                    className={`form-input dark:bg-dark-150 ${!isEditMode ? "bg-neutral-100" : ""}`}
                   />
                 </div>
                 <div className="mb-4">

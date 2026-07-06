@@ -463,7 +463,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         ...prev,
         jobNumber: jobData?.job_number || "",
         customerName: maskCustomerName(customerName),
-        customerLocation: maskCustomerAddress(customerAddress),
+        customerLocation: prev.customerLocation || maskCustomerAddress(customerAddress),
       }));
     } catch (e) {
       /* noop */
@@ -1558,8 +1558,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     <input
                       type="text"
                       value={maskCustomerAddress(formData.customerLocation)}
-                      readOnly
-                      className="w-full bg-transparent border-none focus:ring-0 cursor-default"
+                      onChange={(e) => setFormData((prev) => ({ ...prev, customerLocation: e.target.value }))}
+                      readOnly={!isEditing}
+                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
                     />
                   </div>
                 </div>

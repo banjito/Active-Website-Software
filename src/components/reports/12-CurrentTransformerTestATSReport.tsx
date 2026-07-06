@@ -787,7 +787,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customerName: maskCustomerName(customerName),
-          customerAddress: maskCustomerAddress(customerAddress),
+          customerAddress: prev.customerAddress || maskCustomerAddress(customerAddress),
           customerAddress: customerAddress,
           // description: jobData.title || '' // Assuming job title can be a description if needed
         }));
@@ -1597,9 +1597,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     </label>
                     <textarea
                       value={maskCustomerAddress(formData.customerAddress)}
-                      readOnly={true}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, customerAddress: e.target.value }))}
+                      readOnly={!isEditing}
                       rows={3}
-                      className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-50" : ""}`}
                     />
                   </div>
                   <div className="hidden print:flex print:items-baseline">

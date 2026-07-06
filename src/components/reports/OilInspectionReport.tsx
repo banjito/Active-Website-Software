@@ -1455,7 +1455,7 @@ const OilInspectionReport: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(customerAddress),
+          address: prev.address || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -2366,9 +2366,10 @@ const OilInspectionReport: React.FC = () => {
                   </label>
                   <textarea
                     value={maskCustomerAddress(formData.address)}
-                    readOnly
+                    onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                    readOnly={!isEditing}
                     rows={2}
-                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white cursor-not-allowed"
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-50 cursor-not-allowed" : ""}`}
                   />
                 </div>
                 <div>

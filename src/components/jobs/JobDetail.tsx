@@ -96,6 +96,9 @@ import {
   getQuickBooksStatus,
   searchQuickBooksProjects,
   getQuickBooksHoursByProject,
+  findQuickBooksProjectByJobNumber,
+  parseQuickBooksProjectId,
+  getQuickBooksProjectById,
 } from "../../services/quickbooksService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { loadAuthorsForUserIds } from "@/lib/communityProfiles";
@@ -535,6 +538,13 @@ export default function JobDetail() {
   const [qbActualHours, setQbActualHours] = useState<number | null>(null);
   const [qbHoursLoading, setQbHoursLoading] = useState(false);
   const [qbProjectError, setQbProjectError] = useState<string | null>(null);
+  const [qbAutoMatching, setQbAutoMatching] = useState(false);
+  const [qbAutoMatched, setQbAutoMatched] = useState(false);
+  // Jobs we've already attempted an auto-match for, so unlinking a wrong match
+  // doesn't immediately re-link it (the user can then link manually).
+  const qbAutoMatchAttemptedRef = useRef<Set<string>>(new Set());
+  // Monotonic counter to discard stale QB search responses (see search effect).
+  const qbSearchSeqRef = useRef(0);
 
   const formatAddressForLetter = (addr?: string | null) => {
     if (!addr) return "";
@@ -6847,17 +6857,22 @@ ${newBodyHtml}
     };
   }, [job?.quickbooks_project_id, activeTab]);
 
-  // QuickBooks: search projects when dropdown opens
+  // QuickBooks: search projects when dropdown opens. A sequence guard ensures a
+  // slow earlier request (e.g. the empty-query "fetch all" on focus) can't clobber
+  // the results of a newer, more specific query.
   useEffect(() => {
     if (!qbProjectSearchOpen) return;
+    const seq = ++qbSearchSeqRef.current;
     setQbProjectError(null);
     setQbProjectSearching(true);
     searchQuickBooksProjects(qbProjectSearchQuery)
       .then((list) => {
+        if (seq !== qbSearchSeqRef.current) return;
         setQbProjectSearchResults(list);
         setQbProjectError(null);
       })
       .catch((err: any) => {
+        if (seq !== qbSearchSeqRef.current) return;
         setQbProjectSearchResults([]);
         setQbProjectError(
           err?.message ||
@@ -6866,12 +6881,15 @@ ${newBodyHtml}
             (typeof err === "string" ? err : String(err)).slice(0, 200),
         );
       })
-      .finally(() => setQbProjectSearching(false));
+      .finally(() => {
+        if (seq === qbSearchSeqRef.current) setQbProjectSearching(false);
+      });
   }, [qbProjectSearchQuery, qbProjectSearchOpen]);
 
   const handleAssignQuickBooksProject = async (
     projectId: string,
     projectName: string,
+    opts?: { auto?: boolean },
   ) => {
     if (!id) return;
     setQbAssigning(true);
@@ -6899,15 +6917,44 @@ ${newBodyHtml}
       setQbProjectSearchOpen(false);
       setQbProjectSearchQuery("");
       setQbProjectSearchResults([]);
+      setQbAutoMatched(!!opts?.auto);
       toast({
-        title: "QuickBooks project linked",
-        description: `"${projectName}" is now linked to this job.`,
+        title: opts?.auto
+          ? "QuickBooks project auto-matched"
+          : "QuickBooks project linked",
+        description: opts?.auto
+          ? `Auto-matched to "${projectName}" by job #. Unlink to change.`
+          : `"${projectName}" is now linked to this job.`,
         variant: "success",
       });
     } catch (e: any) {
       toast({
         title: "Link failed",
         description: e?.message || "Could not link project.",
+        variant: "destructive",
+      });
+    } finally {
+      setQbAssigning(false);
+    }
+  };
+
+  // Link directly by a pasted QBO Projects URL or id (the reliable path when the
+  // QBO name doesn't carry the ampOS job number). Resolves the display name, then
+  // links using the same handler as search.
+  const handleLinkQuickBooksById = async (raw: string) => {
+    const pid = parseQuickBooksProjectId(raw);
+    if (!pid) return;
+    setQbAssigning(true);
+    try {
+      const proj = await getQuickBooksProjectById(pid);
+      await handleAssignQuickBooksProject(
+        pid,
+        proj?.Name || proj?.DisplayName || `QBO project ${pid}`,
+      );
+    } catch (e: any) {
+      toast({
+        title: "Link failed",
+        description: e?.message || "Could not link by id.",
         variant: "destructive",
       });
     } finally {
@@ -6939,6 +6986,10 @@ ${newBodyHtml}
           : null,
       );
       setQbActualHours(null);
+      // Remember we've handled this job so it doesn't immediately re-auto-match;
+      // the user can now link manually.
+      if (id) qbAutoMatchAttemptedRef.current.add(id);
+      setQbAutoMatched(false);
       refreshJobDetails?.();
       setQbProjectSearchOpen(false);
       toast({ title: "QuickBooks project unlinked", variant: "success" });
@@ -6952,6 +7003,47 @@ ${newBodyHtml}
       setQbAssigning(false);
     }
   };
+
+  // Reset the auto-matched badge when navigating to a different job.
+  useEffect(() => {
+    setQbAutoMatched(false);
+  }, [job?.id]);
+
+  // QuickBooks: auto-match this job to a QBO project by job number when the
+  // profitability tab is open, the job isn't linked yet, and QBO is connected.
+  // A confident single match is linked automatically; anything ambiguous or
+  // unmatched falls through to the manual search below. Attempted once per job
+  // (see qbAutoMatchAttemptedRef) so unlinking a wrong match doesn't re-link it.
+  useEffect(() => {
+    if (activeTab !== "profitability" || !isAdmin) return;
+    if (!job || !id || !qbConnected) return;
+    if (job.quickbooks_project_id) return;
+    if (!job.job_number) return;
+    if (qbAutoMatchAttemptedRef.current.has(id)) return;
+    qbAutoMatchAttemptedRef.current.add(id);
+    setQbAutoMatching(true);
+    findQuickBooksProjectByJobNumber(job.job_number)
+      .then((match) => {
+        if (!match) return;
+        return handleAssignQuickBooksProject(
+          match.Id,
+          match.Name || match.DisplayName || match.Id,
+          { auto: true },
+        );
+      })
+      .catch((err) => {
+        console.warn("[QB] auto-match failed:", err);
+      })
+      .finally(() => setQbAutoMatching(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeTab,
+    isAdmin,
+    job?.id,
+    job?.quickbooks_project_id,
+    job?.job_number,
+    qbConnected,
+  ]);
 
   // Load and view a saved document
   const handleViewDocument = async (
@@ -11208,11 +11300,21 @@ ${newBodyHtml}
                             Connect QuickBooks in{" "}
                             <strong>Admin Dashboard → Integrations</strong> first.
                           </p>
+                        ) : qbAutoMatching ? (
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Auto-matching QuickBooks project by job #
+                            {job.job_number ? ` ${job.job_number}` : ""}…
+                          </p>
                         ) : (
                           <div className="relative max-w-md">
+                            <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
+                              No automatic match found. Search by client/project
+                              name (e.g. &ldquo;Core Scientific&rdquo;), or paste
+                              the QuickBooks project URL / ID to link directly.
+                            </p>
                             <input
                               type="text"
-                              placeholder="Search QuickBooks projects or customers..."
+                              placeholder="Client name, or QBO project URL / ID…"
                               value={qbProjectSearchQuery}
                               onChange={(e) => {
                                 setQbProjectSearchQuery(e.target.value);
@@ -11221,7 +11323,22 @@ ${newBodyHtml}
                               onFocus={() => setQbProjectSearchOpen(true)}
                               className="w-full rounded-none border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                             />
-                            {qbProjectSearchOpen && (
+                            {parseQuickBooksProjectId(qbProjectSearchQuery) && (
+                              <button
+                                type="button"
+                                disabled={qbAssigning}
+                                onClick={() =>
+                                  handleLinkQuickBooksById(qbProjectSearchQuery)
+                                }
+                                className="mt-2 w-full rounded-none border border-[#f26722] bg-[#f26722] px-3 py-2 text-sm font-medium text-white hover:bg-[#d9561a] disabled:opacity-50"
+                              >
+                                {qbAssigning
+                                  ? "Linking…"
+                                  : `Link QBO project #${parseQuickBooksProjectId(qbProjectSearchQuery)}`}
+                              </button>
+                            )}
+                            {qbProjectSearchOpen &&
+                              !parseQuickBooksProjectId(qbProjectSearchQuery) && (
                               <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-none border border-neutral-300 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-800">
                                 {qbProjectSearching ? (
                                   <div className="p-3 text-sm text-neutral-500">Searching...</div>
@@ -11274,12 +11391,22 @@ ${newBodyHtml}
                             <span className="font-medium text-neutral-700 dark:text-neutral-200">
                               {job.quickbooks_project_name || job.quickbooks_project_id}
                             </span>
+                            {qbAutoMatched && (
+                              <span className="ml-2 rounded-none bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:bg-neutral-700 dark:text-neutral-300">
+                                Auto-matched by job #
+                              </span>
+                            )}
                           </p>
                           <button
                             type="button"
                             onClick={handleUnlinkQuickBooksProject}
                             disabled={qbAssigning}
                             className="text-xs text-neutral-400 hover:text-red-500 disabled:opacity-50"
+                            title={
+                              qbAutoMatched
+                                ? "Wrong match? Unlink to search and link manually."
+                                : undefined
+                            }
                           >
                             {qbAssigning ? "Unlinking…" : "Unlink"}
                           </button>

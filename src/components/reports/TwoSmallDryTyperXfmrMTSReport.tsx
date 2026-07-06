@@ -529,7 +529,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         ...prev,
         jobNumber: jobData?.job_number || "",
         customer: maskCustomerName(customerName),
-        address: customerAddress,
+        address: prev.address || customerAddress,
         user: prev.user || "",
       }));
     } catch (error) {
@@ -1375,8 +1375,8 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 name="address"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                readOnly
-                className={`form-input text-sm bg-neutral-100 dark:bg-dark-150 cursor-not-allowed`}
+                readOnly={!isEditing}
+                className={`form-input text-sm dark:bg-dark-150 ${!isEditing ? "bg-neutral-100 cursor-not-allowed" : ""}`}
               />
             </div>
             <div>

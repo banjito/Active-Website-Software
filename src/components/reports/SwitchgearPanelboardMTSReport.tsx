@@ -558,7 +558,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customerName: maskCustomerName(customerName),
-          customerLocation: maskCustomerAddress(customerAddress),
+          customerLocation: prev.customerLocation || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -1620,8 +1620,9 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   id="customerLocation"
                   type="text"
                   value={formData.customerLocation}
-                  readOnly
-                  className="form-input w-full bg-neutral-100 dark:bg-dark-150"
+                  onChange={(e) => setFormData((prev) => ({ ...prev, customerLocation: e.target.value }))}
+                  readOnly={!isEditing}
+                  className={`form-input w-full dark:bg-dark-150 ${!isEditing ? "bg-neutral-100" : ""}`}
                 />
               </div>
             </div>

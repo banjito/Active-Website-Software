@@ -745,7 +745,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
             customerName: maskCustomerName(
               customerData.company_name || customerData.name || "",
             ),
-            customerAddress: maskCustomerAddress(customerData.address || ""),
+            customerAddress: prev.customerAddress || maskCustomerAddress(customerData.address || ""),
             jobNumber: jobData.job_number || "",
           }));
         }
@@ -1126,8 +1126,9 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
                 <input
                   type="text"
                   value={maskCustomerAddress(formData.customerAddress)}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-[calc(100%-8rem)]"
+                  onChange={(e) => setFormData((prev) => ({ ...prev, customerAddress: e.target.value }))}
+                  readOnly={!isEditing}
+                  className={`form-input dark:bg-dark-150 w-[calc(100%-8rem)] ${!isEditing ? "bg-neutral-100" : ""}`}
                 />
               </div>
               <div>

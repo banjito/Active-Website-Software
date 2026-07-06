@@ -1392,7 +1392,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customer: maskCustomerName(customerName),
-          address: maskCustomerAddress(customerAddress),
+          address: prev.address || maskCustomerAddress(customerAddress),
         }));
       }
     } catch (error) {
@@ -2222,8 +2222,8 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 type="text"
                 value={maskCustomerAddress(formData.address)}
                 onChange={handleChange}
-                readOnly
-                className={`form-input text-sm bg-neutral-100 dark:bg-dark-150 cursor-not-allowed`}
+                readOnly={!isEditMode}
+                className={`form-input text-sm dark:bg-dark-150 ${!isEditMode ? "bg-neutral-100 cursor-not-allowed" : ""}`}
               />
             </div>
             <div>

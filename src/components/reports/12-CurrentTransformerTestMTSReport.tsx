@@ -515,7 +515,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             customerName: maskCustomerName(
               customerData.company_name || customerData.name || "",
             ),
-            customerAddress: maskCustomerAddress(customerData.address || ""),
+            customerAddress: prev.customerAddress || maskCustomerAddress(customerData.address || ""),
             jobNumber: jobData.job_number || "",
           }));
         }
@@ -1213,9 +1213,10 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                 </span>
                 <textarea
                   value={maskCustomerAddress(formData.customerAddress)}
-                  readOnly
+                  onChange={(e) => setFormData((prev) => ({ ...prev, customerAddress: e.target.value }))}
+                  readOnly={!isEditing}
                   rows={3}
-                  className="form-input bg-neutral-50 dark:bg-dark-150 print:hidden"
+                  className={`form-input dark:bg-dark-150 print:hidden ${!isEditing ? "bg-neutral-50" : ""}`}
                 />
               </div>
               <div>

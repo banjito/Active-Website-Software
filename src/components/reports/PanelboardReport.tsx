@@ -1088,7 +1088,7 @@ const PanelboardReport: React.FC = () => {
           ...prev,
           jobNumber: jobData.job_number || "",
           customerName: maskCustomerName(customerName),
-          customerLocation: maskCustomerAddress(customerAddress),
+          customerLocation: prev.customerLocation || maskCustomerAddress(customerAddress),
           jobTitle: maskJobTitle(jobData.title || ""),
         }));
       }
@@ -1933,9 +1933,10 @@ const PanelboardReport: React.FC = () => {
                   </label>
                   <textarea
                     value={maskCustomerAddress(formData.customerLocation)}
-                    readOnly={true}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, customerLocation: e.target.value }))}
+                    readOnly={!isEditing}
                     rows={3}
-                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 dark:bg-dark-150 shadow-sm dark:text-white ${!isEditing ? "bg-neutral-50" : ""}`}
                   />
                 </div>
               </div>

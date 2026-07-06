@@ -519,25 +519,61 @@ export async function getQuickBooksTimeActivities(startDate?: string, endDate?: 
 /**
  * Get QuickBooks Customers (optionally only jobs). Used as projects list fallback.
  */
-async function getQuickBooksCustomersAsProjects(onlyJobs: boolean): Promise<{ Id: string; Name?: string; DisplayName?: string }[]> {
-  const qr = (r: any) => r?.QueryResponse?.Customer ?? r?.QueryResponse?.customer ?? [];
+/**
+ * A linkable QBO target for a job. `source` records whether it came from the
+ * native Project entity or from a Customer/sub-customer. Profitability actuals
+ * (TimeActivity/Invoice by CustomerRef, P&L report by customer=) are keyed by
+ * the *customer* id, so `customer` sources are preferred when linking.
+ */
+export type QBProjectOption = {
+  Id: string;
+  Name?: string;
+  DisplayName?: string;
+  source?: 'project' | 'customer';
+};
+
+/**
+ * Run a QBO entity query paging through ALL results. QBO caps each response at
+ * 1000 rows, so without STARTPOSITION paging, newer records (e.g. a project with
+ * a high id like "26015 - Core Scientific DNN4") get silently dropped. The
+ * response key matches the entity name (e.g. `Customer`, `Project`).
+ */
+async function queryAllQBO(entity: string, select: string, where?: string): Promise<any[]> {
+  const out: any[] = [];
+  const pageSize = 1000;
+  let start = 1;
+  const whereClause = where ? ` WHERE ${where}` : '';
+  // Safety cap: 50 pages = 50k rows.
+  for (let i = 0; i < 50; i++) {
+    const q = `SELECT ${select} FROM ${entity}${whereClause} STARTPOSITION ${start} MAXRESULTS ${pageSize}`;
+    const response = await quickBooksApiCall(
+      `/v3/company/{realmId}/query?query=${encodeURIComponent(q)}&minorversion=65`,
+    );
+    const qr = response?.QueryResponse ?? {};
+    const list = qr[entity] ?? qr[entity.toLowerCase()] ?? [];
+    const arr = Array.isArray(list) ? list : [];
+    out.push(...arr);
+    if (arr.length < pageSize) break;
+    start += pageSize;
+  }
+  return out;
+}
+
+async function getQuickBooksCustomersAsProjects(onlyJobs: boolean): Promise<QBProjectOption[]> {
   try {
     let list: any[] = [];
     if (onlyJobs) {
-      const query = 'SELECT Id, DisplayName, FullyQualifiedName, ParentRef, Job FROM Customer MAXRESULTS 1000';
-      const response = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(query)}`);
-      const all = qr(response);
-      list = Array.isArray(all) ? all.filter((c: any) => c.Job === true || c.Job === 1 || c.ParentRef != null) : [];
+      const all = await queryAllQBO('Customer', 'Id, DisplayName, FullyQualifiedName, ParentRef, Job');
+      list = all.filter((c: any) => c.Job === true || c.Job === 1 || c.ParentRef != null);
     }
     if (list.length === 0) {
-      const query = 'SELECT Id, DisplayName, FullyQualifiedName FROM Customer MAXRESULTS 1000';
-      const response = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(query)}`);
-      list = Array.isArray(qr(response)) ? qr(response) : [];
+      list = await queryAllQBO('Customer', 'Id, DisplayName, FullyQualifiedName');
     }
     return list.map((c: any) => ({
       Id: String(c.Id ?? c.id),
       Name: c.FullyQualifiedName ?? c.DisplayName ?? c.displayName,
       DisplayName: c.DisplayName ?? c.displayName ?? c.FullyQualifiedName,
+      source: 'customer' as const,
     }));
   } catch (error) {
     console.warn('[QB API] Customer fetch failed:', error);
@@ -548,22 +584,18 @@ async function getQuickBooksCustomersAsProjects(onlyJobs: boolean): Promise<{ Id
 /**
  * Get QuickBooks Projects and Customer Jobs/Customers for linking to jobs.
  */
-export async function getQuickBooksProjects(): Promise<{ Id: string; Name?: string; DisplayName?: string }[]> {
-  const results: { Id: string; Name?: string; DisplayName?: string }[] = [];
+export async function getQuickBooksProjects(): Promise<QBProjectOption[]> {
+  const results: QBProjectOption[] = [];
   const seenIds = new Set<string>();
-  const add = (item: { Id: string; Name?: string; DisplayName?: string }) => {
+  const add = (item: QBProjectOption) => {
     if (seenIds.has(item.Id)) return;
     seenIds.add(item.Id);
     results.push(item);
   };
   try {
-    const projectQuery = 'SELECT * FROM Project MAXRESULTS 1000';
-    const response = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(projectQuery)}`);
-    const projectList = response?.QueryResponse?.Project ?? response?.QueryResponse?.project ?? [];
-    if (Array.isArray(projectList)) {
-      for (const p of projectList) {
-        add({ Id: String(p.Id ?? p.id), Name: p.Name ?? p.DisplayName ?? p.displayName, DisplayName: p.DisplayName ?? p.displayName ?? p.Name ?? p.name });
-      }
+    const projectList = await queryAllQBO('Project', '*');
+    for (const p of projectList) {
+      add({ Id: String(p.Id ?? p.id), Name: p.Name ?? p.DisplayName ?? p.displayName, DisplayName: p.DisplayName ?? p.displayName ?? p.Name ?? p.name, source: 'project' });
     }
   } catch (error) {
     console.warn('[QB API] Projects not available:', error);
@@ -580,11 +612,114 @@ export async function getQuickBooksProjects(): Promise<{ Id: string; Name?: stri
 /**
  * Search QuickBooks projects/customers by name (client-side filter).
  */
-export async function searchQuickBooksProjects(query: string): Promise<{ Id: string; Name?: string; DisplayName?: string }[]> {
+export async function searchQuickBooksProjects(query: string): Promise<QBProjectOption[]> {
   const all = await getQuickBooksProjects();
   if (!query?.trim()) return all;
   const q = query.trim().toLowerCase();
   return all.filter((p) => (p.Name && p.Name.toLowerCase().includes(q)) || (p.DisplayName && p.DisplayName.toLowerCase().includes(q)));
+}
+
+/**
+ * Extract a QuickBooks project/customer id from a pasted value: either a QBO
+ * Projects URL (…/projectdetails?id=767512707&…) or a bare QBO id. QBO ids are
+ * long (8+ digits), which distinguishes them from 5-digit ampOS job numbers so
+ * we never mistake a job number for a project id.
+ */
+export function parseQuickBooksProjectId(input: string): string | null {
+  const s = (input ?? '').trim();
+  if (!s) return null;
+  const fromUrl = s.match(/[?&]id=(\d+)/);
+  if (fromUrl) return fromUrl[1];
+  if (/^\d{8,}$/.test(s)) return s;
+  return null;
+}
+
+/**
+ * Look up a single QBO project/customer by id (e.g. from a pasted Projects URL)
+ * to resolve its display name before linking. Projects are sub-customers, so we
+ * try the Customer entity first (its id is what actuals queries key on).
+ */
+export async function getQuickBooksProjectById(id: string): Promise<QBProjectOption | null> {
+  const clean = (id ?? '').trim();
+  if (!clean) return null;
+  try {
+    const query = `SELECT Id, DisplayName, FullyQualifiedName FROM Customer WHERE Id = '${clean}'`;
+    const r = await quickBooksApiCall(`/v3/company/{realmId}/query?query=${encodeURIComponent(query)}`);
+    const c = (r?.QueryResponse?.Customer ?? r?.QueryResponse?.customer ?? [])[0];
+    if (c) {
+      return {
+        Id: String(c.Id ?? c.id),
+        Name: c.FullyQualifiedName ?? c.DisplayName ?? c.displayName,
+        DisplayName: c.DisplayName ?? c.displayName ?? c.FullyQualifiedName,
+        source: 'customer',
+      };
+    }
+  } catch (e) {
+    console.warn('[QB API] Customer-by-id lookup failed:', e);
+  }
+  try {
+    const r = await quickBooksApiCall(`/v3/company/{realmId}/project/${clean}`);
+    const p = r?.Project ?? r?.project;
+    if (p) {
+      return {
+        Id: String(p.Id ?? p.id),
+        Name: p.Name ?? p.DisplayName ?? p.displayName,
+        DisplayName: p.DisplayName ?? p.displayName ?? p.Name,
+        source: 'project',
+      };
+    }
+  } catch (e) {
+    console.warn('[QB API] Project-by-id lookup failed:', e);
+  }
+  return null;
+}
+
+/**
+ * Auto-match a QuickBooks project/customer to an ampOS job number.
+ *
+ * The join convention (see AMP_Job_Profitability_Integration_Guide §4) is that
+ * a job number (e.g. "26011") equals the leading number of the QBO sub-customer
+ * name ("26011 - DC Blox ATL-1B ..."). Returns a confident single match, or
+ * null when there is no match or the match is ambiguous (caller falls back to
+ * manual linking).
+ */
+export async function findQuickBooksProjectByJobNumber(
+  jobNumber: string | null | undefined,
+): Promise<QBProjectOption | null> {
+  const jn = (jobNumber ?? '').trim();
+  if (!jn) return null;
+  const all = await getQuickBooksProjects();
+  const leadingNumber = (s?: string): string => {
+    const m = (s ?? '').match(/^\s*0*(\d+)/);
+    return m ? m[1] : '';
+  };
+  // The same job can appear twice — as a native Project and as a sub-customer.
+  // Prefer the customer/sub-customer id because actuals (TimeActivity/Invoice
+  // by CustomerRef, P&L by customer=) are keyed on it. Only genuinely distinct
+  // jobs sharing a number are ambiguous -> fall back to manual.
+  const pick = (matches: QBProjectOption[]): QBProjectOption | null => {
+    if (matches.length === 0) return null;
+    const customers = matches.filter((m) => m.source === 'customer');
+    if (customers.length === 1) return customers[0];
+    if (customers.length > 1) return null; // multiple real sub-customers -> ambiguous
+    // No customer entry; accept a single Project match, else ambiguous.
+    return matches.length === 1 ? matches[0] : null;
+  };
+
+  // Exact leading-number match first ("26011 - ...")
+  const exact = all.filter(
+    (p) => leadingNumber(p.Name) === jn || leadingNumber(p.DisplayName) === jn,
+  );
+  const exactPick = pick(exact);
+  if (exactPick) return exactPick;
+  if (exact.length > 0) return null; // matched but ambiguous -> manual
+
+  // Fallback: the job number appears as a whole-word token anywhere in the name
+  const token = new RegExp(`(^|\\D)${jn}(\\D|$)`);
+  const contains = all.filter(
+    (p) => token.test(p.Name ?? '') || token.test(p.DisplayName ?? ''),
+  );
+  return pick(contains);
 }
 
 /**

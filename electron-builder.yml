@@ -33,6 +33,10 @@ asarUnpack:
   - "**/node_modules/better-sqlite3/**"
 
 win:
+  # Hand-built .ico (BMP frames for 16-128px, PNG for 256px). Without it,
+  # electron-builder converts icon.png into an all-PNG-frame .ico, which some
+  # Windows shell surfaces (taskbar, shortcuts) render as a blank icon.
+  icon: build-resources/icon.ico
   target:
     - nsis
     - msi

@@ -246,7 +246,7 @@ interface OpportunityData {
   };
 }
 
-type EstimateLineItemRowType = "item" | "section" | "blank";
+type EstimateLineItemRowType = "item" | "section" | "subsection" | "blank";
 
 interface EstimateLineItem {
   rowType?: EstimateLineItemRowType;
@@ -367,6 +367,12 @@ const createSectionLineItem = (): EstimateLineItem => ({
   item: "New Section",
 });
 
+const createSubsectionLineItem = (): EstimateLineItem => ({
+  ...EMPTY_LINE_ITEM,
+  rowType: "subsection",
+  item: "New Sub-Section",
+});
+
 const createBlankLineItem = (): EstimateLineItem => ({
   ...EMPTY_LINE_ITEM,
   rowType: "blank",
@@ -376,6 +382,7 @@ const createLineItemForRowType = (
   rowType: EstimateLineItemRowType = "item",
 ): EstimateLineItem => {
   if (rowType === "section") return createSectionLineItem();
+  if (rowType === "subsection") return createSubsectionLineItem();
   if (rowType === "blank") return createBlankLineItem();
   return createEmptyLineItem();
 };
@@ -386,13 +393,16 @@ const createDefaultLineItems = (): EstimateLineItem[] =>
     .map(() => createEmptyLineItem());
 
 const isEstimateSectionRow = (item: any) => item?.rowType === "section";
+const isEstimateSubsectionRow = (item: any) => item?.rowType === "subsection";
 const isEstimateBlankRow = (item: any) => item?.rowType === "blank";
 const isStructuralLineItem = (item: any) =>
-  isEstimateSectionRow(item) || isEstimateBlankRow(item);
+  isEstimateSectionRow(item) || isEstimateSubsectionRow(item) || isEstimateBlankRow(item);
 
 const normalizeEstimateLineItem = (item: any): EstimateLineItem => {
   const rowType: EstimateLineItemRowType =
-    item?.rowType === "section" || item?.rowType === "blank"
+    item?.rowType === "section" ||
+    item?.rowType === "subsection" ||
+    item?.rowType === "blank"
       ? item.rowType
       : "item";
 
@@ -418,6 +428,7 @@ const shouldShowSovItemInProposal = (item: any): boolean => {
   if (isEstimateBlankRow(item)) return true;
   const name = (item?.item ?? "").toString().trim();
   if (isEstimateSectionRow(item)) return name.length > 0;
+  if (isEstimateSubsectionRow(item)) return name.length > 0;
 
   const hasQty = Number(item?.quantity) > 0;
   const hasAnyCost = [
@@ -4305,6 +4316,9 @@ export default function EstimateSheet({
         if (isEstimateSectionRow(item)) {
           return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, section: true, align: "center" })}">${name}</td></tr>`;
         }
+        if (isEstimateSubsectionRow(item)) {
+          return `<tr class="amp-sov-subsection-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom })};font-style:italic;color:#6b7280;font-size:0.88em;padding-left:24px;">${name}</td></tr>`;
+        }
 
         const qty = escapeLetterHtml(item?.quantity ?? item?.qty ?? 1);
         const notesCell = includeNotes
@@ -7313,11 +7327,14 @@ export default function EstimateSheet({
                           <tbody>
                             {data.sovItems.map((item, index) => {
                               const isSectionRow = isEstimateSectionRow(item);
+                              const isSubsectionRow = isEstimateSubsectionRow(item);
                               const isBlankRow = isEstimateBlankRow(item);
-                              if (isSectionRow || isBlankRow) {
+                              if (isSectionRow || isSubsectionRow || isBlankRow) {
                                 const structuralBg = isSectionRow
                                   ? "var(--header-bg)"
-                                  : "var(--cell-bg)";
+                                  : isSubsectionRow
+                                    ? "var(--cell-bg)"
+                                    : "var(--cell-bg)";
                                 return (
                                   <tr
                                     key={index}
@@ -7350,7 +7367,9 @@ export default function EstimateSheet({
                                         backgroundColor: structuralBg,
                                         padding: isBlankRow
                                           ? "10px 5px"
-                                          : "6px 5px",
+                                          : isSubsectionRow
+                                            ? "4px 5px 4px 32px"
+                                            : "6px 5px",
                                         borderTop: isSectionRow
                                           ? "2px solid var(--border-color)"
                                           : "1px solid var(--border-color)",
@@ -7364,7 +7383,9 @@ export default function EstimateSheet({
                                           position: "relative",
                                           display: "flex",
                                           alignItems: "center",
-                                          justifyContent: "center",
+                                          justifyContent: isSubsectionRow
+                                            ? "flex-start"
+                                            : "center",
                                           minHeight: isBlankRow
                                             ? "22px"
                                             : "28px",
@@ -7379,7 +7400,7 @@ export default function EstimateSheet({
                                             onDragEnd={handleDragEnd}
                                             style={{
                                               position: "absolute",
-                                              left: 8,
+                                              left: isSubsectionRow ? -20 : 8,
                                               cursor: "grab",
                                               color: "#6b7280",
                                               fontSize: "14px",
@@ -7401,6 +7422,44 @@ export default function EstimateSheet({
                                               backgroundColor: "transparent",
                                               fontWeight: "bold",
                                               textAlign: "center",
+                                              padding: "4px",
+                                            }}
+                                            value={item.item}
+                                            onChange={(e) =>
+                                              handleItemChange(
+                                                "sov",
+                                                index,
+                                                "item",
+                                                e.target.value,
+                                              )
+                                            }
+                                            onKeyDown={(e) =>
+                                              handleEstimateCellKeyDown(
+                                                e,
+                                                "sov",
+                                                index,
+                                                0,
+                                                data.sovItems.length,
+                                              )
+                                            }
+                                            data-estimate-table="sov"
+                                            data-estimate-row={index}
+                                            data-estimate-col={0}
+                                            readOnly={isViewMode}
+                                          />
+                                        ) : isSubsectionRow ? (
+                                          <input
+                                            type="text"
+                                            style={{
+                                              ...styles.tableInput,
+                                              width: "min(480px, 90%)",
+                                              border: "none",
+                                              backgroundColor: "transparent",
+                                              fontWeight: "normal",
+                                              fontStyle: "italic",
+                                              fontSize: "0.88em",
+                                              color: "var(--text-muted, #6b7280)",
+                                              textAlign: "left",
                                               padding: "4px",
                                             }}
                                             value={item.item}
@@ -8134,6 +8193,20 @@ export default function EstimateSheet({
                             }}
                           >
                             Add Section
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleAddLine("sov", "subsection")}
+                            className="inline-flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                            leftIcon={<List className="h-5 w-5" />}
+                            style={{
+                              backgroundColor: "var(--cell-bg)",
+                              borderColor: "var(--border-color)",
+                              color: "var(--text-color)",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            Add Sub-Section
                           </Button>
                           <Button
                             variant="outline"

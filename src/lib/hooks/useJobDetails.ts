@@ -111,6 +111,8 @@ export function useJobDetails(jobId: string | undefined) {
             estimated_man_hours,
             quickbooks_project_id,
             quickbooks_project_name,
+            notes,
+            opportunity_id,
             deleted_at
           `,
             )

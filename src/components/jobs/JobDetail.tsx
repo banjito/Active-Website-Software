@@ -84,6 +84,7 @@ import { JobNotifications } from "./JobNotifications";
 import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
 import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
+import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
 import { formatDivisionDisplay } from "../../lib/utils/divisionDisplay";
@@ -248,6 +249,7 @@ interface RelatedOpportunity {
   id: string;
   quote_number: string;
   total_man_hours?: number | null;
+  opportunity_type?: string | null;
 }
 
 export type ContractValueOperation =
@@ -1508,6 +1510,9 @@ export default function JobDetail() {
   const [opportunity, setOpportunity] = useState<RelatedOpportunity | null>(
     null,
   );
+  const isTMJob =
+    opportunity?.opportunity_type === "time_materials" ||
+    (job?.notes ? /T&M|time.*material/i.test(job.notes) : false);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
   const [isPriorityEditing, setIsPriorityEditing] = useState(false);
   const [isDueDateEditing, setIsDueDateEditing] = useState(false);
@@ -2414,6 +2419,7 @@ export default function JobDetail() {
             (jobDetails as any).quickbooks_project_id ?? null,
           quickbooks_project_name:
             (jobDetails as any).quickbooks_project_name ?? null,
+          notes: (jobDetails as any).notes ?? null,
           customers: jobDetails.customer
             ? {
                 id: jobDetails.customer.id,
@@ -2453,7 +2459,10 @@ export default function JobDetail() {
 
       // Fetch related opportunity if exists
       const fetchRelatedOpportunity = async () => {
-        const opportunityData = await fetchOpportunityForJob(id);
+        const opportunityData = await fetchOpportunityForJob(
+          id,
+          (jobDetails as any)?.opportunity_id,
+        );
         setOpportunity(opportunityData);
       };
 
@@ -3001,19 +3010,36 @@ export default function JobDetail() {
 
   async function fetchOpportunityForJob(
     jobId: string,
+    opportunityId?: string | null,
   ): Promise<RelatedOpportunity | null> {
     if (!jobId) return null;
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .schema("business")
         .from("opportunities")
-        .select("id, quote_number, total_man_hours")
+        .select("id, quote_number, total_man_hours, opportunity_type")
         .eq("job_id", jobId)
         .maybeSingle();
 
       if (error) {
         console.error("Error fetching related opportunity:", error);
         return null;
+      }
+
+      // Fallback: T&M creation links jobs.opportunity_id but the reverse
+      // opportunities.job_id update can silently fail.
+      if (!data && opportunityId) {
+        const { data: byId, error: byIdError } = await supabase
+          .schema("business")
+          .from("opportunities")
+          .select("id, quote_number, total_man_hours, opportunity_type")
+          .eq("id", opportunityId)
+          .maybeSingle();
+        if (byIdError) {
+          console.error("Error fetching opportunity by id:", byIdError);
+          return null;
+        }
+        data = byId;
       }
       if (!data) return null;
 
@@ -8010,8 +8036,8 @@ ${newBodyHtml}
               type="button"
               onClick={() => navigate(getJobsListPath())}
               className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
-              leftIcon={<ArrowLeft className="w-4 h-4" />}
             >
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Jobs
             </button>
             <div className="flex items-center gap-2">
@@ -8734,6 +8760,18 @@ ${newBodyHtml}
                   >
                     After-Action Reports
                   </button>
+                  {isTMJob && (
+                    <button
+                      onClick={() => handleTabChange("tm-expenses")}
+                      className={`py-4 px-6 text-sm font-medium ${
+                        activeTab === "tm-expenses"
+                          ? "border-b-2 border-[#f26722] text-[#f26722]"
+                          : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                      }`}
+                    >
+                      T&amp;M Expenses
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       onClick={() => handleTabChange("profitability")}
@@ -9227,7 +9265,7 @@ ${newBodyHtml}
                                   {opportunity.quote_number ||
                                     `Opportunity #${opportunity.id}`}
                                 </a>
-                                {(opportunity as any).opportunity_type ===
+                                {opportunity.opportunity_type ===
                                   "time_materials" && (
                                   <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
                                     T&M
@@ -11286,6 +11324,10 @@ ${newBodyHtml}
                       customer?.company_name || customer?.name || undefined
                     }
                   />
+                )}
+
+                {activeTab === "tm-expenses" && job && isTMJob && (
+                  <TMExpenses jobId={job.id} jobNumber={job.job_number} />
                 )}
 
                 {activeTab === "profitability" && job && isAdmin && (

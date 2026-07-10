@@ -13,7 +13,7 @@ export const HrDashboard: React.FC = () => {
         <Link to="/hr/handbook">
           <Button
             leftIcon={<BookOpen className="h-4 w-4" />}
-            className="bg-[#f26722] text-white hover:bg-[#f5834a] hover:text-white"
+            className="bg-[#f26722] text-white hover:!bg-[#f5834a] hover:!text-white"
           >
             Employee Handbook
           </Button>

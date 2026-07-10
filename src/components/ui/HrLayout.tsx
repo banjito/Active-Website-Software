@@ -549,7 +549,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<BookOpen className="h-3.5 w-3.5 text-white" />}
-                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-[#f26722] hover:bg-[#f5834a] hover:text-white !justify-start h-8"
+                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-[#f26722] hover:!bg-[#f5834a] hover:!text-white !justify-start h-8"
               >
                 Employee Handbook
               </Button>

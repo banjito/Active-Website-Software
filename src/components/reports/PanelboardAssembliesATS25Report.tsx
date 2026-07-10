@@ -635,8 +635,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           if (!v || v.toLowerCase() === "n/a") {
             (out as any)[k] = v || "N/A";
           } else {
-            // Handle prefixed values like ">2200" or "<100"
-            const prefixMatch = v.match(/^([><])\s*(.+)$/);
+            // Handle prefixed values like ">2200", "≥2200", ">=2200", or "<100"
+            const prefixMatch = v.match(/^([><]=?|≥|≤)\s*(.+)$/);
             const prefix = prefixMatch ? prefixMatch[1] : "";
             const numStr = prefixMatch ? prefixMatch[2] : v;
             const n = parseFloat(numStr);

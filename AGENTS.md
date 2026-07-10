@@ -56,6 +56,7 @@ The user is a non-technical solo founder building this app. Follow these rules i
 - **MANDATORY**: All reports must include comprehensive print CSS (see STYLING_GUIDE.mdc)
 - Use Tailwind CSS with dark mode support (`dark:` modifier)
 - Brand color: `#f26722` (orange)
+- `Button` icon + text: use the `leftIcon`/`rightIcon` props, never put the icon as a child next to text (children get wrapped in one `<span>`, so the icon stacks above the text when the button is squeezed)
 - Follow predefined component classes: `.form-input`, `.btn-primary`, `.card`, etc.
 
 ### Error Handling

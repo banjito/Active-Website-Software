@@ -6309,8 +6309,8 @@ export default function JobDetail() {
                 variant="outline"
                 onClick={() => setIsSignatureProfileSelectorOpen(true)}
                 className="w-full"
+                leftIcon={<Users className="h-4 w-4" />}
               >
-                <Users className="h-4 w-4 mr-2" />
                 Select Signatures{" "}
                 {selectedSignatureProfileIds.size > 0 &&
                   `(${selectedSignatureProfileIds.size})`}
@@ -7817,8 +7817,8 @@ ${newBodyHtml}
                       variant="outline"
                       onClick={() => setIsSignatureProfileSelectorOpen(true)}
                       className="w-full"
+                      leftIcon={<Users className="h-4 w-4" />}
                     >
-                      <Users className="h-4 w-4 mr-2" />
                       Select Signatures{" "}
                       {selectedSignatureProfileIds.size > 0 &&
                         `(${selectedSignatureProfileIds.size})`}
@@ -9623,12 +9623,6 @@ ${newBodyHtml}
                                   },
                                 )}
                               </span>
-                              {changeOrderSummary.approvedTotal !== 0 && (
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                                  {" "}
-                                  (incl. approved COs)
-                                </span>
-                              )}
                             </span>
                             <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               Remaining Balance Left to Bill:{" "}
@@ -9647,10 +9641,9 @@ ${newBodyHtml}
                             </span>
                             <Button
                               onClick={() => setShowContractUpload(true)}
-                              className="flex items-center space-x-2"
+                              leftIcon={<Upload className="h-4 w-4" />}
                             >
-                              <Upload className="h-4 w-4" />
-                              <span>Add Action</span>
+                              Add Action
                             </Button>
                           </div>
                         </div>
@@ -9756,8 +9749,8 @@ ${newBodyHtml}
                                               setSelectedContract(contract);
                                               setShowContractViewer(true);
                                             }}
+                                            leftIcon={<Eye className="h-4 w-4" />}
                                           >
-                                            <Eye className="h-4 w-4 mr-1" />
                                             View
                                           </Button>
                                           <Button
@@ -9772,8 +9765,8 @@ ${newBodyHtml}
                                                 link.click();
                                               }
                                             }}
+                                            leftIcon={<Download className="h-4 w-4" />}
                                           >
-                                            <Download className="h-4 w-4 mr-1" />
                                             Download
                                           </Button>
                                         </>
@@ -9785,8 +9778,8 @@ ${newBodyHtml}
                                           handleContractDelete(contract.id)
                                         }
                                         className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                        leftIcon={<Trash2 className="h-4 w-4" />}
                                       >
-                                        <Trash2 className="h-4 w-4 mr-1" />
                                         Delete
                                       </Button>
                                     </div>
@@ -9819,10 +9812,9 @@ ${newBodyHtml}
                           </CardTitle>
                           <Button
                             onClick={() => setShowDrawingUpload(true)}
-                            className="flex items-center space-x-2"
+                            leftIcon={<Upload className="h-4 w-4" />}
                           >
-                            <Upload className="h-4 w-4" />
-                            <span>Upload Drawing</span>
+                            Upload Drawing
                           </Button>
                         </div>
                       </CardHeader>
@@ -9877,8 +9869,8 @@ ${newBodyHtml}
                                       size="sm"
                                       onClick={() => handleDrawingView(drawing)}
                                       className="flex-1"
+                                      leftIcon={<Maximize2 className="h-3 w-3" />}
                                     >
-                                      <Maximize2 className="h-3 w-3 mr-1" />
                                       View
                                     </Button>
                                     <Button
@@ -9909,10 +9901,9 @@ ${newBodyHtml}
                           </CardTitle>
                           <Button
                             onClick={() => setShowMiscUpload(true)}
-                            className="flex items-center space-x-2"
+                            leftIcon={<Upload className="h-4 w-4" />}
                           >
-                            <Upload className="h-4 w-4" />
-                            <span>Upload Document</span>
+                            Upload Document
                           </Button>
                         </div>
                       </CardHeader>
@@ -9969,8 +9960,8 @@ ${newBodyHtml}
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleMiscView(document)}
+                                      leftIcon={<Eye className="h-4 w-4" />}
                                     >
-                                      <Eye className="h-4 w-4 mr-1" />
                                       View
                                     </Button>
                                     <Button
@@ -12156,8 +12147,8 @@ ${newBodyHtml}
                         selectedContract &&
                         window.open(selectedContract.file_url!, "_blank")
                       }
+                      leftIcon={<Eye className="h-4 w-4" />}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
                       Open in New Tab
                     </Button>
                     <Button
@@ -12171,8 +12162,8 @@ ${newBodyHtml}
                           link.click();
                         }
                       }}
+                      leftIcon={<Download className="h-4 w-4" />}
                     >
-                      <Download className="h-4 w-4 mr-1" />
                       Download
                     </Button>
                   </>
@@ -12313,8 +12304,8 @@ ${newBodyHtml}
                     selectedDrawing &&
                     window.open(selectedDrawing.file_url, "_blank")
                   }
+                  leftIcon={<Edit3 className="h-4 w-4" />}
                 >
-                  <Edit3 className="h-4 w-4 mr-1" />
                   Edit
                 </Button>
                 <Button
@@ -12328,8 +12319,8 @@ ${newBodyHtml}
                       link.click();
                     }
                   }}
+                  leftIcon={<Download className="h-4 w-4" />}
                 >
-                  <Download className="h-4 w-4 mr-1" />
                   Download
                 </Button>
                 <Button
@@ -12469,8 +12460,8 @@ ${newBodyHtml}
                     selectedMiscDocument &&
                     window.open(selectedMiscDocument.file_url, "_blank")
                   }
+                  leftIcon={<Download className="h-4 w-4" />}
                 >
-                  <Download className="h-4 w-4 mr-1" />
                   Download
                 </Button>
                 <Button
@@ -12517,8 +12508,8 @@ ${newBodyHtml}
                         onClick={() =>
                           window.open(selectedMiscDocument.file_url, "_blank")
                         }
+                        leftIcon={<Download className="h-4 w-4" />}
                       >
-                        <Download className="h-4 w-4 mr-2" />
                         Download to View
                       </Button>
                     </div>

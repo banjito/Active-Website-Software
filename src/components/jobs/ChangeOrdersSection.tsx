@@ -340,7 +340,7 @@ export default function ChangeOrdersSection({
               </span>
               {summary.pendingCount > 0 && ` (${summary.pendingCount})`}
             </span>
-            <Button size="sm" onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
+            <Button onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
               Add Change Order
             </Button>
           </div>
@@ -436,8 +436,8 @@ export default function ChangeOrdersSection({
                               link.download = co.title;
                               link.click();
                             }}
+                            leftIcon={<Download className="h-4 w-4" />}
                           >
-                            <Download className="h-4 w-4 mr-1" />
                             Download
                           </Button>
                         </>
@@ -458,8 +458,8 @@ export default function ChangeOrdersSection({
                             size="sm"
                             disabled={busy}
                             onClick={() => handleApprove(co)}
+                            leftIcon={<Check className="h-4 w-4" />}
                           >
-                            <Check className="h-4 w-4 mr-1" />
                             Approve
                           </Button>
                           <Button
@@ -467,8 +467,8 @@ export default function ChangeOrdersSection({
                             size="sm"
                             disabled={busy}
                             onClick={() => setStatus(co, "rejected")}
+                            leftIcon={<X className="h-4 w-4" />}
                           >
-                            <X className="h-4 w-4 mr-1" />
                             Reject
                           </Button>
                           <Button
@@ -489,8 +489,8 @@ export default function ChangeOrdersSection({
                             size="sm"
                             disabled={busy}
                             onClick={() => handlePushToQBO(co)}
+                            leftIcon={<RefreshCw className="h-4 w-4" />}
                           >
-                            <RefreshCw className="h-4 w-4 mr-1" />
                             Push to QB
                           </Button>
                         )}
@@ -514,7 +514,7 @@ export default function ChangeOrdersSection({
       </CardContent>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-lg w-full">
+        <DialogContent className="sm:max-w-3xl w-full">
           <DialogHeader>
             <DialogTitle>
               {editing
@@ -536,49 +536,53 @@ export default function ChangeOrdersSection({
                 placeholder="e.g. Added transformer testing at Bldg 2"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="co-amount">
-                Amount ($ — negative for deductive)
-              </label>
-              <Input
-                id="co-amount"
-                type="number"
-                step="0.01"
-                value={form.amount}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="co-days">
-                Schedule Impact (days, optional)
-              </label>
-              <Input
-                id="co-days"
-                type="number"
-                step="1"
-                value={form.scheduleImpactDays}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    scheduleImpactDays: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="co-requested-by">
-                Requested By (optional)
-              </label>
-              <Input
-                id="co-requested-by"
-                value={form.requestedBy}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, requestedBy: e.target.value }))
-                }
-                placeholder="Customer / GC contact"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="co-amount">
+                  Amount ($)
+                </label>
+                <Input
+                  id="co-amount"
+                  type="number"
+                  step="0.01"
+                  value={form.amount}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, amount: e.target.value }))
+                  }
+                  placeholder="Negative = deductive"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="co-days">
+                  Schedule Impact (days)
+                </label>
+                <Input
+                  id="co-days"
+                  type="number"
+                  step="1"
+                  value={form.scheduleImpactDays}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      scheduleImpactDays: e.target.value,
+                    }))
+                  }
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="co-requested-by">
+                  Requested By
+                </label>
+                <Input
+                  id="co-requested-by"
+                  value={form.requestedBy}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, requestedBy: e.target.value }))
+                  }
+                  placeholder="Customer / GC contact"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="co-description">
@@ -586,7 +590,7 @@ export default function ChangeOrdersSection({
               </label>
               <Textarea
                 id="co-description"
-                rows={3}
+                rows={2}
                 value={form.description}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, description: e.target.value }))

@@ -623,6 +623,63 @@ function computeMobilizationFactor(
   return factors.base;
 }
 
+// Copy-to-clipboard buttons for symbols that are awkward to type (≥ / ≤).
+// Used in both the estimate sheet header and the letter proposal toolbar so
+// the symbol can be pasted anywhere as plain text.
+const SYMBOL_COPY_ITEMS: { symbol: string; label: string }[] = [
+  { symbol: "≥", label: "Copy ≥ (greater than or equal to)" },
+  { symbol: "≤", label: "Copy ≤ (less than or equal to)" },
+];
+
+function SymbolCopyButtons({ className = "" }: { className?: string }) {
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copySymbol = async (symbol: string) => {
+    try {
+      await navigator.clipboard.writeText(symbol);
+    } catch {
+      // Fallback for insecure contexts / older browsers
+      const ta = document.createElement("textarea");
+      ta.value = symbol;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch {}
+      document.body.removeChild(ta);
+    }
+    setCopied(symbol);
+    window.setTimeout(
+      () => setCopied((current) => (current === symbol ? null : current)),
+      1200,
+    );
+  };
+
+  return (
+    <div className={`flex items-center gap-1 ${className}`}>
+      {SYMBOL_COPY_ITEMS.map(({ symbol, label }) => (
+        <button
+          key={symbol}
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            copySymbol(symbol);
+          }}
+          title={label}
+          aria-label={label}
+          className="inline-flex h-8 min-w-[2rem] items-center justify-center rounded border border-[#f26722] bg-white px-2 text-sm font-semibold leading-none text-[#f26722] transition-colors hover:bg-[#f26722] hover:text-white dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d]"
+        >
+          {copied === symbol ? "Copied!" : symbol}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function EstimateSheet({
   opportunityId,
   mode,
@@ -662,6 +719,10 @@ export default function EstimateSheet({
   const [isManualSaturdayHours, setIsManualSaturdayHours] = useState(false);
   const [isManualSundayHours, setIsManualSundayHours] = useState(false);
   const [letterPaymentTerm, setLetterPaymentTerm] = useState<
+    "net30" | "net60" | "net90"
+  >("net30");
+  // Which payment term's price is displayed in the SOV item price column
+  const [selectedSovPriceTerm, setSelectedSovPriceTerm] = useState<
     "net30" | "net60" | "net90"
   >("net30");
   const [letterShowAllTerms, setLetterShowAllTerms] = useState(true);
@@ -1121,6 +1182,13 @@ export default function EstimateSheet({
         } else {
           setCombinedLetterQuantity(1);
         }
+        // Restore selected SOV price term if present in draft
+        if (
+          savedDraft.selectedSovPriceTerm &&
+          ["net30", "net60", "net90"].includes(savedDraft.selectedSovPriceTerm)
+        ) {
+          setSelectedSovPriceTerm(savedDraft.selectedSovPriceTerm);
+        }
 
         setDraftRestored(true);
       }
@@ -1137,6 +1205,7 @@ export default function EstimateSheet({
         paymentTermFactors,
         mobilizationFactors,
         combinedLetterQuantity,
+        selectedSovPriceTerm,
       };
       // Save to Supabase (debounced by the service)
       updatePreference(`drafts.${draftKey}`, draftData);
@@ -1147,6 +1216,7 @@ export default function EstimateSheet({
     paymentTermFactors,
     mobilizationFactors,
     combinedLetterQuantity,
+    selectedSovPriceTerm,
     isOpen,
     isNewQuote,
     opportunityId,
@@ -1572,6 +1642,16 @@ export default function EstimateSheet({
         });
       }
 
+      // Restore which payment term's price was shown in the SOV column
+      if (
+        parsedData.selectedSovPriceTerm &&
+        ["net30", "net60", "net90"].includes(parsedData.selectedSovPriceTerm)
+      ) {
+        setSelectedSovPriceTerm(parsedData.selectedSovPriceTerm);
+      } else {
+        setSelectedSovPriceTerm("net30");
+      }
+
       // Handle mobilization factors
       if (parsedData.mobilizationFactors) {
         setMobilizationFactors(parsedData.mobilizationFactors);
@@ -1775,6 +1855,7 @@ export default function EstimateSheet({
       hourlyRates: hourlyRates,
       paymentTermFactors: paymentTermFactors,
       mobilizationFactors: mobilizationFactors,
+      selectedSovPriceTerm: selectedSovPriceTerm,
       isManualLaborHours: isManualLaborHours,
       isManualTravelLaborHours: isManualTravelLaborHours,
       materialMarkup: materialMarkup,
@@ -2882,12 +2963,13 @@ export default function EstimateSheet({
   };
 
   // Function to calculate SOV item price
-  // Formula: =($G$54/$K$44*I10)
+  // Formula: =($G$54/$K$44*I10) * payment term factor
   // G54 = Final (G54), K44 = Work/SOV hrs (from Hours Summary), I10 = Labor Unit (for this row)
   const calculateSOVItemPrice = (
     materialExtension: number,
     expenseExtension: number,
     laborUnit: number,
+    term: "net30" | "net60" | "net90" = selectedSovPriceTerm,
   ) => {
     // Get FINAL (G54) - the value after subtotal markup
     const final = getFinalValue();
@@ -2899,8 +2981,12 @@ export default function EstimateSheet({
     const laborAllocation =
       workSovHours > 0 ? (final / workSovHours) * toNum(laborUnit) : 0;
 
+    // Apply the selected payment term factor
+    const termFactor = paymentTermFactors[term] ?? 1.0;
+    const termAdjusted = Number.isFinite(laborAllocation) ? laborAllocation * termFactor : 0;
+
     // SOV item price should ONLY include the labor allocation (no materials or expenses)
-    return Number.isFinite(laborAllocation) ? laborAllocation : 0;
+    return Number.isFinite(termAdjusted) ? termAdjusted : 0;
   };
 
   // Arrow-key cell navigation for estimate tables (avoids global nav's position heuristic which skips rows / jumps on Windows)
@@ -6654,6 +6740,7 @@ export default function EstimateSheet({
 
           <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
             <div className="absolute top-0 right-3 pt-4 pr-4 flex items-center gap-3">
+              <SymbolCopyButtons />
               {isViewMode &&
               quotes.length === 0 &&
               isNewQuote ? null : isNewQuote ? (
@@ -7148,6 +7235,33 @@ export default function EstimateSheet({
                       }}
                     >
                       <div style={styles.sectionHeader}>SOV QUOTE ITEMS</div>
+                      {/* Payment Term Selector for SOV Item Price column */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{ fontSize: "12px", color: "var(--muted-fg, #6b7280)" }}>
+                          Price shown:
+                        </span>
+                        <select
+                          value={selectedSovPriceTerm}
+                          disabled={isViewMode}
+                          onChange={(e) => {
+                            setSelectedSovPriceTerm(e.target.value as "net30" | "net60" | "net90");
+                            setIsDirty(true);
+                          }}
+                          style={{
+                            fontSize: "12px",
+                            padding: "4px 8px",
+                            border: "1px solid var(--border-color)",
+                            borderRadius: "4px",
+                            backgroundColor: "var(--input-bg)",
+                            color: "var(--text-color)",
+                            cursor: isViewMode ? "default" : "pointer",
+                          }}
+                        >
+                          <option value="net30">NET 30</option>
+                          <option value="net60">NET 60</option>
+                          <option value="net90">NET 90</option>
+                        </select>
+                      </div>
                       <Button
                         type="button"
                         variant="secondary"
@@ -7324,7 +7438,9 @@ export default function EstimateSheet({
                               <th style={styles.tableHeader}>LABOR (HOURS)</th>
                               <th style={styles.tableHeader}>LABOR UNIT</th>
                               <th style={styles.tableHeader}>LABOR TOTAL</th>
-                              <th style={styles.tableHeader}>SOV ITEM PRICE</th>
+                              <th style={styles.tableHeader}>
+                                SOV ITEM PRICE ({selectedSovPriceTerm === "net30" ? "NET 30" : selectedSovPriceTerm === "net60" ? "NET 60" : "NET 90"})
+                              </th>
                               <th style={styles.tableHeader}>NOTES</th>
                               {!isViewMode && (
                                 <th style={styles.tableHeader}>CLEAR</th>
@@ -14148,6 +14264,10 @@ export default function EstimateSheet({
                 >
                   Page Break
                 </Button>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-medium">Symbols:</span>
+                  <SymbolCopyButtons />
+                </div>
               </div>
             </div>
           </div>

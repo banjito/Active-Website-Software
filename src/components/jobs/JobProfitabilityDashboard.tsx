@@ -22,6 +22,7 @@ import {
   type QBOPnLRow,
 } from '@/services/quickbooksService';
 import { getJobBudgetData, getOverheadRate, saveOverheadRate, type BudgetData } from '@/services/profitabilityService';
+import { fetchChangeOrders, summarizeChangeOrders, type ChangeOrderSummary } from '@/services/changeOrderService';
 import {
   computeActuals,
   computeBudget,
@@ -91,6 +92,8 @@ export default function JobProfitabilityDashboard({ job }: Props) {
   const [eac, setEac] = useState<EAC | null>(null);
   const [monthly, setMonthly] = useState<MonthlyRollup[]>([]);
 
+  const [coSummary, setCoSummary] = useState<ChangeOrderSummary | null>(null);
+
   const [overheadRate, setOverheadRate] = useState(0.494);
   const [showSettings, setShowSettings] = useState(false);
   const [draftRate, setDraftRate] = useState('49.4');
@@ -105,12 +108,13 @@ export default function JobProfitabilityDashboard({ job }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [bd, ta, inv, pnl, rate] = await Promise.all([
+      const [bd, ta, inv, pnl, rate, cos] = await Promise.all([
         getJobBudgetData(job.id),
         getQBOTimeActivitiesByCustomer(job.quickbooks_project_id),
         getQBOInvoicesByCustomer(job.quickbooks_project_id),
         getQBOProfitAndLossDetail(job.quickbooks_project_id),
         getOverheadRate(),
+        fetchChangeOrders(job.id).catch(() => []),
       ]);
 
       setBudgetData(bd);
@@ -119,6 +123,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
       setPnlRows(pnl);
       setOverheadRate(rate);
       setDraftRate((rate * 100).toFixed(1));
+      setCoSummary(summarizeChangeOrders(cos));
 
       const act = computeActuals(ta, inv, pnl);
       const bud = computeBudget(bd, act.realizedRate);
@@ -511,6 +516,37 @@ export default function JobProfitabilityDashboard({ job }: Props) {
                 {fmt(budget.quotedAmount)}
               </button>
             </div>
+            {/* Approved change orders raise the revised contract above the original quote */}
+            {coSummary && (coSummary.approvedTotal !== 0 || coSummary.pendingTotal !== 0) && (
+              <>
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Approved Change Orders ({coSummary.approvedCount})
+                  </span>
+                  <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
+                    {fmt(coSummary.approvedTotal)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                    Revised Contract Value
+                  </span>
+                  <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
+                    {fmt(budget.quotedAmount + coSummary.approvedTotal)}
+                  </span>
+                </div>
+                {coSummary.pendingTotal !== 0 && (
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Pending COs ({coSummary.pendingCount}) — not in totals
+                    </span>
+                    <span className="font-mono text-sm text-yellow-600 dark:text-yellow-400">
+                      {fmt(coSummary.pendingTotal)}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
             {/* Budget cost rows */}
             {([
               ['Labor', 'labor'],

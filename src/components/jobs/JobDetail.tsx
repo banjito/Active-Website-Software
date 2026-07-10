@@ -46,6 +46,8 @@ import { useJobDetails } from "../../lib/hooks";
 import { formatStatusLabel } from "@/utils/formatters";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
+import ChangeOrdersSection from "./ChangeOrdersSection";
+import type { ChangeOrderSummary } from "../../services/changeOrderService";
 import { reportImportService } from "../../services/reportImport";
 import { ShortcutService } from "../../services/ShortcutService";
 import Card, {
@@ -2246,9 +2248,18 @@ export default function JobDetail() {
     return op;
   };
 
-  // Total Contract Value = sum of adds minus subtract_from_total
+  // Approved/pending change order totals reported up from ChangeOrdersSection
+  const [changeOrderSummary, setChangeOrderSummary] =
+    useState<ChangeOrderSummary>({
+      approvedTotal: 0,
+      pendingTotal: 0,
+      approvedCount: 0,
+      pendingCount: 0,
+    });
+
+  // Total Contract Value = sum of adds minus subtract_from_total, plus approved change orders
   const totalContractValue = useMemo(() => {
-    return contracts.reduce((sum, contract) => {
+    const base = contracts.reduce((sum, contract) => {
       const raw = contract.value ?? 0;
       const amount = Math.abs(Number(raw));
       const op = getValueOp(contract);
@@ -2256,11 +2267,12 @@ export default function JobDetail() {
       if (op === "subtract_from_total") return sum - amount;
       return sum;
     }, 0);
-  }, [contracts]);
+    return base + changeOrderSummary.approvedTotal;
+  }, [contracts, changeOrderSummary.approvedTotal]);
 
-  // Remaining Balance Left to Bill = total - subtracts + add_to_remaining
+  // Remaining Balance Left to Bill = total - subtracts + add_to_remaining, plus approved change orders
   const remainingBalance = useMemo(() => {
-    return contracts.reduce((sum, contract) => {
+    const base = contracts.reduce((sum, contract) => {
       const raw = contract.value ?? 0;
       const amount = Math.abs(Number(raw));
       const op = getValueOp(contract);
@@ -2270,7 +2282,8 @@ export default function JobDetail() {
         return sum - amount;
       return sum;
     }, 0);
-  }, [contracts]);
+    return base + changeOrderSummary.approvedTotal;
+  }, [contracts, changeOrderSummary.approvedTotal]);
 
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
@@ -9610,6 +9623,12 @@ ${newBodyHtml}
                                   },
                                 )}
                               </span>
+                              {changeOrderSummary.approvedTotal !== 0 && (
+                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                  {" "}
+                                  (incl. approved COs)
+                                </span>
+                              )}
                             </span>
                             <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               Remaining Balance Left to Bill:{" "}
@@ -9779,6 +9798,16 @@ ${newBodyHtml}
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Change Orders Section */}
+                    {id && (
+                      <ChangeOrdersSection
+                        jobId={id}
+                        jobNumber={job?.job_number}
+                        quickbooksProjectId={job?.quickbooks_project_id}
+                        onSummaryChange={setChangeOrderSummary}
+                      />
+                    )}
 
                     {/* One-Line Drawings Section */}
                     <Card>
@@ -11880,7 +11909,6 @@ ${newBodyHtml}
                   <option value="main">Main Contract</option>
                   <option value="subcontract">Subcontract</option>
                   <option value="amendment">Amendment</option>
-                  <option value="change_order">Change Order</option>
                   <option value="purchase_order">Purchase Order</option>
                   <option value="invoice">Invoice</option>
                   <option value="discount">Discount</option>

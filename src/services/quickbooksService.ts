@@ -1148,3 +1148,66 @@ export async function getQBOProfitAndLossDetail(customerId: string): Promise<QBO
     return [];
   }
 }
+
+/**
+ * Create a QBO Estimate on a project representing an approved change order.
+ * The app is the source of truth for CO amounts; this is a one-way push so the
+ * office can invoice against the CO in QuickBooks. Returns the new Estimate Id.
+ */
+export async function createChangeOrderEstimate(params: {
+  projectId: string;
+  coNumber: number;
+  title: string;
+  amount: number;
+  description?: string | null;
+  jobNumber?: string | null;
+}): Promise<string> {
+  // Estimate lines need an ItemRef; prefer a dedicated "Change Order" item,
+  // then any Service item, then whatever billable item exists.
+  const items = await getQuickBooksItems();
+  const billable = items.filter(
+    (i: any) => i.Active !== false && i.Type !== 'Category'
+  );
+  const item =
+    billable.find((i: any) => /change\s*order/i.test(i.Name ?? '')) ||
+    billable.find((i: any) => i.Type === 'Service') ||
+    billable[0];
+  if (!item) {
+    throw new Error('No billable items found in QuickBooks to put on the estimate');
+  }
+
+  // DocNumber max length is 21; prefix with job number so CO-1s from different jobs don't collide
+  const docNumber = (
+    params.jobNumber ? `${params.jobNumber}-CO${params.coNumber}` : `CO-${params.coNumber}`
+  ).slice(0, 21);
+
+  const lineDescription = [`CO #${params.coNumber}: ${params.title}`, params.description]
+    .filter(Boolean)
+    .join(' — ')
+    .slice(0, 4000);
+
+  const response = await createQuickBooksEstimate({
+    CustomerRef: { value: params.projectId },
+    DocNumber: docNumber,
+    TxnStatus: 'Accepted',
+    PrivateNote: `Change order approved in ampOS (CO #${params.coNumber})`,
+    Line: [
+      {
+        DetailType: 'SalesItemLineDetail',
+        Amount: params.amount,
+        Description: lineDescription,
+        SalesItemLineDetail: {
+          ItemRef: { value: String(item.Id) },
+          Qty: 1,
+          UnitPrice: params.amount,
+        },
+      },
+    ],
+  });
+
+  const estimateId = response?.Estimate?.Id;
+  if (!estimateId) {
+    throw new Error('QuickBooks did not return an estimate id');
+  }
+  return String(estimateId);
+}

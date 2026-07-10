@@ -671,9 +671,9 @@ function SymbolCopyButtons({ className = "" }: { className?: string }) {
           }}
           title={label}
           aria-label={label}
-          className="inline-flex h-8 min-w-[2rem] items-center justify-center rounded border border-[#f26722] bg-white px-2 text-sm font-semibold leading-none text-[#f26722] transition-colors hover:bg-[#f26722] hover:text-white dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d]"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-none border border-[#f26722] bg-white text-base font-semibold leading-none text-[#f26722] transition-colors hover:bg-[#f26722] hover:text-white dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d]"
         >
-          {copied === symbol ? "Copied!" : symbol}
+          {copied === symbol ? "✓" : symbol}
         </button>
       ))}
     </div>
@@ -4409,7 +4409,7 @@ export default function EstimateSheet({
           return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, section: true, align: "center" })}">${name}</td></tr>`;
         }
         if (isEstimateSubsectionRow(item)) {
-          return `<tr class="amp-sov-subsection-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom })};font-style:italic;color:#6b7280;font-size:0.88em;padding-left:24px;">${name}</td></tr>`;
+          return `<tr class="amp-sov-subsection-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, align: "center" })};font-style:italic;color:#6b7280;font-size:0.88em;">${name}</td></tr>`;
         }
 
         const qty = escapeLetterHtml(item?.quantity ?? item?.qty ?? 1);
@@ -6740,7 +6740,6 @@ export default function EstimateSheet({
 
           <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
             <div className="absolute top-0 right-3 pt-4 pr-4 flex items-center gap-3">
-              <SymbolCopyButtons />
               {isViewMode &&
               quotes.length === 0 &&
               isNewQuote ? null : isNewQuote ? (
@@ -6759,7 +6758,7 @@ export default function EstimateSheet({
                       setJustSaved(false);
                       setIsViewMode(false);
                     }}
-                    className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                    className="h-10 w-10 p-0 bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
                   >
                     <Edit className="h-6 w-6" />
                   </Button>
@@ -6776,7 +6775,7 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="h-10 w-10 p-0 rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
                         <Trash className="h-6 w-6" />
                       </Button>
@@ -6790,6 +6789,7 @@ export default function EstimateSheet({
                       >
                         Duplicate
                       </Button>
+                      <SymbolCopyButtons />
                       <Button
                         onClick={() => setIsCopyToOpportunityOpen(true)}
                         disabled={isSaving}
@@ -6839,7 +6839,7 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="h-10 w-10 p-0 rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
                         <Trash className="h-6 w-6" />
                       </Button>
@@ -6853,6 +6853,7 @@ export default function EstimateSheet({
                       >
                         Duplicate
                       </Button>
+                      <SymbolCopyButtons />
                       <Button
                         onClick={() => setIsCopyToOpportunityOpen(true)}
                         disabled={isSaving}
@@ -7491,7 +7492,7 @@ export default function EstimateSheet({
                                         padding: isBlankRow
                                           ? "10px 5px"
                                           : isSubsectionRow
-                                            ? "4px 5px 4px 32px"
+                                            ? "4px 5px"
                                             : "6px 5px",
                                         borderTop: isSectionRow
                                           ? "2px solid var(--border-color)"
@@ -7506,9 +7507,7 @@ export default function EstimateSheet({
                                           position: "relative",
                                           display: "flex",
                                           alignItems: "center",
-                                          justifyContent: isSubsectionRow
-                                            ? "flex-start"
-                                            : "center",
+                                          justifyContent: "center",
                                           minHeight: isBlankRow
                                             ? "22px"
                                             : "28px",
@@ -7523,7 +7522,7 @@ export default function EstimateSheet({
                                             onDragEnd={handleDragEnd}
                                             style={{
                                               position: "absolute",
-                                              left: isSubsectionRow ? -20 : 8,
+                                              left: 8,
                                               cursor: "grab",
                                               color: "#6b7280",
                                               fontSize: "14px",
@@ -7582,7 +7581,7 @@ export default function EstimateSheet({
                                               fontStyle: "italic",
                                               fontSize: "0.88em",
                                               color: "var(--text-muted, #6b7280)",
-                                              textAlign: "left",
+                                              textAlign: "center",
                                               padding: "4px",
                                             }}
                                             value={item.item}

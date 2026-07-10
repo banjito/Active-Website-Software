@@ -3,6 +3,7 @@
 - **Do not run git --no-paper diff commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
 - **Do NOT RUN npm commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
 - **Do not tell me that things have no cost.**
+- **Do not use Claude in Chrome unless the user asks for it.**
 
 # How to talk to me
 The user is a non-technical solo founder building this app. Follow these rules in every response.

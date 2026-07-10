@@ -1902,8 +1902,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditMode}
-                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
+                          <div className="hidden print:block text-xs text-black">
+                            {formData.insulationTest[test.type][phase]}
+                          </div>
                         </td>
                       ))}
                       {["ag", "bg", "cg"].map((phase) => (
@@ -1919,8 +1922,15 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               ]
                             }
                             readOnly={true}
-                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150"
+                            className="w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm dark:bg-dark-150 dark:text-white bg-neutral-100 dark:bg-dark-150 print:hidden"
                           />
+                          <div className="hidden print:block text-xs text-black">
+                            {
+                              formData.insulationTest[`${test.type}Corrected`][
+                                phase
+                              ]
+                            }
+                          </div>
                         </td>
                       ))}
                       <td className="border border-neutral-300 dark:border-neutral-700 px-2 py-2 whitespace-nowrap text-xs text-neutral-900 dark:text-white">
@@ -2017,7 +2027,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 ?.currentUnit || "mA"
                             }
                             disabled={!isEditMode}
-                            className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {currentUnits.map((unit) => (
                               <option
@@ -2029,6 +2039,10 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               </option>
                             ))}
                           </select>
+                          <div className="hidden print:block text-xs text-black normal-case">
+                            {formData.withstandTest.readings[0]?.[phase]
+                              ?.currentUnit || "mA"}
+                          </div>
                         </th>
                         <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                           nF
@@ -2052,8 +2066,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
+                        <div className="hidden print:block text-xs text-black">
+                          {reading.timeMinutes}
+                        </div>
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
                         <input
@@ -2067,8 +2084,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditMode}
-                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
+                        <div className="hidden print:block text-xs text-black">
+                          {reading.kVAC}
+                        </div>
                       </td>
                       {["phaseA", "phaseB", "phaseC"].map((phase) => (
                         <React.Fragment key={`${index}-${phase}`}>
@@ -2086,8 +2106,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditMode}
-                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
+                            <div className="hidden print:block text-xs text-black">
+                              {reading[phase]?.mA || ""}
+                            </div>
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 whitespace-nowrap">
                             <input
@@ -2103,8 +2126,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditMode}
-                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
+                            <div className="hidden print:block text-xs text-black">
+                              {reading[phase]?.nF || ""}
+                            </div>
                           </td>
                         </React.Fragment>
                       ))}

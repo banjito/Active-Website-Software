@@ -1556,17 +1556,9 @@ export default function EstimateSheet({
         parsedHoursSummary: parsedData.hoursSummary,
       });
 
-      // Handle hourly rates
-      if (parsedData.hourlyRates) {
-        setHourlyRates(parsedData.hourlyRates);
-      } else {
-        // Set default rates from presets if not found
-        setHourlyRates({
-          straightTime: DEFAULT_ESTIMATING_PRESETS.default_hourly_rate,
-          overtime: DEFAULT_ESTIMATING_PRESETS.overtime_rate,
-          doubleTime: DEFAULT_ESTIMATING_PRESETS.double_time_rate,
-        });
-      }
+      // Handle hourly rates — sanitize saved values so a missing/invalid rate
+      // (older estimates) can't propagate NaN into FINAL and SOV item prices
+      setHourlyRates(getHourlyRatesForCombinedScope(parsedData));
 
       // Handle payment term factors
       if (parsedData.paymentTermFactors) {
@@ -2333,7 +2325,7 @@ export default function EstimateSheet({
   // Helper function to safely convert string or number to number for calculations
   const toNum = (value: number | string | undefined | null): number => {
     if (value === undefined || value === null || value === "") return 0;
-    if (typeof value === "number") return value;
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
     return parseFloat(value) || 0;
   };
 
@@ -2759,9 +2751,11 @@ export default function EstimateSheet({
   const getTravelLaborCost = () => {
     return (
       toNum(data.hoursSummary.travelStraightTimeHours) *
-        hourlyRates.straightTime +
-      toNum(data.hoursSummary.travelOvertimeHours) * hourlyRates.overtime +
-      toNum(data.hoursSummary.travelDoubleTimeHours) * hourlyRates.doubleTime
+        toNum(hourlyRates.straightTime) +
+      toNum(data.hoursSummary.travelOvertimeHours) *
+        toNum(hourlyRates.overtime) +
+      toNum(data.hoursSummary.travelDoubleTimeHours) *
+        toNum(hourlyRates.doubleTime)
     );
   };
 
@@ -2773,18 +2767,21 @@ export default function EstimateSheet({
   // Shared material + expense base used by all day-type scenarios
   const getMaterialExpenseBase = () => {
     return (
-      data.calculatedValues.totalMaterial * 1.09 * materialMarkup +
-      data.calculatedValues.totalExpense * 1.09 +
-      data.calculatedValues.nonSovExpense * 1.0
+      toNum(data.calculatedValues.totalMaterial) *
+        1.09 *
+        toNum(materialMarkup) +
+      toNum(data.calculatedValues.totalExpense) * 1.09 +
+      toNum(data.calculatedValues.nonSovExpense) * 1.0
     );
   };
 
   // Work labor cost from the M-F Labor Hours Tracking table
   const getWorkLaborCost = () => {
     return (
-      toNum(data.hoursSummary.straightTimeHours) * hourlyRates.straightTime +
-      toNum(data.hoursSummary.overtimeHours) * hourlyRates.overtime +
-      toNum(data.hoursSummary.doubleTimeHours) * hourlyRates.doubleTime
+      toNum(data.hoursSummary.straightTimeHours) *
+        toNum(hourlyRates.straightTime) +
+      toNum(data.hoursSummary.overtimeHours) * toNum(hourlyRates.overtime) +
+      toNum(data.hoursSummary.doubleTimeHours) * toNum(hourlyRates.doubleTime)
     );
   };
 
@@ -2804,13 +2801,13 @@ export default function EstimateSheet({
     const sat = data.saturdayHoursSummary;
     if (!sat) return getFinalValue();
     const workLabor =
-      toNum(sat.straightTimeHours) * hourlyRates.straightTime +
-      toNum(sat.overtimeHours) * hourlyRates.overtime +
-      toNum(sat.doubleTimeHours) * hourlyRates.doubleTime;
+      toNum(sat.straightTimeHours) * toNum(hourlyRates.straightTime) +
+      toNum(sat.overtimeHours) * toNum(hourlyRates.overtime) +
+      toNum(sat.doubleTimeHours) * toNum(hourlyRates.doubleTime);
     const travelLabor =
-      toNum(sat.travelStraightTimeHours) * hourlyRates.straightTime +
-      toNum(sat.travelOvertimeHours) * hourlyRates.overtime +
-      toNum(sat.travelDoubleTimeHours) * hourlyRates.doubleTime;
+      toNum(sat.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
+      toNum(sat.travelOvertimeHours) * toNum(hourlyRates.overtime) +
+      toNum(sat.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
     return Math.ceil(
       (getMaterialExpenseBase() +
         workLabor +
@@ -2825,13 +2822,13 @@ export default function EstimateSheet({
     const sun = data.sundayHoursSummary;
     if (!sun) return getFinalValue();
     const workLabor =
-      toNum(sun.straightTimeHours) * hourlyRates.straightTime +
-      toNum(sun.overtimeHours) * hourlyRates.overtime +
-      toNum(sun.doubleTimeHours) * hourlyRates.doubleTime;
+      toNum(sun.straightTimeHours) * toNum(hourlyRates.straightTime) +
+      toNum(sun.overtimeHours) * toNum(hourlyRates.overtime) +
+      toNum(sun.doubleTimeHours) * toNum(hourlyRates.doubleTime);
     const travelLabor =
-      toNum(sun.travelStraightTimeHours) * hourlyRates.straightTime +
-      toNum(sun.travelOvertimeHours) * hourlyRates.overtime +
-      toNum(sun.travelDoubleTimeHours) * hourlyRates.doubleTime;
+      toNum(sun.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
+      toNum(sun.travelOvertimeHours) * toNum(hourlyRates.overtime) +
+      toNum(sun.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
     return Math.ceil(
       (getMaterialExpenseBase() +
         workLabor +
@@ -2896,23 +2893,14 @@ export default function EstimateSheet({
     const final = getFinalValue();
 
     // Get Work/SOV hrs (K44) from Hours Summary table
-    const workSovHours = data.hoursSummary.workHours;
+    const workSovHours = toNum(data.hoursSummary.workHours);
 
     // Calculate the formula: (Final / Work/SOV hrs) * Labor Unit
     const laborAllocation =
-      workSovHours > 0 ? (final / workSovHours) * laborUnit : 0;
-
-    // Debug: Log the values being used
-    console.log("SOV Item Price Calculation:", {
-      final: final,
-      workSovHours: workSovHours,
-      laborUnit: laborUnit,
-      laborAllocation: laborAllocation,
-      result: laborAllocation,
-    });
+      workSovHours > 0 ? (final / workSovHours) * toNum(laborUnit) : 0;
 
     // SOV item price should ONLY include the labor allocation (no materials or expenses)
-    return laborAllocation;
+    return Number.isFinite(laborAllocation) ? laborAllocation : 0;
   };
 
   // Arrow-key cell navigation for estimate tables (avoids global nav's position heuristic which skips rows / jumps on Windows)
@@ -3959,15 +3947,33 @@ export default function EstimateSheet({
         if (!hasExistingData && presets) {
           presetsAppliedRef.current = true;
 
-          // Apply hourly rates from presets
+          // Apply hourly rates from presets (fall back per-field if a DB column is null)
+          const finiteOr = (value: unknown, fallback: number) => {
+            const num = Number(value);
+            return Number.isFinite(num) && num > 0 ? num : fallback;
+          };
           setHourlyRates({
-            straightTime: presets.default_hourly_rate,
-            overtime: presets.overtime_rate,
-            doubleTime: presets.double_time_rate,
+            straightTime: finiteOr(
+              presets.default_hourly_rate,
+              DEFAULT_ESTIMATING_PRESETS.default_hourly_rate,
+            ),
+            overtime: finiteOr(
+              presets.overtime_rate,
+              DEFAULT_ESTIMATING_PRESETS.overtime_rate,
+            ),
+            doubleTime: finiteOr(
+              presets.double_time_rate,
+              DEFAULT_ESTIMATING_PRESETS.double_time_rate,
+            ),
           });
 
           // Apply material markup from presets
-          setMaterialMarkup(presets.default_markup_factor);
+          setMaterialMarkup(
+            finiteOr(
+              presets.default_markup_factor,
+              DEFAULT_ESTIMATING_PRESETS.default_markup_factor,
+            ),
+          );
 
           // Apply defaults to data (men, hoursPerDay)
           setData((prev) => ({

@@ -48,6 +48,12 @@ export interface EstimatingPresets {
   proposal_safety_policy_html?: string | null;
   proposal_signer_name?: string | null;
   proposal_signer_title?: string | null;
+  // Expanded template editing (v2). JSON columns are stored/loaded as-is by
+  // Supabase; helpers in proposalTemplateDefaults.ts coerce + fall back.
+  proposal_header_html?: string | null;
+  proposal_footer_html?: string | null;
+  proposal_neta_options?: unknown | null;
+  proposal_custom_sections?: unknown | null;
 
   // Metadata
   created_at: string;

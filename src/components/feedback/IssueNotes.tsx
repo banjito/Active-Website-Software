@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Send,
   Paperclip,
@@ -113,6 +113,19 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const notesEndRef = useRef<HTMLDivElement>(null);
 
+  // Object URL for previewing a selected/pasted image before sending.
+  const selectedImagePreview = useMemo(() => {
+    if (selectedFile && selectedFile.type.startsWith("image/")) {
+      return URL.createObjectURL(selectedFile);
+    }
+    return null;
+  }, [selectedFile]);
+  useEffect(() => {
+    return () => {
+      if (selectedImagePreview) URL.revokeObjectURL(selectedImagePreview);
+    };
+  }, [selectedImagePreview]);
+
   const fetchNotes = async () => {
     try {
       const { data, error } = await supabase
@@ -203,6 +216,40 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
         description: "Please select a file smaller than 10MB",
         variant: "destructive",
       });
+  };
+
+  // Allow pasting an image straight from the clipboard (e.g. a screenshot)
+  // into the comment box, loading it into the existing attachment flow.
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const blob = item.getAsFile();
+        if (!blob) continue;
+        e.preventDefault();
+        if (blob.size > 10 * 1024 * 1024) {
+          toast({
+            title: "Image too large",
+            description: "Please paste an image smaller than 10MB",
+            variant: "destructive",
+          });
+          return;
+        }
+        // Clipboard images often arrive unnamed; give them a stable name.
+        const ext = blob.type.split("/")[1] || "png";
+        const file =
+          blob instanceof File && blob.name
+            ? blob
+            : new File([blob], `pasted-${Date.now()}.${ext}`, {
+                type: blob.type,
+              });
+        setSelectedFile(file);
+        return;
+      }
+    }
   };
 
   const uploadFile = async (
@@ -485,23 +532,38 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                             <div
                               className={`mt-1.5 pt-1.5 border-t ${isCurrentUser ? "border-white/20" : "border-neutral-200 dark:border-neutral-600"}`}
                             >
-                              <a
-                                href={note.attachment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={`inline-flex items-center gap-1.5 text-xs ${isCurrentUser ? "text-white/90 hover:text-white" : "text-blue-600 dark:text-blue-400 hover:underline"}`}
-                              >
-                                {getFileIcon(note.attachment_type)}
-                                <span className="truncate max-w-[180px]">
-                                  {note.attachment_name}
-                                </span>
-                                {note.attachment_size != null && (
-                                  <span className="opacity-70">
-                                    ({formatFileSize(note.attachment_size)})
+                              {note.attachment_type?.startsWith("image/") ? (
+                                <a
+                                  href={note.attachment_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <img
+                                    src={note.attachment_url}
+                                    alt={note.attachment_name || "Attachment"}
+                                    className="max-w-[220px] max-h-[220px] rounded object-contain border border-black/10 dark:border-white/10"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  href={note.attachment_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`inline-flex items-center gap-1.5 text-xs ${isCurrentUser ? "text-white/90 hover:text-white" : "text-blue-600 dark:text-blue-400 hover:underline"}`}
+                                >
+                                  {getFileIcon(note.attachment_type)}
+                                  <span className="truncate max-w-[180px]">
+                                    {note.attachment_name}
                                   </span>
-                                )}
-                                <Download className="w-3 h-3" />
-                              </a>
+                                  {note.attachment_size != null && (
+                                    <span className="opacity-70">
+                                      ({formatFileSize(note.attachment_size)})
+                                    </span>
+                                  )}
+                                  <Download className="w-3 h-3" />
+                                </a>
+                              )}
                             </div>
                           )}
                         </>
@@ -541,7 +603,15 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
           <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-2">
             {selectedFile && (
               <div className="mb-2 flex items-center gap-2 px-2 py-1.5 bg-neutral-100 dark:bg-dark-100 rounded text-sm">
-                {getFileIcon(selectedFile.type)}
+                {selectedImagePreview ? (
+                  <img
+                    src={selectedImagePreview}
+                    alt="Pasted preview"
+                    className="h-8 w-8 rounded object-cover border border-neutral-200 dark:border-neutral-600"
+                  />
+                ) : (
+                  getFileIcon(selectedFile.type)
+                )}
                 <span className="flex-1 truncate text-neutral-700 dark:text-neutral-300">
                   {selectedFile.name}
                 </span>
@@ -565,7 +635,8 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                 type="text"
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
-                placeholder="Add a comment..."
+                onPaste={handlePaste}
+                placeholder="Add a comment or paste an image..."
                 className="flex-1 min-w-0 h-8 px-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {

@@ -4212,21 +4212,26 @@ export default function EstimateSheet({
     syncLetterEditorHtmlFromDom();
   };
 
+  // NETA choices come from the admin-editable Proposal Template (falling back to
+  // built-in defaults until presets load). The leading "-- Select --" is a UI
+  // placeholder only and is never stored per-letter.
   const NETA_OPTIONS = [
     { value: "", text: "-- Select --" },
-    {
-      value: "mts",
-      text: "All tests will be performed in accordance with ANSI/NETA MTS 2023 - Standard for Maintenance Testing Specifications for Electrical power Equipment and Systems.",
-    },
-    {
-      value: "ats",
-      text: "All tests will be performed in accordance with ANSI/NETA ATS 2025 - Standard for Acceptance Testing Specifications for Electrical Power Equipment and Systems",
-    },
-    {
-      value: "both",
-      text: "All work will be performed in accordance with the applicable ANSI/NETA ATS/MTS & IEEE 81 Standards.",
-    },
+    ...proposalTemplate.netaOptions.map((o) => ({
+      value: o.value,
+      text: o.text,
+    })),
   ];
+
+  /** Render all admin-added custom sections placed at a given anchor. */
+  const renderCustomSectionsAt = (
+    anchor: string,
+    tokens: Record<string, string>,
+  ): string =>
+    proposalTemplate.customSections
+      .filter((s) => s.anchor === anchor)
+      .map((s) => renderTemplateSection(s.html, tokens))
+      .join("");
 
   // Fix duplicate/bolded label bug in Pricing & Terms
   function normalizePricingTermsHtml(html: string): string {
@@ -5304,6 +5309,10 @@ export default function EstimateSheet({
     // code-generated below and is assembled around these sections.
     const templateTokens: Record<string, string> = {
       contactName,
+      letterNumber: String(letterQuoteNumber),
+      letterDate: dateStr,
+      companyName: customer.company_name || "Company",
+      customerAddress: formatAddressForLetter(customer.address),
       projectTitle: opportunityData?.title || "Project Title",
       jobsiteLocation: opportunityData?.jobsite_location
         ? ", " + opportunityData.jobsite_location
@@ -5320,6 +5329,14 @@ export default function EstimateSheet({
       signerName: proposalTemplate.signerName,
       signerTitle: proposalTemplate.signerTitle,
     };
+    const headerHtml = renderTemplateSection(
+      proposalTemplate.headerHtml,
+      templateTokens,
+    );
+    const footerHtml = renderTemplateSection(
+      proposalTemplate.footerHtml,
+      templateTokens,
+    );
     const introHtml = renderTemplateSection(
       proposalTemplate.introHtml,
       templateTokens,
@@ -5347,20 +5364,17 @@ export default function EstimateSheet({
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 24px; margin-right: 8px;" />
           <span style="font-size: 1em; font-weight: bold; color: #333;">AMP Quality Energy Services</span>
         </div>
-        <div class="amp-section"><b style="font-size: 1.2em;">Letter # ${letterQuoteNumber}</b></div>
-        <div class="amp-section" style="margin-bottom: 8px;"><b>${dateStr}</b></div>
-        <div>
-          ${contactName}<br/>
-          ${customer.company_name || "Company"}<br/>
-          ${formatAddressForLetter(customer.address)}<br/>
-        </div>
+        ${headerHtml}
+        ${renderCustomSectionsAt("after_header", templateTokens)}
         ${introHtml}
+        ${renderCustomSectionsAt("after_intro", templateTokens)}
         <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b style="font-size: 1.15em;">Scope</b>
           </div>
           ${sovTableHtml}
         </div>
+        ${renderCustomSectionsAt("after_scope", templateTokens)}
         <div class="amp-section" style="margin-top: 12px;"><b style="font-size: 1.15em;">Pricing & Terms</b></div>
         ${
           (singleLetterScopeQuantity || 1) > 1
@@ -5374,11 +5388,16 @@ export default function EstimateSheet({
         }
         ${pricingHtml}
         ${showMobilizationInLetter ? `<div class="amp-section">Mobilization costs of ${mobilization} shall be paid out of the above agreed upon price before the first day of work.</div>` : ""}
+        ${renderCustomSectionsAt("after_pricing", templateTokens)}
         ${termsHtml}
+        ${renderCustomSectionsAt("after_terms", templateTokens)}
         ${conclusionHtml}
+        ${renderCustomSectionsAt("after_conclusion", templateTokens)}
         ${signatureBlockHtml}
+        ${renderCustomSectionsAt("after_signature", templateTokens)}
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
-        <div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 1725 | Decatur, Alabama 35602 | (256) 513-8255</div>
+        ${footerHtml}
+        ${renderCustomSectionsAt("before_safety", templateTokens)}
         <div style="margin-top: 80px;">
           <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
             <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
@@ -5835,6 +5854,12 @@ export default function EstimateSheet({
     // template edits apply to both letter types.
     const templateTokens: Record<string, string> = {
       contactName,
+      letterNumber: String(
+        (opportunityData as any)?.quote_number || "Multiple",
+      ),
+      letterDate: dateStr,
+      companyName: customer.company_name || "Company",
+      customerAddress: formatAddressForLetter(customer.address),
       projectTitle: opportunityData?.title || "Project Title",
       jobsiteLocation: opportunityData?.jobsite_location
         ? ", " + opportunityData.jobsite_location
@@ -5851,6 +5876,14 @@ export default function EstimateSheet({
       signerName: proposalTemplate.signerName,
       signerTitle: proposalTemplate.signerTitle,
     };
+    const headerHtml = renderTemplateSection(
+      proposalTemplate.headerHtml,
+      templateTokens,
+    );
+    const footerHtml = renderTemplateSection(
+      proposalTemplate.footerHtml,
+      templateTokens,
+    );
     const introHtml = renderTemplateSection(
       proposalTemplate.introHtml,
       templateTokens,
@@ -5878,16 +5911,13 @@ export default function EstimateSheet({
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
           <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
-        <div><b style="font-size: 1.2em;">Letter # ${(opportunityData as any)?.quote_number || "Multiple"}</b></div>
-        <div style="margin-bottom: 8px;"><b>${dateStr}</b></div>
-        <div>
-          ${contactName}<br/>
-          ${customer.company_name || "Company"}<br/>
-          ${formatAddressForLetter(customer.address)}<br/>
-        </div>
+        ${headerHtml}
+        ${renderCustomSectionsAt("after_header", templateTokens)}
         ${introHtml}
+        ${renderCustomSectionsAt("after_intro", templateTokens)}
         <div><b style="font-size: 1.15em;">Combined Scope of Work</b></div>
         ${sovTablesHtml}
+        ${renderCustomSectionsAt("after_scope", templateTokens)}
         ${
           showGrandTotalPricing
             ? `
@@ -6073,10 +6103,16 @@ export default function EstimateSheet({
         `
             : ""
         }
+        ${renderCustomSectionsAt("after_pricing", templateTokens)}
         ${termsHtml}
+        ${renderCustomSectionsAt("after_terms", templateTokens)}
         ${conclusionHtml}
+        ${renderCustomSectionsAt("after_conclusion", templateTokens)}
         ${signatureBlockHtml}
+        ${renderCustomSectionsAt("after_signature", templateTokens)}
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
+        ${footerHtml}
+        ${renderCustomSectionsAt("before_safety", templateTokens)}
         <div class="safety-policy-section" style="margin-top: 20px;">
           <div style="font-size: 1.3em; font-weight: bold; color: #333; margin: 10px 0 12px 0; text-align: center;">Safety Policy on Jobsites</div>
           ${safetyPolicyHtml}

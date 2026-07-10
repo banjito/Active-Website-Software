@@ -20,6 +20,22 @@ import type { EstimatingPresets } from "../../services/estimatingPresetsService"
 /** Tokens available inside editable template sections. */
 export const TEMPLATE_TOKENS: { token: string; description: string }[] = [
   { token: "{{contactName}}", description: "Customer contact's full name" },
+  {
+    token: "{{letterNumber}}",
+    description: "The letter / quote number (header block)",
+  },
+  {
+    token: "{{letterDate}}",
+    description: "The letter date, already formatted (header block)",
+  },
+  {
+    token: "{{companyName}}",
+    description: "Customer company name (header block)",
+  },
+  {
+    token: "{{customerAddress}}",
+    description: "Customer address, formatted for the letter (header block)",
+  },
   { token: "{{projectTitle}}", description: "Opportunity / project title" },
   {
     token: "{{jobsiteLocation}}",
@@ -117,28 +133,164 @@ export const DEFAULT_PROPOSAL_SAFETY_POLICY_HTML = `<div style="font-weight: bol
 export const DEFAULT_PROPOSAL_SIGNER_NAME = "Brian Rodgers";
 export const DEFAULT_PROPOSAL_SIGNER_TITLE = "Chief Executive Officer";
 
+/**
+ * Top display block: letter number, date, and customer name/company/address.
+ * The generator owns the logo/company-name banner above this; only the
+ * address block below it is editable here.
+ */
+export const DEFAULT_PROPOSAL_HEADER_HTML = `<div class="amp-section"><b style="font-size: 1.2em;">Letter # {{letterNumber}}</b></div>
+        <div class="amp-section" style="margin-bottom: 8px;"><b>{{letterDate}}</b></div>
+        <div>
+          {{contactName}}<br/>
+          {{companyName}}<br/>
+          {{customerAddress}}<br/>
+        </div>`;
+
+/** Footer line that follows the proposal main body (address / phone). */
+export const DEFAULT_PROPOSAL_FOOTER_HTML = `<div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 1725 | Decatur, Alabama 35602 | (256) 513-8255</div>`;
+
+// ---------------------------------------------------------------------------
+// NETA standard options (editable list)
+// ---------------------------------------------------------------------------
+
+export interface NetaOption {
+  /** Stable key persisted per-letter (do not reuse across different texts). */
+  value: string;
+  /** Short label shown where a compact name is useful. */
+  label: string;
+  /** The sentence substituted for {{netaStandardText}}. */
+  text: string;
+}
+
+/** Built-in NETA choices (verbatim from the previous hardcoded NETA_OPTIONS). */
+export const DEFAULT_NETA_OPTIONS: NetaOption[] = [
+  {
+    value: "mts",
+    label: "MTS 2023",
+    text: "All tests will be performed in accordance with ANSI/NETA MTS 2023 - Standard for Maintenance Testing Specifications for Electrical power Equipment and Systems.",
+  },
+  {
+    value: "ats",
+    label: "ATS 2025",
+    text: "All tests will be performed in accordance with ANSI/NETA ATS 2025 - Standard for Acceptance Testing Specifications for Electrical Power Equipment and Systems",
+  },
+  {
+    value: "both",
+    label: "ATS/MTS + IEEE 81",
+    text: "All work will be performed in accordance with the applicable ANSI/NETA ATS/MTS & IEEE 81 Standards.",
+  },
+];
+
+/**
+ * Coerce a DB JSON value into a clean NetaOption[]. Invalid / empty input
+ * falls back to the built-in defaults so the dropdown is never empty.
+ */
+export function resolveNetaOptions(value: unknown): NetaOption[] {
+  if (!Array.isArray(value)) return DEFAULT_NETA_OPTIONS;
+  const cleaned: NetaOption[] = [];
+  for (const raw of value) {
+    if (!raw || typeof raw !== "object") continue;
+    const o = raw as Record<string, unknown>;
+    const optValue = typeof o.value === "string" ? o.value.trim() : "";
+    const text = typeof o.text === "string" ? o.text.trim() : "";
+    if (!optValue || !text) continue;
+    const label =
+      typeof o.label === "string" && o.label.trim() ? o.label.trim() : optValue;
+    cleaned.push({ value: optValue, label, text });
+  }
+  return cleaned.length ? cleaned : DEFAULT_NETA_OPTIONS;
+}
+
+// ---------------------------------------------------------------------------
+// Custom (admin-added) sections
+// ---------------------------------------------------------------------------
+
+/** Fixed points in the generated letter where a custom section may be placed. */
+export const PROPOSAL_SECTION_ANCHORS = [
+  { value: "after_header", label: "After header / before greeting" },
+  { value: "after_intro", label: "After introduction (before Scope)" },
+  { value: "after_scope", label: "After Scope table (before Pricing)" },
+  { value: "after_pricing", label: "After Pricing & Terms" },
+  { value: "after_terms", label: "After Terms & Conditions" },
+  { value: "after_conclusion", label: "After Conclusion" },
+  { value: "after_signature", label: "After Signature block" },
+  { value: "before_safety", label: "Before Safety Policy page" },
+] as const;
+
+export type ProposalSectionAnchor =
+  (typeof PROPOSAL_SECTION_ANCHORS)[number]["value"];
+
+const ANCHOR_VALUES = new Set(PROPOSAL_SECTION_ANCHORS.map((a) => a.value));
+
+export interface CustomProposalSection {
+  id: string;
+  label: string;
+  html: string;
+  anchor: ProposalSectionAnchor;
+}
+
+/**
+ * Coerce a DB JSON value into clean CustomProposalSection[]. Each section's
+ * html is sanitized; entries with an unknown anchor or empty html are dropped.
+ */
+export function resolveCustomSections(value: unknown): CustomProposalSection[] {
+  if (!Array.isArray(value)) return [];
+  const cleaned: CustomProposalSection[] = [];
+  for (const raw of value) {
+    if (!raw || typeof raw !== "object") continue;
+    const o = raw as Record<string, unknown>;
+    const anchor = typeof o.anchor === "string" ? o.anchor : "";
+    if (!ANCHOR_VALUES.has(anchor as ProposalSectionAnchor)) continue;
+    const html = typeof o.html === "string" ? o.html.trim() : "";
+    if (!html) continue;
+    const id =
+      typeof o.id === "string" && o.id
+        ? o.id
+        : `cs-${Math.random().toString(36).slice(2)}`;
+    const label =
+      typeof o.label === "string" && o.label.trim()
+        ? o.label.trim()
+        : "Custom Section";
+    cleaned.push({
+      id,
+      label,
+      html: sanitizeTemplateHtml(html),
+      anchor: anchor as ProposalSectionAnchor,
+    });
+  }
+  return cleaned;
+}
+
 // ---------------------------------------------------------------------------
 // Resolution + rendering
 // ---------------------------------------------------------------------------
 
 export interface ProposalTemplateSections {
+  headerHtml: string;
   introHtml: string;
   termsHtml: string;
   conclusionHtml: string;
   signatureHtml: string;
   safetyPolicyHtml: string;
+  footerHtml: string;
   signerName: string;
   signerTitle: string;
+  netaOptions: NetaOption[];
+  customSections: CustomProposalSection[];
 }
 
 export const DEFAULT_PROPOSAL_TEMPLATE_SECTIONS: ProposalTemplateSections = {
+  headerHtml: DEFAULT_PROPOSAL_HEADER_HTML,
   introHtml: DEFAULT_PROPOSAL_INTRO_HTML,
   termsHtml: DEFAULT_PROPOSAL_TERMS_HTML,
   conclusionHtml: DEFAULT_PROPOSAL_CONCLUSION_HTML,
   signatureHtml: DEFAULT_PROPOSAL_SIGNATURE_HTML,
   safetyPolicyHtml: DEFAULT_PROPOSAL_SAFETY_POLICY_HTML,
+  footerHtml: DEFAULT_PROPOSAL_FOOTER_HTML,
   signerName: DEFAULT_PROPOSAL_SIGNER_NAME,
   signerTitle: DEFAULT_PROPOSAL_SIGNER_TITLE,
+  netaOptions: DEFAULT_NETA_OPTIONS,
+  customSections: [],
 };
 
 /**
@@ -188,6 +340,10 @@ export function resolveProposalTemplateSections(
   presets?: Partial<EstimatingPresets> | null,
 ): ProposalTemplateSections {
   return {
+    headerHtml: sectionOrDefault(
+      presets?.proposal_header_html,
+      DEFAULT_PROPOSAL_HEADER_HTML,
+    ),
     introHtml: sectionOrDefault(
       presets?.proposal_intro_html,
       DEFAULT_PROPOSAL_INTRO_HTML,
@@ -208,12 +364,18 @@ export function resolveProposalTemplateSections(
       presets?.proposal_safety_policy_html,
       DEFAULT_PROPOSAL_SAFETY_POLICY_HTML,
     ),
+    footerHtml: sectionOrDefault(
+      presets?.proposal_footer_html,
+      DEFAULT_PROPOSAL_FOOTER_HTML,
+    ),
     signerName:
       (presets?.proposal_signer_name || "").trim() ||
       DEFAULT_PROPOSAL_SIGNER_NAME,
     signerTitle:
       (presets?.proposal_signer_title || "").trim() ||
       DEFAULT_PROPOSAL_SIGNER_TITLE,
+    netaOptions: resolveNetaOptions(presets?.proposal_neta_options),
+    customSections: resolveCustomSections(presets?.proposal_custom_sections),
   };
 }
 

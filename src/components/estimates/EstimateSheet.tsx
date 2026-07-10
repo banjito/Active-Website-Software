@@ -7266,7 +7266,8 @@ export default function EstimateSheet({
                         setIsScopeNarrativeLibraryOpen(false);
                       }}
                     />
-                    {data.useSovItems !== false && (
+                    {/* SOV table always visible in the editor; the toggle only
+                        controls whether items appear in the generated proposal */}
                       <div
                         style={styles.tableContainer}
                         onMouseMove={onMouseMove}
@@ -8237,7 +8238,6 @@ export default function EstimateSheet({
                           </Button>
                         </div>
                       </div>
-                    )}
 
                     {/* Non-SOV Quote Items */}
                     <div style={styles.sectionHeader}>NON-SOV QUOTE ITEMS</div>

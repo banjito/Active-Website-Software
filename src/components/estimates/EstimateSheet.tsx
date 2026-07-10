@@ -587,6 +587,29 @@ const DEFAULT_MOBILIZATION_FACTORS = {
   over1m: 0.05,
 };
 
+const DEFAULT_PAYMENT_TERM_FACTORS = {
+  net30: 1.0,
+  net60: 1.06,
+  net90: 1.09,
+};
+
+/** Payment-term factors are price multipliers, so a saved 0 / negative / non-numeric factor
+ * (e.g. a cleared input persisted as 0) zeroes out every NET price — fall back per key. */
+function sanitizePaymentTermFactors(raw: unknown): {
+  net30: number;
+  net60: number;
+  net90: number;
+} {
+  const src = (
+    raw && typeof raw === "object" ? raw : {}
+  ) as Record<string, unknown>;
+  const pick = (key: "net30" | "net60" | "net90") => {
+    const n = Number(src[key]);
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_PAYMENT_TERM_FACTORS[key];
+  };
+  return { net30: pick("net30"), net60: pick("net60"), net90: pick("net90") };
+}
+
 /** Mobilization factors from each estimate's saved JSON — combined letters must not use the active tab's factors for every scope. */
 function getMobilizationFactorsForCombinedScope(parsedData: any): {
   base: number;
@@ -838,9 +861,7 @@ export default function EstimateSheet({
 
   // Payment term factors state
   const [paymentTermFactors, setPaymentTermFactors] = useState({
-    net30: 1.0,
-    net60: 1.06,
-    net90: 1.09,
+    ...DEFAULT_PAYMENT_TERM_FACTORS,
   });
 
   // Mobilization factors state (threshold-based)
@@ -1163,11 +1184,17 @@ export default function EstimateSheet({
 
         // Restore payment term factors if they exist
         if (savedFactors && typeof savedFactors === "object") {
-          setPaymentTermFactors((prev) => ({ ...prev, ...savedFactors }));
+          setPaymentTermFactors((prev) =>
+            sanitizePaymentTermFactors({ ...prev, ...savedFactors }),
+          );
         }
         // Restore mobilization factors if they exist
         if (savedMobilization && typeof savedMobilization === "object") {
-          setMobilizationFactors((prev) => ({ ...prev, ...savedMobilization }));
+          setMobilizationFactors((prev) =>
+            getMobilizationFactorsForCombinedScope({
+              mobilizationFactors: { ...prev, ...savedMobilization },
+            }),
+          );
         }
         // Restore quantity for combined letter if in draft
         if (
@@ -1630,17 +1657,11 @@ export default function EstimateSheet({
       // (older estimates) can't propagate NaN into FINAL and SOV item prices
       setHourlyRates(getHourlyRatesForCombinedScope(parsedData));
 
-      // Handle payment term factors
-      if (parsedData.paymentTermFactors) {
-        setPaymentTermFactors(parsedData.paymentTermFactors);
-      } else {
-        // Set default factors if not found
-        setPaymentTermFactors({
-          net30: 1.0,
-          net60: 1.06,
-          net90: 1.09,
-        });
-      }
+      // Handle payment term factors — sanitized so a saved 0/invalid factor
+      // (which zeroes every NET price) falls back to the defaults
+      setPaymentTermFactors(
+        sanitizePaymentTermFactors(parsedData.paymentTermFactors),
+      );
 
       // Restore which payment term's price was shown in the SOV column
       if (
@@ -1652,12 +1673,9 @@ export default function EstimateSheet({
         setSelectedSovPriceTerm("net30");
       }
 
-      // Handle mobilization factors
-      if (parsedData.mobilizationFactors) {
-        setMobilizationFactors(parsedData.mobilizationFactors);
-      } else {
-        setMobilizationFactors({ ...DEFAULT_MOBILIZATION_FACTORS });
-      }
+      // Handle mobilization factors — per-key fallback so an empty/partial saved
+      // object (e.g. the placeholder estimate's {}) can't NaN the mobilization
+      setMobilizationFactors(getMobilizationFactorsForCombinedScope(parsedData));
 
       if (parsedData.isManualLaborHours !== undefined) {
         setIsManualLaborHours(parsedData.isManualLaborHours);
@@ -3422,6 +3440,7 @@ export default function EstimateSheet({
 
   // Handler for Saturday labor hours changes
   const handleSaturdayHoursChange = (field: string, value: string) => {
+    if (isViewMode) return;
     setIsManualSaturdayHours(true);
     let parsedValue: number | string;
     if (
@@ -3452,6 +3471,7 @@ export default function EstimateSheet({
 
   // Handler for Sunday/Holiday labor hours changes
   const handleSundayHoursChange = (field: string, value: string) => {
+    if (isViewMode) return;
     setIsManualSundayHours(true);
     let parsedValue: number | string;
     if (
@@ -3481,6 +3501,7 @@ export default function EstimateSheet({
   };
 
   const handleHoursSummaryChange = (field: string, value: string) => {
+    if (isViewMode) return;
     console.log("handleHoursSummaryChange called:", { field, value });
 
     if (
@@ -3784,6 +3805,7 @@ export default function EstimateSheet({
     field: string,
     value: string | number,
   ) => {
+    if (isViewMode) return;
     const numValue = typeof value === "string" ? Number(value) : value;
     setTravelData((prev) => {
       const travel = (prev.travel ?? []).map((g: any, i: number) =>
@@ -3795,6 +3817,7 @@ export default function EstimateSheet({
   };
 
   const addTravelGroup = () => {
+    if (isViewMode) return;
     setTravelData((prev) => ({
       ...prev,
       travel: [...(prev.travel ?? []), createEmptyTravelGroup()],
@@ -3803,6 +3826,7 @@ export default function EstimateSheet({
   };
 
   const removeTravelGroup = (index: number) => {
+    if (isViewMode) return;
     setTravelData((prev) => {
       const current = prev.travel ?? [];
       if (current.length <= 1) return prev;
@@ -3816,6 +3840,7 @@ export default function EstimateSheet({
     field: string,
     value: string | number,
   ) => {
+    if (isViewMode) return;
     const numValue = typeof value === "string" ? Number(value) : value;
     setTravelData((prev) => ({
       ...prev,
@@ -8879,6 +8904,11 @@ export default function EstimateSheet({
                               active={activeTravelSection}
                               onChange={setActiveTravelSection}
                             >
+                              {/* Disabled fieldset locks every travel input/button in view mode (the section nav stays usable) */}
+                              <fieldset
+                                disabled={isViewMode}
+                                className="min-w-0"
+                              >
                                 {/* TRAVEL (vehicle + time merged) */}
                                 {activeTravelSection === "travel" && (
                                   <div>
@@ -9300,6 +9330,7 @@ export default function EstimateSheet({
                                     </div>
                                   </div>
                                 )}
+                              </fieldset>
                             </SectionNav>
 
                             {/* Travel grand totals */}
@@ -9577,6 +9608,7 @@ export default function EstimateSheet({
                                       e.target.value,
                                     )
                                   }
+                                  readOnly={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -9610,6 +9642,7 @@ export default function EstimateSheet({
                                       e.target.value,
                                     )
                                   }
+                                  readOnly={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -9735,6 +9768,7 @@ export default function EstimateSheet({
                           >
                             Labor Hours Tracking — Monday-Friday
                           </h3>
+                          {!isViewMode && (
                           <div style={{ display: "flex", gap: "6px" }}>
                             <button
                               onClick={() => {
@@ -9779,6 +9813,7 @@ export default function EstimateSheet({
                                 : "Show Sunday/Holiday"}
                             </button>
                           </div>
+                          )}
                         </div>
 
                         {/* Hours Counter */}
@@ -9839,6 +9874,7 @@ export default function EstimateSheet({
                                 return "Hours exact";
                               })()}
                             </div>
+                            {!isViewMode && (
                             <button
                               onClick={() => {
                                 setIsManualLaborHours(false);
@@ -9868,6 +9904,7 @@ export default function EstimateSheet({
                             >
                               Reset to Formula
                             </button>
+                            )}
                           </div>
                         </div>
                         <table
@@ -10293,7 +10330,8 @@ export default function EstimateSheet({
                                             return `${Math.abs(diff).toFixed(2)} hours not allocated — will not be charged!`;
                                           })()}
                                         </div>
-                                        {isManualTravelLaborHours && (
+                                        {isManualTravelLaborHours &&
+                                          !isViewMode && (
                                           <button
                                             onClick={() => {
                                               setIsManualTravelLaborHours(
@@ -12119,6 +12157,17 @@ export default function EstimateSheet({
                                       }));
                                       setIsDirty(true);
                                     }}
+                                    onBlur={() => {
+                                      setPaymentTermFactors((prev) =>
+                                        prev.net30 > 0
+                                          ? prev
+                                          : {
+                                              ...prev,
+                                              net30:
+                                                DEFAULT_PAYMENT_TERM_FACTORS.net30,
+                                            },
+                                      );
+                                    }}
                                     readOnly={isViewMode}
                                   />
                                 </td>
@@ -12179,6 +12228,17 @@ export default function EstimateSheet({
                                       }));
                                       setIsDirty(true);
                                     }}
+                                    onBlur={() => {
+                                      setPaymentTermFactors((prev) =>
+                                        prev.net60 > 0
+                                          ? prev
+                                          : {
+                                              ...prev,
+                                              net60:
+                                                DEFAULT_PAYMENT_TERM_FACTORS.net60,
+                                            },
+                                      );
+                                    }}
                                     readOnly={isViewMode}
                                   />
                                 </td>
@@ -12238,6 +12298,17 @@ export default function EstimateSheet({
                                         net90: value,
                                       }));
                                       setIsDirty(true);
+                                    }}
+                                    onBlur={() => {
+                                      setPaymentTermFactors((prev) =>
+                                        prev.net90 > 0
+                                          ? prev
+                                          : {
+                                              ...prev,
+                                              net90:
+                                                DEFAULT_PAYMENT_TERM_FACTORS.net90,
+                                            },
+                                      );
                                     }}
                                     readOnly={isViewMode}
                                   />

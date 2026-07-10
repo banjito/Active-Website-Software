@@ -1408,8 +1408,15 @@ export default function OpportunityDetail() {
           },
           travel_data: {},
           hourlyRates: {},
-          paymentTermFactors: {},
-          mobilizationFactors: {},
+          // Real defaults, not {} — the estimate sheet multiplies prices by these
+          // factors, and an empty object made every NET price render as $0.00
+          paymentTermFactors: { net30: 1.0, net60: 1.06, net90: 1.09 },
+          mobilizationFactors: {
+            base: 0.0,
+            over100k: 0.1,
+            over500k: 0.05,
+            over1m: 0.05,
+          },
           isManualLaborHours: false,
           materialMarkup: 0,
         };

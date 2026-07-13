@@ -295,7 +295,7 @@ interface FormData {
   };
 
   comments: string;
-  status: "PASS" | "FAIL";
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 }
 
 const initialVisualInspectionItems = [
@@ -1272,7 +1272,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           setJustSaved(false);
           setFormData((prev) => ({
             ...prev,
-            status: prev.status === "PASS" ? "FAIL" : "PASS",
+            status: prev.status === "PASS" ? "FAIL" : prev.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
           }));
         }
       }}

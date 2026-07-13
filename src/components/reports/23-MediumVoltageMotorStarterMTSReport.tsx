@@ -210,7 +210,7 @@ interface FormData {
   };
   substation: string;
   eqptLocation: string;
-  status: "PASS" | "FAIL";
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 
   // Nameplate Data
   nameplateData: {
@@ -901,7 +901,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   const handleStatusToggle = () => {
     setFormData((prev) => ({
       ...prev,
-      status: prev.status === "PASS" ? "FAIL" : "PASS",
+      status: prev.status === "PASS" ? "FAIL" : prev.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
     }));
   };
 

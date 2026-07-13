@@ -161,7 +161,7 @@ const getTCF = (celsius: number): number => {
   return tcfTable[key] !== undefined ? tcfTable[key] : 1;
 };
 
-const TestStatus = { PASS: "PASS", FAIL: "FAIL" } as const;
+const TestStatus = { PASS: "PASS", FAIL: "FAIL", LIMITED_SERVICE: "LIMITED SERVICE" } as const;
 type Status = (typeof TestStatus)[keyof typeof TestStatus];
 
 interface JobTemp {
@@ -1109,9 +1109,15 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 border:
                   formData.status === TestStatus.PASS
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "2px solid #d97706"
+                      : "2px solid #dc2626",
                 backgroundColor:
-                  formData.status === TestStatus.PASS ? "#22c55e" : "#ef4444",
+                  formData.status === TestStatus.PASS
+                    ? "#22c55e"
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "#f59e0b"
+                      : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -2431,7 +2437,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     status:
                       p.status === TestStatus.PASS
                         ? TestStatus.FAIL
-                        : TestStatus.PASS,
+                        : p.status === TestStatus.FAIL
+                          ? TestStatus.LIMITED_SERVICE
+                          : TestStatus.PASS,
                   }));
                 }
               }}

@@ -17,7 +17,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-type PassFail = "PASS" | "FAIL";
+type PassFail = "PASS" | "FAIL" | "LIMITED SERVICE";
 
 const visualOptions = [
   "Select One",
@@ -797,7 +797,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       status={status}
       hasReport={!!currentReportId}
       onStatusToggle={() => {
-        if (isEditMode) setStatus(status === "PASS" ? "FAIL" : "PASS");
+        if (isEditMode) setStatus(status === "PASS" ? "FAIL" : status === "FAIL" ? "LIMITED SERVICE" : "PASS");
       }}
       onSave={handleSave}
       onSaveAndClose={handleSaveAndClose}
@@ -2210,8 +2210,17 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                 width: "fit-content",
                 borderRadius: "6px",
                 border:
-                  status === "PASS" ? "2px solid #16a34a" : "2px solid #dc2626",
-                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                  status === "PASS"
+                    ? "2px solid #16a34a"
+                    : status === "LIMITED SERVICE"
+                      ? "2px solid #d97706"
+                      : "2px solid #dc2626",
+                backgroundColor:
+                  status === "PASS"
+                    ? "#22c55e"
+                    : status === "LIMITED SERVICE"
+                      ? "#f59e0b"
+                      : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",

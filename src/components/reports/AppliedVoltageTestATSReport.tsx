@@ -170,7 +170,7 @@ interface FormData {
 
   // Comments
   comments: string;
-  status: "PASS" | "FAIL";
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 }
 
 const initialAppliedVoltageTests: AppliedVoltageTestRow[] = [
@@ -862,9 +862,15 @@ const AppliedVoltageTestATSReport: React.FC = () => {
                 border:
                   formData.status === "PASS"
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === "LIMITED SERVICE"
+                      ? "2px solid #d97706"
+                      : "2px solid #dc2626",
                 backgroundColor:
-                  formData.status === "PASS" ? "#22c55e" : "#ef4444",
+                  formData.status === "PASS"
+                    ? "#22c55e"
+                    : formData.status === "LIMITED SERVICE"
+                      ? "#f59e0b"
+                      : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -892,7 +898,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
             if (isEditing)
               handleChange(
                 "status",
-                formData.status === "PASS" ? "FAIL" : "PASS",
+                formData.status === "PASS" ? "FAIL" : formData.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
               );
           }}
           onSave={handleSave}

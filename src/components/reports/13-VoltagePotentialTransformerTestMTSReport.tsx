@@ -964,7 +964,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
             if (isEditing)
               handleChange(
                 "status",
-                formData.status === "PASS" ? "FAIL" : "PASS",
+                formData.status === "PASS" ? "FAIL" : formData.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
               );
           }}
           onSave={handleSave}

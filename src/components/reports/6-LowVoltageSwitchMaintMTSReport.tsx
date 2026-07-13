@@ -318,7 +318,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState<boolean>(!initialReportId);
-  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+  const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">("PASS");
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -945,7 +945,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
       hasReport={!!currentReportId}
       onStatusToggle={() => {
         if (isEditMode) {
-          setStatus(status === "PASS" ? "FAIL" : "PASS");
+          setStatus(status === "PASS" ? "FAIL" : status === "FAIL" ? "LIMITED SERVICE" : "PASS");
         }
       }}
       onSave={handleSave}
@@ -1004,8 +1004,8 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 textAlign: "center",
                 width: "fit-content",
                 borderRadius: "6px",
-                border: `2px solid ${status === "PASS" ? "#16a34a" : "#dc2626"}`,
-                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                border: `2px solid ${status === "PASS" ? "#16a34a" : status === "LIMITED SERVICE" ? "#d97706" : "#dc2626"}`,
+                backgroundColor: status === "PASS" ? "#22c55e" : status === "LIMITED SERVICE" ? "#f59e0b" : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",

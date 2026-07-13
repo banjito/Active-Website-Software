@@ -1885,7 +1885,7 @@ const PanelboardReport: React.FC = () => {
             if (isEditing) {
               setFormData((prev) => ({
                 ...prev,
-                status: prev.status === "PASS" ? "FAIL" : "PASS",
+                status: prev.status === "PASS" ? "FAIL" : prev.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
               }));
             }
           }}

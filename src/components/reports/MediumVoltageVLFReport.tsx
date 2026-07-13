@@ -51,6 +51,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 enum TestStatus {
   PASS = "PASS",
   FAIL = "FAIL",
+  LIMITED_SERVICE = "LIMITED SERVICE",
 }
 
 enum CablePhase {
@@ -1792,7 +1793,9 @@ const MediumVoltageVLFReport: React.FC = () => {
             status:
               prev.status === TestStatus.PASS
                 ? TestStatus.FAIL
-                : TestStatus.PASS,
+                : prev.status === TestStatus.FAIL
+                  ? TestStatus.LIMITED_SERVICE
+                  : TestStatus.PASS,
           }));
         }
       }}
@@ -1858,9 +1861,15 @@ const MediumVoltageVLFReport: React.FC = () => {
                 border:
                   formData.status === TestStatus.PASS
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "2px solid #d97706"
+                      : "2px solid #dc2626",
                 backgroundColor:
-                  formData.status === TestStatus.PASS ? "#22c55e" : "#ef4444",
+                  formData.status === TestStatus.PASS
+                    ? "#22c55e"
+                    : formData.status === TestStatus.LIMITED_SERVICE
+                      ? "#f59e0b"
+                      : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -1868,7 +1877,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                 minWidth: "50px",
               }}
             >
-              {formData.status === TestStatus.PASS ? "PASS" : "FAIL"}
+              {formData.status || "PASS"}
             </div>
           </div>
         </div>

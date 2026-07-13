@@ -520,7 +520,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
   const currentPath = location.pathname;
   const reportSlug = "large-dry-type-xfmr-mts-report"; // This component handles the large-dry-type-xfmr-mts-report route
   const reportName = getReportName(reportSlug);
-  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+  const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">("PASS");
   const [error, setError] = useState<string | null>(null); // Error state
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -1147,7 +1147,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
       status={status}
       hasReport={!!currentReportId}
       onStatusToggle={() => {
-        if (isEditing) setStatus(status === "PASS" ? "FAIL" : "PASS");
+        if (isEditing) setStatus(status === "PASS" ? "FAIL" : status === "FAIL" ? "LIMITED SERVICE" : "PASS");
       }}
       onSave={handleSave}
       onSaveAndClose={handleSaveAndClose}

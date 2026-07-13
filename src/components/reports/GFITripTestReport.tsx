@@ -45,7 +45,7 @@ interface FormData {
   results: string;
 
   // Pass/Fail Status
-  status: "PASS" | "FAIL";
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 }
 
 const REPORT_SLUG = "gfi-trip-test-report";
@@ -470,9 +470,15 @@ const GFITripTestReport: React.FC = () => {
               border:
                 formData.status === "PASS"
                   ? "2px solid #16a34a"
-                  : "2px solid #dc2626",
+                  : formData.status === "LIMITED SERVICE"
+                    ? "2px solid #d97706"
+                    : "2px solid #dc2626",
               backgroundColor:
-                formData.status === "PASS" ? "#22c55e" : "#ef4444",
+                formData.status === "PASS"
+                  ? "#22c55e"
+                  : formData.status === "LIMITED SERVICE"
+                    ? "#f59e0b"
+                    : "#ef4444",
               color: "white",
               WebkitPrintColorAdjust: "exact",
               printColorAdjust: "exact",
@@ -514,7 +520,7 @@ const GFITripTestReport: React.FC = () => {
                 setJustSaved(false);
                 setFormData((prev) => ({
                   ...prev,
-                  status: prev.status === "PASS" ? "FAIL" : "PASS",
+                  status: prev.status === "PASS" ? "FAIL" : prev.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
                 }));
               }
             }}

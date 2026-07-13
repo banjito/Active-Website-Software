@@ -238,7 +238,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
   const reportIdRef = React.useRef<string | undefined>(initialReportId);
   const creatingRef = React.useRef(false);
   const pendingSaveRef = React.useRef(false);
-  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+  const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">("PASS");
 
   const [formData, setFormData] = useState<ReportData>({
     customer: "",
@@ -1154,7 +1154,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           .single();
         if (error) throw error;
         if (data) {
-          setStatus((data.status as "PASS" | "FAIL") || "PASS");
+          setStatus((data.status as "PASS" | "FAIL" | "LIMITED SERVICE") || "PASS");
           const ri = (data.report_info || {}) as any;
           setFormData((prev) => ({
             ...prev,
@@ -1421,7 +1421,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           status={status}
           hasReport={!!currentReportId}
           onStatusToggle={() => {
-            if (isEditMode) setStatus(status === "PASS" ? "FAIL" : "PASS");
+            if (isEditMode) setStatus(status === "PASS" ? "FAIL" : status === "FAIL" ? "LIMITED SERVICE" : "PASS");
           }}
           onSave={handleSave}
           onSaveAndClose={handleSaveAndClose}
@@ -1469,8 +1469,15 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                   border:
                     status === "PASS"
                       ? "2px solid #16a34a"
-                      : "2px solid #dc2626",
-                  backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                      : status === "LIMITED SERVICE"
+                        ? "2px solid #d97706"
+                        : "2px solid #dc2626",
+                  backgroundColor:
+                    status === "PASS"
+                      ? "#22c55e"
+                      : status === "LIMITED SERVICE"
+                        ? "#f59e0b"
+                        : "#ef4444",
                   color: "white",
                   WebkitPrintColorAdjust: "exact",
                   printColorAdjust: "exact",

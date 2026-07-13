@@ -278,7 +278,7 @@ interface FormData {
     calDate: string;
   };
   electricalTestComments: string;
-  status: "PASS" | "FAIL";
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 }
 
 const initialVisualMechanicalItems = [
@@ -1578,7 +1578,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
         if (isEditing) {
           setFormData((prev) => ({
             ...prev,
-            status: prev.status === "PASS" ? "FAIL" : "PASS",
+            status: prev.status === "PASS" ? "FAIL" : prev.status === "FAIL" ? "LIMITED SERVICE" : "PASS",
           }));
         }
       }}
@@ -1624,9 +1624,15 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 border:
                   formData.status === "PASS"
                     ? "2px solid #16a34a"
-                    : "2px solid #dc2626",
+                    : formData.status === "LIMITED SERVICE"
+                      ? "2px solid #d97706"
+                      : "2px solid #dc2626",
                 backgroundColor:
-                  formData.status === "PASS" ? "#22c55e" : "#ef4444",
+                  formData.status === "PASS"
+                    ? "#22c55e"
+                    : formData.status === "LIMITED SERVICE"
+                      ? "#f59e0b"
+                      : "#ef4444",
                 color: "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",

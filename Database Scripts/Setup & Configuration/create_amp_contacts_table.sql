@@ -68,6 +68,10 @@ CREATE TRIGGER amp_contacts_updated_at
 GRANT SELECT ON common.amp_contacts TO authenticated;
 GRANT INSERT, UPDATE, DELETE ON common.amp_contacts TO authenticated;
 
+-- The sync-amp-contacts Edge Function writes via the service role
+GRANT USAGE ON SCHEMA common TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON common.amp_contacts TO service_role;
+
 -- ============================================================================
 -- Seed data (AMP Phone List revised 01/09/2026) - only when table is empty
 -- ============================================================================

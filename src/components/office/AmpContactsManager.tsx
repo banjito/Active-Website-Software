@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Phone, Plus, Pencil, Trash2, RefreshCw } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/Table';
-import { fetchAmpContacts, upsertAmpContact, deleteAmpContact } from '@/services/ampContactsService';
+import { fetchAmpContacts, upsertAmpContact, deleteAmpContact, syncAmpContactsFromSheet } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
 import { usePermissions } from '@/hooks/usePermissions';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -32,6 +32,7 @@ export default function AmpContactsManager() {
   const [editing, setEditing] = useState<AmpContact | null>(null);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [form, setForm] = useState({ work_phone: '', name: '', email: '', role: '' });
   const { getUserRole } = usePermissions();
   const role = getUserRole();
@@ -113,6 +114,22 @@ export default function AmpContactsManager() {
     }
   };
 
+  const syncFromSheet = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncAmpContactsFromSheet();
+      toast.success(
+        `Synced ${result.total} contacts (${result.inserted} added, ${result.updated} updated, ${result.deleted} removed)`
+      );
+      void load();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Sync from Google Sheet failed');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const confirmDelete = async (id: string) => {
     if (!window.confirm('Remove this contact from the list?')) return;
     setDeletingId(id);
@@ -134,16 +151,18 @@ export default function AmpContactsManager() {
           <Phone className="h-5 w-5" />
           AMP internal phone list
         </CardTitle>
-        <CardDescription>
-          This list is shown in the portal header under “AMP contacts.” Only HR Rep and Admins can edit.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         {canEdit && (
-          <div className="mb-4">
-            <Button onClick={openCreate} className="gap-2">
-              <Plus className="h-4 w-4" />
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Button onClick={openCreate} className="gap-2"
+              leftIcon={<Plus className="h-4 w-4" />}>
               Add contact
+            </Button>
+            <Button variant="outline" onClick={syncFromSheet} disabled={syncing} className="gap-2"
+              leftIcon={<RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />}
+              >
+              {syncing ? 'Syncing…' : 'Sync from Google Sheet'}
             </Button>
           </div>
         )}

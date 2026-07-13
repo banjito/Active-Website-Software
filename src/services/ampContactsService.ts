@@ -56,6 +56,22 @@ export async function upsertAmpContact(contact: Omit<AmpContact, 'created_at' | 
   return data as AmpContact;
 }
 
+export type AmpContactsSyncResult = {
+  success: boolean;
+  total: number;
+  inserted: number;
+  updated: number;
+  deleted: number;
+  unchanged: number;
+};
+
+export async function syncAmpContactsFromSheet(): Promise<AmpContactsSyncResult> {
+  const { data, error } = await supabase.functions.invoke('sync-amp-contacts', { body: {} });
+  if (error) throw error;
+  if (!data?.success) throw new Error(data?.error || 'Sync failed');
+  return data as AmpContactsSyncResult;
+}
+
 export async function deleteAmpContact(id: string): Promise<void> {
   const { error } = await supabase
     .schema('common')

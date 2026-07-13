@@ -18,6 +18,7 @@ import {
   Moon,
   Sun,
   BookOpen,
+  Search,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -182,6 +183,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const [isContactsOpen, setIsContactsOpen] = useState(false);
   const [ampContacts, setAmpContacts] = useState<AmpContact[]>([]);
   const [contactsLoading, setContactsLoading] = useState(false);
+  const [contactsSearch, setContactsSearch] = useState("");
+  const contactsQuery = contactsSearch.trim().toLowerCase();
+  const filteredAmpContacts = contactsQuery
+    ? ampContacts.filter((c) =>
+        [c.name, c.role, c.email, c.work_phone].some((v) =>
+          v.toLowerCase().includes(contactsQuery),
+        ),
+      )
+    : ampContacts;
   const [hiddenJobIds, setHiddenJobIds] = useState<Set<string>>(new Set());
   const [lastSeen, setLastSeen] = useState<Record<StatusKey, string>>({
     ready_for_review: "",
@@ -1105,6 +1115,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     setIsNotificationsOpen(false);
                     setContactsLoading(true);
                     setAmpContacts([]);
+                    setContactsSearch("");
                     fetchAmpContacts()
                       .then(setAmpContacts)
                       .catch(() => setAmpContacts([]))
@@ -1115,14 +1126,24 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <Phone className="h-5 w-5" />
               </button>
               {isContactsOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
-                  <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between shrink-0">
-                    <div className="font-medium text-neutral-900 dark:text-white">
+                <div className="absolute top-full right-0 mt-2 w-[520px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
+                  <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center gap-3 shrink-0">
+                    <div className="font-medium text-neutral-900 dark:text-white whitespace-nowrap">
                       AMP contacts
+                    </div>
+                    <div className="relative flex-1 min-w-0">
+                      <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400" />
+                      <input
+                        type="text"
+                        value={contactsSearch}
+                        onChange={(e) => setContactsSearch(e.target.value)}
+                        placeholder="Search…"
+                        className="w-full rounded-none border border-neutral-300 dark:border-dark-200 bg-white dark:bg-dark-100 py-1 pl-7 pr-2 text-xs text-neutral-900 dark:text-neutral-100 outline-none focus:border-[#f26722]"
+                      />
                     </div>
                     <a
                       href="/hr/data/call-list"
-                      className="text-xs text-[#f26722] hover:underline"
+                      className="text-xs text-[#f26722] hover:underline whitespace-nowrap"
                       onClick={() => setIsContactsOpen(false)}
                     >
                       Manage in HR portal
@@ -1137,6 +1158,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       <div className="p-4 text-sm text-neutral-500 dark:text-white">
                         No contacts. Add them in HR portal → HR Data → Call
                         list.
+                      </div>
+                    ) : filteredAmpContacts.length === 0 ? (
+                      <div className="p-4 text-sm text-neutral-500 dark:text-white">
+                        No contacts match “{contactsSearch.trim()}”.
                       </div>
                     ) : (
                       <table className="w-full text-sm">
@@ -1154,12 +1179,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-100 dark:divide-dark-200">
-                          {ampContacts.map((c) => (
+                          {filteredAmpContacts.map((c) => (
                             <tr
                               key={c.id}
                               className="hover:bg-neutral-50 dark:hover:bg-dark-200/50"
                             >
-                              <td className="py-2 px-3 text-neutral-900 dark:text-white">
+                              <td className="py-2 px-3 whitespace-nowrap text-neutral-900 dark:text-white">
                                 <a
                                   href={`mailto:${c.email}`}
                                   className="hover:underline"
@@ -1167,7 +1192,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                   {c.name}
                                 </a>
                               </td>
-                              <td className="py-2 px-3">
+                              <td className="py-2 px-3 whitespace-nowrap">
                                 <a
                                   href={`tel:${c.work_phone.replace(/\D/g, "")}`}
                                   className="text-[#f26722] hover:underline"

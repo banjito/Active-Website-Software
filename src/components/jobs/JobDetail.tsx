@@ -37,6 +37,9 @@ import {
   Bookmark,
   MessageCircle,
   SquareArrowOutUpRight,
+  Filter,
+  Check,
+  ArrowDownWideNarrow,
 } from "lucide-react";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
@@ -472,6 +475,22 @@ export default function JobDetail() {
     Record<string, ReportAuditInfo>
   >({});
   const [searchQuery, setSearchQuery] = useState("");
+  // Date filter/sort for the linked reports list
+  const [assetDateField, setAssetDateField] = useState<
+    "created" | "submitted" | "approved" | null
+  >(null);
+  const [assetDateStart, setAssetDateStart] = useState("");
+  const [assetDateEnd, setAssetDateEnd] = useState("");
+  const [assetSortField, setAssetSortField] = useState<
+    "name" | "created" | "submitted" | "approved" | null
+  >(null);
+  const [assetSortDirection, setAssetSortDirection] = useState<"asc" | "desc">(
+    "desc",
+  );
+  const [isAssetFilterMenuOpen, setIsAssetFilterMenuOpen] = useState(false);
+  const [isAssetSortMenuOpen, setIsAssetSortMenuOpen] = useState(false);
+  const assetFilterMenuRef = useRef<HTMLDivElement>(null);
+  const assetSortMenuRef = useRef<HTMLDivElement>(null);
   const [assetStatusFilter, setAssetStatusFilter] = useState<
     | "all"
     | "not started"
@@ -2585,9 +2604,73 @@ export default function JobDetail() {
     }
   }
 
+  // Effective report dates: prefer the linked report's audit timestamps, fall
+  // back to the asset's own columns (same precedence as the audit table).
+  function getAssetDate(
+    asset: Asset,
+    field: "created" | "submitted" | "approved",
+  ): string | null {
+    if (field === "created") return asset.created_at || null;
+    const audit = reportTimestampsByAsset[asset.id] || {};
+    if (field === "submitted") {
+      return audit.submitted_at || asset.submitted_at || null;
+    }
+    return (
+      audit.issued_at || audit.approved_at || asset.approved_at || null
+    );
+  }
+
+  const assetDateFilterActive =
+    assetDateField !== null && (assetDateStart !== "" || assetDateEnd !== "");
+
+  useEffect(() => {
+    if (!isAssetFilterMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        assetFilterMenuRef.current &&
+        !assetFilterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsAssetFilterMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isAssetFilterMenuOpen]);
+
+  useEffect(() => {
+    if (!isAssetSortMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        assetSortMenuRef.current &&
+        !assetSortMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsAssetSortMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isAssetSortMenuOpen]);
+
   useEffect(() => {
     // Filter job assets when search query or status filter changes
     let filtered = jobAssets;
+
+    // Apply date filter (created/submitted/approved)
+    if (assetDateFilterActive && assetDateField) {
+      const startDate = assetDateStart ? new Date(assetDateStart) : null;
+      const endDate = assetDateEnd ? new Date(assetDateEnd) : null;
+      if (endDate) endDate.setHours(23, 59, 59, 999);
+
+      filtered = filtered.filter((asset) => {
+        const raw = getAssetDate(asset, assetDateField);
+        if (!raw) return false;
+        const date = new Date(raw);
+        if (isNaN(date.getTime())) return false;
+        if (startDate && date < startDate) return false;
+        if (endDate && date > endDate) return false;
+        return true;
+      });
+    }
 
     // Apply search filter
     if (searchQuery.trim() !== "") {
@@ -2641,6 +2724,27 @@ export default function JobDetail() {
       filtered = filtered.filter((asset) => asset.status !== "archived");
     }
 
+    // Apply sort (default: keep the fetched order)
+    if (assetSortField) {
+      const direction = assetSortDirection === "asc" ? 1 : -1;
+      filtered = [...filtered].sort((a, b) => {
+        if (assetSortField === "name") {
+          const aName = (dynamicAssetNames[a.id] || a.name || "").toLowerCase();
+          const bName = (dynamicAssetNames[b.id] || b.name || "").toLowerCase();
+          return aName.localeCompare(bName) * direction;
+        }
+        // Missing dates always sort to the bottom
+        const aRaw = getAssetDate(a, assetSortField);
+        const bRaw = getAssetDate(b, assetSortField);
+        const aTime = aRaw ? new Date(aRaw).getTime() : NaN;
+        const bTime = bRaw ? new Date(bRaw).getTime() : NaN;
+        if (isNaN(aTime) && isNaN(bTime)) return 0;
+        if (isNaN(aTime)) return 1;
+        if (isNaN(bTime)) return -1;
+        return (aTime - bTime) * direction;
+      });
+    }
+
     setFilteredJobAssets(filtered);
   }, [
     searchQuery,
@@ -2648,12 +2752,71 @@ export default function JobDetail() {
     assetStatusFilter,
     dynamicAssetNames,
     assetSubstations,
+    assetDateFilterActive,
+    assetDateField,
+    assetDateStart,
+    assetDateEnd,
+    assetSortField,
+    assetSortDirection,
+    reportTimestampsByAsset,
   ]);
 
-  // Reset folder page when tab or search changes
+  function clearAssetDateFilter() {
+    setAssetDateField(null);
+    setAssetDateStart("");
+    setAssetDateEnd("");
+  }
+
+  // Single-choice option list used by the sort/filter dropdowns; clicking the
+  // selected option deselects it.
+  function renderAssetToggleOptions<T extends string>(
+    options: Array<{ value: T; label: string }>,
+    selectedValue: T | null,
+    setValue: (nextValue: T | null) => void,
+    allowDeselect = true,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() =>
+                setValue(checked && allowDeselect ? null : option.value)
+              }
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Reset folder page when tab, search, or date filter/sort changes
   useEffect(() => {
     setFolderPage(1);
-  }, [assetStatusFilter, searchQuery]);
+  }, [
+    assetStatusFilter,
+    searchQuery,
+    assetDateField,
+    assetDateStart,
+    assetDateEnd,
+    assetSortField,
+    assetSortDirection,
+  ]);
 
   // Filter report templates based on search
   const filteredReportTemplates =
@@ -9996,17 +10159,22 @@ ${newBodyHtml}
 
                 {activeTab === "assets" && (
                   <div className="space-y-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">
-                        Reports & Linked Reports
-                      </h3>
-                      <div
-                        className="flex space-x-2 relative"
-                        ref={dropdownRef}
-                      >
+                    {/* Linked assets section */}
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Reports</CardTitle>
+                        </div>
+                        <div className="flex w-2/3 items-center justify-end gap-1">
+                          {/* order-last keeps Add Asset visually after the search box */}
+                          <div
+                            className="relative shrink-0 order-last ml-1"
+                            ref={dropdownRef}
+                          >
                         <Button
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           leftIcon={<Plus className="h-5 w-5 shrink-0" />}
+                          className="h-10 whitespace-nowrap"
                         >
                           Add Asset
                         </Button>
@@ -10257,27 +10425,196 @@ ${newBodyHtml}
                             </div>
                           </div>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Linked assets section */}
-                    <CardHeader>
-                      <div className="flex justify-between">
-                        <div>
-                          <CardTitle>Linked Reports</CardTitle>
-                        </div>
-                        <div className="w-1/3">
-                          <Input
+                          </div>
+                          <div className="relative shrink-0" ref={assetSortMenuRef}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setIsAssetSortMenuOpen((prev) => !prev)
+                              }
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
+                                assetSortField
+                                  ? "text-[#f26722]"
+                                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                              }`}
+                              aria-expanded={isAssetSortMenuOpen}
+                              aria-label="Sort reports"
+                              title="Sort"
+                            >
+                              <ArrowDownWideNarrow className="h-5 w-5" />
+                            </button>
+                            {isAssetSortMenuOpen && (
+                              <div className="absolute right-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                                <div>
+                                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                                    Sort by
+                                  </div>
+                                  {renderAssetToggleOptions(
+                                    [
+                                      { value: "name", label: "Name" },
+                                      { value: "created", label: "Date Created" },
+                                      {
+                                        value: "submitted",
+                                        label: "Date Submitted",
+                                      },
+                                      {
+                                        value: "approved",
+                                        label: "Date Approved",
+                                      },
+                                    ],
+                                    assetSortField,
+                                    setAssetSortField,
+                                  )}
+                                </div>
+                                <div className="mt-2">
+                                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                                    Order
+                                  </div>
+                                  {renderAssetToggleOptions(
+                                    [
+                                      { value: "asc", label: "Ascending" },
+                                      { value: "desc", label: "Descending" },
+                                    ],
+                                    assetSortDirection,
+                                    (next) =>
+                                      setAssetSortDirection(next || "desc"),
+                                    false,
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div
+                            className="relative shrink-0"
+                            ref={assetFilterMenuRef}
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setIsAssetFilterMenuOpen((prev) => !prev)
+                              }
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
+                                assetDateFilterActive
+                                  ? "text-[#f26722]"
+                                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                              }`}
+                              aria-expanded={isAssetFilterMenuOpen}
+                              aria-label="Filter reports"
+                              title="Filter"
+                            >
+                              <Filter className="h-5 w-5" />
+                            </button>
+                            {isAssetFilterMenuOpen && (
+                              <div className="absolute right-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                                <div>
+                                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                                    Date Type
+                                  </div>
+                                  {renderAssetToggleOptions(
+                                    [
+                                      { value: "created", label: "Date Created" },
+                                      {
+                                        value: "submitted",
+                                        label: "Date Submitted",
+                                      },
+                                      {
+                                        value: "approved",
+                                        label: "Date Approved",
+                                      },
+                                    ],
+                                    assetDateField,
+                                    setAssetDateField,
+                                  )}
+                                </div>
+                                <div className="mt-2">
+                                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                                    Date Range
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
+                                      <span className="w-10 shrink-0">From</span>
+                                      <input
+                                        type="date"
+                                        value={assetDateStart}
+                                        onChange={(e) =>
+                                          setAssetDateStart(e.target.value)
+                                        }
+                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                      />
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
+                                      <span className="w-10 shrink-0">To</span>
+                                      <input
+                                        type="date"
+                                        value={assetDateEnd}
+                                        onChange={(e) =>
+                                          setAssetDateEnd(e.target.value)
+                                        }
+                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                      />
+                                    </label>
+                                  </div>
+                                  {assetDateField &&
+                                    !assetDateStart &&
+                                    !assetDateEnd && (
+                                      <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                        Pick a from and/or to date to apply the
+                                        filter.
+                                      </p>
+                                    )}
+                                </div>
+                                {assetDateFilterActive && (
+                                  <button
+                                    type="button"
+                                    onClick={clearAssetDateFilter}
+                                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                  >
+                                    Clear filters
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <input
+                            type="text"
                             placeholder="Search assets..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full"
+                            className="h-10 w-full px-4 bg-white dark:bg-dark-150 text-dark-primary dark:text-dark-secondary border-2 border-dark-accent/30 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-dark-accent dark:focus:ring-dark-accent placeholder:text-dark-primary/40 dark:placeholder:text-dark-secondary/40 transition-colors"
                           />
                         </div>
                       </div>
+                      {assetDateFilterActive && assetDateField && (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 bg-neutral-50 dark:bg-dark-150 p-2 rounded-none">
+                          <span className="text-sm text-neutral-500 dark:text-white">
+                            Active filters:
+                          </span>
+                          <div className="flex items-center bg-white dark:bg-neutral-800 rounded-none px-3 py-1 text-sm text-neutral-900 dark:text-white">
+                            <span className="mr-1">
+                              {assetDateField === "created"
+                                ? "Created"
+                                : assetDateField === "submitted"
+                                  ? "Submitted"
+                                  : "Approved"}
+                              : {assetDateStart || "any"} →{" "}
+                              {assetDateEnd || "any"}
+                            </span>
+                            <button
+                              onClick={clearAssetDateFilter}
+                              className="text-neutral-400 hover:text-neutral-500"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                            {filteredJobAssets.length} report
+                            {filteredJobAssets.length !== 1 ? "s" : ""} found
+                          </span>
+                        </div>
+                      )}
 
                       {/* Status filter tabs */}
-                      <div className="mt-4">
+                      <div className="pt-4">
                         <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
                           <button
                             onClick={() => setAssetStatusFilter("all")}
@@ -11191,9 +11528,6 @@ ${newBodyHtml}
                   job &&
                   (isAdmin ? (
                     <div className="space-y-6">
-                      <CardHeader>
-                        <CardTitle>Report Approvals</CardTitle>
-                      </CardHeader>
                       <CardContent>
                         <ReportApprovalWorkflow
                           division={job.division || undefined}
@@ -11227,9 +11561,6 @@ ${newBodyHtml}
                   <div className="space-y-6">
                     <CardHeader>
                       <CardTitle>Report Audit</CardTitle>
-                      <CardDescription>
-                        Dates and people for report review steps.
-                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       {reportAuditRows.length === 0 ? (

@@ -1854,7 +1854,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsSortMenuOpen((prev) => !prev)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
               aria-expanded={isSortMenuOpen}
               aria-label="Sort jobs"
               title="Sort"
@@ -1890,7 +1890,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
                 dateFilterActive
                   ? "text-[#f26722]"
                   : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"

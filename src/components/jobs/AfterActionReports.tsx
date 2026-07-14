@@ -1083,24 +1083,21 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
           <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             After-Action Reports
           </h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Document project progress and close-out information
-          </p>
         </div>
         <div className="flex gap-2">
           <Button
             onClick={() => handleCreateNew("technician_progress")}
             className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            leftIcon={<Plus className="w-4 h-4 mr-2" />}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Technician Progress Report
           </Button>
           {isAdmin && (
             <Button
               onClick={() => handleCreateNew("admin_closeout")}
               className="bg-purple-600 hover:bg-purple-700 text-white"
+              leftIcon={<Plus className="w-4 h-4 mr-2" />}
             >
-              <Plus className="w-4 h-4 mr-2" />
               Admin Close-out Report
             </Button>
           )}

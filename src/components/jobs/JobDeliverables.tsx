@@ -348,10 +348,6 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Deliverables
           </h2>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-            Create deliverables from saved cover letters and their associated
-            reports
-          </p>
         </div>
         <Button
           onClick={() => setIsCreateDialogOpen(true)}

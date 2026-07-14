@@ -530,9 +530,6 @@ export default function JobNotes({ jobId }: JobNotesProps) {
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
             Job Notes
           </h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Team updates and communication for this job
-          </p>
         </div>
 
         {/* Notes List */}

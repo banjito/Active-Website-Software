@@ -595,11 +595,6 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Pictures
             </h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Upload photos from walkthroughs, site conditions, or progress
-              updates. Add a short description so others know what they're
-              looking at.
-            </p>
           </div>
           <button
             type="button"

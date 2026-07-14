@@ -2441,9 +2441,7 @@ export function ReportApprovalWorkflow({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">
-          {isJobSpecific
-            ? "Job Report Approval"
-            : "Technical Report Approval Workflow"}
+          Report Approvals
         </h2>
         <Button
           onClick={handleRefresh}

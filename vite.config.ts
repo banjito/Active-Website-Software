@@ -41,7 +41,6 @@ export default defineConfig(({ mode }) => {
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/web/pdf_viewer.mjs']
   },
   resolve: {
     alias: {

@@ -8,6 +8,7 @@ import {
   ChevronUp,
   ArrowDownWideNarrow,
   Check,
+  Filter,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -111,7 +112,13 @@ interface JobFormData {
 const normalizeId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 type StatusFilter = "all" | "in_progress" | "pending" | "completed" | "billed";
-type JobSortField = "status" | "budget" | "priority" | "job_number" | "title";
+type JobSortField =
+  | "status"
+  | "budget"
+  | "priority"
+  | "job_number"
+  | "title"
+  | "created_at";
 type SortDirection = "asc" | "desc";
 
 const SORT_FIELD_OPTIONS: Array<{ value: JobSortField; label: string }> = [
@@ -120,7 +127,46 @@ const SORT_FIELD_OPTIONS: Array<{ value: JobSortField; label: string }> = [
   { value: "priority", label: "Priority" },
   { value: "job_number", label: "Job Number" },
   { value: "title", label: "Title" },
+  { value: "created_at", label: "Date Created" },
 ];
+
+// Date filter: "created" is the job's own created date; "submitted"/"approved"
+// match jobs whose reports were submitted/approved in the range.
+type DateFilterField = "created" | "submitted" | "approved";
+
+const DATE_FILTER_OPTIONS: Array<{ value: DateFilterField; label: string }> = [
+  { value: "created", label: "Date Created" },
+  { value: "submitted", label: "Report Submitted" },
+  { value: "approved", label: "Report Approved" },
+];
+
+const DATE_FILTER_LABELS: Record<DateFilterField, string> = {
+  created: "Created",
+  submitted: "Submitted",
+  approved: "Approved",
+};
+
+function getInitialDateFilter(): {
+  field: DateFilterField | null;
+  start: string;
+  end: string;
+} {
+  try {
+    const saved = localStorage.getItem("jobList-dateFilter");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const field = DATE_FILTER_OPTIONS.some((o) => o.value === parsed.field)
+        ? (parsed.field as DateFilterField)
+        : null;
+      return {
+        field,
+        start: typeof parsed.start === "string" ? parsed.start : "",
+        end: typeof parsed.end === "string" ? parsed.end : "",
+      };
+    }
+  } catch {}
+  return { field: null, start: "", end: "" };
+}
 
 const SORT_DIRECTION_OPTIONS: Array<{ value: SortDirection; label: string }> = [
   { value: "asc", label: "Ascending" },
@@ -165,6 +211,24 @@ export default function JobList() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  // Date filter (created/submitted/approved) - load from localStorage
+  const initialDateFilter = getInitialDateFilter();
+  const [dateFilterField, setDateFilterField] =
+    useState<DateFilterField | null>(initialDateFilter.field);
+  const [dateFilterStart, setDateFilterStart] = useState<string>(
+    initialDateFilter.start,
+  );
+  const [dateFilterEnd, setDateFilterEnd] = useState<string>(
+    initialDateFilter.end,
+  );
+  // Job ids matching a submitted/approved report-date filter (null = not active/loaded)
+  const [dateFilterJobIds, setDateFilterJobIds] = useState<Set<string> | null>(
+    null,
+  );
+  const [dateFilterLoading, setDateFilterLoading] = useState(false);
   const [showTMModal, setShowTMModal] = useState(false);
   const [TMFormData, setTMFormData] = useState<TMFormData>({
     customer_id: "",
@@ -323,6 +387,104 @@ export default function JobList() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSortMenuOpen]);
 
+  useEffect(() => {
+    if (!isFilterMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterMenuRef.current &&
+        !filterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isFilterMenuOpen]);
+
+  // Save date filter to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "jobList-dateFilter",
+        JSON.stringify({
+          field: dateFilterField,
+          start: dateFilterStart,
+          end: dateFilterEnd,
+        }),
+      );
+    } catch {}
+  }, [dateFilterField, dateFilterStart, dateFilterEnd]);
+
+  const dateFilterActive =
+    dateFilterField !== null && (dateFilterStart !== "" || dateFilterEnd !== "");
+
+  // For submitted/approved filters, look up which jobs have a report with a
+  // submitted_at/approved_at inside the range (via job_assets -> assets).
+  useEffect(() => {
+    if (
+      !dateFilterField ||
+      dateFilterField === "created" ||
+      (!dateFilterStart && !dateFilterEnd)
+    ) {
+      setDateFilterJobIds(null);
+      setDateFilterLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const column =
+      dateFilterField === "submitted" ? "submitted_at" : "approved_at";
+
+    (async () => {
+      setDateFilterLoading(true);
+      try {
+        const ids = new Set<string>();
+        const BATCH = 1000;
+        let offset = 0;
+        while (true) {
+          let query = supabase
+            .schema("neta_ops")
+            .from("job_assets")
+            .select(`job_id, assets!job_assets_asset_id_fkey!inner(${column})`)
+            .not(`assets.${column}`, "is", null)
+            .range(offset, offset + BATCH - 1);
+          if (dateFilterStart) {
+            query = query.gte(`assets.${column}`, dateFilterStart);
+          }
+          if (dateFilterEnd) {
+            query = query.lte(
+              `assets.${column}`,
+              `${dateFilterEnd}T23:59:59.999`,
+            );
+          }
+          const { data, error } = await query;
+          if (error) throw error;
+          (data || []).forEach((row: any) => ids.add(row.job_id));
+          if (!data || data.length < BATCH) break;
+          offset += BATCH;
+        }
+        if (!cancelled) setDateFilterJobIds(ids);
+      } catch (error) {
+        console.error("Error fetching report date filter:", error);
+        if (!cancelled) setDateFilterJobIds(null);
+      } finally {
+        if (!cancelled) setDateFilterLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dateFilterField, dateFilterStart, dateFilterEnd]);
+
+  function clearDateFilter() {
+    setDateFilterField(null);
+    setDateFilterStart("");
+    setDateFilterEnd("");
+  }
+
   function sortJobsForDisplay(list: Job[]) {
     const priorityRank: Record<string, number> = {
       low: 1,
@@ -340,6 +502,12 @@ export default function JobList() {
         const aRank = priorityRank[(a.priority || "").toLowerCase()] ?? 0;
         const bRank = priorityRank[(b.priority || "").toLowerCase()] ?? 0;
         return (aRank - bRank) * direction;
+      }
+
+      if (sortField === "created_at") {
+        const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return (aTime - bTime) * direction;
       }
 
       if (sortField === "job_number") {
@@ -396,6 +564,41 @@ export default function JobList() {
     );
   }
 
+  // Same as renderSortOptions but clicking the selected option deselects it
+  // (matches the CustomerList filter menu behavior).
+  function renderToggleOptions<T extends string>(
+    options: Array<{ value: T; label: string }>,
+    selectedValue: T | null,
+    setValue: (nextValue: T | null) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setValue(checked ? null : option.value)}
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   useEffect(() => {
     if (user) {
       fetchJobs();
@@ -420,6 +623,23 @@ export default function JobList() {
         const jobDate = new Date(job.start_date);
         return jobDate >= startDate && jobDate <= endDate;
       });
+    }
+
+    // Apply created/submitted/approved date filter
+    if (dateFilterActive && dateFilterField === "created") {
+      const startDate = dateFilterStart ? new Date(dateFilterStart) : null;
+      const endDate = dateFilterEnd ? new Date(dateFilterEnd) : null;
+      if (endDate) endDate.setHours(23, 59, 59, 999);
+
+      base = base.filter((job) => {
+        if (!job.created_at) return false;
+        const jobDate = new Date(job.created_at);
+        if (startDate && jobDate < startDate) return false;
+        if (endDate && jobDate > endDate) return false;
+        return true;
+      });
+    } else if (dateFilterActive && dateFilterJobIds) {
+      base = base.filter((job) => dateFilterJobIds.has(job.id));
     }
 
     if (statusFilter !== "all") {
@@ -480,6 +700,11 @@ export default function JobList() {
     dateRangeEnd,
     showTotals,
     allTime,
+    dateFilterActive,
+    dateFilterField,
+    dateFilterStart,
+    dateFilterEnd,
+    dateFilterJobIds,
   ]);
 
   // Calculate totals for each status
@@ -1661,6 +1886,77 @@ export default function JobList() {
               </div>
             )}
           </div>
+          <div className="relative shrink-0" ref={filterMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                dateFilterActive
+                  ? "text-[#f26722]"
+                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              }`}
+              aria-expanded={isFilterMenuOpen}
+              aria-label="Filter jobs"
+              title="Filter"
+            >
+              <Filter className="h-5 w-5" />
+            </button>
+            {isFilterMenuOpen && (
+              <div className="absolute left-0 z-20 mt-2 w-72 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div>
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                    Date Type
+                  </div>
+                  {renderToggleOptions(
+                    DATE_FILTER_OPTIONS,
+                    dateFilterField,
+                    setDateFilterField,
+                  )}
+                </div>
+                <div className="mt-2">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                    Date Range
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
+                      <span className="w-10 shrink-0">From</span>
+                      <input
+                        type="date"
+                        value={dateFilterStart}
+                        onChange={(e) => setDateFilterStart(e.target.value)}
+                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
+                      <span className="w-10 shrink-0">To</span>
+                      <input
+                        type="date"
+                        value={dateFilterEnd}
+                        onChange={(e) => setDateFilterEnd(e.target.value)}
+                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      />
+                    </label>
+                  </div>
+                  {dateFilterField &&
+                    !dateFilterStart &&
+                    !dateFilterEnd && (
+                      <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                        Pick a from and/or to date to apply the filter.
+                      </p>
+                    )}
+                </div>
+                {dateFilterActive && (
+                  <button
+                    type="button"
+                    onClick={clearDateFilter}
+                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
           <div className="relative flex-1">
             <input
               type="text"
@@ -1698,6 +1994,39 @@ export default function JobList() {
           <div className="mt-2 text-sm text-neutral-600 dark:text-white">
             Found {filteredJobs.length} job
             {filteredJobs.length !== 1 ? "s" : ""} matching "{searchTerm}"
+          </div>
+        )}
+        {dateFilterActive && dateFilterField && (
+          <div className="mt-3 bg-neutral-50 dark:bg-dark-150 p-3 rounded-none">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-neutral-500 dark:text-white">
+                Active filters:
+              </span>
+              <div className="flex items-center bg-white dark:bg-neutral-800 rounded-none px-3 py-1 text-sm text-neutral-900 dark:text-white">
+                <span className="mr-1">
+                  {DATE_FILTER_LABELS[dateFilterField]}:{" "}
+                  {dateFilterStart || "any"} → {dateFilterEnd || "any"}
+                </span>
+                <button
+                  onClick={clearDateFilter}
+                  className="text-neutral-400 hover:text-neutral-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+              {dateFilterLoading && (
+                <span className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                  <LoadingSpinner size="xs" />
+                  Checking report dates...
+                </span>
+              )}
+              {!dateFilterLoading && (
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {filteredJobs.length} job
+                  {filteredJobs.length !== 1 ? "s" : ""} found
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>

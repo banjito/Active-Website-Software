@@ -670,6 +670,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
   // sync state so we load and show the new report instead of keeping the old one
   useEffect(() => {
     setCurrentReportId(initialReportId);
+    // Keep the ref in sync too — autosave writes to reportIdRef.current, so a
+    // stale ref after navigation overwrites the previous report's data
+    reportIdRef.current = initialReportId;
     setIsEditing(!initialReportId);
     isAutoSaveCreatedRef.current = false;
     if (initialReportId) {

@@ -451,6 +451,9 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
 
   useEffect(() => {
     setCurrentReportId(initialReportId);
+    // Keep the ref in sync too — autosave writes to reportIdRef.current, so a
+    // stale ref after navigation overwrites the previous report's data
+    reportIdRef.current = initialReportId;
     setIsEditing(!initialReportId);
     isAutoSaveCreatedRef.current = false;
     if (initialReportId) setLoading(true);

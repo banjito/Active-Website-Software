@@ -134,6 +134,72 @@ export const DEFAULT_PROPOSAL_SAFETY_POLICY_HTML = `<div style="font-weight: bol
 export const DEFAULT_PROPOSAL_SIGNER_NAME = companyConfig.signerName;
 export const DEFAULT_PROPOSAL_SIGNER_TITLE = companyConfig.signerTitle;
 
+// ---------------------------------------------------------------------------
+// Branding & images (adjustable logos, banner text, safety title, signature)
+// ---------------------------------------------------------------------------
+
+/** The AMP logo hosted on Vercel blob storage — the historical letter banner. */
+export const DEFAULT_PROPOSAL_LOGO_URL =
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png";
+
+/** Signer's signature image. Overridable per-instance via branding below. */
+export const DEFAULT_PROPOSAL_SIGNATURE_IMAGE = "/img/brian-signature.png";
+
+/** Company text shown next to the logo at the top of the letter. */
+export const DEFAULT_PROPOSAL_LETTER_BANNER_TEXT = companyConfig.fullName;
+
+/** Heading text on the safety policy page. */
+export const DEFAULT_PROPOSAL_SAFETY_TITLE = "Safety Policy on Jobsites";
+
+/** Adjustable branding pieces of the generated proposal letter. */
+export interface ProposalBranding {
+  /** Logo above the letter (path or data URL). */
+  letterLogoUrl: string;
+  /** Company text shown next to the letter logo. */
+  letterBannerText: string;
+  /** Logo above the safety policy page (path or data URL). */
+  safetyLogoUrl: string;
+  /** Heading text on the safety policy page. */
+  safetyTitle: string;
+  /** Signer's signature image (path or data URL). */
+  signatureImage: string;
+}
+
+export const DEFAULT_PROPOSAL_BRANDING: ProposalBranding = {
+  letterLogoUrl: DEFAULT_PROPOSAL_LOGO_URL,
+  letterBannerText: DEFAULT_PROPOSAL_LETTER_BANNER_TEXT,
+  safetyLogoUrl: DEFAULT_PROPOSAL_LOGO_URL,
+  safetyTitle: DEFAULT_PROPOSAL_SAFETY_TITLE,
+  signatureImage: DEFAULT_PROPOSAL_SIGNATURE_IMAGE,
+};
+
+/**
+ * Coerce a DB JSON value into a clean ProposalBranding. Each missing / empty
+ * field falls back to the built-in default, so a null column reproduces the
+ * historical letter exactly.
+ */
+export function resolveProposalBranding(value: unknown): ProposalBranding {
+  const o =
+    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const str = (v: unknown, fallback: string): string => {
+    const s = typeof v === "string" ? v.trim() : "";
+    return s ? s : fallback;
+  };
+  return {
+    letterLogoUrl: str(o.letterLogoUrl, DEFAULT_PROPOSAL_BRANDING.letterLogoUrl),
+    letterBannerText: str(
+      o.letterBannerText,
+      DEFAULT_PROPOSAL_BRANDING.letterBannerText,
+    ),
+    safetyLogoUrl: str(o.safetyLogoUrl, DEFAULT_PROPOSAL_BRANDING.safetyLogoUrl),
+    safetyTitle: str(o.safetyTitle, DEFAULT_PROPOSAL_BRANDING.safetyTitle),
+    signatureImage: str(
+      o.signatureImage,
+      DEFAULT_PROPOSAL_BRANDING.signatureImage,
+    ),
+  };
+}
+
 /**
  * Top display block: letter number, date, and customer name/company/address.
  * The generator owns the logo/company-name banner above this; only the
@@ -278,6 +344,7 @@ export interface ProposalTemplateSections {
   signerTitle: string;
   netaOptions: NetaOption[];
   customSections: CustomProposalSection[];
+  branding: ProposalBranding;
 }
 
 export const DEFAULT_PROPOSAL_TEMPLATE_SECTIONS: ProposalTemplateSections = {
@@ -292,6 +359,7 @@ export const DEFAULT_PROPOSAL_TEMPLATE_SECTIONS: ProposalTemplateSections = {
   signerTitle: DEFAULT_PROPOSAL_SIGNER_TITLE,
   netaOptions: DEFAULT_NETA_OPTIONS,
   customSections: [],
+  branding: DEFAULT_PROPOSAL_BRANDING,
 };
 
 /**
@@ -377,6 +445,7 @@ export function resolveProposalTemplateSections(
       DEFAULT_PROPOSAL_SIGNER_TITLE,
     netaOptions: resolveNetaOptions(presets?.proposal_neta_options),
     customSections: resolveCustomSections(presets?.proposal_custom_sections),
+    branding: resolveProposalBranding(presets?.proposal_branding),
   };
 }
 
@@ -392,6 +461,23 @@ export function renderTemplateSection(
   return html.replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (match, name) =>
     Object.prototype.hasOwnProperty.call(tokens, name) ? tokens[name] : match,
   );
+}
+
+/**
+ * Invisible page-break marker inserted before the safety policy page. Prints on
+ * a fresh page via the `.amp-page-break` rule in the letter print stylesheet;
+ * renders as a zero-height no-op in the on-screen editor.
+ */
+export const PROPOSAL_SAFETY_PAGE_BREAK_HTML =
+  '<div class="amp-page-break" style="break-before:page;page-break-before:always;height:0;border:none;margin:0;padding:0;"></div>';
+
+/** Escape text for safe interpolation into generated letter HTML. */
+export function escapeProposalText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /** {{placeholders}} in `html` that are not recognized template tokens. */

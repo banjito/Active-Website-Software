@@ -54,6 +54,9 @@ export interface EstimatingPresets {
   proposal_footer_html?: string | null;
   proposal_neta_options?: unknown | null;
   proposal_custom_sections?: unknown | null;
+  // Adjustable branding: logos, banner text, safety title, signature image.
+  // { letterLogoUrl, letterBannerText, safetyLogoUrl, safetyTitle, signatureImage }
+  proposal_branding?: unknown | null;
 
   // Metadata
   created_at: string;

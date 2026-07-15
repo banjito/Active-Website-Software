@@ -32,7 +32,9 @@ import {
 } from "../../services/estimatingPresetsService";
 import {
   DEFAULT_PROPOSAL_TEMPLATE_SECTIONS,
+  PROPOSAL_SAFETY_PAGE_BREAK_HTML,
   ProposalTemplateSections,
+  escapeProposalText,
   renderTemplateSection,
   resolveProposalTemplateSections,
 } from "./proposalTemplateDefaults";
@@ -4989,12 +4991,12 @@ export default function EstimateSheet({
         checkComplete();
       };
 
-      // Start loading images
-      logo.src =
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png";
+      // Start loading images (branding logo + signature, so they're cached
+      // before the letter HTML renders)
+      logo.src = proposalTemplate.branding.letterLogoUrl;
       signature.src =
         (window as any)?.AMP_SIGNATURE_URL ||
-        "/img/brian-rodgers-signature.jpg";
+        proposalTemplate.branding.signatureImage;
 
       // Fallback timeout in case images take too long
       setTimeout(() => {
@@ -5327,8 +5329,9 @@ export default function EstimateSheet({
       quote.id?.slice(0, 6) ||
       index + 1;
 
+    const branding = proposalTemplate.branding;
     const signatureUrl =
-      (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
+      (window as any)?.AMP_SIGNATURE_URL || branding.signatureImage;
 
     // Render the admin-editable template sections with this letter's values.
     // The computed machinery (pricing, scope tables, mobilization) stays
@@ -5387,8 +5390,8 @@ export default function EstimateSheet({
     const newLetterHtml = `
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display:flex;align-items:center;padding-bottom:6px;margin-bottom:12px;border-bottom:1px solid #ccc;">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 24px; margin-right: 8px;" />
-          <span style="font-size: 1em; font-weight: bold; color: #333;">AMP Quality Energy Services</span>
+          ${branding.letterLogoUrl ? `<img src="${branding.letterLogoUrl}" alt="Logo" style="height: 24px; margin-right: 8px;" onerror="this.style.display='none'" />` : ""}
+          <span style="font-size: 1em; font-weight: bold; color: #333;">${escapeProposalText(branding.letterBannerText)}</span>
         </div>
         ${headerHtml}
         ${renderCustomSectionsAt("after_header", templateTokens)}
@@ -5424,11 +5427,11 @@ export default function EstimateSheet({
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
         ${footerHtml}
         ${renderCustomSectionsAt("before_safety", templateTokens)}
-        <div style="margin-top: 80px;">
+        ${PROPOSAL_SAFETY_PAGE_BREAK_HTML}
+        <div class="safety-policy-section">
           <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 4px; margin-bottom: 8px;">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
-            <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
-            <span style="font-size: 1.0em; font-weight: bold; color: #333; margin-left: 12px;">&mdash; Safety Policy on Jobsites</span>
+            ${branding.safetyLogoUrl ? `<img src="${branding.safetyLogoUrl}" alt="Logo" style="height: 32px; margin-right: 8px;" onerror="this.style.display='none'" />` : ""}
+            <span style="font-size: 1.15em; font-weight: bold; color: #333;">${escapeProposalText(branding.safetyTitle)}</span>
           </div>
           ${safetyPolicyHtml}
         </div>
@@ -5872,8 +5875,9 @@ export default function EstimateSheet({
     const contactName = contactData
       ? `${contactData.first_name} ${contactData.last_name}`.trim()
       : customer.name || "Contact Name";
+    const branding = proposalTemplate.branding;
     const signatureUrl =
-      (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
+      (window as any)?.AMP_SIGNATURE_URL || branding.signatureImage;
 
     // Combined letters render the same admin-editable template sections as
     // single-scope letters (shared source in proposalTemplateDefaults.ts), so
@@ -5934,8 +5938,8 @@ export default function EstimateSheet({
     const newCombinedLetterHtml = `
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 6px; margin-bottom: 12px;">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
-          <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+          ${branding.letterLogoUrl ? `<img src="${branding.letterLogoUrl}" alt="Logo" style="height: 36px; margin-right: 10px;" onerror="this.style.display='none'" />` : ""}
+          <span style="font-size: 1.1em; font-weight: bold; color: #333;">${escapeProposalText(branding.letterBannerText)}</span>
         </div>
         ${headerHtml}
         ${renderCustomSectionsAt("after_header", templateTokens)}
@@ -6139,8 +6143,12 @@ export default function EstimateSheet({
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
         ${footerHtml}
         ${renderCustomSectionsAt("before_safety", templateTokens)}
-        <div class="safety-policy-section" style="margin-top: 20px;">
-          <div style="font-size: 1.3em; font-weight: bold; color: #333; margin: 10px 0 12px 0; text-align: center;">Safety Policy on Jobsites</div>
+        ${PROPOSAL_SAFETY_PAGE_BREAK_HTML}
+        <div class="safety-policy-section">
+          <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 4px; margin-bottom: 8px;">
+            ${branding.safetyLogoUrl ? `<img src="${branding.safetyLogoUrl}" alt="Logo" style="height: 32px; margin-right: 8px;" onerror="this.style.display='none'" />` : ""}
+            <span style="font-size: 1.15em; font-weight: bold; color: #333;">${escapeProposalText(branding.safetyTitle)}</span>
+          </div>
           ${safetyPolicyHtml}
         </div>
       </div>
@@ -6224,18 +6232,6 @@ export default function EstimateSheet({
             text-size-adjust: 100%;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-          }
-          #letter-proposal.print-content { padding-bottom: 35mm; }
-          .amp-footer {
-            position: fixed !important;
-            left: 0; right: 0; bottom: 0;
-            width: 100%;
-            font-size: 0.9em;
-            color: #555;
-            border-top: 1px solid #ccc;
-            padding: 8px 0;
-            text-align: center;
-            background: white;
           }
           /* Hide the dropdown, keep the sentence */
           #neta-standard-select { display: none !important; }

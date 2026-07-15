@@ -43,6 +43,7 @@ import {
 import {
   CustomProposalSection,
   DEFAULT_NETA_OPTIONS,
+  DEFAULT_PROPOSAL_BRANDING,
   DEFAULT_PROPOSAL_CONCLUSION_HTML,
   DEFAULT_PROPOSAL_FOOTER_HTML,
   DEFAULT_PROPOSAL_HEADER_HTML,
@@ -54,12 +55,15 @@ import {
   DEFAULT_PROPOSAL_TERMS_HTML,
   NetaOption,
   PROPOSAL_SECTION_ANCHORS,
+  ProposalBranding,
   ProposalSectionAnchor,
   TEMPLATE_TOKENS,
+  escapeProposalText,
   findMissingDefaultTokens,
   findUnknownTokens,
   resolveCustomSections,
   resolveNetaOptions,
+  resolveProposalBranding,
   renderTemplateSection,
   sanitizeTemplateHtml,
 } from "./proposalTemplateDefaults";
@@ -214,6 +218,94 @@ function RichSectionEditor({
   );
 }
 
+/**
+ * One branding image field: a thumbnail preview plus Upload / Reset controls.
+ * Uploads are embedded as data-URLs (same approach as the section image button)
+ * so they travel with the saved template — no separate asset hosting needed.
+ */
+function BrandingImageField({
+  label,
+  help,
+  value,
+  isDefault,
+  onChange,
+  onReset,
+}: {
+  label: string;
+  help?: string;
+  value: string;
+  isDefault: boolean;
+  onChange: (dataUrl: string) => void;
+  onReset: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file?.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+        {label}
+      </label>
+      {help && (
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+          {help}
+        </p>
+      )}
+      <div className="flex items-center gap-3">
+        <div className="w-28 h-16 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 bg-white overflow-hidden shrink-0">
+          {value ? (
+            <img
+              src={value}
+              alt={label}
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <span className="text-xs text-neutral-400">No image</span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand
+                       border border-brand rounded-none hover:bg-brand hover:text-white transition-colors"
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            Upload Image
+          </button>
+          {!isDefault && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-400
+                         border border-neutral-300 dark:border-neutral-600 rounded-none
+                         hover:bg-neutral-50 dark:hover:bg-dark-200 transition-colors"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reset to Default
+            </button>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFile}
+        />
+      </div>
+    </div>
+  );
+}
+
 type SectionKey =
   | "header"
   | "intro"
@@ -330,7 +422,7 @@ const PREVIEW_TOKENS: Record<string, string> = {
     "All tests will be performed in accordance with ANSI/NETA MTS 2023 - Standard for Maintenance Testing Specifications for Electrical power Equipment and Systems.",
   currentYear: String(new Date().getFullYear()),
   alternateRatesNote: "",
-  signatureImage: "/img/brian-rodgers-signature.jpg",
+  signatureImage: DEFAULT_PROPOSAL_BRANDING.signatureImage,
 };
 
 export default function ProposalTemplateEditor({
@@ -367,6 +459,15 @@ export default function ProposalTemplateEditor({
   );
   const [signerName, setSignerName] = useState(DEFAULT_PROPOSAL_SIGNER_NAME);
   const [signerTitle, setSignerTitle] = useState(DEFAULT_PROPOSAL_SIGNER_TITLE);
+
+  // Adjustable branding: logos, banner text, safety title, signature image.
+  const [branding, setBranding] = useState<ProposalBranding>(
+    DEFAULT_PROPOSAL_BRANDING,
+  );
+  const updateBranding = (patch: Partial<ProposalBranding>) => {
+    setBranding((prev) => ({ ...prev, ...patch }));
+    markChanged();
+  };
 
   // Editable NETA-standard option list.
   const [netaOptions, setNetaOptions] =
@@ -415,6 +516,7 @@ export default function ProposalTemplateEditor({
             DEFAULT_PROPOSAL_SIGNER_TITLE,
         );
         setNetaOptions(resolveNetaOptions(presets.proposal_neta_options));
+        setBranding(resolveProposalBranding(presets.proposal_branding));
         setCustomSections(
           resolveCustomSections(presets.proposal_custom_sections).map((s) => ({
             ...s,
@@ -600,6 +702,15 @@ export default function ProposalTemplateEditor({
         ? cleanedCustom
         : null;
 
+      // Branding: normalize (empty field → default), store NULL when every
+      // field matches the built-in defaults so future default updates apply.
+      const cleanedBranding = resolveProposalBranding(branding);
+      payload.proposal_branding =
+        JSON.stringify(cleanedBranding) ===
+        JSON.stringify(DEFAULT_PROPOSAL_BRANDING)
+          ? null
+          : cleanedBranding;
+
       await updateEstimatingPresets(payload, userId);
       setHasChanges(false);
       setSuccessMessage(
@@ -616,11 +727,13 @@ export default function ProposalTemplateEditor({
     }
   };
 
+  const effectiveBranding = resolveProposalBranding(branding);
   const previewTokens: Record<string, string> = {
     ...PREVIEW_TOKENS,
     netaStandardText: netaOptions[0]?.text || PREVIEW_TOKENS.netaStandardText,
     signerName: signerName.trim() || DEFAULT_PROPOSAL_SIGNER_NAME,
     signerTitle: signerTitle.trim() || DEFAULT_PROPOSAL_SIGNER_TITLE,
+    signatureImage: effectiveBranding.signatureImage,
   };
 
   const renderPreviewSection = (key: SectionKey) =>
@@ -639,7 +752,8 @@ export default function ProposalTemplateEditor({
   const previewHtml = `
     <div style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #111;">
       <div style="display:flex;align-items:center;padding-bottom:6px;margin-bottom:12px;border-bottom:1px solid #ccc;">
-        <span style="font-size: 1em; font-weight: bold; color: #333;">AMP Quality Energy Services</span>
+        ${effectiveBranding.letterLogoUrl ? `<img src="${effectiveBranding.letterLogoUrl}" alt="Logo" style="height: 24px; margin-right: 8px;" />` : ""}
+        <span style="font-size: 1em; font-weight: bold; color: #333;">${escapeProposalText(effectiveBranding.letterBannerText)}</span>
       </div>
       ${renderPreviewSection("header")}
       ${renderCustomAt("after_header")}
@@ -659,9 +773,11 @@ export default function ProposalTemplateEditor({
       <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
       ${renderPreviewSection("footer")}
       ${renderCustomAt("before_safety")}
-      <div style="margin-top: 24px;">
+      <div style="margin:18px 0;border-top:2px dashed #9ca3af;text-align:center;color:#9ca3af;font-size:11px;font-weight:500;letter-spacing:0.5px;line-height:0;"><span style="background:white;padding:0 10px;position:relative;top:-8px;">PAGE BREAK</span></div>
+      <div>
         <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 4px; margin-bottom: 8px;">
-          <span style="font-size: 1.0em; font-weight: bold; color: #333;">Safety Policy on Jobsites</span>
+          ${effectiveBranding.safetyLogoUrl ? `<img src="${effectiveBranding.safetyLogoUrl}" alt="Logo" style="height: 32px; margin-right: 8px;" />` : ""}
+          <span style="font-size: 1.15em; font-weight: bold; color: #333;">${escapeProposalText(effectiveBranding.safetyTitle)}</span>
         </div>
         ${renderPreviewSection("safety")}
       </div>
@@ -822,6 +938,103 @@ export default function ProposalTemplateEditor({
             />
           </div>
         </div>
+      </div>
+
+      {/* Branding & images */}
+      <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
+          Branding &amp; Images
+        </h2>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          The logo and company text above the letter, the logo and title above
+          the safety policy page, and the signer's signature image. These apply
+          to both single and combined letters.
+        </p>
+
+        {/* Letter header */}
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
+          Letter Header
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          <BrandingImageField
+            label="Logo above the letter"
+            value={branding.letterLogoUrl}
+            isDefault={
+              branding.letterLogoUrl === DEFAULT_PROPOSAL_BRANDING.letterLogoUrl
+            }
+            onChange={(dataUrl) => updateBranding({ letterLogoUrl: dataUrl })}
+            onReset={() =>
+              updateBranding({
+                letterLogoUrl: DEFAULT_PROPOSAL_BRANDING.letterLogoUrl,
+              })
+            }
+          />
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              Company text next to the logo
+            </label>
+            <input
+              type="text"
+              value={branding.letterBannerText}
+              onChange={(e) =>
+                updateBranding({ letterBannerText: e.target.value })
+              }
+              className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
+                         focus:ring-brand focus:border-brand bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Safety policy header */}
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
+          Safety Policy Header
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          <BrandingImageField
+            label="Logo above the safety policy"
+            value={branding.safetyLogoUrl}
+            isDefault={
+              branding.safetyLogoUrl === DEFAULT_PROPOSAL_BRANDING.safetyLogoUrl
+            }
+            onChange={(dataUrl) => updateBranding({ safetyLogoUrl: dataUrl })}
+            onReset={() =>
+              updateBranding({
+                safetyLogoUrl: DEFAULT_PROPOSAL_BRANDING.safetyLogoUrl,
+              })
+            }
+          />
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              Safety policy title
+            </label>
+            <input
+              type="text"
+              value={branding.safetyTitle}
+              onChange={(e) => updateBranding({ safetyTitle: e.target.value })}
+              className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
+                         focus:ring-brand focus:border-brand bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Signature */}
+        <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
+          Signature
+        </h3>
+        <BrandingImageField
+          label="Signer's signature image"
+          help="Fills the {{signatureImage}} placeholder in the signature block."
+          value={branding.signatureImage}
+          isDefault={
+            branding.signatureImage === DEFAULT_PROPOSAL_BRANDING.signatureImage
+          }
+          onChange={(dataUrl) => updateBranding({ signatureImage: dataUrl })}
+          onReset={() =>
+            updateBranding({
+              signatureImage: DEFAULT_PROPOSAL_BRANDING.signatureImage,
+            })
+          }
+        />
       </div>
 
       {/* Section editors */}

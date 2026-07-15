@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { ReportPhotosPrintSection } from "./common/ReportPhotos";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -2037,6 +2038,9 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     >
       {/* Locked banner is shown once by Layout.tsx for all report pages */}
       {children}
+      {/* Attached photos print after the report body, below the Comments
+          section (the last printed section in the standard layout). */}
+      <ReportPhotosPrintSection />
     </div>
   );
 };

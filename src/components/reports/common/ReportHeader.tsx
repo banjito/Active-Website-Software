@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { AutoSaveIndicator } from "./AutoSaveIndicator";
+import { ReportPhotosButton } from "./ReportPhotos";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Check, LogOut, Printer, Save, SquarePen } from "lucide-react";
 
@@ -132,6 +133,13 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                 {status}
               </button>
             </div>
+
+            {/* Report Photos (renders nothing on unsaved reports) */}
+            <ReportPhotosButton
+              onButtonMouseEnter={showTooltip("Photos")}
+              onButtonMouseMove={moveTooltip}
+              onButtonMouseLeave={hideTooltip}
+            />
 
             {/* Edit / Print buttons (view mode) */}
             {hasReport && !isEditing ? (

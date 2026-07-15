@@ -2827,6 +2827,22 @@ export default function JobDetail() {
           asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
         );
 
+  const filteredCustomFormTemplates =
+    reportSearchQuery.trim() === ""
+      ? customFormTemplates
+      : customFormTemplates.filter((t) =>
+          `${t.name} ${t.neta_section || ""}`
+            .toLowerCase()
+            .includes(reportSearchQuery.toLowerCase()),
+        );
+
+  const filteredInternalFormTemplates =
+    reportSearchQuery.trim() === ""
+      ? INTERNAL_FORM_TEMPLATES
+      : INTERNAL_FORM_TEMPLATES.filter((t) =>
+          t.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
+        );
+
   const reportAuditRows = useMemo(() => {
     return jobAssets
       .filter((asset) => {
@@ -4881,7 +4897,50 @@ export default function JobDetail() {
 
       const tasks = jobAssets.map(async (asset) => {
         try {
-          if (!asset.file_url || !asset.file_url.startsWith("report:")) return;
+          if (!asset.file_url) return;
+
+          // Custom form instances: substation/identifier live in the saved
+          // form data (scan all sections since section ids are per-template).
+          if (asset.file_url.startsWith("custom-form:")) {
+            const parts = (asset.file_url.split(":/")[1] || "").split("/");
+            // ['jobs', jobId, 'custom-form', templateId, instanceId]
+            const instanceId = (parts[4] || "").split("?")[0];
+            if (!instanceId) return;
+            const { data: inst } = await supabase
+              .schema("neta_ops")
+              .from("custom_form_instances")
+              .select("data")
+              .eq("id", instanceId)
+              .maybeSingle();
+            const instData =
+              typeof (inst as any)?.data === "string"
+                ? JSON.parse((inst as any).data)
+                : (inst as any)?.data;
+            const sections = instData?.sections;
+            if (!sections || typeof sections !== "object") return;
+            let substation = "";
+            let identifier = "";
+            for (const sec of Object.values(sections)) {
+              if (!sec || typeof sec !== "object") continue;
+              const s = sec as Record<string, any>;
+              if (!substation && typeof s.substation === "string")
+                substation = s.substation;
+              if (!identifier && typeof s.identifier === "string")
+                identifier = s.identifier;
+              if (!identifier && typeof s.eqptLocation === "string")
+                identifier = s.eqptLocation;
+            }
+            if (substation.trim()) {
+              substationUpdates[asset.id] = substation.trim();
+            }
+            if (identifier.trim() && instData?.templateName) {
+              nameUpdates[asset.id] =
+                `${instData.templateName} - ${identifier.trim()}`;
+            }
+            return;
+          }
+
+          if (!asset.file_url.startsWith("report:")) return;
 
           // Parse from original file_url first
           const urlContent = asset.file_url.split(":/")[1] || "";
@@ -10262,16 +10321,22 @@ ${newBodyHtml}
                               </div>
 
                               <div className="max-h-60 overflow-y-auto">
-                                {filteredReportTemplates.length === 0 ? (
+                                {filteredReportTemplates.length === 0 &&
+                                filteredCustomFormTemplates.length === 0 &&
+                                filteredInternalFormTemplates.length === 0 ? (
                                   <div className="px-4 py-2 text-sm text-neutral-500">
                                     No matching reports found
                                   </div>
                                 ) : (
                                   <>
                                     {/* ATS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                      ATS Reports
-                                    </div>
+                                    {filteredReportTemplates.some(
+                                      (asset) => asset.template_type === "ATS",
+                                    ) && (
+                                      <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
+                                        ATS Reports
+                                      </div>
+                                    )}
                                     {filteredReportTemplates
                                       .filter(
                                         (asset) =>
@@ -10299,9 +10364,13 @@ ${newBodyHtml}
                                       ))}
 
                                     {/* MTS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                      MTS Reports
-                                    </div>
+                                    {filteredReportTemplates.some(
+                                      (asset) => asset.template_type === "MTS",
+                                    ) && (
+                                      <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
+                                        MTS Reports
+                                      </div>
+                                    )}
                                     {filteredReportTemplates
                                       .filter(
                                         (asset) =>
@@ -10364,13 +10433,14 @@ ${newBodyHtml}
                                     )}
 
                                     {/* Custom Forms */}
-                                    {customFormTemplates.length > 0 && (
+                                    {filteredCustomFormTemplates.length >
+                                      0 && (
                                       <>
                                         <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
                                         <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Custom Forms
                                         </div>
-                                        {customFormTemplates.map((t) => (
+                                        {filteredCustomFormTemplates.map((t) => (
                                           <Link
                                             key={t.id}
                                             to={`/jobs/${id}/custom-form/${t.id}/new`}
@@ -10396,13 +10466,14 @@ ${newBodyHtml}
                                     )}
 
                                     {/* Internal Forms */}
-                                    {INTERNAL_FORM_TEMPLATES.length > 0 && (
+                                    {filteredInternalFormTemplates.length >
+                                      0 && (
                                       <>
                                         <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
                                         <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Internal Forms
                                         </div>
-                                        {INTERNAL_FORM_TEMPLATES.map((t) => (
+                                        {filteredInternalFormTemplates.map((t) => (
                                           <Link
                                             key={t.slug}
                                             to={`/jobs/${id}/${t.slug}`}
@@ -11394,9 +11465,10 @@ ${newBodyHtml}
                                                       /^custom-form:/,
                                                       "",
                                                     )}
-                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                    className="inline-flex text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                    aria-label="Open"
                                                   >
-                                                    Open Form
+                                                    <SquareArrowOutUpRight className="h-5 w-5" />
                                                   </Link>
                                                 ) : asset.file_url.startsWith(
                                                     "report:",

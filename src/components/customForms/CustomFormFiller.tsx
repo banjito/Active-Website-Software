@@ -11,9 +11,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useJobDetails } from "@/lib/hooks/useJobDetails";
 import { toast } from "@/components/ui/toast";
-import { ArrowLeft, Save, Printer, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Save, Printer, Plus, Minus, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ReportWrapper } from "@/components/reports/ReportWrapper";
+import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
 import {
   CustomFormTemplate,
   SectionConfig,
@@ -59,8 +60,11 @@ export const CustomFormFiller: React.FC = () => {
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+  const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">(
+    "PASS",
+  );
   const [existingInstanceId, setExistingInstanceId] = useState<string | null>(
     instanceId && instanceId !== "new" ? instanceId : null,
   );
@@ -284,7 +288,10 @@ export const CustomFormFiller: React.FC = () => {
                 })()
               : rowData;
           setExistingInstanceId(instanceRow.id);
-          setStatus((instanceRow.status as "PASS" | "FAIL") || "PASS");
+          setStatus(
+            (instanceRow.status as "PASS" | "FAIL" | "LIMITED SERVICE") ||
+              "PASS",
+          );
           const sections = payload?.sections;
           if (sections && typeof sections === "object") {
             setFormData(sections);
@@ -634,9 +641,18 @@ export const CustomFormFiller: React.FC = () => {
 
         setExistingInstanceId(newInstanceId);
         toast({ title: "Form saved and linked to job", variant: "success" });
+        // Stay on the report: swap the /new URL for the saved instance URL
+        // without a router navigation (which would remount and reload the
+        // form). Also lets the photos button attach to the saved instance.
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `/jobs/${jobId}/custom-form/${templateId}/${newInstanceId}`,
+        );
       }
 
-      navigate(`/jobs/${jobId}?tab=assets`, { replace: true });
+      setJustSaved(true);
+      window.setTimeout(() => setJustSaved(false), 2000);
     } catch (e: any) {
       console.error("Save error:", e);
       toast({
@@ -1649,7 +1665,13 @@ export const CustomFormFiller: React.FC = () => {
           )}
           <div className="hidden print:block">
             <div
-              className={`pass-fail-status-box ${status.toLowerCase() === "fail" ? "fail" : "pass"}`}
+              className={`pass-fail-status-box ${
+                status === "FAIL"
+                  ? "fail"
+                  : status === "LIMITED SERVICE"
+                    ? "limited"
+                    : "pass"
+              }`}
               style={{
                 display: "inline-block",
                 padding: "4px 10px",
@@ -1658,9 +1680,20 @@ export const CustomFormFiller: React.FC = () => {
                 textAlign: "center",
                 width: "fit-content",
                 borderRadius: "6px",
-                border: `2px solid ${status === "PASS" ? "#16a34a" : "#dc2626"}`,
-                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
-                color: "white",
+                border: `2px solid ${
+                  status === "PASS"
+                    ? "#16a34a"
+                    : status === "FAIL"
+                      ? "#dc2626"
+                      : "#ca8a04"
+                }`,
+                backgroundColor:
+                  status === "PASS"
+                    ? "#22c55e"
+                    : status === "FAIL"
+                      ? "#ef4444"
+                      : "#eab308",
+                color: status === "LIMITED SERVICE" ? "#111827" : "white",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact" as any,
                 boxSizing: "border-box",
@@ -1700,33 +1733,56 @@ export const CustomFormFiller: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-neutral-600 hover:bg-neutral-700 rounded-none flex items-center gap-2"
-                >
-                  <Printer className="w-4 h-4" />
-                  Print Report
-                </button>
-                <button
-                  type="button"
                   onClick={() =>
-                    setStatus((s) => (s === "PASS" ? "FAIL" : "PASS"))
+                    setStatus((s) =>
+                      s === "PASS"
+                        ? "FAIL"
+                        : s === "FAIL"
+                          ? "LIMITED SERVICE"
+                          : "PASS",
+                    )
                   }
-                  className={`px-4 py-2 rounded-none text-white font-medium ${
+                  className={`px-4 py-2 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                     status === "PASS"
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-red-600 hover:bg-red-700"
+                      ? "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
+                      : status === "FAIL"
+                        ? "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
+                        : "bg-yellow-500 text-black hover:bg-yellow-600 focus:ring-yellow-400"
                   }`}
                 >
                   {status}
                 </button>
-                <Button
+                {/* Report Photos (renders nothing on unsaved instances) */}
+                <ReportPhotosButton />
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-2 py-2 text-sm rounded-none text-white bg-neutral-600 border border-neutral-600 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500"
+                  title="Print Report"
+                  aria-label="Print Report"
+                >
+                  <Printer className="w-6 h-6" />
+                </button>
+                <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2"
+                  className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    justSaved
+                      ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                      : "bg-brand hover:bg-brand/90 focus:ring-brand"
+                  }`}
+                  title={justSaved ? "Saved" : "Save"}
+                  aria-label={justSaved ? "Saved" : "Save"}
                 >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? "Saving..." : "Save"}
-                </Button>
+                  {isSaving ? (
+                    <LoadingSpinner size="xs" variant="light" />
+                  ) : justSaved ? (
+                    <Check className="h-6 w-6" />
+                  ) : (
+                    <Save className="h-6 w-6" />
+                  )}
+                </button>
               </div>
             </div>
 
